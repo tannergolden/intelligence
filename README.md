@@ -101,14 +101,14 @@ Three properties fall out of that shape, and each one is deliberate:
 
 ## 📦 What Is Published
 
-| Class              | Ships                                                                   | Reaches                                                              |
-| :----------------- | :---------------------------------------------------------------------- | :------------------------------------------------------------------- |
-| **Instructions**   | `AGENTS.md` and the two importing routers                               | both                                                                 |
-| **Skills**         | `SKILL.md` in the open Agent Skills format, at the path each tool reads | both                                                                 |
-| **Subagents**      | a thin persona layer over the skills                                    | Claude only, because Gemini has no repository committed agent format |
-| **Commands**       | invocable slash commands                                                | Gemini only, because Claude reaches the same capability by skill     |
-| **Review**         | a style guide read by Gemini's pull request reviewer                    | Gemini only                                                          |
-| **Runtime config** | hook scripts and the shared settings file that wires them               | Claude only, with personal settings left untouched                   |
+| Class              | Ships                                                                   | Reaches                                                           |
+| :----------------- | :---------------------------------------------------------------------- | :---------------------------------------------------------------- |
+| **Instructions**   | `AGENTS.md` and the two importing routers                               | both                                                              |
+| **Runtime config** | one hook script, and the shared settings file that wires it             | Claude only. The settings file is **merged**, never overwritten   |
+| **Receipt**        | a lockfile recording every path written and its digest                  | neither. It is bookkeeping, and it is also the uninstall manifest |
+| **Skills**         | `SKILL.md` in the open Agent Skills format, at the path each tool reads | both, once any skill exists to ship                               |
+
+Six written paths, not thirty. Subagents, command dialects and per tool rule formats are **not** published: with two tools each reaches exactly one of them, and neither has a subject yet. They are additive later, which is the test that this stayed easy to extend.
 
 Repository specific knowledge is **not** published from here. A consuming repository writes its own section in a file this repository never overwrites, and the build folds that section into the delivered instructions so it loads with everything else.
 
