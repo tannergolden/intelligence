@@ -1,0 +1,58 @@
+{
+  "_comment": [
+    "Tag protection for published releases. Applied by hand, matched by name,",
+    "like the branch ruleset beside it.",
+    "",
+    "THE PATTERN IS NARROW ON PURPOSE, AND THIS IS THE MOST IMPORTANT LINE IN",
+    "THE FILE. It matches refs/tags/v*.*.* and NOTHING ELSE, so it covers the",
+    "full version tags (v1.0.0, v1.4.2) and deliberately does NOT match the",
+    "bare major tag v1.",
+    "",
+    "v1 must stay movable. Force-moving it is how a release is published to",
+    "every consumer, and force-moving it BACK is the only rollback that exists:",
+    "the sync path has no pull request, no staged rollout and no per-consumer",
+    "pin to edit, so a bad release is un-recalled until that tag moves. A",
+    "ruleset carrying refs/tags/v* (the shape shipped in the template home,",
+    ".github/.github/rulesets/protect-release-tags.json) blocks the update and",
+    "deletion of v1, which disables the release mechanism and the emergency",
+    "brake in the same rule, and it does it quietly: nothing fails until the",
+    "day someone needs to roll back.",
+    "",
+    "The three rules make a PUBLISHED version tag immutable, which is what a",
+    "consumer pinning @v1.4.2 is promised: it cannot be deleted, cannot be",
+    "force-updated, and cannot be moved backwards.",
+    "",
+    "THE ADMIN BYPASS IS PRESENT, unlike the variant this replaces. actor_id 5",
+    "is the repository-admin role. The no-bypass form is demonstrably not",
+    "enforced on this account (five v*.*.* tags were deleted from a repository",
+    "carrying exactly that rule), so the choice is between a rule that works",
+    "and a rule that lies about what it does."
+  ],
+  "name": "Protect release tags (v*.*.*)",
+  "target": "tag",
+  "enforcement": "active",
+  "bypass_actors": [
+    {
+      "actor_id": 5,
+      "actor_type": "RepositoryRole",
+      "bypass_mode": "always"
+    }
+  ],
+  "conditions": {
+    "ref_name": {
+      "include": ["refs/tags/v*.*.*"],
+      "exclude": []
+    }
+  },
+  "rules": [
+    {
+      "type": "deletion"
+    },
+    {
+      "type": "non_fast_forward"
+    },
+    {
+      "type": "update"
+    }
+  ]
+}
