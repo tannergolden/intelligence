@@ -1,4 +1,0 @@
-# An ownership marker and a Dependabot reviewer hint. It gates NOTHING here:
-# CODEOWNERS is a pull-request mechanism, and this repository has no pull
-# requests on any path a human touches. Do not cite it as a control.
-* @tannergolden
