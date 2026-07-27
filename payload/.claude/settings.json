@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.ai/hooks/ai-context.sh\"",
+            "timeout": 10,
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  }
+}
