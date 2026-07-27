@@ -12,7 +12,7 @@ category: docs
 
 <a name="top"></a>
 
-**One source of agent instructions, skills and configuration, delivered to every repository that asks for it and to every tool that reads it.**
+**One source of agent instructions, skills and configuration, authored once and delivered to every repository that asks for it.**
 
 _Written once. Shaped per tool. Never pasted by hand._
 
@@ -32,6 +32,22 @@ It is a **publisher**, not a library. It follows the same shape as [`tannergolde
 
 ---
 
+## 🤖 Supported Tools
+
+Support here means **tested, budgeted and guaranteed**, rather than merely reachable.
+
+| Tool                              | Reads                                  | Status                  |
+| :-------------------------------- | :------------------------------------- | :---------------------- |
+| **Claude Code**                   | `CLAUDE.md`, which imports `AGENTS.md` | supported               |
+| **Gemini CLI**                    | `GEMINI.md`, which imports `AGENTS.md` | supported               |
+| anything else reading `AGENTS.md` | `AGENTS.md`                            | incidental, best effort |
+
+Both supported tools work the same way: a one line router that imports a shared body. **Two tools therefore means three files**, and `AGENTS.md` is the one carrying the content.
+
+That file is also read, unchanged, by tools nobody here tests: Codex, Cursor, Cline, Kilo, Continue, Kiro, Junie, Amp. They are neither supported nor blocked. A contributor who arrives with one of them still gets this repository's conventions, which is a side effect worth having and not a promise worth making.
+
+---
+
 ## 💡 How It Works
 
 The organising question is not what a file is about. It is **when the agent loads it**.
@@ -47,7 +63,11 @@ The test for which tier something belongs to is short:
 > **Copied** where failing to apply it is a **defect**.
 > **Linked** where failing to read it is a **missed optimisation**.
 
-Tier 1 carries two hard limits, and both are mechanical rather than stylistic. The file is capped in **bytes**, because at least one tool truncates silently and a reader cannot see what was cut. It is capped in **imperative directives**, because instruction adherence degrades with the number of simultaneous rules rather than with file length.
+Tier 1 carries two limits, and they rest on different footings.
+
+The cap on **imperative directives** is the hard one. Instruction adherence degrades with the number of simultaneous rules rather than with file length, and that holds across models rather than being any one vendor's quirk. It is the primary constraint on what Tier 1 may say.
+
+The cap on **bytes** is self imposed. Some tools truncate a long instruction file silently, which would make the limit external, but neither supported tool does. Here it is a budget rather than a wall: every byte in Tier 1 is paid for on every session, so the file is capped to keep that bill visible and deliberate.
 
 ---
 
@@ -81,13 +101,14 @@ Three properties fall out of that shape, and each one is deliberate:
 
 ## 📦 What Is Published
 
-| Class              | Contents                                                                                 | Delivery                                         |
-| :----------------- | :--------------------------------------------------------------------------------------- | :----------------------------------------------- |
-| **Instructions**   | the canonical instruction file, its byte identical copies, and the two importing routers | generated, delivered on release                  |
-| **Skills**         | `SKILL.md` in the open Agent Skills format, fanned out to the paths that read it         | generated, delivered on release                  |
-| **Subagents**      | a thin persona layer over the skills                                                     | generated, delivered on release                  |
-| **Prompts**        | invocable commands, one dialect per tool that has one                                    | generated, delivered on release                  |
-| **Runtime config** | hook scripts and the shared settings file that wires them                                | generated, with personal settings left untouched |
+| Class              | Ships                                                                   | Reaches                                                              |
+| :----------------- | :---------------------------------------------------------------------- | :------------------------------------------------------------------- |
+| **Instructions**   | `AGENTS.md` and the two importing routers                               | both                                                                 |
+| **Skills**         | `SKILL.md` in the open Agent Skills format, at the path each tool reads | both                                                                 |
+| **Subagents**      | a thin persona layer over the skills                                    | Claude only, because Gemini has no repository committed agent format |
+| **Commands**       | invocable slash commands                                                | Gemini only, because Claude reaches the same capability by skill     |
+| **Review**         | a style guide read by Gemini's pull request reviewer                    | Gemini only                                                          |
+| **Runtime config** | hook scripts and the shared settings file that wires them               | Claude only, with personal settings left untouched                   |
 
 Repository specific knowledge is **not** published from here. A consuming repository writes its own section in a file this repository never overwrites, and the build folds that section into the delivered instructions so it loads with everything else.
 
@@ -111,7 +132,7 @@ Repository specific knowledge is **not** published from here. A consuming reposi
 
 <div align="center">
 
-**One source. Every agent. No stale copies.**
+**One source. Many dialects. No stale copies.**
 
 [↑ Back to Top](#top)
 
