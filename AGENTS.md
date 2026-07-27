@@ -31,7 +31,20 @@ It is deliberately **tool-agnostic**. A rule that only half the agents can follo
 ## 📝 Two Layers of Law
 
 1. **The shared engineering standards.** Branching, commits, security, testing, dependencies and documentation style are defined once in [tannergolden/standards](https://github.com/tannergolden/standards) and followed **by link, never by copy**. A copied standard is a standard that goes stale. This file states the handful of rules an agent gets wrong without being told, and leaves the long form upstream.
-2. **This repository's own `docs/`.** Architecture, stack decisions, domain rules and runbooks live locally. On engineering process the shared standards win. On this repository's own specifics the local docs win.
+2. **The repository's own context, wherever it keeps it.** Architecture, stack decisions, domain rules and runbooks belong to the repository, and no two repositories organise them the same way. Some use a `docs/` tree. Some place a set of instructions in each folder, beside the files those instructions govern. Some keep a knowledge base under a name this file has never heard of. NEVER assume a layout. Find the one actually in front of you.
+
+Where the two disagree: on engineering process the shared standards win, on this repository's own specifics the local context wins, and a more specific local context wins over a more general one.
+
+### 💡 Finding the Local Context
+
+Look in this order, and stop at the first that answers the question you have:
+
+1. **What the root `README.md` says.** A repository that organises its knowledge deliberately almost always says where, in the first screen.
+2. **The folder you are about to change.** An instruction file, a README, or a rules file sitting beside the code governs that code and outranks anything further away.
+3. **A repository-wide knowledge directory, under whatever name it carries.** A `docs/` tree, a notes folder, a vault, a wiki committed to the repository.
+
+> [!IMPORTANT]
+> **Nothing loads these for you, and you must not wait to be handed them.** Folder-level instructions are not a mechanism every agent tool supports: some read only from the repository root, some inject a path rather than the content, and some drop nested files partway through a long session. Treat each one as a file you are required to open and read yourself before touching what it governs. An instruction you did not read is an instruction you broke.
 
 Read the document that governs a thing before changing the thing, and name the document you followed in your report so the reader can check the source.
 
