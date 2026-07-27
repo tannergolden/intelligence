@@ -1,0 +1,80 @@
+# --- This Repository's Own Secret Scan ---
+#
+# 🔐 Scan for Secrets
+#
+# Purpose: scan this repository's FULL HISTORY for committed credentials.
+#
+# WHY A PUBLISHER NEEDS THIS MORE THAN AN ORDINARY REPOSITORY. The code here
+# executes inside other people's continuous integration, in a job holding
+# `contents: write` on their default branch. A credential leaked from this
+# tree is not this repository's problem alone; it is a credential leaked into
+# every runner that fetches this action. `data/repository-settings.json`
+# turns on GitHub's own secret scanning and push protection, which catch
+# provider-shaped tokens at the boundary. This is the other side of the same
+# job: a different rule set, over history rather than over the push.
+#
+# HISTORY DEPTH IS THE POINT. A secret deleted in a later commit is still a
+# leaked secret, so this checks out everything rather than the tip.
+#
+# ⚠️ THIS REPORTS, IT DOES NOT GATE, exactly like `ci.yml` and for the same
+# reason: there are no pull requests here, so there is no merge for a
+# required check to sit in front of. What it buys is a red mark on a commit
+# while the person who wrote it is still looking at it.
+#
+# ---
+
+name: '🔐 Scan for Secrets'
+
+on:
+  push:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  scan:
+    name: '🔍 Scan for Secrets'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read # full-history checkout for the scan
+    steps:
+      - name: '🛡️ Harden Runner'
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - name: '📂 Checkout'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      # gitleaks-action is free for personal and public repositories, and this
+      # one is both by assertion: `ci.yml`'s `🌐 Public, With Issues` job fails
+      # the build if this repository ever goes private. The org-owned licence
+      # path that the fleet's shared copy of this workflow carries is therefore
+      # dead code here and is deliberately absent.
+      - name: '🔍 Run Gitleaks'
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: false
+          GITLEAKS_ENABLE_SUMMARY: true
+
+      - name: '📝 Report Failure'
+        if: ${{ failure() }}
+        run: |
+          echo "::error title=Secret scan::Gitleaks failed. If it exited on findings, secrets are in this repository's history: ROTATE the exposed credentials before anything else, because this repository's code runs in other people's CI. If it failed to run, fix the action error."
+          {
+            echo "### 🚨 Scan for Secrets failed"
+            echo ""
+            echo "Two distinct cases; the run log says which:"
+            echo ""
+            echo "1. **Secrets detected.** Remove them from history and **rotate them**. Assume they are compromised, and assume they reached every runner that has fetched this action."
+            echo "2. **Failed to run.** A network or checkout error rather than a finding. Fix it and re-run."
+          } >> "$GITHUB_STEP_SUMMARY"

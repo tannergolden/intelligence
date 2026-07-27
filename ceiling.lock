@@ -1,0 +1,40 @@
+# ceiling.lock
+#
+# The exact permission set of .github/workflows/sync-ai.yml, one scope per
+# line, as `scope: level`. Comments and blank lines are ignored.
+#
+# A CONSUMER STUB'S `permissions:` BLOCK MUST EQUAL THIS FILE, EXACTLY.
+#
+# A caller's permissions are a CEILING, not a grant. They cap what the called
+# workflow may request, and both directions of getting it wrong are bad in a
+# way nothing else in this system is:
+#
+#   TOO NARROW  the consumer's run fails at STARTUP. No job, no step, no log,
+#               nothing in the Actions tab to read. There is no error message
+#               because there was never a job to print one.
+#   TOO WIDE    the consumer has granted a workflow scopes nobody declared,
+#               and no failure anywhere will ever mention it.
+#
+# Neither is visible from the consumer's side, from this repository's side,
+# or from a release diff. This file plus the `🔬 Permission Ceiling` job in
+# ci.yml is the only place either one can be seen.
+#
+# THIS IS FROZEN FOR THE LIFE OF v1. Widening or narrowing it is a BREAKING
+# change: every consumer stub must be edited before the release that changes
+# it, or every consumer fails at startup on their next scheduled run. That is
+# a major version, not a patch.
+#
+# Why each scope is here:
+#
+#   actions: read    the `apply` job downloads the artifact the `build` job
+#                    produced, using `gh` from the runner image. That is one
+#                    fewer third-party action executing in the only job that
+#                    holds a write token, and this read scope is its price.
+#   contents: write  the sync commits to the consumer's default branch. This
+#                    is the entire product; nothing here works without it.
+#
+# `build` asks for `contents: read`, which `contents: write` already covers,
+# so the union below is the whole ceiling.
+
+actions: read
+contents: write

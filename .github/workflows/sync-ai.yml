@@ -1,0 +1,365 @@
+# --- Reusable Workflow ---
+#
+# 🔁 Sync AI Instructions
+#
+# THIS IS THE PRODUCT. Everything else in this repository exists to make this
+# file safe to run. A consuming repository commits ONE file, a stub that
+# calls this workflow at a pinned major, and from then on it receives the
+# agent instructions published here without anyone doing anything.
+#
+# THE STUB A CONSUMER COMMITS IS `bootstrap/ai-sync.yml` IN THIS REPOSITORY.
+# Copy that file; never retype one from a comment. A fourth hand-written copy
+# used to sit here and had already drifted from it on the workflow name, the
+# cron minute and two triggers, and nothing compared it to anything: the
+# `🔬 Permission Ceiling` job reads the three real files and correctly skips
+# commented lines, so a stub written in a comment is checked by nobody.
+#
+# ⚠️ THE STUB'S `permissions:` BLOCK MUST EQUAL `ceiling.lock` EXACTLY, and
+# there is a job in ci.yml whose whole purpose is to keep that true. A
+# caller's permissions are a CEILING, not a grant: too narrow and the
+# consumer's run fails at STARTUP with no job, no step and no log to read;
+# too wide and the consumer has granted scopes nobody declared. It takes no
+# inputs, deliberately, so the stub above is the entire consumer-side surface
+# and there is nothing to keep in sync but the ceiling.
+#
+# ⚠️ THIS PUSHES DIRECTLY TO THE CONSUMER'S DEFAULT BRANCH. No pull request,
+# no review, no CI run. That is the design, not an accident: the consuming
+# repositories are one person's, the reviewer and the publisher are the same
+# human, and a pull request per repository per week is a queue that person
+# would rubber-stamp. The review happens HERE, on the diff of `payload/`,
+# before a release moves `v1`. Reviewing a release is reviewing the delivered
+# bytes, because there is no build step between them.
+#
+# ⚠️ THE PUSH STARTS NO WORKFLOW RUNS IN THE CONSUMER. Events triggered by
+# the automatic GITHUB_TOKEN do not create new workflow runs, so a weekly
+# sync into six quiet repositories stays quiet. That property attaches to the
+# TOKEN, which is why the push below is an ordinary `git push` authenticated
+# with it rather than anything more exotic.
+#
+# WHY TWO JOBS:
+#
+#   build   contents: read    checks out the consumer, runs the engine, and
+#                             hands the result on as an artifact.
+#   apply   contents: write   downloads that artifact, verifies it, commits.
+#
+# The engine, the linters and the payload therefore never execute in a job
+# holding a write token. BE HONEST ABOUT WHAT THIS BUYS: it REDUCES the
+# surface, it does not eliminate it. The `apply` job still runs YAML authored
+# in this repository, and an action reaches GITHUB_TOKEN through
+# `github.token` whether or not a workflow passes it along. What the split
+# actually removes is the several hundred lines of Python and the whole
+# payload from the blast radius of the write scope. That is worth twenty
+# lines of YAML and it is not the same thing as safety.
+#
+# WHY `build` RUNS THE ENGINE IN `apply` MODE. The action's two modes are
+# about the LOCAL WORKING TREE, not about the remote: `plan` writes nothing
+# at all, so a plan-mode run has nothing to hand over. `build` runs the
+# engine in `apply` mode over a credential-free checkout in a job with no
+# write scope, which produces the delivered bytes on disk where git can
+# describe them. Nothing about that checkout can reach the consumer; only the
+# `apply` job can, and it runs no engine code.
+#
+# WHAT A REFUSING RUN DOES: nothing at all reaches the consumer, including
+# the lockfile that would record the refusal. That is a deliberate departure
+# from "write the lock on every terminal path", and the reason is that the
+# alternative is a second code path inside the one job that holds
+# `contents: write`. The refusal is in this run's log, the run is red, and
+# the owner gets the standard Actions failure notification.
+#
+# ---
+
+name: '🔁 Sync AI Instructions'
+
+on:
+  workflow_call:
+
+permissions: {}
+
+jobs:
+  build:
+    name: '🧱 Build the Emit Set'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # ⚠️ ci.yml SCRAPES THE PERMISSION BLOCKS IN THIS FILE and compares their
+    # union against ceiling.lock. Keep them as `scope: level` on one line.
+    permissions:
+      contents: read # check the consumer out, read only
+    outputs:
+      changed: ${{ steps.pack.outputs.changed }}
+      manifest: ${{ steps.pack.outputs.manifest }}
+      default-branch: ${{ steps.branch.outputs.name }}
+      outcome: ${{ steps.sync.outputs.outcome }}
+    steps:
+      - name: '🛡️ Harden Runner'
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      # Resolved from the API rather than assumed. The fleet default branch is
+      # `Development`, not `main`, and hardcoding either would deliver into a
+      # branch nobody reads in half the repositories that use this.
+      #
+      # The ref check is here, before anything else runs, because a sync
+      # started from a feature branch would compute its diff against that
+      # branch and then push the result to the default one. Refusing is the
+      # only correct answer; there is no sensible merge.
+      - name: '🧭 Resolve the default branch and refuse anywhere else'
+        id: branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          name="$(gh api "repos/${REPO}" --jq '.default_branch')"
+          if [ -z "$name" ]; then
+            echo "::error title=Sync::Could not resolve the default branch of ${REPO}."
+            exit 1
+          fi
+          if [ "$REF_NAME" != "$name" ]; then
+            echo "::error title=Sync::This ran on '${REF_NAME}', but the sync only ever writes to the default branch ('${name}'). Refusing, because the diff would be computed against one branch and pushed to another."
+            exit 1
+          fi
+          echo "name=${name}" >> "$GITHUB_OUTPUT"
+          echo "Default branch: ${name}"
+
+      - name: '📂 Checkout the consumer'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # A composite action is fetched WITH ITS WHOLE REPOSITORY, so `payload/`
+      # arrives beside `action.yml` with no checkout of this publisher, no
+      # network fetch of the content and no token of any kind. That asymmetry
+      # is why the content ships as an action rather than as part of this
+      # workflow, and it is what makes one committed file enough.
+      - name: '🔁 Run the engine'
+        id: sync
+        uses: tannergolden/ai/actions/ai-sync@v1
+        with:
+          target: '.'
+          mode: 'apply'
+
+      # git already knows what changed; nothing extra is written to hand the
+      # list over. `--diff-filter=d` is the lowercase EXCLUDE form: everything
+      # except deletions.
+      #
+      # The force-add exists because a consumer `.gitignore` that happens to
+      # cover `.ai/` or `.claude/` would otherwise swallow a delivered file
+      # silently, and the paths it force-adds come from the lockfile the
+      # engine just wrote, so the list cannot drift from what was delivered.
+      - name: '📦 Pack the emit set'
+        id: pack
+        env:
+          EMIT: ${{ runner.temp }}/emit
+        run: |
+          set -euo pipefail
+          mkdir -p "$EMIT"
+
+          git add -A
+          while read -r path; do
+            if [ -e "$path" ]; then git add -f -- "$path"; fi
+          done < <(jq -r '.files[].path' .ai/ai.lock.json)
+          for path in .ai/ai.lock.json .ai/ai.lock.date; do
+            if [ -e "$path" ]; then git add -f -- "$path"; fi
+          done
+
+          git diff --cached --name-only --diff-filter=d > "${EMIT}/changed.txt"
+          git diff --cached --name-only --diff-filter=D > "${EMIT}/deleted.txt"
+
+          # An absolute or climbing path in this list would be extracted, or
+          # deleted, outside the consumer's working tree by the job that holds
+          # the write token. git cannot produce one; assert it anyway, because
+          # this is the boundary where a publisher bug becomes someone else's
+          # filesystem.
+          if grep -qE '(^/|(^|/)\.\.(/|$))' "${EMIT}/changed.txt" "${EMIT}/deleted.txt"; then
+            echo "::error title=Sync::A path escapes the working tree. Refusing to hand this to the apply job."
+            exit 1
+          fi
+
+          if [ ! -s "${EMIT}/changed.txt" ]; then
+            # Every terminal path rewrites the lockfile, and a retirement
+            # rewrites it too, so an empty changed set implies an empty
+            # deleted set. Assert the invariant rather than assume it.
+            if [ -s "${EMIT}/deleted.txt" ]; then
+              echo "::error title=Sync::Files would be deleted but nothing would be written, so no lockfile records the deletion. Refusing."
+              exit 1
+            fi
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Nothing to push."
+            exit 0
+          fi
+
+          tar -cf "${EMIT}/emit.tar" -T "${EMIT}/changed.txt"
+          ( cd "$EMIT" && sha256sum emit.tar deleted.txt changed.txt > manifest.sha256 )
+
+          # The manifest travels in the artifact, so on its own it proves
+          # only that the artifact is internally consistent. Its own digest
+          # goes out as a JOB OUTPUT, which lives in the run's metadata rather
+          # than in the artifact, so the apply job verifies a chain that does
+          # not rest entirely on the thing being verified.
+          manifest="$(sha256sum "${EMIT}/manifest.sha256" | cut -d' ' -f1)"
+          echo "manifest=${manifest}" >> "$GITHUB_OUTPUT"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+          {
+            echo "### 🔁 AI sync plan"
+            echo ""
+            echo '```text'
+            sed 's/^/  write  /' "${EMIT}/changed.txt"
+            sed 's/^/  delete /' "${EMIT}/deleted.txt"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: '⬆️ Upload the emit set'
+        if: ${{ steps.pack.outputs.changed == 'true' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ai-emit
+          path: ${{ runner.temp }}/emit/*
+          retention-days: 1
+          if-no-files-found: error
+
+  apply:
+    name: '📤 Commit to the Default Branch'
+    needs: build
+    if: ${{ needs.build.outputs.changed == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: read # download this run's own artifact from the build job
+      contents: write # the whole point: commit to the default branch
+    steps:
+      - name: '🛡️ Harden Runner'
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - name: '📂 Checkout the default branch'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.build.outputs.default-branch }}
+          persist-credentials: false
+
+      # `gh` ships on the runner image and needs no pin, which is why the
+      # artifact comes down this way rather than through a downloader action.
+      # In the one job that holds a write token, one fewer third-party action
+      # is worth the `actions: read` scope it costs, and that scope is
+      # recorded in ceiling.lock alongside the write.
+      - name: '⬇️ Download and verify the emit set'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          EMIT: ${{ runner.temp }}/emit
+          EXPECTED: ${{ needs.build.outputs.manifest }}
+          REF_NAME: ${{ github.ref_name }}
+          DEFAULT_BRANCH: ${{ needs.build.outputs.default-branch }}
+        run: |
+          set -euo pipefail
+
+          # Re-asserted here rather than trusted from the build job: this is
+          # the only job that can do damage, and the check costs one line.
+          if [ "$REF_NAME" != "$DEFAULT_BRANCH" ]; then
+            echo "::error title=Sync::Refusing to push: this run is on '${REF_NAME}', not the default branch '${DEFAULT_BRANCH}'."
+            exit 1
+          fi
+
+          gh run download "$RUN_ID" --repo "$REPO" --name ai-emit --dir "$EMIT"
+
+          actual="$(sha256sum "${EMIT}/manifest.sha256" | cut -d' ' -f1)"
+          if [ "$actual" != "$EXPECTED" ]; then
+            echo "::error title=Sync::The manifest does not match the digest the build job published. Refusing to write anything."
+            exit 1
+          fi
+          ( cd "$EMIT" && sha256sum -c manifest.sha256 )
+          echo "Emit set verified against the build job's manifest."
+
+      - name: '📤 Commit and push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EMIT: ${{ runner.temp }}/emit
+          DEFAULT_BRANCH: ${{ needs.build.outputs.default-branch }}
+          OUTCOME: ${{ needs.build.outputs.outcome }}
+          AI_VERSION: ${{ github.job_workflow_sha }}
+          AI_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+
+          tar -xf "${EMIT}/emit.tar"
+
+          # ASSERT WHERE EACH FILE REALLY LANDED, NOT JUST WHAT IT WAS CALLED.
+          # The archive carries file members only, so tar creates missing
+          # parents, but where a parent ALREADY exists as a symlink, GNU tar
+          # (verified on 1.35) writes straight through it and the file lands
+          # outside this working tree. The build job's path check cannot see
+          # that: it greps the path STRINGS for `^/` and `..`, and
+          # `.ai/hooks/ai-context.sh` is an ordinary relative path. The escape
+          # is in the filesystem, not in the text.
+          #
+          # NOTE WHY THIS RESOLVES RATHER THAN TESTING THE LEAF. `[ -f "$p" ]`
+          # follows the link and finds the file, and `[ -L "$p" ]` is false
+          # because the leaf is not the link, so the obvious form of this
+          # check passes on exactly the case it is here to catch. Only the
+          # resolved path tells the truth. Left unchecked, the payload never
+          # lands, `git add -A` finds nothing, the step below reports nothing
+          # to commit, and the run goes GREEN over a consumer that is now
+          # permanently unsynced.
+          root="$(pwd -P)"
+          while read -r path; do
+            [ -n "$path" ] || continue
+            real="$(realpath -- "$path" 2>/dev/null || true)"
+            case "$real" in
+              "$root"/*) ;;
+              *)
+                echo "::error title=Sync::${path} did not land inside the working tree; it resolved to '${real:-nothing}'. A symlinked parent directory is the likely cause. Refusing to commit."
+                exit 1
+                ;;
+            esac
+            if [ ! -f "$real" ]; then
+              echo "::error title=Sync::${path} is not a regular file after extraction. Refusing to commit."
+              exit 1
+            fi
+          done < "${EMIT}/changed.txt"
+
+          while read -r path; do
+            [ -n "$path" ] || continue
+            git rm -q --ignore-unmatch -- "$path"
+          done < "${EMIT}/deleted.txt"
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          git add -A
+          while read -r path; do
+            if [ -e "$path" ]; then git add -f -- "$path"; fi
+          done < "${EMIT}/changed.txt"
+
+          if git diff --cached --quiet; then
+            echo "Nothing to commit after all; the branch already matches."
+            exit 0
+          fi
+
+          # THE TRAILER IS FIXED. It is how anyone reading `git log` in a
+          # consuming repository learns, without leaving the terminal, that
+          # this commit had no author, no reviewer and no CI run, and where
+          # to go to see what produced it. `AI-Version` is the publisher
+          # commit this reusable workflow resolved to, which after release-
+          # time SHA baking is the exact code that ran.
+          {
+            printf '%s\n\n' 'chore(ai): sync agent instructions from tannergolden/ai'
+            printf '%s\n\n' "Engine outcome: ${OUTCOME}. The delivered bytes are payload/ at the version below; there is no build step in between."
+            printf '%s\n' "AI-Version: ${AI_VERSION}"
+            printf '%s\n' "AI-Run: ${AI_RUN_URL}"
+            printf '%s\n' 'AI-Note: pushed by ai, no review, no CI'
+          } > "${RUNNER_TEMP}/ai-commit-message.txt"
+
+          git commit -q -F "${RUNNER_TEMP}/ai-commit-message.txt"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            "HEAD:refs/heads/${DEFAULT_BRANCH}"
+
+          {
+            echo "### 📤 Pushed to \`${DEFAULT_BRANCH}\`"
+            echo ""
+            echo "Engine outcome: \`${OUTCOME}\`. No pull request, no review, no CI run."
+          } >> "$GITHUB_STEP_SUMMARY"

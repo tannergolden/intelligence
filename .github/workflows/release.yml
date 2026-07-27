@@ -1,0 +1,276 @@
+# --- This Repository's Own Release ---
+#
+# 🏷️ Cut Release
+#
+# Purpose: publishes a version of this repository and moves the major tag
+# that every consumer pins.
+#
+# ⚠️ THIS IS THE MOST CONSEQUENTIAL WORKFLOW HERE. Moving `v1` changes what
+# every repository pinned to `@v1` executes on its next run, without anyone
+# on their side doing anything, and what it executes writes into their
+# default branch with no pull request. Treat a release as a production change
+# to every consumer at once.
+#
+# TWO TAGS, TWO CONTRACTS:
+#   vX.Y.Z  immutable. Cut once, never moved. For anyone who wants exactness.
+#   vX      moving. Re-pointed at each release in that major line. The normal
+#           pin, and the reason a fix reaches everyone.
+#
+# A change to `sync-ai.yml`'s permission set is BREAKING even if nothing else
+# changed, because a consumer stub's ceiling must equal `ceiling.lock`
+# exactly and a mismatch fails their run at startup with no log. So is any
+# change to the emitted paths that a consumer's `.template-sync-ignore`
+# names. Both belong in a new major line.
+#
+# ---
+#
+# SHA BAKING, AND WHY IT IS WRITTEN FRESH RATHER THAN COPIED
+#
+# An exact pin that contains a moving reference is not an exact pin. A
+# consumer stub pins `tannergolden/ai/.github/workflows/sync-ai.yml@v1`; that
+# workflow in turn names `tannergolden/ai/actions/ai-sync@...`, and if that
+# inner reference is still floating then pinning the outer one bought
+# nothing. The sibling `standards` repository matches only
+# `actions/<name>@`, which would leave exactly the reusable-workflow form a
+# consumer pins untouched, and the release would still pass its own check.
+# So the pattern here is `tannergolden/ai/<anything>@<ref>`, and the release
+# fails if any executable reference survives it unpinned.
+#
+# THE BAKED SHA IS THE COMMIT BEING RELEASED, NOT THE COMMIT BEING TAGGED,
+# and it cannot be otherwise: a commit cannot contain its own hash. The bake
+# rewrites the references, commits that rewrite, and tags THAT commit. The
+# references then point one commit back, at content identical in every way
+# that matters, and the guard below is what keeps "in every way that matters"
+# true rather than hopeful.
+#
+# THE BAKE COMMIT IS NEVER PUSHED TO A BRANCH. It exists only under the tag
+# that references it, which is what keeps a branch's `uses:` lines readable
+# and floating during development, where floating is correct.
+#
+# DOCUMENTATION IS DELIBERATELY NOT BAKED, and neither is the stub. The bake
+# walks `.github/workflows` and `actions` only, and skips comment lines within
+# them. So `README.md`, `docs/`, `bootstrap/ai-sync.yml` and the commented stub
+# inside `sync-ai.yml` all keep saying `@v1`, because `@v1` is what a consumer
+# must write. Rewriting any of them to a SHA would hand every reader a version
+# that can never receive a fix, which is the exact opposite of what pinning the
+# executable references buys.
+#
+# ---
+
+name: '🏷️ Cut Release'
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish, as vX.Y.Z'
+        required: true
+        type: string
+      move-major:
+        description: 'Also move the major tag (vX) to this release'
+        required: false
+        type: boolean
+        default: true
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  release:
+    name: '🏷️ Publish Version & Move Major Tag'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write # create tags and publish the release
+    steps:
+      - name: '🛡️ Harden Runner'
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - name: '📂 Checkout'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: '🔍 Validate Version'
+        id: check
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          if ! printf '%s' "$VERSION" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error title=Release::'$VERSION' is not a vX.Y.Z version."
+            exit 1
+          fi
+          if git rev-parse -q --verify "refs/tags/$VERSION" >/dev/null; then
+            echo "::error title=Release::Tag '$VERSION' already exists. A published version is immutable; cut a new patch instead."
+            exit 1
+          fi
+          echo "major=${VERSION%%.*}" >> "$GITHUB_OUTPUT"
+
+      # Actions resolve `uses:` against the ref they are called at, so every
+      # action a workflow names must exist at the tag being cut. Checked here
+      # rather than discovered by a consumer's failing run, where the message
+      # says the repository does not exist.
+      - name: '🔗 Verify Internal References Resolve'
+        run: |
+          set -euo pipefail
+          missing=0
+          while read -r ref; do
+            [ -n "$ref" ] || continue
+            if [ ! -f "${ref}/action.yml" ]; then
+              echo "::error title=Release::A workflow references ${ref}, which does not exist at this commit."
+              missing=1
+            fi
+          done < <(grep -rhoE 'tannergolden/ai/(actions/[A-Za-z0-9._-]+)@' .github/workflows/ actions/ \
+                   | sed -E 's|tannergolden/ai/||; s|@$||' | sort -u)
+          [ "$missing" -eq 0 ] || exit 1
+          echo "Every referenced action exists at this commit."
+
+      - name: '📌 Bake First-Party References to a SHA'
+        id: bake
+        env:
+          VERSION: ${{ inputs.version }}
+          ACTOR: ${{ github.actor }}
+          ACTOR_ID: ${{ github.actor_id }}
+        run: |
+          set -euo pipefail
+          BASE_SHA="$(git rev-parse HEAD)"
+
+          # Comment lines are skipped: see the header. `[^@[:space:]]+` stops
+          # at the first `@`, so the path and the ref never run together.
+          find .github/workflows actions -type f \( -name '*.yml' -o -name '*.yaml' \) -print0 \
+            | xargs -0 -r sed -E -i "/^[[:space:]]*#/! s#(tannergolden/ai/[^@[:space:]]+)@[A-Za-z0-9._/-]+#\1@${BASE_SHA}#g"
+
+          # ⚠️ THE GUARD THAT MAKES THE ONE-COMMIT OFFSET SAFE. The baked
+          # references point at BASE_SHA, which is the commit BEFORE this
+          # bake. That is sound only while the bake changes nothing an inner
+          # reference would resolve: a first-party `uses:` inside `actions/`
+          # would be baked in the TAGGED commit while still floating at
+          # BASE_SHA, which is the exact defect this whole step exists to
+          # prevent, one level down and invisible. If this ever fires, the
+          # fix is to stop nesting first-party references inside composite
+          # actions, not to loosen the guard.
+          touched="$(git diff --name-only)"
+          stray="$(printf '%s\n' "$touched" | grep -v '^$' | grep -v '^\.github/workflows/' || true)"
+          if [ -n "$stray" ]; then
+            echo "::error title=Release::The bake modified files outside .github/workflows/, so a first-party reference is nested inside a composite action and would still float at the commit the outer reference resolves to:"
+            printf '%s\n' "$stray"
+            exit 1
+          fi
+
+          # A pattern that silently matches nothing is how this check fails in
+          # practice, so the count is asserted before the shape is.
+          refs="$(grep -rhE 'tannergolden/ai/' .github/workflows actions \
+                    --include='*.yml' --include='*.yaml' \
+                  | grep -vE '^[[:space:]]*#' \
+                  | grep -oE 'tannergolden/ai/[^@[:space:]]+@[A-Za-z0-9._/-]+' || true)"
+          count="$(printf '%s\n' "$refs" | grep -c . || true)"
+          if [ "$count" -eq 0 ]; then
+            echo "::error title=Release::No first-party reference was found to bake. Either the pattern stopped matching or sync-ai.yml stopped calling the action; both make this release unpinned."
+            exit 1
+          fi
+
+          floating="$(printf '%s\n' "$refs" | grep -vE '@[0-9a-f]{40}$' || true)"
+          if [ -n "$floating" ]; then
+            echo "::error title=Release::These first-party references are still not pinned to a 40-character SHA, so this release would contain a moving reference:"
+            printf '%s\n' "$floating"
+            exit 1
+          fi
+          echo "Baked ${count} first-party reference(s) to ${BASE_SHA}."
+
+          git config user.name "$ACTOR"
+          git config user.email "${ACTOR_ID}+${ACTOR}@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            # Already baked, so the tag will sit on BASE_SHA itself and the
+            # references resolve to the tagged commit. Self-consistent, and
+            # nothing needs committing.
+            echo "Every reference was already pinned; no bake commit needed."
+          else
+            git commit -q -m "build(release): pin first-party references for ${VERSION}"
+          fi
+          echo "base-sha=${BASE_SHA}" >> "$GITHUB_OUTPUT"
+
+      # ⚠️ THE TAGS HERE ARE LIGHTWEIGHT, DELIBERATELY. A lightweight tag is a
+      # ref and nothing else: no tag object, so no tagger, no message, and
+      # nothing that can carry a signature or lack one. An annotated tag would
+      # be a second object needing a second signature, which means a private
+      # key in repository secrets, readable by anything that can run here, and
+      # whose leak forges commits as its owner everywhere. The release page
+      # already records who published, when, and what changed.
+      - name: '🏷️ Tag and Publish'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ inputs.version }}
+          MAJOR: ${{ steps.check.outputs.major }}
+          MOVE_MAJOR: ${{ inputs.move-major }}
+          BASE_SHA: ${{ steps.bake.outputs.base-sha }}
+        run: |
+          set -euo pipefail
+          REMOTE="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+          # Pushing the tag carries the bake commit with it. That commit is
+          # reachable only from this tag, on purpose.
+          git tag "$VERSION"
+          git push "$REMOTE" "$VERSION"
+          echo "Published immutable tag $VERSION."
+
+          if [ "$MOVE_MAJOR" = "true" ]; then
+            # Force-moved by design: this IS the moving major tag, and moving
+            # it is what makes a fix reach everyone pinned to it.
+            git tag -f "$MAJOR"
+            git push --force "$REMOTE" "$MAJOR"
+            echo "::warning title=Major tag moved::${MAJOR} now points at ${VERSION}. Every repository pinned to @${MAJOR} runs this code on its next scheduled sync, and it writes to their default branch."
+          fi
+
+          # ⚠️ NEVER ATTACH A RELEASE OBJECT TO A BARE MAJOR TAG. `v1` is the
+          # moving pointer every consumer resolves. A release attached to it
+          # would make it a release artifact: visible to the pruner, and under
+          # immutable releases, frozen forever. prune-releases.yml guards the
+          # deletion side of that; nothing but this line guards creation.
+          if printf '%s' "$VERSION" | grep -qE '^v[0-9]+$'; then
+            echo "::error title=Release::Refusing to create a release on the bare major tag '${VERSION}'. It is a moving pointer, not a version."
+            exit 1
+          fi
+
+          gh release create "$VERSION" \
+            --title "$VERSION" \
+            --generate-notes \
+            --latest
+
+          {
+            echo "### 🏷️ Released $VERSION"
+            echo ""
+            echo "First-party references baked to \`${BASE_SHA}\`."
+            echo ""
+            echo "| Tag | Meaning |"
+            echo "| :--- | :--- |"
+            echo "| \`$VERSION\` | Immutable. Pin this for exactness. |"
+            if [ "$MOVE_MAJOR" = "true" ]; then
+              echo "| \`$MAJOR\` | Now points here. Every consumer pinned to it runs this next, and it pushes. |"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # After the release publishes and the major tag moves, the releases it
+  # superseded come down. This lives INSIDE Cut Release rather than on a
+  # release-event listener so the whole chain is one run: cut, move, prune.
+  #
+  # ⚠️ `delete-tags: false`, UNLIKE THE SIBLING PUBLISHER. See the header of
+  # prune-releases.yml: this repository's contract permits exact-version
+  # pins, so its version tags must outlive their release pages.
+  prune:
+    name: '🧹 Prune Superseded Releases'
+    needs: release
+    permissions:
+      contents: write # deleting releases requires write
+    uses: ./.github/workflows/prune-releases.yml
+    with:
+      keep: 5
+      delete-tags: false
+      dry-run: false

@@ -1,0 +1,112 @@
+# Installed from tannergolden/ai. Edit freely: this file is YOURS.
+#
+# Copy it to `.github/workflows/ai-sync.yml` in your repository. That is the
+# ONE file this publisher asks you to commit, and everything else it delivers
+# (AGENTS.md, CLAUDE.md, GEMINI.md, the .ai/ directory, and hook entries
+# inside .claude/settings.json) arrives from here on.
+#
+# ⚠️ tannergolden/ai CAN NEVER WRITE THIS FILE. Writing anything under
+# `.github/workflows/` needs a token with `workflows: write`, which the
+# built-in GITHUB_TOKEN is not and cannot be made into. A publisher that could
+# update this file would need a fleet-wide credential whose theft could not be
+# evicted from six repositories, and that is the one credential this design
+# exists to avoid. So: one committed file is the floor, not a compromise, and
+# the shape below is frozen for the life of `@v1`. Expect at most one
+# announced edit here per major version.
+#
+# ⚠️ COMMITTING THIS FILE IS THE ACT OF CONSENT. It authorises a scheduled job
+# to write files into this repository from a source you do not control, and one
+# of those files wires a hook that a coding agent EXECUTES on this machine.
+# Read tannergolden/ai's Threat-Model before you commit it, not after.
+#
+# 🛑 THE KILL SWITCH, no token and no sync required: create an empty file at
+# `.ai/hooks/.disabled` from the GitHub web UI. Every shipped hook checks for
+# it on its first line and exits immediately. The publisher never creates it
+# and never deletes it. To stop everything instead, delete this file: no stub,
+# no sync, and `.ai/` plus the hook entries are yours to remove at leisure.
+
+name: '🤖 Sync AI Instructions'
+
+on:
+  # Run it now, from the Actions tab, when you want a release immediately.
+  workflow_dispatch:
+
+  # An external nudge, for a human with a personal token who wants to push a
+  # release out to this repository without waiting for the schedule:
+  #
+  #   gh api repos/OWNER/REPO/dispatches -f event_type=ai-sync
+  #
+  # The publisher CANNOT send this. Its own GITHUB_TOKEN has no reach into
+  # this repository, which is exactly why the weekly schedule below exists.
+  repository_dispatch:
+    types: [ai-sync]
+
+  # Weekly is deliberate: the delivered content is instructions, and being a
+  # few days behind costs nothing. An off-the-hour minute keeps this out of
+  # the crowd that GitHub delays at :00.
+  #
+  # ⚠️ GitHub DISABLES a scheduled workflow after 60 days with no repository
+  # activity, and tells you by email once. In a quiet repository the schedule
+  # is the first thing to stop; `workflow_dispatch` above is the recovery.
+  schedule:
+    - cron: '23 5 * * 1'
+
+  # Your own repository-specific agent law lives in `.ai/local/agents-local.md`
+  # and is folded into the delivered AGENTS.md at sync time. Editing it should
+  # take effect now rather than next Monday.
+  #
+  # `.github/workflows/ai-sync.yml` is deliberately NOT in this list. No token
+  # available to this workflow can write that path, so listing it would imply
+  # a sync could update this file. It cannot.
+  #
+  # ⚠️ CHANGE `Development` IF THAT IS NOT THIS REPOSITORY'S DEFAULT BRANCH.
+  # The sync only ever writes to the default branch and refuses to run
+  # anywhere else, so a filter naming a different branch leaves this trigger
+  # silently dead: edits to local law would wait for the schedule with
+  # nothing saying why. The other three triggers are unaffected, because they
+  # all run on the default branch already.
+  push:
+    branches: [Development]
+    paths:
+      - '.ai/local/**'
+
+# One sync at a time, and never cancel one in flight: a cancelled run can leave
+# the lockfile describing a delivery that only half happened.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+# ⚠️ THE `permissions:` BELOW IS A CEILING, NOT A GRANT. For a job that calls a
+# reusable workflow, the caller's permissions cap what the called workflow may
+# request. Anything it asks for beyond them fails the run before a single job
+# starts: a startup failure, with no job, no step, and no log to read.
+#
+# They are written out rather than left to this repository's DEFAULT token
+# permissions, because a repository set to read-only - now the common default -
+# caps every write scope the same invisible way.
+#
+# The list is the union of what the called workflow's own jobs ask for, and
+# each of those jobs still narrows it further from there. Widen it only to
+# match a scope the called workflow actually declares.
+
+permissions: {}
+
+jobs:
+  sync:
+    # THESE TWO SCOPES ARE THE WHOLE CEILING. They are asserted against
+    # `ceiling.lock` in the publisher's own CI as an EXACT match, and this very
+    # file is one of the two things compared, so a stub that drifts from the
+    # lock turns the publisher's CI red rather than your run silently dead.
+    # Too wide fails that check; too narrow fails your run at startup.
+    #
+    # Inside the called workflow the split is real: the job that reads the
+    # payload and runs the checks holds `contents: read` and cannot write
+    # anywhere, and only a separate job that runs no publisher code at all
+    # holds the write token. `actions: read` is what lets that second job
+    # collect the first job's artifact using `gh`, which ships on the runner
+    # image, instead of a third-party downloader action executing beside a
+    # token that can write to your default branch.
+    permissions:
+      actions: read # the write job downloads the artifact the read job built
+      contents: write # commit the delivered files to your default branch
+    uses: tannergolden/ai/.github/workflows/sync-ai.yml@v1
