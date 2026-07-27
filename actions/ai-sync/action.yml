@@ -1,0 +1,119 @@
+# --- Composite Action ---
+#
+# 🔁 AI Sync
+#
+# Purpose: writes this repository's `payload/` into a target repository's
+# working tree and maintains that repository's `.ai/ai.lock.json`. It writes
+# files and nothing else. It never runs git, never commits, never pushes.
+# The calling workflow owns the commit, and that split is the point: the job
+# that runs this code holds `contents: read`, and the job that holds
+# `contents: write` runs no engine code.
+#
+# ⚠️ THE ONE NON-OBVIOUS FACT THE WHOLE DISTRIBUTION MODEL RESTS ON:
+#
+#   A composite action is fetched WITH ITS WHOLE REPOSITORY.
+#
+# The runner does not download `action.yml` alone; it downloads the archive
+# of `tannergolden/ai` at the pinned ref and runs the action from inside it.
+# So `payload/` is already on disk beside this file, at
+# `${{ github.action_path }}/../..`, before the first step executes. There is
+# therefore NO `actions/checkout` of the publisher, no network fetch of the
+# content, no `contents: read` on this repository, and NO TOKEN of any kind
+# needed to obtain the bytes being delivered. A reusable workflow could not
+# do this: its checkout resolves to the CALLING repository, so it cannot see
+# the files published beside it. That asymmetry is why the content ships as
+# an action rather than as part of the workflow, and it is what makes the
+# consumer's single committed stub sufficient.
+#
+# Consequence worth stating: the bytes delivered to a consumer are the bytes
+# in `payload/` at the pinned ref, and reviewing a release is reviewing the
+# diff of `payload/`. There is no build step in between to go wrong.
+#
+# HOW THE CALLING WORKFLOW GETS THE CHANGES: it reads them off the working
+# tree. Run this action in `apply` mode over a checkout of the consumer, then
+# `git diff --cached --name-only` lists the additions, modifications and
+# deletions to commit. Nothing extra is written to hand that list over,
+# because git already knows it, and `.ai/ai.lock.json` doubles as the
+# manifest: every written path is in it with a sha256.
+#
+# Used as:
+#
+#   - uses: tannergolden/ai/actions/ai-sync@v1
+#     id: sync
+#     with:
+#       target: consumer
+#       mode: apply
+#
+# ---
+
+name: '🔁 AI Sync'
+description: 'Writes the published agent-instruction payload into a target repository working tree and maintains its lockfile.'
+
+inputs:
+  target:
+    description: >-
+      Path to the target repository working tree. Defaults to the current
+      directory, which is what a workflow that checked the consumer out into
+      the workspace root wants.
+    required: false
+    default: '.'
+  mode:
+    description: >-
+      `plan` prints what it would do and writes nothing at all, including no
+      lockfile. `apply` writes. Default is `plan`, because the mode that
+      changes other people's repositories should be the one you had to ask
+      for.
+    required: false
+    default: 'plan'
+
+outputs:
+  outcome:
+    description: >-
+      One of `applied`, `unchanged`, `check-failed`, `first-contact-refused`.
+      (`push-rejected` belongs to the workflow's commit step; the engine
+      cannot produce it.) Set BEFORE a refusing run exits non-zero, so a
+      workflow that wants to push the lockfile of a failed run still can.
+    value: ${{ steps.sync.outputs.outcome }}
+  changed:
+    description: '`true` when the working tree was, or in plan mode would be, modified.'
+    value: ${{ steps.sync.outputs.changed }}
+
+runs:
+  using: composite
+  steps:
+    # The payload is linted HERE, at the publisher, against the bytes about
+    # to be delivered, and a failure stops the run before the engine touches
+    # the consumer at all. That ordering is deliberate: a defect in an
+    # always-loaded instruction file reaches two vendors in every consuming
+    # repository with no pull request and no reviewer anywhere downstream,
+    # so the publisher is the only place a human can still be in the loop.
+    - name: '🔎 Check the payload'
+      shell: bash
+      run: python3 "${GITHUB_ACTION_PATH}/check.py" "${GITHUB_ACTION_PATH}/../../payload"
+
+    # Stdlib only, by CI assertion. There is no `pip install` step here and
+    # there must never be one: this runs inside other people's CI, where a
+    # dependency resolution is a network call, a supply chain and a failure
+    # mode all at once. Python 3.12 is what the runner image documents.
+    - name: '🔁 Sync the payload'
+      id: sync
+      shell: bash
+      env:
+        AI_TARGET: ${{ inputs.target }}
+        AI_MODE: ${{ inputs.mode }}
+        # Provenance for the lockfile. `action_ref` is what the CONSUMER
+        # pinned (`v1`), which is exactly the `requested` field's meaning,
+        # and `job_workflow_sha` is the publisher commit the reusable
+        # workflow resolved to. `AI_RESOLVED_TAG` is deliberately NOT set
+        # here: leaving it unset lets a calling workflow that knows the
+        # concrete tag export it at job level, and an empty value written
+        # here would override that.
+        AI_REQUESTED: ${{ github.action_ref }}
+        AI_RESOLVED_SHA: ${{ github.job_workflow_sha }}
+        AI_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      run: |
+        set -euo pipefail
+        python3 "${GITHUB_ACTION_PATH}/sync.py" \
+          --"${AI_MODE}" \
+          --target "${AI_TARGET}" \
+          --payload "${GITHUB_ACTION_PATH}/../../payload"
