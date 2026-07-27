@@ -1,0 +1,13 @@
+# Python bytecode. The only Python here is stdlib-only and runs from source,
+# so a stray __pycache__ is always local noise.
+__pycache__/
+*.py[cod]
+
+# Local virtualenvs. Nothing in this repository installs anything, but a
+# throwaway venv is the usual way to run a linter by hand.
+.venv/
+
+# OS and editor noise
+.DS_Store
+Thumbs.db
+*.swp

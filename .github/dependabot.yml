@@ -1,0 +1,82 @@
+# --- Dependabot Configuration ---
+#
+# DEPENDABOT IS THE ONLY SANCTIONED PULL-REQUEST AUTHOR IN THIS REPOSITORY.
+# Everything else lands by direct push to Development, because the whole
+# point of this repository is a distribution path with no pull request in
+# it. Dependabot is the exception because it cannot work any other way, and
+# because the thing it maintains is load bearing: every third-party action
+# pinned here is fetched and executed inside every consuming repository's
+# CI, with a token that can write to that repository. A stale pin here is a
+# stale pin in the whole fleet at once.
+#
+# Dependabot reads this file only from the repository that owns it, so it
+# cannot be shared, inherited, or published. Every repository needs its own.
+#
+# EVERY UPDATE IS A CONVENTIONAL COMMIT. `commit-message.prefix` makes the
+# pull request title `build(deps): ...`. On a squash merge the title becomes
+# the commit that lands on Development, and Dependabot's own default ("Bump
+# x from 1 to 2") is not a Conventional Commit, so without this every merged
+# update would put a non-conforming message into permanent history and out
+# of the release notes, which are the only changelog this repository has.
+#
+# EVERY SWEEP IS ONE PULL REQUEST. `groups` collapses an interval's updates
+# into a single branch. Monthly, not weekly: grouping makes the cadence the
+# only remaining source of noise, and a pin four weeks old is not worth a
+# weekly interruption.
+#
+# THERE IS NO `pip` BLOCK, AND THERE NEVER WILL BE. The Python in this
+# repository imports nothing outside the standard library, which CI asserts
+# directly. That assertion settles the question permanently: an ecosystem
+# block would exist to update a requirements file that must never exist,
+# and its absence would otherwise read as an oversight to the next person.
+#
+# ---
+
+version: 2
+updates:
+  # Workflows and reusable workflows under .github/workflows/.
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      # `day` is a weekly-only key and is dropped here; monthly runs on the
+      # first of the month.
+      interval: 'monthly'
+      time: '07:00'
+      timezone: 'Etc/UTC'
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'build'
+      include: 'scope'
+    labels:
+      - 'type: build'
+      - 'dependencies'
+    groups:
+      github-actions:
+        patterns:
+          - '*'
+
+  # Composite actions are not discovered through the workflows directory, so
+  # their folders need naming separately.
+  #
+  # A GLOB, NOT AN ENUMERATION, and that is the point. The enumerated form
+  # of this list in a sibling repository had already fallen five actions
+  # behind the tree, silently, because nothing tells you that Dependabot is
+  # not watching a directory. A pattern cannot fall behind.
+  - package-ecosystem: 'github-actions'
+    directories:
+      - '/actions/*'
+    schedule:
+      interval: 'monthly'
+      time: '07:00'
+      timezone: 'Etc/UTC'
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'build'
+      include: 'scope'
+    labels:
+      - 'type: build'
+      - 'dependencies'
+    groups:
+      github-actions:
+        patterns:
+          - '*'
