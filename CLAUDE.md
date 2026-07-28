@@ -36,6 +36,13 @@ Like the file it imports, this one is **published rather than authored here** an
 
 ---
 
+## 🔗 See also
+
+> [!TIP]
+> The law itself is in `AGENTS.md`, imported above. Nothing in this file needs reading once you have read that one.
+
+---
+
 <div align="center">
 
 `scope: claude code` &middot; `contains: no law`
