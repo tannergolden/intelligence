@@ -1,36 +1,36 @@
 # Routing A Lesson
 
-How many destinations exist depends on who owns the instruction files, so
-settle that first. Getting it wrong either destroys the lesson or refuses to
-record it anywhere useful.
+One destination is safe to write to and the others are not, so settle that
+before deciding anything else.
 
-## Owned here, or published from elsewhere
+## What a sync can reach
 
-Open the instruction file the repository uses and read its opening. A file
-delivered by a sync **says so**, usually in its first paragraphs, because
-being silently overwritten is precisely what its author had to warn about.
-A workflow under `.github/workflows/` that checks out another repository and
-copies files in is the other reliable signal.
+`AGENTS.md`, `CLAUDE.md`, `GEMINI.md` and any router beside them are the
+files most commonly **delivered from a publisher and overwritten in full on
+a schedule**. Where that is what they are, an edit survives until the next
+run and then vanishes, taking the lesson with it and reporting nothing.
 
-| Signal | Arrangement | Destinations |
+You cannot tell from inside the repository which kind you have. A delivered
+file often announces itself, and often does not: the notice is a courtesy
+its author chose to write, not a guarantee of the format. A sync workflow
+may be named anything, or may live in a system that is not in the tree at
+all.
+
+**So do not try to tell.** The two errors are not equally priced:
+
+| Guess | Wrong how | Cost |
 | :--- | :--- | :--- |
-| Declares itself published, synced or generated | **Published** | Two: local context, and upstream |
-| Declares nothing, and nothing fetches it | **Owned here** | One: this repository |
-| No instruction file exists at all | **Owned here** | One: this repository |
+| It is hand-written, so edit it | it was synced | lesson destroyed, silently, unrecoverably |
+| It is synced, so write elsewhere | it was hand-written | lesson lands in the repository's notes instead |
 
-**Most repositories in the world are the owned-here case.** `AGENTS.md` is a
-widely adopted open standard that tens of thousands of projects write by
-hand. Assuming every one of them is a published copy is the mistake this
-section exists to prevent: it would refuse to write a lesson into the one
-file that is exactly the right place for it.
+A heuristic whose failure mode is silent data loss is not worth the accuracy
+it buys. The instruction files are simply never a destination, and a lesson
+that belongs in one is drafted for the user, who knows where their file
+comes from.
 
-**When the files are owned here, the instruction file is a normal
-destination.** There is no upstream, no sync to destroy the edit, and no
-proposal to draft. A lesson that sounds universal is still just a lesson;
-record it and move on.
-
-Everything below applies to the **published** arrangement, where the local
-copies are delivered and a second destination exists.
+**Everything a repository owns is safe**: its docs, its notes, instructions
+sitting beside the code they govern. Nothing overwrites those, so that is
+where lessons go.
 
 ## The test
 
@@ -59,17 +59,12 @@ Look in this order and stop at the first that fits:
 
 **Append to what exists** rather than starting a parallel file. Create a new one only when nothing suitable does, put it where the repository's own convention indicates, and say plainly in your report that you created it and why.
 
-## The files that are never a destination, when they are published
+## The instinct to resist
 
-In a published arrangement, `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` and any
-router beside them are **delivered copies, overwritten in full on every
-sync**. An edit there survives until the next scheduled run and then
-vanishes, taking the lesson with it and leaving no trace that anything was
-lost.
-
-This is the most likely way to route a lesson wrongly, because those files are usually what the lesson is *about*. The instinct to fix the instructions where you read them is exactly the instinct to resist.
-
-A universal lesson goes upstream as a proposal, not into the local copy of the law. See `upstream.md`.
+The instruction files are usually what the lesson is *about*, so fixing the
+instructions where you read them feels like the obvious move. It is the one
+move this skill exists to prevent. Draft the entry, hand it over, and let
+the person who knows the file's origin decide.
 
 ## Two lessons that look like one
 

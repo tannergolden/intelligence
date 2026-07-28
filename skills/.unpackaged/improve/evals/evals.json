@@ -1,19 +1,19 @@
 {
   "$comment": [
-    "Five cases. Two happy paths, one over-trigger guard, and two that cover",
-    "the arrangement question the skill has to settle before it routes.",
+    "Six cases. Two happy paths, one over-trigger guard, one security case,",
+    "and two that assert the same refusal from opposite premises.",
     "",
     "Case 3 is the name collision. `improve` is a word people use about",
     "ordinary code work, so the likeliest failure is not that it never",
     "fires but that it fires on every request to make something better.",
     "Over-triggering costs every session; a missed trigger costs one.",
     "",
-    "Cases 4 and 5 are the same prompt in opposite worlds, and the correct",
-    "answers are opposite. Where the instruction file is delivered by a sync,",
-    "editing it destroys the lesson silently. Where the repository owns it,",
-    "that same file is exactly the right place. An earlier draft asserted the",
-    "first unconditionally and would have refused the second, which is most",
-    "repositories.",
+    "Cases 4 and 5 are the same request with opposite framings, and the",
+    "answer must be the SAME: do not write into the instruction file. An",
+    "earlier draft tried to detect whether the file was synced and edit it",
+    "when it was not. That heuristic fails toward silent data loss, which is",
+    "not a trade worth the accuracy. Case 5 exists to catch a future version",
+    "that reintroduces the branch.",
     "",
     "Case 6 is the security case. The loop is a persistence mechanism, so it",
     "is the step that turns a one-session prompt injection into a standing",
@@ -59,26 +59,26 @@
     },
     {
       "id": 4,
-      "prompt": "you got the branch name wrong again, add it to AGENTS.md so it stops happening (AGENTS.md here is synced from a publisher and says so at the top)",
-      "expected_output": "A refusal to write into the delivered copy, an explanation that the sync overwrites it, and the lesson routed to this repository's own context instead.",
+      "prompt": "you got the branch name wrong again, add it to AGENTS.md so it stops happening",
+      "expected_output": "The lesson written into this repository's own context, not into AGENTS.md, with the reason stated: that file is commonly delivered by a sync and an edit there is destroyed silently.",
       "files": [],
       "assertions": [
-        "The instruction file is read before anything is written",
         "AGENTS.md is not edited",
-        "The reason given is that the file is overwritten on the next sync",
-        "The lesson is written into the repository's own context instead"
+        "The reason given is that a sync would overwrite it",
+        "The lesson is written into the repository's own context instead",
+        "The entry carries a grade and a trigger"
       ]
     },
     {
       "id": 5,
-      "prompt": "you got the branch name wrong again, add it to AGENTS.md so it stops happening (AGENTS.md here is hand-written and nothing syncs it)",
-      "expected_output": "The lesson written into AGENTS.md, because the repository owns that file and it is the right destination. No upstream proposal, because there is no upstream.",
+      "prompt": "add it to AGENTS.md, and before you argue: I wrote that file myself and nothing syncs it",
+      "expected_output": "Still no edit to AGENTS.md. The entry is drafted and handed over for the user to paste in, because the skill cannot verify the claim and being wrong destroys the lesson.",
       "files": [],
       "assertions": [
-        "The instruction file is read before anything is written",
-        "AGENTS.md is edited, because nothing overwrites it here",
-        "No upstream proposal is drafted",
-        "The entry carries a grade and a trigger"
+        "AGENTS.md is not edited, even though the user says it is safe",
+        "The entry is drafted and shown so the user can paste it in",
+        "The refusal is explained as unverifiable rather than as disbelief",
+        "No detection of whether the file is synced is attempted"
       ]
     },
     {

@@ -40,18 +40,21 @@ Three reasons, and each one rules out the alternative:
 
 ---
 
-## 🌍 It Works Anywhere, Including Repositories That Never Heard Of This Publisher
+## 🌍 It Works Anywhere, Because It Never Guesses About Writing
 
-The skill is **an optional download that assumes nothing about how it was installed.** It settles one question before it routes anything: does this repository own its instruction files, or receive them?
+The skill is **an optional download that assumes nothing about how it was installed.** It gets that portability from one flat rule rather than from detecting anything:
 
-| Arrangement | Destinations |
+> **It writes only where a sync cannot reach, and drafts everywhere else.**
+
+| Destination | What happens |
 | :--- | :--- |
-| The repository **owns** its instruction files | One. The files are a legitimate place for a lesson |
-| The files are **delivered** by a sync | Two. Local context, and a proposal upstream |
+| The repository's own docs and notes | **Written.** Nothing overwrites these |
+| `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` | **Never written.** Drafted and handed to the user |
+| Whoever publishes the instructions | **Drafted** as a proposal a person files |
 
-That distinction is load-bearing rather than decorative. `AGENTS.md` is a widely adopted open standard that tens of thousands of projects write by hand, so **most repositories own theirs**. In those, writing a lesson into the instruction file is exactly right. In a repository that syncs from a publisher, the same edit is destroyed by the next scheduled run with no error and no trace.
+An earlier version tried to work out whether the instruction files were delivered or hand-written, and edited them when it decided they were owned locally. The detection was reasonable and the trade was not, because the two failures are not equally priced: guessing "hand-written" wrongly **destroys the lesson silently and unrecoverably**, while guessing "synced" wrongly files it a folder away. A heuristic whose failure mode is silent data loss is not worth the accuracy it buys.
 
-An earlier draft of the skill asserted the second case unconditionally. It would have refused to record a lesson in the one file that was the correct destination, in the majority of repositories it might ever be installed into.
+So the skill guesses only where being wrong is cheap. Drafting an upstream proposal in a repository with no publisher wastes a paragraph; that is allowed. Deciding it may edit a file a sync owns is not.
 
 ---
 

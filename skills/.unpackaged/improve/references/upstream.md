@@ -1,11 +1,12 @@
 # Proposing A Change To The Shared Law
 
-**This applies only where the instruction files are published from
-elsewhere.** Where a repository owns its own, there is no upstream: record
-the lesson locally and stop. See `routing.md` for telling the two apart.
+A universal lesson is beyond one repository's authority, so it goes to
+whoever owns the instructions. It never goes into the local copy of them:
+see `routing.md` for why that copy is not a destination.
 
-A universal lesson goes to the repository that publishes the law, never into
-the local copy of it.
+Where no publisher exists, a drafted proposal simply goes unused, which
+costs a paragraph. That is the whole risk of guessing wrong here, and it is
+why this step is allowed to guess at all.
 
 ## Draft it, do not file it
 
