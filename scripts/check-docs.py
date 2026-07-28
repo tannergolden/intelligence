@@ -38,6 +38,7 @@ import re
 import sys
 import tempfile
 from pathlib import Path
+from urllib.parse import unquote
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -80,7 +81,18 @@ FENCE_MAX_LINES = 20               # beyond this the spec requires <details>
 HEADING_RE = re.compile(r"\A#\s+(.+?)\s*\Z")
 IMAGE_RE = re.compile(r"!\[([^\]]*)\]\(([^)\s]+)")
 LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
-FENCE_RE = re.compile(r"\A\s*(`{3,})\s*([A-Za-z0-9_+-]*)")
+# BOTH FENCE CHARACTERS. CommonMark defines `~~~` alongside ``` ``` ```, and a
+# checker that knows only one treats the contents of the other as live prose:
+# its links get resolved, its example images get an alt-text failure, and its
+# headings get counted. Probed before it was fixed, and a `~~~` block was
+# completely invisible to every rule below.
+FENCE_RE = re.compile(r"\A\s*(`{3,}|~{3,})\s*([A-Za-z0-9_+-]*)")
+
+# A span is markup a reader sees literally, so a document naming an
+# anti-pattern is not a document committing one. Used only by the rules about
+# rendered MEANING. The rules about bytes, typography and invisible characters,
+# still read every column of every line.
+CODE_SPAN_RE = re.compile(r"`[^`\n]+`")
 
 # --- this repository's own product budget -----------------------------------
 # NOT part of the styling standard, and deliberately kept beside it anyway,
@@ -196,6 +208,62 @@ def parse_frontmatter(text: str):
     return fields, close + 1, None
 
 
+def scan_fences(rel: str, lines, fail, warn):
+    """Map every fenced line, and report what only a fence scan can see.
+
+    RUN FIRST, because three later rules are wrong without it. A `# TITLE` in
+    a fenced markdown example is not a second Heading 1. An `![](x.png)` shown
+    as an example of bad alt text is not bad alt text. A `[link](nowhere.md)`
+    in an example resolves to nothing on purpose. Each of those was a real
+    false positive, reproduced before this was written.
+
+    `<details>` IS COUNTED ONLY AS MARKUP. It used to be counted anywhere the
+    string appeared, so a document that merely mentioned `<details>` in prose
+    opened a block that never closed, and every long fence after it stopped
+    being reported. That is the worst kind of gate defect: it goes quiet, and
+    quiet is indistinguishable from clean.
+    """
+    fenced = set()
+    depth = 0            # <details> nesting
+    fence = None         # (start_line, language, opening_run, in_details)
+    for n, line in enumerate(lines, 1):
+        if fence is not None:
+            fenced.add(n)
+        if fence is None:
+            # Code spans first: a mention is not an element.
+            markup = CODE_SPAN_RE.sub(" ", line)
+            depth += markup.count("<details")
+            depth = max(0, depth - markup.count("</details>"))
+            m = FENCE_RE.match(line)
+            if m:
+                fence = (n, m.group(2), m.group(1), depth > 0)
+                if not m.group(2):
+                    fail(rel, f"line {n}: this code fence declares no language. "
+                              "Every fence names one, so it highlights and so a "
+                              "reader knows what they are looking at.")
+            continue
+        m = FENCE_RE.match(line)
+        # A closer uses the SAME character, runs at least as long, and carries
+        # no info string. Matching on "starts with the opener" alone closed a
+        # ``` block on a ~~~ line and vice versa.
+        if (m and m.group(1)[0] == fence[2][0]
+                and len(m.group(1)) >= len(fence[2]) and not m.group(2)):
+            length = n - fence[0] - 1
+            if length > FENCE_MAX_LINES and not fence[3]:
+                warn(rel, f"line {fence[0]}: this fence is {length} lines. The "
+                          f"specification wraps anything over {FENCE_MAX_LINES} "
+                          "in a `<details>` block to prevent scrolling fatigue.")
+            fence = None
+            continue
+        if fence[1] in SHELL_LANGS and PROMPT_RE.match(line):
+            fail(rel, f"line {n}: a shell block carries a leading prompt "
+                      "character. Copying it pastes the prompt too, and the "
+                      "command fails.")
+    if fence is not None:
+        fail(rel, f"line {fence[0]}: this code fence is never closed.")
+    return fenced
+
+
 def check_file(path: Path, root: Path, taglines, footers, fail, warn):
     """Every per-document rule."""
     rel = path.relative_to(root).as_posix()
@@ -229,6 +297,9 @@ def check_file(path: Path, root: Path, taglines, footers, fail, warn):
                       "the diff, which is the point of using it: a rule hidden "
                       "this way is delivered to every repository and read by "
                       "every agent while being invisible to every reviewer.")
+
+    # --- the fence map, built BEFORE anything consults it --------------------
+    fenced = scan_fences(rel, lines, fail, warn)
 
     # --- frontmatter ---------------------------------------------------------
     fields, body_start, error = parse_frontmatter(text)
@@ -275,8 +346,12 @@ def check_file(path: Path, root: Path, taglines, footers, fail, warn):
         fail(rel, 'no `<a name="top"></a>` anchor, so every "Back to Top" link '
                   "in the file goes nowhere.")
 
+    # Fenced lines are excluded: a markdown example showing `# TITLE` is not a
+    # second Heading 1, and when the example came first it was the one whose
+    # capitalization got graded.
     h1s = [(n, m.group(1)) for n, m in
-           ((n, HEADING_RE.match(ln)) for n, ln in enumerate(lines, 1)) if m]
+           ((n, HEADING_RE.match(ln)) for n, ln in enumerate(lines, 1)
+            if n not in fenced) if m]
     if not h1s:
         fail(rel, "has no Heading 1.")
     else:
@@ -319,7 +394,11 @@ def check_file(path: Path, root: Path, taglines, footers, fail, warn):
         taglines.setdefault(key, []).append(rel)
 
     # --- footer --------------------------------------------------------------
-    tail = lines[-25:]
+    # The footer is the LAST centered block, not the last 25 lines. A fixed
+    # window is a guess about how long a footer is, and it reads whatever
+    # content happens to sit above one that runs long.
+    centered = [i for i, ln in enumerate(lines) if '<div align="center">' in ln]
+    tail = lines[centered[-1]:] if len(centered) > 1 else lines[-25:]
     if not any("[↑ Back to Top](#top)" in ln for ln in tail):
         fail(rel, "the footer carries no `[↑ Back to Top](#top)` link.")
     phrase = None
@@ -333,64 +412,96 @@ def check_file(path: Path, root: Path, taglines, footers, fail, warn):
     else:
         footers.setdefault(phrase.strip().lower(), []).append(rel)
 
-    # --- fences, prompts, and progressive disclosure -------------------------
-    # `fenced` records every line inside a code block, because a document
-    # DEMONSTRATING markdown is not a document making a claim. A fenced
-    # `[link](./nowhere.md)` is an illustration and must not be resolved, in
-    # exactly the way a fenced example of any other syntax is not executed.
-    #
-    # The strict rules deliberately do NOT consult it. An at-token, an
-    # invisible character and a banned dash are hazards wherever they sit: the
-    # vendors scan text rather than parse markdown, so a fence protects
-    # nothing, and the styling standard bans those characters outright.
-    fenced = set()
-    depth = 0            # <details> nesting
-    fence = None         # (start_line, language, opening_ticks, in_details)
-    for n, line in enumerate(lines, 1):
-        if fence is not None:
-            fenced.add(n)
-        if fence is None:
-            if "<details" in line:
-                depth += 1
-            elif "</details>" in line:
-                depth = max(0, depth - 1)
-            m = FENCE_RE.match(line)
-            if m:
-                fence = (n, m.group(2), m.group(1), depth > 0)
-                if not m.group(2):
-                    fail(rel, f"line {n}: this code fence declares no language. "
-                              "Every fence names one, so it highlights and so a "
-                              "reader knows what they are looking at.")
-            continue
-        if line.strip().startswith(fence[2]) and not FENCE_RE.match(line).group(2):
-            length = n - fence[0] - 1
-            if length > FENCE_MAX_LINES and not fence[3]:
-                warn(rel, f"line {fence[0]}: this fence is {length} lines. The "
-                          f"specification wraps anything over {FENCE_MAX_LINES} "
-                          "in a `<details>` block to prevent scrolling fatigue.")
-            fence = None
-            continue
-        if fence[1] in SHELL_LANGS and PROMPT_RE.match(line):
-            fail(rel, f"line {n}: a shell block carries a leading prompt "
-                      "character. Copying it pastes the prompt too, and the "
-                      "command fails.")
-    if fence is not None:
-        fail(rel, f"line {fence[0]}: this code fence is never closed.")
-
     # --- accessibility and links --------------------------------------------
+    # Fenced lines are skipped, and so are code spans: a document DEMONSTRATING
+    # markdown is not a document making a claim. Writing "never do
+    # `![](x.png)`" is the sentence that teaches the rule, and it used to fail
+    # it.
     for n, line in enumerate(lines, 1):
         if n in fenced:
             continue
-        for m in IMAGE_RE.finditer(line):
+        prose = CODE_SPAN_RE.sub(" ", line)
+        for m in IMAGE_RE.finditer(prose):
             if not m.group(1).strip():
                 fail(rel, f"line {n}: an image has empty alt text. Every image, "
                           "badges included, carries a description.")
-        for m in LINK_RE.finditer(line):
+        for m in LINK_RE.finditer(prose):
             target = m.group(1)
             if "://" in target or target.startswith(("#", "mailto:")):
                 continue
-            if not (path.parent / target.split("#")[0]).exists():
+            # A LINK TARGET IS A URL, NOT A PATH. `Scope-&-Boundaries.md` is
+            # written `Scope-%26-Boundaries.md` by anything that encodes
+            # correctly, and `&amp;` by anything that escapes for HTML. Both
+            # name a file that exists, and both were reported as broken.
+            name = unquote(target.split("#")[0]).replace("&amp;", "&")
+            if name and not (path.parent / name).exists():
                 fail(rel, f"line {n}: relative link {target!r} does not resolve.")
+
+
+# Directories that are output or machinery rather than authored text.
+TREE_SKIP_DIRS = (".git", "dist", "node_modules", "__pycache__", ".venv")
+
+# Verbatim third-party text, exempt from the typography rule by the law itself:
+# "license files, vendored assets, lockfiles". A hyphen normalized inside one
+# of these is a modification to somebody else's document.
+TREE_VERBATIM = ("LICENSE", "LICENSE.txt", "LICENCE", "NOTICE", "COPYING")
+TREE_VERBATIM_SUFFIXES = (".lock",)
+
+
+def check_tree(root: Path, fail, skip, vendored=frozenset()):
+    """Encoding and typography, over EVERY authored file rather than the docs.
+
+    WHY THIS EXISTS. The law says the banned characters are banned "in
+    everything you write: prose, code, comments, configuration, commit
+    messages, issue text and release notes alike", and until this ran, the
+    gate behind that sentence read Markdown and nothing else. A hidden
+    directive in a hook script, a bidirectional override in a workflow, a
+    curly quote in a Python comment: none of them were checked in the one
+    repository whose whole product is files delivered to other repositories.
+
+    That is the same hole that had `AGENTS.md` unguarded while `SKILL.md` was
+    guarded, one directory over. A rule enforced on the easy half of the tree
+    is a rule with a documented bypass.
+
+    Anything that is not valid UTF-8 is skipped as binary rather than failed:
+    this walks a whole repository, and a PNG is not a defect.
+    """
+    for path in sorted(root.rglob("*")):
+        if not path.is_file() or path.is_symlink():
+            continue
+        rel = path.relative_to(root).as_posix()
+        if any(part in TREE_SKIP_DIRS for part in path.relative_to(root).parts):
+            continue
+        if any(rel.startswith(f"{v}/") or rel == v for v in vendored):
+            continue
+        if rel in skip or path.name in TREE_VERBATIM:
+            continue
+        if path.suffix in TREE_VERBATIM_SUFFIXES:
+            continue
+        raw = path.read_bytes()
+        if not raw:
+            continue
+        try:
+            text = raw.decode("utf-8")
+        except UnicodeDecodeError:
+            continue
+        if raw.startswith(b"\xef\xbb\xbf"):
+            fail(rel, "starts with a byte order mark.")
+        if not raw.endswith(b"\n") or raw.endswith(b"\n\n"):
+            fail(rel, "must end with exactly one trailing newline.")
+        for n, line in enumerate(text.split("\n"), 1):
+            for char, name in BANNED_CHARS.items():
+                if char in line:
+                    fail(rel, f"line {n}: {name}. The ban is tree-wide, not "
+                              "Markdown-only.")
+            if MOJIBAKE_RE.search(line):
+                fail(rel, f"line {n}: mojibake, which is UTF-8 read as Latin-1 "
+                          "somewhere upstream.")
+            for m in INVISIBLE_RE.finditer(line):
+                fail(rel, f"line {n}: invisible character "
+                          f"U+{ord(m.group()):04X} at column {m.start() + 1}. "
+                          "In an executable file or a workflow this is the "
+                          "shape nobody catches by reading the diff.")
 
 
 def check_names(root: Path, fail, vendored=frozenset()):
@@ -585,6 +696,11 @@ def check_root(root: Path, docs_only: bool = False):
                                 "argument that argues nothing.")
     if not docs_only:
         check_names(root, fail, vendored)
+        # The documents above were already read line by line; passing them here
+        # would report every finding twice.
+        check_tree(root, fail,
+                   skip={p.relative_to(root).as_posix() for p in files},
+                   vendored=vendored)
         check_delivered_budget(root, fail, warn)
         check_hooks(root, fail, warn)
     return files, problems, warnings
@@ -610,8 +726,13 @@ SELF_TEST_ERRORS = (
 SELF_TEST_WARNINGS = (
     "not fully capped",
     "spells out `AND`",
+    # Asserted because its failure mode is silence. When `<details>` was
+    # counted anywhere the string appeared, one mention in prose suppressed
+    # this warning for the rest of the file and nothing said so.
+    "this fence is",
 )
 SELF_TEST_BUDGET = "against a budget of"
+SELF_TEST_TREE = "tree-wide"
 
 GOOD = """<!--
 title: '📝 GOOD'
@@ -648,6 +769,19 @@ A fenced example names files it does not ship, and must not be resolved:
 ![](./no-alt.png)
 ```
 
+A tilde fence is a fence too, and nothing inside one is a claim either:
+
+~~~markdown
+# NOT THE TITLE OF THIS DOCUMENT
+[another guide](./Also-Missing.md)
+~~~
+
+Prose may name the `<details>` element without opening one, and may show
+`![](./neither.png)` inside a code span without failing the alt-text rule.
+
+A link target is a URL rather than a path: [ampersand](Ampersand-%26-Test.txt)
+resolves, and so does [the escaped form](Ampersand-&amp;-Test.txt).
+
 ---
 
 <div align="center">
@@ -663,7 +797,7 @@ A fenced example names files it does not ship, and must not be resolved:
 # character it rejects, exactly as check-skills.py builds its invisible
 # characters. A rule whose own test data trips it is a rule that cannot be
 # tested in the repository that enforces it.
-BROKEN_BODY = """
+BROKEN_BODY = ("""
 <div align="center">
 
 # 💥 Bad Document AND Worse
@@ -688,12 +822,18 @@ $ make lint
 
 [nowhere](./absent.md)
 
+Naming the `<details>` element in prose must not open one, or the long fence
+below stops being reported and the gate goes quiet:
+
+```text
+""" + "padding\n" * 25 + """```
+
 <div align="center">
 
 **Everything to report.**
 
 </div>
-""".replace("{EM}", chr(0x2014)).replace("{ZWSP}", chr(0x200B))
+""").replace("{EM}", chr(0x2014)).replace("{ZWSP}", chr(0x200B))
 
 BAD = "---\ntitle: 'BAD'\ntags: [only, three, tags]\n-->\n" + BROKEN_BODY
 
@@ -716,6 +856,10 @@ def self_test() -> int:
         (root / "Worse.md").write_text(PAST_THE_DOOR, encoding="utf-8")
         (root / "Worst.md").write_text(
             PAST_THE_DOOR.replace("'WORSE'", "'WORST'"), encoding="utf-8")
+        # Named by two links in Good.md, one percent-encoded and one escaped
+        # for HTML. Both must resolve to this file.
+        (root / "Ampersand-&-Test.txt").write_text("Not a document.\n",
+                                                   encoding="utf-8")
 
         files, problems, warnings = check_root(root, docs_only=True)
         print(f"self-test: {len(files)} document(s), {len(problems)} error(s), "
@@ -744,12 +888,35 @@ def self_test() -> int:
             missing.append(f"error: {SELF_TEST_BUDGET}")
         (root / "AGENTS.md").unlink()
 
-        if any(p["file"] == "Good.md" for p in problems):
+        # The tree gate reads files the document rules never open, so it needs
+        # hostile input that is not a document: an executable one, since that
+        # is the file where a hidden character does the most and is seen least.
+        #
+        # RUN THROUGH check_root RATHER THAN CALLED DIRECTLY. Calling the
+        # function proves the function; it does not prove anything still calls
+        # it. Deleting the call site passed a self-test that invoked it by
+        # hand, which is the difference between a tested rule and a live one.
+        (root / "hook.sh").write_text(
+            "#!/bin/sh\n# a note" + chr(0x2014) + "like this\n"
+            "echo split" + chr(0x200B) + "word\n", encoding="utf-8")
+        _, tree_problems, _ = check_root(root, docs_only=False)
+        fired = any(p["file"] == "hook.sh" and SELF_TEST_TREE in p["message"]
+                    for p in tree_problems)
+        print(f"  {'fired    ' if fired else 'DID NOT  '} error: {SELF_TEST_TREE}")
+        if not fired:
+            missing.append(f"error: {SELF_TEST_TREE}")
+        (root / "hook.sh").unlink()
+
+        # NEITHER ERRORS NOR WARNINGS. A warning on correct input is still a
+        # gate crying wolf, and two of the rules fixed here reported one: a
+        # heading inside a fenced example was counted as a second Heading 1,
+        # and a `<details>` named in prose silenced the long-fence rule.
+        noisy = [p for p in problems + warnings if p["file"] == "Good.md"]
+        if noisy:
             print("::error title=Check Docs::The compliant document was REJECTED. "
                   "A gate that fails correct input trains everyone to ignore it.")
-            for p in problems:
-                if p["file"] == "Good.md":
-                    print(f"    {p['message']}")
+            for p in noisy:
+                print(f"    {p['level']}: {p['message']}")
             return 1
         if missing:
             print(f"::error title=Check Docs::these rules did not fire: {missing}.")

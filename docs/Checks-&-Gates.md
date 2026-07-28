@@ -64,13 +64,19 @@ The full rule list, and which are errors rather than warnings, is in [Skill Auth
 | Exactly four kebab-case tags, and the other required keys             | error     |
 | The `MD041` suppression, header block, anchor, description, tagline   | error     |
 | Footer closing phrase and back-to-top link                            | error     |
-| Em dashes, en dashes, curly quotes, mojibake                          | error     |
+| Em dashes, en dashes, curly quotes, mojibake, invisible characters    | error     |
 | Fence languages, shell prompt characters, image alt text              | error     |
 | Relative links that resolve, and `_` as a space anywhere in the tree  | error     |
 | Tagline and closing phrase uniqueness, reported against every owner   | error     |
 | Fully-capped headings, `&` over `AND`, masthead length, long fences   | warning   |
 
-`skills/` is excluded on purpose: a `SKILL.md` requires the `---` frontmatter this specification forbids. Both are correct in their own domain.
+`skills/` is excluded from the **document** rules on purpose: a `SKILL.md` requires the `---` frontmatter this specification forbids. Both are correct in their own domain.
+
+**Two boundaries decide which rules see what, and they are not the same boundary.** Rules about rendered meaning skip code spans and fenced blocks, both kinds, because a document demonstrating Markdown is not a document making a claim: a fenced `# TITLE` is not a second heading, a `![](x.png)` shown as an example of bad alt text is not bad alt text, and a fenced link resolves to nothing on purpose. Rules about bytes skip nothing. A banned dash, a mojibake sequence and an invisible character are hazards wherever they sit, and those run over **every** file in the tree rather than the documents: a hook script, a workflow, a Makefile, a Python comment. The law says the ban covers everything you write, and until that gate existed it covered Markdown.
+
+Link targets are read as URLs rather than paths, so `Scope-%26-Boundaries.md` and `Scope-&amp;-Boundaries.md` both resolve to the file whose name contains `&`.
+
+Exempt from the tree scan: submodules, `dist/`, anything that is not valid UTF-8, and the verbatim third-party text the law itself exempts, which is license files and lockfiles.
 
 ### 📏 The Delivered Budget
 
