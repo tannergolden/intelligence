@@ -73,6 +73,50 @@ NAME_MAX = 64
 DESC_MAX = 1024        # specification hard limit
 DESC_WARN = 500        # listing-budget pressure, see below
 BODY_MAX_LINES = 500   # specification recommendation
+BODY_MAX_CHARS = 20000  # the same guidance's other half, ~5,000 tokens
+
+# A description that never says WHEN to use the skill is the single most common
+# authoring defect, and its failure is silent: the skill is simply never chosen,
+# with no error and no log line. The documented pattern is an instruction to the
+# agent ("Use this skill when the user ..."), not a label for the skill
+# ("Processes CSV files"). Agents measurably under-trigger, so a description
+# that reads as appropriately modest to a human is one that never fires.
+DESC_TRIGGER_RE = re.compile(r"\bwhen\b", re.IGNORECASE)
+
+# Documented anti-patterns. Each occupies tier B in every session and changes
+# no behaviour, because it carries nothing the agent did not already have.
+#
+# BOUNDED AT BOTH ENDS. Without the trailing `\b`, "as appropriate" matches
+# inside "appropriately", so a sentence about what reads as appropriately
+# modest is reported as filler. The longer phrases come first: alternation is
+# leftmost-first, so "follow best practices" must be tried before the
+# "best practices" it contains, or the message names the wrong span.
+VAGUE_PHRASES = (
+    "follow best practices",
+    "best practices",
+    "handle errors appropriately",
+    "as appropriate",
+    "where appropriate",
+    "use good judgement",
+    "use good judgment",
+)
+VAGUE_RE = re.compile(
+    r"\b(?:" + "|".join(re.escape(p) for p in VAGUE_PHRASES) + r")\b",
+    re.IGNORECASE,
+)
+
+# What counts as a citation rather than an instruction. A skill that teaches
+# an anti-pattern has to be able to name it, and text inside backticks or
+# quotation marks is being reported rather than told to the agent. Both are
+# blanked before the filler rule runs.
+QUOTED_RE = re.compile(r"\"[^\"\n]*\"")
+
+# A path only true on the author's machine is an instruction that fails on
+# everyone else's. Matched narrowly, as three unambiguous shapes: a drive
+# letter, a UNC prefix, and a home directory. Never a lone backslash, which is
+# an ordinary escape in markdown, and never a bare leading `/`, which is how
+# repository-root paths and URLs are written.
+ABS_PATH_RE = re.compile(r"(?:\A|[\s(`\"'])(?:[A-Za-z]:[\\/]|\\\\|/(?:home|Users)/)")
 
 # Live shell in Claude Code, literal text everywhere else. Anthropic's own
 # first-skill example uses the backtick form to inline `git diff` output, so
@@ -187,7 +231,7 @@ def referenced_paths(body: str):
     return found
 
 
-def scan_content(label: str, text: str, declared: bool, fail):
+def scan_content(label: str, text: str, declared: bool, fail, warn):
     """The rules that apply to any text an agent will load.
 
     RUN OVER EVERY MARKDOWN FILE IN THE SKILL, not only SKILL.md. A reference
@@ -211,6 +255,86 @@ def scan_content(label: str, text: str, declared: bool, fail):
                      "Claude Code and is literal text in Gemini CLI, so this "
                      "skill is grounded on one vendor and prints backticks on "
                      "the other. Declare it with `compatibility`, or remove it.")
+        if ABS_PATH_RE.search(line):
+            warn(f"{label}:{n}: this line carries a machine-specific path. A skill "
+                 "runs on machines that are not the author's, so a path true only "
+                 "on one of them is an instruction that fails everywhere else. "
+                 "Use a path relative to the repository.")
+        # Citations blanked first, so a document naming the anti-pattern is
+        # not reported for using it.
+        prose = QUOTED_RE.sub(" ", CODE_SPAN_RE.sub(" ", line))
+        filler = VAGUE_RE.search(prose)
+        if filler:
+            warn(f"{label}:{n}: {filler.group()!r} tells the agent nothing it did "
+                 "not already have, and it occupies context in every session that "
+                 "loads this file. Name the practice you actually mean, or delete "
+                 "the line.")
+
+
+def check_evals(path: Path, skill_name: str, fail):
+    """The eval file, against the schema the harness reads.
+
+    An unreadable eval file is worse than no eval file. A missing one is
+    visible, and the warning above says so; a malformed one looks like
+    evidence right up until somebody tries to run it, which is usually the
+    moment the skill is being changed and the evidence is most needed.
+    """
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        fail(f"evals/evals.json is not readable JSON: {exc}")
+        return
+    if not isinstance(data, dict):
+        fail("evals/evals.json must hold an object with `skill_name` and `evals`.")
+        return
+
+    for key in sorted(data):
+        if key not in ("skill_name", "evals") and not key.startswith("$"):
+            fail(f"evals/evals.json has an unknown top-level key {key!r}. The "
+                 "schema is `skill_name` and `evals`; keys beginning with `$` "
+                 "are free for commentary.")
+
+    declared_name = data.get("skill_name")
+    if declared_name != skill_name:
+        fail(f"evals/evals.json declares skill_name {declared_name!r} but this "
+             f"skill is {skill_name!r}. A results file attributed to the wrong "
+             "skill is measurement pointed at the wrong thing.")
+
+    cases = data.get("evals")
+    if not isinstance(cases, list) or not cases:
+        fail("evals/evals.json needs a non-empty `evals` array. An empty one "
+             "reports success without running anything.")
+        return
+
+    seen = set()
+    for index, case in enumerate(cases):
+        where = f"evals/evals.json case {index + 1}"
+        if not isinstance(case, dict):
+            fail(f"{where} is not an object.")
+            continue
+        case_id = case.get("id")
+        if not isinstance(case_id, int):
+            fail(f"{where} has no integer `id`.")
+        elif case_id in seen:
+            fail(f"{where} reuses id {case_id}. Results are reported by id, so "
+                 "two cases sharing one are two results that cannot be told "
+                 "apart.")
+        else:
+            seen.add(case_id)
+        if not isinstance(case.get("prompt"), str) or not case["prompt"].strip():
+            fail(f"{where} has no `prompt`. There is nothing to run.")
+        # An assertion that cannot fail is not a test, and a case with none is
+        # a transcript somebody has to read by hand.
+        assertions = case.get("assertions")
+        if not isinstance(assertions, list) or not assertions:
+            fail(f"{where} has no `assertions`. Without a checkable claim the "
+                 "case records what happened and grades nothing.")
+        elif not all(isinstance(a, str) and a.strip() for a in assertions):
+            fail(f"{where} has an empty or non-string assertion.")
+        for key in sorted(case):
+            if key not in ("id", "prompt", "expected_output", "files",
+                           "assertions"):
+                fail(f"{where} has an unknown key {key!r}.")
 
 
 def check_skill(skill_dir: Path, root: Path):
@@ -275,6 +399,14 @@ def check_skill(skill_dir: Path, root: Path):
              "skill whether used or not, and when the listing overflows its "
              "budget the least-used skills lose their descriptions first. A "
              "long one here quietly silences another skill.")
+    if desc and not DESC_TRIGGER_RE.search(desc):
+        warn("`description` never says WHEN to use this skill. It is the only "
+             "thing the agent matches a request against, so a description that "
+             "labels the skill rather than triggering it produces the quietest "
+             "failure there is: the skill is simply never chosen, with no error "
+             "and no log line. Write it as an instruction, 'Use this skill when "
+             "the user ...', and name the symptom someone would describe "
+             "instead of the topic.")
 
     # --- frontmatter policy --------------------------------------------------
     declared = bool(fields.get("compatibility"))
@@ -304,8 +436,15 @@ def check_skill(skill_dir: Path, root: Path):
              "the conversation once and is never re-read or freed, so every line "
              "is a recurring cost for the whole session. Move detail into "
              "references/ and name it from here.")
+    # Lines and characters are not the same cap, and a body can pass one while
+    # failing the other: 300 long paragraphs cost more than 480 short steps.
+    elif len(body) > BODY_MAX_CHARS:
+        warn(f"the body is {len(body)} characters (guideline {BODY_MAX_CHARS}, "
+             "roughly 5,000 tokens). It is under the line limit but not under "
+             "the token one, which is the limit that actually costs the session. "
+             "Move the longest section into references/.")
 
-    scan_content("SKILL.md", text, declared, fail)
+    scan_content("SKILL.md", text, declared, fail, warn)
 
     # --- tier C: the bundled files ------------------------------------------
     refs = referenced_paths(body)
@@ -336,13 +475,17 @@ def check_skill(skill_dir: Path, root: Path):
                  "user is asked to approve. Reference it or delete it.")
         if path.suffix == ".md":
             try:
-                scan_content(item, path.read_text(encoding="utf-8"), declared, fail)
+                scan_content(item, path.read_text(encoding="utf-8"), declared,
+                             fail, warn)
             except UnicodeDecodeError as exc:
                 fail(f"{item!r} is not valid UTF-8: {exc}")
 
-    if not (skill_dir / "evals" / "evals.json").is_file():
+    evals = skill_dir / "evals" / "evals.json"
+    if not evals.is_file():
         warn("no evals/evals.json. Nothing here proves this skill beats its own "
              "baseline, so its quality is a claim rather than a measurement.")
+    else:
+        check_evals(evals, name or skill_dir.name, fail)
     if (skill_dir / "scripts").is_dir():
         warn("this skill bundles scripts/, which is executable content in a "
              "repository whose other files are inert. Deliberate is fine; "
@@ -367,7 +510,7 @@ def check_root(root: Path):
 # and the thing that proves it works cannot be deleted separately, and the
 # invisible character is constructed from its codepoint so this file never
 # contains one.
-SELF_TEST_REQUIRED = (
+SELF_TEST_ERRORS = (
     "no SKILL.md",
     "does not exist",
     "never references it",
@@ -376,11 +519,25 @@ SELF_TEST_REQUIRED = (
     "invisible character",
     "runs a shell command",
     "not permitted",
+    "reuses id",
+    "no `assertions`",
+    "declares skill_name",
+    "unknown key",
+)
+
+# WARNINGS ARE ASSERTED TOO, and for the same reason as the errors. The rules
+# that catch the quietest defects are advisory by design, since a skill with a
+# label for a description still runs. A rule nobody proves is a rule that
+# stops matching without anyone noticing, whichever level it reports at.
+SELF_TEST_WARNINGS = (
+    "never says WHEN",
+    "machine-specific path",
+    "already have",
 )
 
 
 def build_hostile(root: Path):
-    """Three deliberately broken skills, covering every asserted rule."""
+    """Four deliberately broken skills, covering every asserted rule."""
     d = root / "no-manifest"
     d.mkdir()
     (d / "stray.md").write_text("No SKILL.md here, so nothing discovers this.\n",
@@ -391,8 +548,8 @@ def build_hostile(root: Path):
     (d / "SKILL.md").write_text(
         "---\n"
         "name: not-the-directory-name\n"
-        "description: Its name disagrees with its directory, it points at a file "
-        "that does not exist, and it ships a file it never references.\n"
+        "description: Use this when its name disagrees with its directory, it "
+        "points at a file that does not exist, and it ships one it never names.\n"
         "---\n\n"
         "## Additional resources\n\n"
         "- `references/absent.md` - deliberately missing.\n",
@@ -404,7 +561,8 @@ def build_hostile(root: Path):
     (d / "SKILL.md").write_text(
         "---\n"
         "name: hazards\n"
-        "description: Carries one of each content hazard the checker must reject.\n"
+        "description: Use this when you need one of each content hazard the "
+        "checker must reject.\n"
         "allowed-tools: Read Grep\n"
         "---\n\n"
         "Ask @someone before running this.\n\n"
@@ -412,19 +570,47 @@ def build_hostile(root: Path):
         "A zero width space splits these:\nsplit" + chr(0x200B) + "word\n",
         encoding="utf-8")
 
+    # The quiet defects: a description that labels instead of triggering, a
+    # path only the author has, filler that costs context and says nothing,
+    # and an eval file that looks like evidence and cannot be run.
+    d = root / "sloppy"
+    d.mkdir()
+    (d / "SKILL.md").write_text(
+        "---\n"
+        "name: sloppy\n"
+        "description: Processes data files.\n"
+        "---\n\n"
+        "Read C:\\Users\\author\\notes.md first, then follow best practices.\n",
+        encoding="utf-8")
+    (d / "evals").mkdir()
+    (d / "evals" / "evals.json").write_text(json.dumps({
+        "skill_name": "a-different-skill",
+        "evals": [
+            {"id": 1, "prompt": "one", "assertions": ["checkable"]},
+            {"id": 1, "prompt": "two", "assertions": []},
+            {"id": 2, "prompt": "three", "assertions": ["ok"], "notes": "stray"},
+        ],
+    }, indent=2) + "\n", encoding="utf-8")
+
 
 def self_test() -> int:
     with tempfile.TemporaryDirectory() as scratch:
         root = Path(scratch)
         build_hostile(root)
         skills, problems, warnings = check_root(root)
-        blob = " ".join(item["message"] for item in problems)
 
         print(f"self-test: {len(skills)} hostile skill(s), {len(problems)} error(s), "
               f"{len(warnings)} warning(s)")
-        missing = [phrase for phrase in SELF_TEST_REQUIRED if phrase not in blob]
-        for phrase in SELF_TEST_REQUIRED:
-            print(f"  {'fired    ' if phrase not in missing else 'DID NOT  '} {phrase}")
+
+        missing = []
+        for label, phrases, items in (("error", SELF_TEST_ERRORS, problems),
+                                      ("warning", SELF_TEST_WARNINGS, warnings)):
+            blob = " ".join(item["message"] for item in items)
+            for phrase in phrases:
+                fired = phrase in blob
+                if not fired:
+                    missing.append(f"{label}: {phrase}")
+                print(f"  {'fired    ' if fired else 'DID NOT  '} {label}: {phrase}")
 
         if not problems:
             print("::error title=Check Skills::The hostile input was ACCEPTED. The "

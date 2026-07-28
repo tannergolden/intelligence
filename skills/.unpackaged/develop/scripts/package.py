@@ -30,6 +30,10 @@
 # byte-identical archives. Without that, a rebuilt package always looks
 # changed, and "did the content change?" stops being answerable.
 #
+# OUTPUT CONTRACT: the archive path on stdout, everything else on stderr, so a
+# caller can use `$(package.py ...)` directly without parsing around progress
+# lines. Errors say what went wrong, what was expected, and what to try.
+#
 # Usage:  python3 package.py <skill-dir> [--out DIR] [--include-evals]
 #                                        [--extension zip|skill]
 # =============================================================================
@@ -133,11 +137,15 @@ def package(skill_dir: Path, out_dir: Path, include_evals: bool, extension: str)
             info.compress_type = zipfile.ZIP_DEFLATED
             zf.writestr(info, path.read_bytes())
 
-    print(f"packaged {len(members)} file(s) into {archive}")
+    # STRUCTURED RESULT TO STDOUT, EVERYTHING ELSE TO STDERR. An agent reading
+    # this script's output should get the archive path and nothing it has to
+    # filter progress messages out of.
     for path in members:
-        print(f"  {folder}/{path.relative_to(skill_dir).as_posix()}")
+        print(f"  {folder}/{path.relative_to(skill_dir).as_posix()}", file=sys.stderr)
     if not include_evals and (skill_dir / "evals").is_dir():
-        print("  (evals/ excluded: read by tooling, never by an agent)")
+        print("  (evals/ excluded: read by tooling, never by an agent)", file=sys.stderr)
+    print(f"packed {len(members)} file(s)", file=sys.stderr)
+    print(archive)
     return archive
 
 

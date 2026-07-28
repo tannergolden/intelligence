@@ -1,26 +1,35 @@
 ---
 name: replace-with-directory-name
-description: What this does, in one clause. Use when <the plainest request>, <a rephrasing>, or <the repair case>.
+description: Use this skill when the user <the situation, in their words>, or when they <the symptom they would describe instead>. Applies even when they do not say <the domain word>.
 ---
 
-## What to do
+## Steps
 
-1. State the first action. Imperative, standing, not narrated.
-2. State the second. This text persists for the whole session once loaded, so
-   every line is paid for repeatedly.
-3. Stop when the steps stop. Rationale belongs in a reference file or nowhere.
+1. The first action, imperative and standing rather than narrated.
+2. The second. This text persists for the whole session once loaded, so every
+   line is paid repeatedly.
+3. Validate the result against <the source of truth> before moving on.
 
-## Rules that reject the result
+## Gotchas
 
-- The condition that makes an otherwise finished result wrong.
-- The second one. Keep this list short enough to be read.
+Keep these in the body, not a reference: they have to be read *before* the
+situation arrives, not after it goes wrong.
 
-## Before you finish
+- The environment-specific fact an agent cannot infer.
+- The call that reports success on failure.
 
-Say what you did and what you did not do. If the request spans two concerns,
-propose splitting it rather than covering both loosely.
+## Output template
+
+Give the shape rather than describing it. Agents match a concrete structure far
+more reliably than a paragraph about one.
+
+```text
+<the exact shape the result should take>
+```
 
 ## Additional resources
 
-- `references/<topic>.md` - what it holds, and **when to load it**. A reference
-  named without a trigger gets read always or never.
+Name the **condition**, not just the subject. A resource listed by subject alone
+gets read always or never.
+
+- `references/<topic>.md` - read this if <the condition that makes it relevant>.

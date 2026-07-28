@@ -81,7 +81,7 @@ Nothing here executes on clone, and nothing is generated from anything else.
     path: skills/.unpackaged
 ```
 
-The most important job in [`skills.yml`](.github/workflows/skills.yml) is the one asserting the checker still **rejects** known-bad input. It builds three deliberately broken skills in a temporary directory and checks that every rule fires by name. A checker that has never rejected anything has never been tested, and one that silently stopped matching looks exactly like a clean repository.
+The most important job in [`skills.yml`](.github/workflows/skills.yml) is the one asserting the checker still **rejects** known-bad input. It builds four deliberately broken skills in a temporary directory and checks that every rule fires by name, warnings included, since the rules catching the quietest defects are the advisory ones. A checker that has never rejected anything has never been tested, and one that silently stopped matching looks exactly like a clean repository.
 
 [`ci.yml`](.github/workflows/ci.yml) is a stub calling the shared reusable workflow in `standards` rather than a private copy of it, so spelling, link checking and documentation linting stay in one place for the whole fleet.
 
