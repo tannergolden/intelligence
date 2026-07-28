@@ -186,7 +186,13 @@ jobs:
         run: |
           set -euo pipefail
           make build
-          echo "Packaged: $(ls dist | tr '\n' ' ')"
+          # A glob rather than `ls`, which shellcheck rejects (SC2012) because
+          # parsing its output mangles any name carrying whitespace. A skill
+          # name cannot contain whitespace, so nothing here was broken; the
+          # habit is what the rule is against.
+          printf 'Packaged:'
+          for archive in dist/*; do printf ' %s' "${archive##*/}"; done
+          printf '\n'
 
       # ⚠️ THE TAGS HERE ARE LIGHTWEIGHT, DELIBERATELY. A lightweight tag is a
       # ref and nothing else: no tag object, so no tagger, no message, and
