@@ -271,9 +271,21 @@ def check_file(path: Path, root: Path, taglines, footers, fail, warn):
         footers.setdefault(phrase.strip().lower(), []).append(rel)
 
     # --- fences, prompts, and progressive disclosure -------------------------
+    # `fenced` records every line inside a code block, because a document
+    # DEMONSTRATING markdown is not a document making a claim. A fenced
+    # `[link](./nowhere.md)` is an illustration and must not be resolved, in
+    # exactly the way a fenced example of any other syntax is not executed.
+    #
+    # The strict rules deliberately do NOT consult it. An at-token, an
+    # invisible character and a banned dash are hazards wherever they sit: the
+    # vendors scan text rather than parse markdown, so a fence protects
+    # nothing, and the styling standard bans those characters outright.
+    fenced = set()
     depth = 0            # <details> nesting
     fence = None         # (start_line, language, opening_ticks, in_details)
     for n, line in enumerate(lines, 1):
+        if fence is not None:
+            fenced.add(n)
         if fence is None:
             if "<details" in line:
                 depth += 1
@@ -304,6 +316,8 @@ def check_file(path: Path, root: Path, taglines, footers, fail, warn):
 
     # --- accessibility and links --------------------------------------------
     for n, line in enumerate(lines, 1):
+        if n in fenced:
+            continue
         for m in IMAGE_RE.finditer(line):
             if not m.group(1).strip():
                 fail(rel, f"line {n}: an image has empty alt text. Every image, "
@@ -418,6 +432,13 @@ _Correct by construction._
 
 ```bash
 make lint-docs
+```
+
+A fenced example names files it does not ship, and must not be resolved:
+
+```markdown
+[a guide](./Does-Not-Exist.md)
+![](./no-alt.png)
 ```
 
 ---

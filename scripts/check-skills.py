@@ -164,6 +164,21 @@ INVISIBLE_RE = re.compile(
 # costs no context and needs no reference.
 UNREFERENCED_OK_PREFIX = "evals/"
 
+FENCE_LINE_RE = re.compile(r"\A\s*`{3,}")
+
+
+def strip_fences(text: str) -> str:
+    """Blank every line inside a fenced code block, keeping line numbering."""
+    out, inside = [], False
+    for line in text.split("\n"):
+        if FENCE_LINE_RE.match(line):
+            inside = not inside
+            out.append("")
+            continue
+        out.append("" if inside else line)
+    return "\n".join(out)
+
+
 MD_LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
 CODE_SPAN_RE = re.compile(r"`([^`\n]+)`")
 PATHLIKE_RE = re.compile(r"\A[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*\Z")
@@ -217,7 +232,15 @@ def referenced_paths(body: str):
     Two syntaxes, because authors use both: a markdown link target, and a
     backticked path. A code span only counts when it actually looks like a
     path, so prose like `name` or `true` is not mistaken for a missing file.
+
+    FENCED BLOCKS ARE SKIPPED. A skill that shows an author how to list their
+    own resources writes the example in a fence, and that example names files
+    it does not ship. Resolving it would fail every skill that teaches the
+    syntax, which is the same defect as reading a bare `.zip` in prose as a
+    filename. Note this does NOT relax the content-hazard rules: those still
+    scan every line, because an at-token inside a fence still imports.
     """
+    body = strip_fences(body)
     found = set()
     for match in MD_LINK_RE.finditer(body):
         target = match.group(1).split("#")[0]
@@ -541,6 +564,37 @@ SELF_TEST_WARNINGS = (
 )
 
 
+def build_compliant(root: Path):
+    """One correct skill, which the checker must NOT reject.
+
+    Every other fixture here is hostile, and a checker tested only on hostile
+    input can pass its whole suite while rejecting everything. This one also
+    carries a fenced example naming a file it does not ship, which is how a
+    skill teaches the resource syntax and was a false positive until fenced
+    blocks stopped being resolved.
+    """
+    d = root / "compliant"
+    d.mkdir()
+    (d / "SKILL.md").write_text(
+        "---\n"
+        "name: compliant\n"
+        "description: Use this skill when the user wants a correct skill to "
+        "compare against, or when checking that the checker still accepts one.\n"
+        "---\n\n"
+        "## Steps\n\n"
+        "1. Do the thing.\n\n"
+        "## Additional resources\n\n"
+        "List your own resources like this:\n\n"
+        "```markdown\n"
+        "- `references/not-shipped.md` - read this if X.\n"
+        "```\n\n"
+        "- `references/real.md` - read this when you need the real one.\n",
+        encoding="utf-8")
+    (d / "references").mkdir()
+    (d / "references" / "real.md").write_text(
+        "The reference this skill actually ships.\n", encoding="utf-8")
+
+
 def build_hostile(root: Path):
     """Four deliberately broken skills, covering every asserted rule."""
     d = root / "no-manifest"
@@ -601,6 +655,7 @@ def build_hostile(root: Path):
 def self_test() -> int:
     with tempfile.TemporaryDirectory() as scratch:
         root = Path(scratch)
+        build_compliant(root)
         build_hostile(root)
         skills, problems, warnings = check_root(root)
 
@@ -617,6 +672,13 @@ def self_test() -> int:
                     missing.append(f"{label}: {phrase}")
                 print(f"  {'fired    ' if fired else 'DID NOT  '} {label}: {phrase}")
 
+        rejected = [p for p in problems if p["skill"] == "compliant"]
+        if rejected:
+            print("::error title=Check Skills::The COMPLIANT skill was rejected. A "
+                  "gate that fails correct input trains everyone to ignore it.")
+            for item in rejected:
+                print(f"    {item['message']}")
+            return 1
         if not problems:
             print("::error title=Check Skills::The hostile input was ACCEPTED. The "
                   "rules have stopped matching, which looks exactly like a clean "
@@ -627,7 +689,8 @@ def self_test() -> int:
                   "Either a rule was weakened or its hostile input was changed, and "
                   "both are silent failures in production.")
             return 1
-        print("Every asserted rule still rejects what it exists to reject.")
+        print("Every asserted rule still rejects what it exists to reject, and "
+              "the compliant skill still passes.")
         return 0
 
 
