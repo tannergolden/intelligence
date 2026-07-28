@@ -1,0 +1,49 @@
+# --- This Repository's Own CI ---
+#
+# ✨ CI Validation
+#
+# Purpose: the shared validation gate, consumed rather than reimplemented.
+#
+# ⚠️ THIS IS A STUB ON PURPOSE. Spelling, link checking and documentation
+# linting are published once as a reusable workflow in tannergolden/standards
+# and followed BY LINK, NEVER BY COPY. An earlier version of this repository
+# hand-wrote its own copies of the shared jobs; a fix upstream would never
+# have reached it, in a repository whose own law says the standards are
+# followed by link. One `uses:` line is the whole correction.
+#
+# `lint-command` is passed rather than left empty because the shared workflow
+# FAILS when no stage resolves, which is correct: a validation gate that
+# validated nothing is worse than no gate. There is no Makefile here, so the
+# command is named directly.
+#
+# The dedicated skill gate lives in skills.yml, which also carries the
+# negative test that proves the checker can still fail.
+#
+# ---
+
+name: '✨ CI Validation'
+
+on:
+  push:
+    branches: ['Development']
+  workflow_dispatch:
+
+concurrency:
+  # In-progress runs are never cancelled, so a report cannot vanish midway.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  ci:
+    permissions:
+      contents: read # read this repository
+    uses: tannergolden/standards/.github/workflows/ci.yml@v1
+    with:
+      lint-command: 'python3 .github/actions/check-skills/check-skills.py skills'
+      # No SPDX headers and no LICENSES/ directory here: the published files
+      # are copied verbatim into other people's trees, where a licence header
+      # inside an always-loaded instruction file is noise a model reads every
+      # session. The root LICENSE carries the licence instead.
+      reuse-check: false

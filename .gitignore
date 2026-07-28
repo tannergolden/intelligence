@@ -1,0 +1,15 @@
+# Python bytecode. The only Python here is stdlib-only and runs from source,
+# so a stray __pycache__ is always local noise.
+__pycache__/
+*.py[cod]
+
+# Skill eval output. `evals/evals.json` is authored and committed; the
+# grading and benchmark files beside it are run artifacts that record one
+# machine's run and would be rewritten by the next.
+grading.json
+benchmark.json
+
+# OS and editor noise
+.DS_Store
+Thumbs.db
+*.swp

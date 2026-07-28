@@ -1,0 +1,121 @@
+# --- This Repository's Own Skill Gate ---
+#
+# 🧪 Skills
+#
+# Purpose: the gate that stops a malformed skill being published, and the
+# test that proves the gate still works.
+#
+# TWO JOBS, AND THE SECOND IS THE IMPORTANT ONE:
+#
+#   published   the real skills under skills/ must pass
+#   checker     the hostile fixtures must FAIL
+#
+# A checker that has never rejected anything has never been tested, and one
+# that silently stopped matching is indistinguishable from a clean
+# repository. The fixtures exist to be wrong on purpose, so a pass there is
+# the failure.
+#
+# ⚠️ THIS REPORTS, IT DOES NOT GATE A MERGE, and that is not an oversight.
+# Work lands here by direct push, so nothing merges and a required status
+# check would have nothing to sit in front of. What it buys is a red mark on
+# the commit while the person who wrote it is still looking at it, and before
+# a tag moves and carries it to everyone.
+#
+# ---
+
+name: '🧪 Skills'
+
+on:
+  push:
+    branches: ['Development']
+    paths:
+      - 'skills/**'
+      - 'tests/fixtures/skills/**'
+      - '.github/actions/check-skills/**'
+      - '.github/workflows/skills.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  published:
+    name: '📦 Published Skills Must Pass'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read # read the skills
+    steps:
+      - name: '🛡️ Harden Runner'
+        uses: tannergolden/standards/actions/harden@v1
+        with:
+          egress-policy: audit
+          notice: '🧪 Skill gate: validates published skills against the Agent Skills specification.'
+
+      - name: '📂 Checkout'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: '🧪 Check Published Skills'
+        uses: ./.github/actions/check-skills
+        with:
+          path: skills
+
+  checker:
+    name: '🚨 The Checker Must Fail'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read # read the fixtures
+    steps:
+      - name: '🛡️ Harden Runner'
+        uses: tannergolden/standards/actions/harden@v1
+        with:
+          egress-policy: audit
+          notice: '🚨 Negative test: asserts the skill checker still rejects known-bad input.'
+
+      - name: '📂 Checkout'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: '🚨 Hostile Fixtures Must Be Rejected'
+        uses: ./.github/actions/check-skills
+        with:
+          path: tests/fixtures/skills
+          expect-failure: 'true'
+
+      # A non-zero exit is not enough on its own: any crash satisfies it,
+      # including one that means the rules never ran. This asserts the NAMED
+      # rules still fire, as a subset check, so adding a fixture never breaks
+      # the job while deleting a rule does.
+      - name: '🔬 Every Named Rule Still Fires'
+        run: |
+          set -euo pipefail
+          python3 .github/actions/check-skills/check-skills.py \
+            tests/fixtures/skills --json > "${RUNNER_TEMP}/fixtures.json" || true
+          python3 - <<'PY'
+          import json, os, pathlib, sys
+
+          REQUIRED = {
+              "no SKILL.md",
+              "does not exist",
+              "never references it",
+              "directory is",
+              "live import token",
+              "invisible character",
+              "runs a shell command",
+              "not permitted",
+          }
+          report = json.loads(pathlib.Path(os.environ["RUNNER_TEMP"], "fixtures.json").read_text())
+          blob = " ".join(item["message"] for item in report["errors"])
+          missing = sorted(phrase for phrase in REQUIRED if phrase not in blob)
+          if missing:
+              print(f"::error title=Check Skills::these rules did not fire on the fixtures: {missing}. Either a rule was weakened or its fixture was deleted, and both are silent failures in production.")
+              sys.exit(1)
+          print(f"All {len(REQUIRED)} named rules fired. {len(report['errors'])} error(s) total.")
+          PY

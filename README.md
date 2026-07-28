@@ -1,7 +1,7 @@
 <!--
 title: '🤖 AI INFRASTRUCTURE'
-description: 'The publisher of agent instructions and configuration that every repository in this fleet receives by release, with no pull request and no build step.'
-tags: [agent-infrastructure, distribution, publisher, instructions]
+description: 'The publisher of agent instructions and skills that any repository can pull at a pinned tag, written once and delivered without a build step.'
+tags: [agent-infrastructure, distribution, skills, publisher]
 category: docs
 -->
 
@@ -12,188 +12,196 @@ category: docs
 
 <a name="top"></a>
 
-**One source of agent instructions and configuration, authored once as literal bytes and delivered to every repository that asks for it.**
+**One set of agent instructions and a library of skills, authored once here and pulled by any repository at a pinned tag.**
 
-_Written once. Delivered whole. Never pasted by hand._
+_Written once. Pinned deliberately. Never pasted by hand._
 
 </div>
 
 ---
 
-## ⚠️ Read This Before You Install Anything
-
-> [!WARNING]
-> **A `.claude/settings.json` hook is arbitrary code execution on clone.** Claude Code 2.1.220 runs project hooks in headless `claude -p` inside a directory that has **never been trusted**, with no prompt and no trust record written. The workspace-trust dialog is an interactive-TUI gate only. It is **not** a control in CI, in cloud sessions, in background agents, or in any `git clone && claude -p` script.
->
-> **Committing the stub is the act of consent.** There is no second confirmation, because there is nowhere left to put one.
-
-Two consequences follow, and both are mechanisms rather than promises:
-
-- 🛑 **The kill switch.** Create an empty file at `.ai/hooks/.disabled` from the GitHub web UI. Every shipped hook checks for it on the line after its shebang and exits immediately. No token, no sync, no publisher involvement, about thirty seconds per repository. This publisher never creates that file and never deletes it.
-- 🔎 **Hook failures are invisible in headless mode.** `claude -p` prints its answer and exits 0 whether or not the hook fired, and `--output-format json` carries no hook field at all. `sh .ai/ai.sh verify` is the only command that can see a broken hook, and [`docs/Threat-Model.md`](docs/Threat-Model.md) explains why.
-
-Read the [Threat Model](docs/Threat-Model.md) before you commit the stub, not after.
-
----
-
 ## 🎯 Our Strategic Intent
 
-Every coding agent wants the same thing: the conventions of the repository it is working in. Each one insists on a **different filename**. Claude Code reads `CLAUDE.md` and has no discovery path for `AGENTS.md` at all. Gemini CLI reads `GEMINI.md`.
+Every coding agent wants the same thing: the conventions of the repository it is working in. Each one insists on a different filename. The usual answer is to copy the file by hand, which drifts the first time one copy is edited. The other answer is to link, which fails because **agents do not reliably follow links**.
 
-The usual answer is to write the file once and copy it by hand, which means copies that drift apart the first time one of them is edited. The other answer is to write it once and link the rest to it, which fails because **agents do not reliably follow links**.
+This repository is the third answer. `AGENTS.md` holds the law, two one-line routers carry it to the tools that cannot find it, and a downstream repository pulls all three at a tag. There is **no build step**: the files here are the files that land, so reviewing a release is reading a diff of what will arrive.
 
-This repository is the third answer: **a pure publisher**. The delivered files are stored here as literal bytes, in the shape they will occupy in a consuming repository. A release moves a tag, and every repository pinned to that tag receives the new bytes on its next scheduled run.
-
-It follows the same shape as [`tannergolden/standards`](https://github.com/tannergolden/standards): commit a small stub, pin a major version, receive every later fix when that tag moves.
-
-**There is no build step.** Reviewing a release is reading a diff of `payload/`, because `payload/` is what lands. A compiler whose output is byte-identical to its input is pure overhead that manufactures the one bug class this design most fears: an emitter defect reaching always-loaded instruction files in six repositories at once.
+It follows the same shape as [`tannergolden/standards`](https://github.com/tannergolden/standards), which publishes workflows the same way: pin a major, receive every later fix when that tag moves.
 
 ---
 
 ## 🤖 Supported Tools
 
-Support means **tested and budgeted**, not merely reachable.
+Support means tested, not merely reachable.
 
-| Tool                              | Reads                                  | Status                  |
-| :-------------------------------- | :------------------------------------- | :---------------------- |
-| **Claude Code**                   | `CLAUDE.md`, which imports `AGENTS.md` | supported               |
-| **Gemini CLI**                    | `GEMINI.md`, which imports `AGENTS.md` | supported               |
-| anything else reading `AGENTS.md` | `AGENTS.md`                            | incidental, best effort |
-
-Both routers are one import line over a shared body, so **two tools means three files** and `AGENTS.md` is the only one carrying content. That file is also read, unchanged, by tools nobody here tests. They are neither supported nor blocked: a contributor who arrives with one still gets this repository's conventions, which is a side effect worth having and not a promise worth making.
-
-Adding a third tool is **additive**: one more router in `payload/`, one more `vendor` value in the lockfile. Nothing here is rewritten to do it, and that is the test the `vendor` field exists to make checkable:
-
-```bash
-jq -r '.files[] | select(.vendor == "claude") | .path' .ai/ai.lock.json
-```
-
----
-
-## 📥 Installing It: One File
-
-A consuming repository commits **exactly one file**, copied from [`bootstrap/ai-sync.yml`](bootstrap/ai-sync.yml) to `.github/workflows/ai-sync.yml`. Everything else arrives from there on.
-
-One file is the floor, not a compromise. The built-in `GITHUB_TOKEN` cannot write anything under `.github/workflows/`, so zero committed files would require a fleet-wide `workflows: write` credential, and that is the one credential whose theft could not be evicted.
+| Tool                              | Reads                                    | Cost to support |
+| :-------------------------------- | :--------------------------------------- | :-------------- |
+| **GitHub Copilot** (coding agent) | `AGENTS.md`, natively                    | nothing         |
+| **GitHub Copilot** (CLI)          | `AGENTS.md`, natively                    | nothing         |
+| **GitHub Copilot** (VS Code)      | `AGENTS.md`, once one setting is enabled | one toggle      |
+| **Claude Code**                   | `CLAUDE.md`, which imports `AGENTS.md`   | one envelope    |
+| **Gemini CLI**                    | `GEMINI.md`, which imports `AGENTS.md`   | one envelope    |
+| anything else reading `AGENTS.md` | `AGENTS.md`                              | nothing         |
 
 > [!IMPORTANT]
-> **The stub's `permissions:` block must equal [`ceiling.lock`](ceiling.lock) exactly.** A caller's permissions are a **ceiling, not a grant**. Too narrow and the consumer's run fails at startup with no job, no step and no log to read. Too wide and the consumer has granted scopes nobody declared. A job in this repository's CI compares the workflow, the lock and the stub on every push, because a drift there is invisible from every other angle.
+> **VS Code Copilot ignores `AGENTS.md` until you enable `chat.useAgentsMdFile`.** It is experimental and off by default, so a developer who has not set it gets no instructions and no warning. It is a one-time per-developer setting, the same shape of cost as Gemini's folder-trust prompt.
+
+Claude Code has no discovery path for `AGENTS.md` at all, and Gemini CLI discovers only `GEMINI.md` unless configured otherwise. Both facts were verified against the shipped tools rather than taken from documentation. That is why two routers exist, and why each will become deletable the day its vendor adopts the canonical filename.
 
 ---
 
-## 🔃 How Distribution Works
+## 📥 Installing the Agent Files
 
-```mermaid
-graph LR
-    A[edit payload/] --> B[release moves v1]
-    B --> C[consumer's weekly sync]
-    C --> D[build job: read only]
-    D --> E[apply job: writes and pushes]
-    E --> F[lockfile records every path]
+A downstream repository commits **one workflow** and receives `AGENTS.md`, `CLAUDE.md` and `GEMINI.md` from then on. There is no native `uses:` for content, so the pin lives on a checkout step rather than a `uses:` line.
+
+<details>
+<summary>Click to view the full sync workflow</summary>
+
+```yaml
+name: '🤖 Sync AI Instructions'
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 5 * * 1'
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  sync:
+    name: '🤖 Pull the Agent Files'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: '📂 Checkout this repository'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # THE PIN. `v1` moves when a release is cut, so a fix arrives here on
+      # the next run. Change it to v2 deliberately, never automatically.
+      - name: '📥 Fetch the agent files at the pinned tag'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: tannergolden/ai
+          ref: v1
+          path: .ai-source
+          persist-credentials: false
+
+      - name: '📤 Copy and push if anything changed'
+        run: |
+          set -euo pipefail
+          cp .ai-source/AGENTS.md .ai-source/CLAUDE.md .ai-source/GEMINI.md .
+          rm -rf .ai-source
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add AGENTS.md CLAUDE.md GEMINI.md
+          if git diff --cached --quiet; then echo 'Already current.'; exit 0; fi
+          git commit -m 'chore(agents): sync agent files from tannergolden/ai tag v1'
+          git push
 ```
 
-The reusable workflow runs as two jobs, and the split is the point:
+</details>
 
-| Job     | Permissions                        | Does                                                               |
-| :------ | :--------------------------------- | :----------------------------------------------------------------- |
-| `build` | `contents: read`                   | checks the consumer out, runs the linters and the engine, packs it |
-| `apply` | `actions: read`, `contents: write` | verifies the artifact against a digest, commits, pushes            |
+No token, no secret, no app. The built-in `GITHUB_TOKEN` reads this public repository and pushes to its own, and pushes made with that token start no further workflow runs, so a sync into a quiet repository stays quiet.
 
-The engine, the linters and the payload therefore never execute in a job holding a write token. Be honest about what that buys: it **reduces** the surface rather than eliminating it, because the `apply` job still runs YAML authored here. What it removes is several hundred lines of Python and the whole payload from the blast radius of the write scope.
-
-The `actions: read` on that second row is not decoration, and a stub built without it fails at startup with nothing in the Actions tab to read. It is what lets the write job collect the build job's artifact with `gh`, which ships on the runner image, instead of running a third-party downloader action beside a token that can write to your default branch. Both scopes are in [`ceiling.lock`](ceiling.lock); copy that file, do not retype this table.
-
-Three properties fall out of the shape, and each is deliberate:
-
-- **No pull requests.** The push is made by the consuming repository's own built-in token, so the update simply arrives. The review happened here, on the diff of `payload/`, before the release.
-- **No wave of workflow runs.** Pushes made with that token start no further runs, so a sync into a quiet repository stays quiet.
-- **Clean removal.** The lockfile records every path written and its digest, so the inventory of what arrived is also the manifest for taking it away.
-
-### 🚫 No pull request on the sync path, and no PR gate on any branch
-
-Pull requests exist in this fleet only where `GITHUB_TOKEN` provably cannot write: stub upgrades under `.github/workflows/` (at most one announced edit per major), and Dependabot. Everything else is a direct push to `Development`, which is trunk here and the default branch, not a stage in a promotion ladder.
+**Four things that will bite**, in likelihood order: a protected default branch rejects the push; the first run overwrites a hand-written `AGENTS.md`, so dispatch it once and read the diff before trusting the schedule; a repository with no activity for 60 days has its schedule disabled by GitHub; and the workflow can never update itself, because no token available to it can write under `.github/workflows/`.
 
 ---
 
-## 📦 What Is Published
+## 📦 Skills
 
-| Path                                   | Vendor | Write mode                                      |
-| :------------------------------------- | :----- | :---------------------------------------------- |
-| `AGENTS.md`                            | both   | overwrite, **refuse on first contact**          |
-| `CLAUDE.md`                            | claude | overwrite, refuse on first contact              |
-| `GEMINI.md`                            | gemini | overwrite, refuse on first contact              |
-| `.ai/ai.sh`                            | both   | overwrite                                       |
-| `.ai/hooks/ai-context.sh`              | claude | overwrite                                       |
-| `.claude/settings.json`                | claude | **merged by command prefix, never overwritten** |
-| `.ai/ai.lock.json`, `.ai/ai.lock.date` | none   | receipts, rewritten every run                   |
+Skills are **downloadable, never synced**. There is no directory both supported tools read, so committing them into every repository would mean two copies that drift. One canonical copy lives here and you place it where your tool looks.
 
-**Read but never written:** the stub itself, `.ai/local/agents-local.md` (your own repository-specific law, folded into the delivered `AGENTS.md` between markers), and `.ai/hooks/.disabled` (the kill switch).
+| Tool            | Copy the skill directory into            |
+| :-------------- | :--------------------------------------- |
+| **Claude Code** | `.claude/skills/<name>/`                 |
+| **Gemini CLI**  | `.agents/skills/<name>/`                 |
 
-Two of those rows are load-bearing enough to state plainly:
-
-- **`refuse on first contact`.** A file that already exists, is absent from the lockfile, and carries no generated header is treated as hand written, and the sync stops rather than overwriting it. `sh .ai/ai.sh adopt` moves a hand-written `AGENTS.md` into `.ai/local/agents-local.md`, so the law survives the installation instead of being traded for it.
-- **`merged`.** `.claude/settings.json` is a repository's only committed, team-shared Claude configuration file, and Claude Code has no drop-in directory and no include. This publisher owns hook entries whose command begins with one frozen prefix, and nothing else in that file. Every other key and every foreign hook entry survives byte for byte.
-
-Skills, subagents, command dialects and per-tool rule formats are **not** published. With two supported tools each of those reaches exactly one of them, and none has a subject yet.
-
----
-
-## 🔎 What Is Checked, and What Is Only Counted
-
-[`actions/ai-sync/check.py`](actions/ai-sync/check.py) is the whole linter suite: one file, standard library only. It runs twice, once here in CI and once at the consumer against the staged bytes before a single one is written. Five checks **gate**:
-
-| Check         | Rejects                                                                                                                                                              |
-| :------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **at-strict** | any `@token`, including inside backticks. Gemini reads it as an import and either substitutes an HTML comment over the line or inlines an arbitrary file recursively |
-| **shellbang** | ` ```! ` and `` !`cmd` `` in any instruction file: inert in Gemini, live in Claude Code                                                                             |
-| **invisible** | bidi overrides, zero-width and Unicode tag characters                                                                                                                |
-| **permalink** | branch-form `github.com/.../blob/<branch>/` links in delivered output                                                                                                |
-| **shape**     | any path outside the published set, scaffolding, non-POSIX shipped scripts, settings keys beyond `hooks`, and any hook command outside the frozen set                |
-
-Byte counts and directive counts are **printed, never gated**. Neither supported tool truncates a long instruction file, so the only honest budget is session cost, and no corpus exists to calibrate one against. A number becomes a gate only after the corpus exists, the counting rule is one written paragraph, and it has run against the real files once without being tuned until it passed.
-
-The most important job in [`ci.yml`](.github/workflows/ci.yml) is the one that asserts the checker **fails** on [`tests/fixtures/`](tests/fixtures). A checker that has never failed is not a checker, and a linter that silently stopped matching looks exactly like a clean repository.
-
----
-
-## 🧯 If Something Goes Wrong
-
-| Situation                              | Do this                                                                                                                  |
-| :------------------------------------- | :----------------------------------------------------------------------------------------------------------------------- |
-| A bad hook is out in the fleet         | Create `.ai/hooks/.disabled` in each repository from the web UI. Immediate, no sync needed                               |
-| A bad release is out                   | `git tag -f v1 <good sha> && git push --force`. Fixes future runs only                                                   |
-| One repository should stop syncing     | Delete its `.github/workflows/ai-sync.yml`                                                                               |
-| One repository should be fully removed | `sh .ai/ai.sh remove`, which prints the plan, then `--force`. See the [Retirement Contract](docs/Retirement-Contract.md) |
-| Is the hook actually running?          | `sh .ai/ai.sh verify`                                                                                                    |
-
-The kill switch fixes the fleet in minutes; the tag fixes it on everyone's next scheduled run, which is weekly. That difference is the entire reason the kill switch exists.
-
----
-
-## 🛠️ Working On This Repository
+Each skill is a directory, and the directory name is the contract: it is what you type to invoke, and `name` in the frontmatter must equal it.
 
 ```bash
-make setup    # install the commit-msg hook, once per clone
-make check    # lint payload/, the bytes that will be published
-make test     # prove the linter still rejects the hostile fixtures
-make build    # copy payload/ instruction files to the root, dogfooding them
-make verify   # fail if those generated root copies are stale
+skills/<name>/
+├── SKILL.md          # required. Navigation, not content. Under 500 lines
+├── references/       # detail, loaded only when SKILL.md says to
+├── assets/           # templates and resources
+└── evals/
+    └── evals.json    # the evidence it beats its own baseline
 ```
 
-This repository consumes its own output: `AGENTS.md`, `CLAUDE.md` and `GEMINI.md` at the root are **generated copies** of the ones under `payload/`. Edit the payload, then `make build`. A publisher that does not run its own product finds every defect second.
+Three tiers, three costs, and this is what every authoring rule is defending:
+
+| Tier | What | Loads | Cost |
+| :--- | :--- | :--- | :--- |
+| A | `name` + `description` | at startup, for **every** skill, used or not | always paid |
+| B | `SKILL.md` body | on invocation | **persists the whole session**, never re-read |
+| C | bundled files | only when the body sends the agent there | zero until used |
+
+> [!IMPORTANT]
+> **Write the description for a person as well as a model.** Gemini CLI shows it in a consent prompt asking the user to grant access to the whole skill directory. Keyword soup reads well to a matcher and badly to a human, and a consent prompt nobody reads is a control you have already lost.
+
+Frontmatter is **two fields**, `name` and `description`, plus the optional `license`, `compatibility` and `metadata`. `allowed-tools` is banned outright. Claude-only keys and `` !`command` `` shell injection are permitted **only** in a skill that declares itself with `compatibility`, because both are silently inert on the other two tools.
+
+`SKILL.md` frontmatter uses `---` fences, unlike every other document here. That is correct: the Agent Skills specification requires it.
+
+---
+
+## 🛡️ What May Live Here
+
+Four rules. They exist because this repository is where a second law would go unnoticed.
+
+1. **Law is universal, or it is not law.** No rule in `AGENTS.md` may depend on a capability some supported tool lacks, or on a fact only one repository can vouch for.
+2. **Carriers are vendor-specific and carry nothing.** `CLAUDE.md` and `GEMINI.md` are envelopes. They are allowed to differ precisely because they hold no content that could drift.
+3. **Supported means a named surface, tested.** Not a product. Copilot's coding agent reads the law by default and its JetBrains client reportedly does not, and both are called Copilot.
+4. **Nothing executes on clone.** No hooks, no `settings.json`, no plugin manifest, no MCP configuration, no per-tool rule or command dialects. A skill bundling `scripts/` is the one boundary crossing, and the checker reports it every time.
+
+---
+
+## 🔎 What Is Checked
+
+[`.github/actions/check-skills`](.github/actions/check-skills) validates every skill against the specification and the portability rules. It is a composite action, so any repository with skills can use it:
+
+```yaml
+- uses: tannergolden/ai/.github/actions/check-skills@v1
+  with:
+    path: skills
+```
+
+It gates on the shape of the frontmatter, `name` matching its directory, description and body size, dangling and escaping references, unreferenced files in the directory, live import tokens, invisible characters, and banned or undeclared vendor keys. It warns on a missing eval suite and on bundled scripts.
+
+The most important job in [`skills.yml`](.github/workflows/skills.yml) is the one asserting the checker **fails** on [`tests/fixtures/skills`](tests/fixtures/skills). A checker that has never rejected anything has never been tested, and one that silently stopped matching looks exactly like a clean repository.
+
+---
+
+## 🏷️ Cutting a Release
+
+Two tags, two contracts, and no release machinery:
+
+```bash
+git tag v1.0.0 && git push origin v1.0.0
+git tag -f v1 && git push --force origin v1
+```
+
+`vX.Y.Z` is immutable, for anyone who wants exactness. `v1` moves, and is the pin everyone actually uses. Rolling back is the same force-move aimed at the last good commit, and it reaches consumers on their next scheduled run rather than immediately, which is the honest price of having no fleet-wide credential.
 
 ---
 
 ## 🔗 See also
 
 > [!TIP]
-> [`docs/Repository-Layout.md`](docs/Repository-Layout.md) says where everything sits and which directory ships. [`docs/Threat-Model.md`](docs/Threat-Model.md) states what this can do to a repository that installs it. [`docs/Retirement-Contract.md`](docs/Retirement-Contract.md) defines when a delivered file may be deleted. The engineering standards this repository is built to live in [`tannergolden/standards`](https://github.com/tannergolden/standards) and are followed by link, never by copy.
+> [`AGENTS.md`](AGENTS.md) is the law itself and the only file here with rules in it. The engineering standards this repository is built to live in [`tannergolden/standards`](https://github.com/tannergolden/standards) and are followed by link, never by copy.
 
 ---
 
 <div align="center">
 
-**One source. Literal bytes. No stale copies.**
+`publishes: one law, two envelopes, many skills` &middot; `pinned by: tag`
+
+**One source of law. One copy of every skill. No stale duplicates anywhere.**
 
 [↑ Back to Top](#top)
 
