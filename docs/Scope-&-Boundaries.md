@@ -36,10 +36,9 @@ _Argued for once. Argue with it, never drift past it._
 | `AGENTS.md`       | The law. The only file with rules in it                                                |
 | `CLAUDE.md`       | Claude Code has no discovery path for `AGENTS.md`, verified by probe                   |
 | `GEMINI.md`       | Gemini CLI discovers only `GEMINI.md` unless a settings file says otherwise            |
-| `skills/`         | The second product. One canonical copy per skill, installed rather than synced         |
+| `skills/.unpackaged/` | The second product. One canonical copy per skill, installed rather than synced      |
 | `.github/`        | The skill gate, and a stub calling the shared CI                                       |
 | `docs/`           | These documents                                                                        |
-| `tests/fixtures/` | Input the checker must reject, so the checker is provably able to fail                 |
 | `LICENSE`         | Output copied into other repositories with no licence is unusable by anyone but its author |
 
 ---
@@ -58,7 +57,7 @@ Each row is a decision, not an oversight. That is the point of writing them down
 | Per-tool rule and command dialects              | Each reaches exactly one supported tool, and none is law                                                                                        |
 | A build step, emitters, a `payload/` directory  | The emit set is three root markdown files this repository wants at its own root regardless. A compiler whose output equals its input is overhead |
 | A local-law injection region                    | The law now tells agents to find a repository's own context wherever it lives, so there is nothing left to inject                               |
-| Committed skill archives                        | Build output nobody can review in a diff. Package at release time if a packaged form is ever wanted                                             |
+| Committed skill archives                        | Build output nobody can review in a diff. The release builds them from source and attaches them to the release page instead |
 
 ---
 

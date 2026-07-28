@@ -23,9 +23,15 @@
 # Tier B is never re-read and never freed, so it is capped. Tier C is free
 # until used, which is why the rules push everything there.
 #
+# THE NEGATIVE TEST LIVES IN THIS FILE, under `--self-test`. A checker that
+# has never rejected anything has never been tested, and one that silently
+# stopped matching looks exactly like a clean repository. Keeping the hostile
+# input beside the rules it exercises is what stops the two drifting apart, or
+# one of them being deleted without the other.
+#
 # Usage:  python3 check-skills.py [DIR]          text output, exit 1 on failure
 #         python3 check-skills.py [DIR] --json   the same result as machine input
-# DIR defaults to `skills`.
+#         python3 check-skills.py --self-test    prove every rule still fires
 # =============================================================================
 from __future__ import annotations
 
@@ -33,6 +39,7 @@ import argparse
 import json
 import re
 import sys
+import tempfile
 from pathlib import Path
 
 # --- the specification -------------------------------------------------------
@@ -72,11 +79,11 @@ BODY_MAX_LINES = 500   # specification recommendation
 # this is a real feature and not a typo class; it is simply not portable.
 #
 # MATCHED AS A SHAPE, NOT AS A SUBSTRING, and the difference is not academic.
-# A plain substring search for "!`" fires on an ordinary code span holding a
-# bang, which is how any document that DESCRIBES this syntax, or describes a
-# breaking-change marker, fails its own rule. The real spelling is a bang
-# immediately followed by a backticked command, with the bang itself outside
-# the code span, so the lookbehind is what tells `!`cmd`` apart from `!`.
+# A plain substring search fires on an ordinary code span holding a bang,
+# which is how any document that DESCRIBES this syntax fails its own rule. The
+# real spelling is a bang immediately followed by a backticked command, with
+# the bang itself outside the code span, so the lookbehind is what tells the
+# live form apart from a bang someone merely quoted.
 SHELL_INLINE_RE = re.compile(r"(?<!`)!`[^`\n]+`")
 SHELL_FENCE_RE = re.compile(r"\A\s*```!")
 
@@ -87,32 +94,26 @@ SHELL_FENCE_RE = re.compile(r"\A\s*```!")
 # vendors do not treat as token boundaries.
 AT_RE = re.compile(r"(?:^|(?<=[ \t\n\r]))@[./A-Za-z][^ \t\n\r]*")
 
-# Written as escapes so this file never contains one. Each family runs to its
-# end: a range that stops one codepoint short of the hazard is the failure
-# this rule exists to prevent.
+# Built from CODEPOINTS so this file never contains one of the characters it
+# rejects. Each family runs to its end: a range stopping one codepoint short
+# of the hazard is the failure this rule exists to prevent.
+INVISIBLE_FAMILIES = (
+    (0x00AD, 0x00AD), (0x034F, 0x034F), (0x061C, 0x061C), (0x115F, 0x1160),
+    (0x17B4, 0x17B5), (0x180B, 0x180E), (0x200B, 0x200F), (0x202A, 0x202E),
+    (0x2060, 0x2064), (0x2066, 0x2069), (0x3164, 0x3164), (0xFEFF, 0xFEFF),
+    (0xFFA0, 0xFFA0), (0xE0000, 0xE007F),
+)
 INVISIBLE_RE = re.compile(
-    "["
-    "\u00ad"                    # soft hyphen
-    "\u034f"                    # combining grapheme joiner
-    "\u061c"                    # arabic letter mark
-    "\u115f-\u1160"             # hangul choseong and jungseong fillers
-    "\u17b4-\u17b5"             # khmer inherent vowels, rendered as nothing
-    "\u180b-\u180e"             # mongolian variation selectors and vowel separator
-    "\u200b-\u200f"             # zero width space through right-to-left mark
-    "\u202a-\u202e"             # bidi embedding and override controls
-    "\u2060-\u2064"             # word joiner and the invisible operators
-    "\u2066-\u2069"             # bidi isolates
-    "\u3164"                    # hangul filler
-    "\ufeff"                    # zero width no-break space, also a stray BOM
-    "\uffa0"                    # halfwidth hangul filler
-    "\U000e0000-\U000e007f"     # unicode tag characters
-    "]"
+    "[" + "".join(
+        chr(lo) if lo == hi else f"{chr(lo)}-{chr(hi)}"
+        for lo, hi in INVISIBLE_FAMILIES
+    ) + "]"
 )
 
 # Files a skill may hold without SKILL.md naming them. `evals/` is the eval
 # harness's own directory: it is read by tooling, never by an agent, so it
 # costs no context and needs no reference.
-UNREFERENCED_OK = ("SKILL.md", "evals/")
+UNREFERENCED_OK_PREFIX = "evals/"
 
 MD_LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
 CODE_SPAN_RE = re.compile(r"`([^`\n]+)`")
@@ -177,9 +178,39 @@ def referenced_paths(body: str):
         token = match.group(1).strip()
         if not PATHLIKE_RE.match(token):
             continue
-        if "/" in token or re.search(r"\.[A-Za-z0-9]{1,5}\Z", token):
+        # A NAME IS REQUIRED BEFORE THE EXTENSION. Without that character
+        # class, a bare extension written in prose (`.zip`, `.md`, `.json`)
+        # reads as a filename and gets reported as a missing reference, which
+        # is exactly what happens to any skill that explains a file format.
+        if "/" in token or re.search(r"[A-Za-z0-9_-]\.[A-Za-z0-9]{1,5}\Z", token):
             found.add(token)
     return found
+
+
+def scan_content(label: str, text: str, declared: bool, fail):
+    """The rules that apply to any text an agent will load.
+
+    RUN OVER EVERY MARKDOWN FILE IN THE SKILL, not only SKILL.md. A reference
+    file is loaded into context the moment the body sends the agent to it, so
+    an import token or an invisible character does identical damage there, and
+    a rule scoped to the manifest alone would never see it.
+    """
+    for n, line in enumerate(text.split("\n"), 1):
+        for match in AT_RE.finditer(line):
+            fail(f"{label}:{n}: {match.group()!r} is a live import token in every "
+                 "supported tool. It pulls a file into context, or leaves a "
+                 "comment where your directive was. Rewrite the line.")
+        for match in INVISIBLE_RE.finditer(line):
+            fail(f"{label}:{n}: invisible character U+{ord(match.group()):04X} at "
+                 f"column {match.start() + 1}. Nobody can catch this by reading "
+                 "the diff, which is why it is checked here.")
+        if not declared:
+            hit = SHELL_INLINE_RE.search(line) or SHELL_FENCE_RE.search(line)
+            if hit:
+                fail(f"{label}:{n}: {hit.group().strip()!r} runs a shell command in "
+                     "Claude Code and is literal text in Gemini CLI, so this "
+                     "skill is grounded on one vendor and prints backticks on "
+                     "the other. Declare it with `compatibility`, or remove it.")
 
 
 def check_skill(skill_dir: Path, root: Path):
@@ -274,22 +305,7 @@ def check_skill(skill_dir: Path, root: Path):
              "is a recurring cost for the whole session. Move detail into "
              "references/ and name it from here.")
 
-    for n, line in enumerate(text.split("\n"), 1):
-        for match in AT_RE.finditer(line):
-            fail(f"line {n}: {match.group()!r} is a live import token in every "
-                 "supported tool. It pulls a file into context, or leaves a "
-                 "comment where your directive was. Rewrite the line.")
-        for match in INVISIBLE_RE.finditer(line):
-            fail(f"line {n}: invisible character U+{ord(match.group()):04X} at "
-                 f"column {match.start() + 1}. Nobody can catch this by reading "
-                 "the diff, which is why it is checked here.")
-        if not declared:
-            hit = SHELL_INLINE_RE.search(line) or SHELL_FENCE_RE.search(line)
-            if hit:
-                fail(f"line {n}: {hit.group().strip()!r} runs a shell command in "
-                     "Claude Code and is literal text in Gemini CLI, so this "
-                     "skill is grounded on one vendor and prints backticks on "
-                     "the other. Declare it with `compatibility`, or remove it.")
+    scan_content("SKILL.md", text, declared, fail)
 
     # --- tier C: the bundled files ------------------------------------------
     refs = referenced_paths(body)
@@ -306,12 +322,11 @@ def check_skill(skill_dir: Path, root: Path):
                  "specification asks for shallow references: a chain of files "
                  "pointing at files is a chain an agent abandons partway.")
 
-    present = set()
     for path in sorted(skill_dir.rglob("*")):
-        if path.is_file():
-            present.add(path.relative_to(skill_dir).as_posix())
-    for item in sorted(present):
-        if item == "SKILL.md" or item.startswith(UNREFERENCED_OK[1]):
+        if not path.is_file():
+            continue
+        item = path.relative_to(skill_dir).as_posix()
+        if item == "SKILL.md" or item.startswith(UNREFERENCED_OK_PREFIX):
             continue
         if item not in refs:
             fail(f"{item!r} is in the skill directory but SKILL.md never "
@@ -319,6 +334,11 @@ def check_skill(skill_dir: Path, root: Path):
                  "context and grants the model access to the whole directory, "
                  "so an unreferenced file costs context and widens what the "
                  "user is asked to approve. Reference it or delete it.")
+        if path.suffix == ".md":
+            try:
+                scan_content(item, path.read_text(encoding="utf-8"), declared, fail)
+            except UnicodeDecodeError as exc:
+                fail(f"{item!r} is not valid UTF-8: {exc}")
 
     if not (skill_dir / "evals" / "evals.json").is_file():
         warn("no evals/evals.json. Nothing here proves this skill beats its own "
@@ -331,23 +351,113 @@ def check_skill(skill_dir: Path, root: Path):
     return problems, warnings
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description="Validate skill directories.")
-    parser.add_argument("root", nargs="?", default="skills")
-    parser.add_argument("--json", action="store_true")
-    args = parser.parse_args()
-
-    root = Path(args.root)
-    if not root.is_dir():
-        print(f"{root}: not a directory", file=sys.stderr)
-        return 2
-
+def check_root(root: Path):
     skills = sorted(p for p in root.iterdir() if p.is_dir())
     problems, warnings = [], []
     for skill in skills:
         found, warned = check_skill(skill, root)
         problems.extend(found)
         warnings.extend(warned)
+    return skills, problems, warnings
+
+
+# --- the negative test -------------------------------------------------------
+# Every rule that must still be capable of firing, each with hostile input
+# written to trip it. The input is BUILT HERE rather than committed, so a rule
+# and the thing that proves it works cannot be deleted separately, and the
+# invisible character is constructed from its codepoint so this file never
+# contains one.
+SELF_TEST_REQUIRED = (
+    "no SKILL.md",
+    "does not exist",
+    "never references it",
+    "directory is",
+    "live import token",
+    "invisible character",
+    "runs a shell command",
+    "not permitted",
+)
+
+
+def build_hostile(root: Path):
+    """Three deliberately broken skills, covering every asserted rule."""
+    d = root / "no-manifest"
+    d.mkdir()
+    (d / "stray.md").write_text("No SKILL.md here, so nothing discovers this.\n",
+                                encoding="utf-8")
+
+    d = root / "wrong-name"
+    d.mkdir()
+    (d / "SKILL.md").write_text(
+        "---\n"
+        "name: not-the-directory-name\n"
+        "description: Its name disagrees with its directory, it points at a file "
+        "that does not exist, and it ships a file it never references.\n"
+        "---\n\n"
+        "## Additional resources\n\n"
+        "- `references/absent.md` - deliberately missing.\n",
+        encoding="utf-8")
+    (d / "orphan.md").write_text("Never referenced from SKILL.md.\n", encoding="utf-8")
+
+    d = root / "hazards"
+    d.mkdir()
+    (d / "SKILL.md").write_text(
+        "---\n"
+        "name: hazards\n"
+        "description: Carries one of each content hazard the checker must reject.\n"
+        "allowed-tools: Read Grep\n"
+        "---\n\n"
+        "Ask @someone before running this.\n\n"
+        "Diagnostic: !`echo hello`\n\n"
+        "A zero width space splits these:\nsplit" + chr(0x200B) + "word\n",
+        encoding="utf-8")
+
+
+def self_test() -> int:
+    with tempfile.TemporaryDirectory() as scratch:
+        root = Path(scratch)
+        build_hostile(root)
+        skills, problems, warnings = check_root(root)
+        blob = " ".join(item["message"] for item in problems)
+
+        print(f"self-test: {len(skills)} hostile skill(s), {len(problems)} error(s), "
+              f"{len(warnings)} warning(s)")
+        missing = [phrase for phrase in SELF_TEST_REQUIRED if phrase not in blob]
+        for phrase in SELF_TEST_REQUIRED:
+            print(f"  {'fired    ' if phrase not in missing else 'DID NOT  '} {phrase}")
+
+        if not problems:
+            print("::error title=Check Skills::The hostile input was ACCEPTED. The "
+                  "rules have stopped matching, which looks exactly like a clean "
+                  "repository and is not one.")
+            return 1
+        if missing:
+            print(f"::error title=Check Skills::these rules did not fire: {missing}. "
+                  "Either a rule was weakened or its hostile input was changed, and "
+                  "both are silent failures in production.")
+            return 1
+        print("Every asserted rule still rejects what it exists to reject.")
+        return 0
+
+
+def main(argv=None) -> int:
+    parser = argparse.ArgumentParser(description="Validate skill directories.")
+    parser.add_argument("root", nargs="?", default="skills")
+    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--self-test", action="store_true",
+                        help="Prove every rule still rejects known-bad input, "
+                             "using hostile skills built in a temporary directory.")
+    args = parser.parse_args(argv)
+
+    if args.self_test:
+        return self_test()
+
+    root = Path(args.root)
+    if not root.is_dir():
+        print(f"{root}: not a directory", file=sys.stderr)
+        return 2
+
+    skills, problems, warnings = check_root(root)
 
     if args.json:
         print(json.dumps({"root": str(root), "skills": [p.name for p in skills],

@@ -137,13 +137,13 @@ jobs:
           set -uo pipefail
           fail=0
 
-          if ! python3 .github/actions/check-skills/check-skills.py skills; then
+          if ! python3 .github/actions/check-skills/check-skills.py skills/.unpackaged; then
             echo "::error title=Release::A published skill does not pass its own checks. Refusing to tag."
             fail=1
           fi
 
-          if python3 .github/actions/check-skills/check-skills.py tests/fixtures/skills > /dev/null; then
-            echo "::error title=Release::The hostile fixtures were ACCEPTED, so the rules have stopped matching. Refusing to tag."
+          if ! python3 .github/actions/check-skills/check-skills.py --self-test; then
+            echo "::error title=Release::The checker no longer rejects known-bad input, so the gate above proves nothing. Refusing to tag."
             fail=1
           fi
 
@@ -155,7 +155,22 @@ jobs:
           done
 
           [ "$fail" -eq 0 ] || exit 1
-          echo "Skills pass, fixtures are rejected, and all three delivered files are present."
+          echo "Skills pass, known-bad input is still rejected, and all three delivered files are present."
+
+      # Built here rather than committed. An archive in the tree is build
+      # output nobody can review in a diff, and it goes stale silently the
+      # moment its source changes. Attached to the release, it is versioned,
+      # downloadable, and regenerated from the source every time.
+      - name: '📦 Package Each Skill'
+        id: package
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          for skill in skills/.unpackaged/*/; do
+            [ -d "$skill" ] || continue
+            python3 skills/.unpackaged/develop/scripts/package.py "${skill%/}" --out dist
+          done
+          echo "Packaged: $(ls dist | tr '\n' ' ')"
 
       # ⚠️ THE TAGS HERE ARE LIGHTWEIGHT, DELIBERATELY. A lightweight tag is a
       # ref and nothing else: no tag object, so no tagger, no message, and
@@ -194,7 +209,8 @@ jobs:
           gh release create "$VERSION" \
             --title "$VERSION" \
             --generate-notes \
-            --latest
+            --latest \
+            dist/*
 
           {
             echo "### 🏷️ Released $VERSION"

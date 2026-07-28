@@ -4,14 +4,14 @@
 #
 # Purpose: validates every skill directory against the Agent Skills
 # specification and against the portability rules that keep one authored
-# skill working in both supported tools.
+# skill working in every supported tool.
 #
 # ⚠️ WHY THIS IS A GATE AND NOT A CONVENTION. Every way a skill can be wrong
 # is silent. A missing SKILL.md is not an error, it is a directory nothing
 # discovers. A `name` that disagrees with its directory is found under one
 # name and invoked under another. A body over the size guidance is not
-# rejected, it just costs the whole session. A Claude-only frontmatter key
-# does not warn on Gemini, it is dropped. An agent authoring a skill cannot
+# rejected, it just costs the whole session. A single-tool frontmatter key
+# does not warn elsewhere, it is dropped. An agent authoring a skill cannot
 # catch any of that by re-reading its own work, which is the definition of a
 # thing that belongs in continuous integration.
 #
@@ -38,18 +38,18 @@ inputs:
       checked; files at the top level are ignored.
     required: false
     default: 'skills'
-  expect-failure:
+  self-test:
     description: >-
-      Invert the result, so the step passes only when the checker REJECTS
-      what it was given. Used against the hostile fixtures: a checker that
-      has never failed is not a checker, and one that silently stopped
-      matching looks exactly like a clean repository.
+      Ignore `path` and instead prove the checker still REJECTS known-bad
+      input, using hostile skills built in a temporary directory. A checker
+      that has never rejected anything has never been tested, and one that
+      silently stopped matching looks exactly like a clean repository.
     required: false
     default: 'false'
 
 outputs:
   errors:
-    description: 'Number of errors found.'
+    description: 'Number of errors found. Zero in self-test mode, which reports through its exit status.'
     value: ${{ steps.check.outputs.errors }}
   warnings:
     description: 'Number of warnings found.'
@@ -63,17 +63,30 @@ runs:
       shell: bash
       env:
         SKILLS_PATH: ${{ inputs.path }}
-        EXPECT_FAILURE: ${{ inputs.expect-failure }}
+        SELF_TEST: ${{ inputs.self-test }}
         ACTION_PATH: ${{ github.action_path }}
       run: |
         set -uo pipefail
+
+        if [ "$SELF_TEST" = "true" ]; then
+          echo "errors=0" >> "$GITHUB_OUTPUT"
+          echo "warnings=0" >> "$GITHUB_OUTPUT"
+          python3 "${ACTION_PATH}/check-skills.py" --self-test | tee "${RUNNER_TEMP}/self-test.txt"
+          status="${PIPESTATUS[0]}"
+          {
+            echo "### 🧪 Skill checker self-test"
+            echo ""
+            echo '```text'
+            cat "${RUNNER_TEMP}/self-test.txt"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+        fi
+
         report="${RUNNER_TEMP}/check-skills.json"
         status=0
         python3 "${ACTION_PATH}/check-skills.py" "$SKILLS_PATH" --json > "$report" || status=$?
 
-        # A non-zero exit alone is too weak a claim when inverting: a crash
-        # would satisfy it, including one that means no rule ever ran. So the
-        # report is parsed and the counts are read from it.
         errors=$(python3 -c 'import json,sys; print(len(json.load(open(sys.argv[1]))["errors"]))' "$report")
         warnings=$(python3 -c 'import json,sys; print(len(json.load(open(sys.argv[1]))["warnings"]))' "$report")
         echo "errors=${errors}" >> "$GITHUB_OUTPUT"
@@ -89,14 +102,5 @@ runs:
           echo "| Errors | ${errors} |"
           echo "| Warnings | ${warnings} |"
         } >> "$GITHUB_STEP_SUMMARY"
-
-        if [ "$EXPECT_FAILURE" = "true" ]; then
-          if [ "$errors" -eq 0 ]; then
-            echo "::error title=Check Skills::The hostile fixtures were ACCEPTED. The rules have stopped matching, which looks exactly like a clean repository and is not one."
-            exit 1
-          fi
-          echo "The hostile fixtures were rejected with ${errors} error(s), as they must be."
-          exit 0
-        fi
 
         exit "$status"

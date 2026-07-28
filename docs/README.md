@@ -46,7 +46,7 @@ Read [Scope & Boundaries](Scope-&-Boundaries.md) first if you are about to add s
 
 **"How do I get these files into my repository?"** [Installation](Installation.md).
 
-**"How do I write a skill?"** [Skill Authoring](Skill-Authoring.md), then the reference implementation at [`skills/conventional-commit/`](../skills/conventional-commit/SKILL.md).
+**"How do I write a skill?"** Install [`develop`](../skills/.unpackaged/develop/SKILL.md), the meta skill that walks you through it, then read [Skill Authoring](Skill-Authoring.md) for the rules it enforces.
 
 **"Why is it built this way?"** [Vendor Facts](Vendor-Facts.md). Nearly every structural decision here traces to one row in that table.
 

@@ -41,7 +41,7 @@ jobs:
       contents: read # read this repository
     uses: tannergolden/standards/.github/workflows/ci.yml@v1
     with:
-      lint-command: 'python3 .github/actions/check-skills/check-skills.py skills'
+      lint-command: 'python3 .github/actions/check-skills/check-skills.py skills/.unpackaged'
       # No SPDX headers and no LICENSES/ directory here: the published files
       # are copied verbatim into other people's trees, where a licence header
       # inside an always-loaded instruction file is noise a model reads every

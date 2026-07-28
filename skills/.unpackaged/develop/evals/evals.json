@@ -1,0 +1,90 @@
+{
+  "$comment": [
+    "Test cases for this skill, in the format the skill-creator plugin reads.",
+    "",
+    "TWO THINGS ARE MEASURED SEPARATELY, because they fail separately: whether",
+    "the skill is invoked on the prompts it should be, and whether its output",
+    "is right once it is. A skill that triggers reliably and answers badly and",
+    "a skill that answers well and never triggers are both broken, and only",
+    "the first looks like it is working.",
+    "",
+    "The should-not-trigger cases matter most for this skill in particular.",
+    "It is named `develop`, which is a word people use about ordinary coding",
+    "work, so the risk is not that it never fires but that it fires on every",
+    "request to build something."
+  ],
+  "schema": 1,
+  "skill": "develop",
+  "cases": [
+    {
+      "id": "trigger-write-new",
+      "prompt": "write me a skill that reviews pull requests",
+      "should_trigger": true,
+      "assertions": [
+        "The description is written before the body",
+        "The frontmatter carries exactly name and description unless a vendor key is declared with compatibility",
+        "The name matches the directory name and the required pattern"
+      ]
+    },
+    {
+      "id": "trigger-never-fires",
+      "prompt": "my skill never activates, can you look at it",
+      "should_trigger": true,
+      "assertions": [
+        "The description is diagnosed first, not the body",
+        "The name is checked against the directory name"
+      ]
+    },
+    {
+      "id": "trigger-too-broad",
+      "prompt": "this skill keeps loading when I do not want it",
+      "should_trigger": true,
+      "assertions": [
+        "The fix narrows the description rather than editing the body",
+        "It names what the skill is not for"
+      ]
+    },
+    {
+      "id": "trigger-oversized",
+      "prompt": "my SKILL.md is 900 lines, split it up",
+      "should_trigger": true,
+      "assertions": [
+        "Detail moves into references/ rather than being deleted",
+        "Each reference is named from the body with a trigger for when to load it"
+      ]
+    },
+    {
+      "id": "trigger-review",
+      "prompt": "review this SKILL.md before I publish it",
+      "should_trigger": true,
+      "assertions": [
+        "The description is read alone and judged on what request would summon it",
+        "Every bundled file is checked for a reference from the body"
+      ]
+    },
+    {
+      "id": "no-trigger-ordinary-feature",
+      "prompt": "develop a login page for this app",
+      "should_trigger": false,
+      "assertions": [
+        "The skill is not loaded: this is ordinary feature work, and the name collision is the whole risk"
+      ]
+    },
+    {
+      "id": "no-trigger-agents-file",
+      "prompt": "add a rule to AGENTS.md about branch naming",
+      "should_trigger": false,
+      "assertions": [
+        "The skill is not loaded: always-loaded law is not a skill"
+      ]
+    },
+    {
+      "id": "no-trigger-install",
+      "prompt": "how do I install a skill into Claude Code",
+      "should_trigger": false,
+      "assertions": [
+        "The skill is not loaded: installing is not authoring"
+      ]
+    }
+  ]
+}

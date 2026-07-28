@@ -53,7 +53,7 @@ Claude Code has no discovery path for `AGENTS.md` at all, and Gemini CLI discove
 | :---------------------------- | :---------------------------------------------------------------- |
 | `AGENTS.md`                   | The law. The only file in this repository with rules in it        |
 | `CLAUDE.md`, `GEMINI.md`      | Envelopes. One import line each, carrying no law of their own     |
-| `skills/<name>/`              | Skills, one canonical copy each, installed rather than synced     |
+| `skills/.unpackaged/<name>/`  | Skills, one canonical copy each, installed rather than synced     |
 
 Nothing here executes on clone, and nothing is generated from anything else.
 
@@ -65,7 +65,7 @@ Nothing here executes on clone, and nothing is generated from anything else.
 
 **To install a skill**, copy its directory into `.claude/skills/` for Claude Code or `.agents/skills/` for Gemini CLI. There is no directory both tools read, which is why skills are installed rather than synced.
 
-**To write a skill**, read [Skill Authoring](docs/Skill-Authoring.md) and then [`skills/conventional-commit/`](skills/conventional-commit/SKILL.md), which is the reference implementation and passes every gate.
+**To write a skill**, install [`develop`](skills/.unpackaged/develop/SKILL.md), the meta skill that walks you through authoring one, and read [Skill Authoring](docs/Skill-Authoring.md) for the rules it enforces.
 
 **To add anything to this repository**, read [Scope & Boundaries](docs/Scope-&-Boundaries.md) first. It exists to stop a second law appearing here.
 
@@ -78,10 +78,10 @@ Nothing here executes on clone, and nothing is generated from anything else.
 ```yaml
 - uses: tannergolden/ai/.github/actions/check-skills@v1
   with:
-    path: skills
+    path: skills/.unpackaged
 ```
 
-The most important job in [`skills.yml`](.github/workflows/skills.yml) is the one asserting the checker **fails** on [`tests/fixtures/skills`](tests/fixtures/skills). A checker that has never rejected anything has never been tested, and one that silently stopped matching looks exactly like a clean repository.
+The most important job in [`skills.yml`](.github/workflows/skills.yml) is the one asserting the checker still **rejects** known-bad input. It builds three deliberately broken skills in a temporary directory and checks that every rule fires by name. A checker that has never rejected anything has never been tested, and one that silently stopped matching looks exactly like a clean repository.
 
 [`ci.yml`](.github/workflows/ci.yml) is a stub calling the shared reusable workflow in `standards` rather than a private copy of it, so spelling, link checking and documentation linting stay in one place for the whole fleet.
 
