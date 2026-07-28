@@ -1,0 +1,211 @@
+# --- This Repository's Own Release ---
+#
+# 🏷️ Cut Release
+#
+# Purpose: publishes a version of the agent files and skills, and moves the
+# major tag that consumers pin.
+#
+# ⚠️ THIS IS THE MOST CONSEQUENTIAL WORKFLOW HERE. Moving `v1` changes what
+# every repository pinned to `@v1` receives on its next scheduled sync,
+# without anyone on their side doing anything, and what it receives is the
+# instruction file every agent in that repository reads. Treat a release as
+# a production change to every consumer at once.
+#
+# TWO TAGS, TWO CONTRACTS:
+#   vX.Y.Z  immutable. Cut once, never moved. For anyone who wants exactness.
+#   vX      moving. Re-pointed at each release in that major line. The
+#           normal pin, and the reason a fix reaches everyone.
+#
+# A change is BREAKING, and belongs in a new major line, when a consumer must
+# edit something for it to work: the set of published files changes, the sync
+# stub's shape changes, or a rule in AGENTS.md inverts rather than tightens.
+# Adding a skill or clarifying a rule is additive and is not breaking.
+#
+# ---
+#
+# ⚠️ TWO DELIBERATE DIVERGENCES FROM THE SIBLING PUBLISHER'S RELEASE:
+#
+# 1. THERE IS NO PRUNE JOB. `tannergolden/standards` prunes with
+#    `keep: 1, delete-tags: true`, which it can because every stub there pins
+#    the moving major and nothing pins a full version. THAT IS NOT TRUE HERE:
+#    this repository's contract explicitly permits a consumer to pin an exact
+#    `@vX.Y.Z`, and deleting that tag would break their sync at checkout with
+#    a message saying the repository does not exist. Version tags outlive
+#    their release pages here, on purpose.
+#
+# 2. THE PRODUCT IS GATED BEFORE THE TAG MOVES. There is no build step, so
+#    the files in this commit are the files that land, and this is the last
+#    moment a check can run before they reach every consuming repository with
+#    no pull request and no CI anywhere downstream.
+#
+# ---
+
+name: '🏷️ Cut Release'
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish, as vX.Y.Z'
+        required: true
+        type: string
+      move-major:
+        description: 'Also move the major tag (vX) to this release'
+        required: false
+        type: boolean
+        default: true
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  release:
+    name: '🏷️ Publish Version & Move Major Tag'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write # create tags and publish the release
+    steps:
+      # Pinned directly rather than through the shared harden action, unlike
+      # every other workflow here. This is the one job holding the capability
+      # to move the tag every consumer resolves, so it takes no floating
+      # reference, first-party or otherwise.
+      - name: '🛡️ Harden Runner'
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - name: '📂 Checkout'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: '🔍 Validate Version'
+        id: check
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          if ! printf '%s' "$VERSION" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error title=Release::'$VERSION' is not a vX.Y.Z version."
+            exit 1
+          fi
+          # ⚠️ A BARE MAJOR IS A MOVING POINTER, NEVER A VERSION. A release
+          # object attached to one turns it into an artifact that tooling can
+          # prune or freeze, which would kill distribution and the emergency
+          # brake in the same stroke. The pattern above already rejects it;
+          # this is the second lock on the same door.
+          if printf '%s' "$VERSION" | grep -qE '^v[0-9]+$'; then
+            echo "::error title=Release::Refusing to publish a release on the bare major tag '$VERSION'."
+            exit 1
+          fi
+          if git rev-parse -q --verify "refs/tags/$VERSION" >/dev/null; then
+            echo "::error title=Release::Tag '$VERSION' already exists. A published version is immutable; cut a new patch instead."
+            exit 1
+          fi
+          echo "major=${VERSION%%.*}" >> "$GITHUB_OUTPUT"
+
+      # The README tells consumers to pin `tannergolden/ai/.github/actions/
+      # check-skills@v1`, and an action resolves against the ref it is called
+      # at. If it is missing at the tag being cut, their run fails with a
+      # message about a repository that does not exist, which is the least
+      # diagnosable failure this design can produce.
+      - name: '🔗 Verify The Published Action Resolves'
+        run: |
+          set -euo pipefail
+          missing=0
+          for path in .github/actions/check-skills; do
+            if [ ! -f "${path}/action.yml" ]; then
+              echo "::error title=Release::${path}/action.yml does not exist at this commit, but the README tells consumers to pin it."
+              missing=1
+            fi
+          done
+          [ "$missing" -eq 0 ] || exit 1
+          echo "Every published action exists at this commit."
+
+      # ⚠️ THE LAST GATE BEFORE THE FLEET. Nothing downstream checks these
+      # bytes: the sync pushes directly, with no pull request and no CI in the
+      # consuming repository. A checker that has stopped rejecting anything is
+      # asserted here too, because a silent linter and a clean repository look
+      # identical from every other angle.
+      - name: '🧪 The Product Must Pass, And The Checker Must Fail'
+        run: |
+          set -uo pipefail
+          fail=0
+
+          if ! python3 .github/actions/check-skills/check-skills.py skills; then
+            echo "::error title=Release::A published skill does not pass its own checks. Refusing to tag."
+            fail=1
+          fi
+
+          if python3 .github/actions/check-skills/check-skills.py tests/fixtures/skills > /dev/null; then
+            echo "::error title=Release::The hostile fixtures were ACCEPTED, so the rules have stopped matching. Refusing to tag."
+            fail=1
+          fi
+
+          for file in AGENTS.md CLAUDE.md GEMINI.md; do
+            if [ ! -s "$file" ]; then
+              echo "::error title=Release::${file} is missing or empty, and it is one of the three files this release delivers."
+              fail=1
+            fi
+          done
+
+          [ "$fail" -eq 0 ] || exit 1
+          echo "Skills pass, fixtures are rejected, and all three delivered files are present."
+
+      # ⚠️ THE TAGS HERE ARE LIGHTWEIGHT, DELIBERATELY. A lightweight tag is a
+      # ref and nothing else: no tag object, so no tagger, no message, and
+      # nothing that can carry a signature or lack one. An annotated tag would
+      # be a second object needing a second signature, which means a private
+      # key in repository secrets, readable by anything that can run here, and
+      # whose leak forges commits as its owner everywhere. The release page
+      # already records who published, when, and what changed.
+      - name: '🏷️ Tag and Publish'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ inputs.version }}
+          MAJOR: ${{ steps.check.outputs.major }}
+          MOVE_MAJOR: ${{ inputs.move-major }}
+          ACTOR: ${{ github.actor }}
+          ACTOR_ID: ${{ github.actor_id }}
+        run: |
+          set -euo pipefail
+          git config user.name "$ACTOR"
+          git config user.email "${ACTOR_ID}+${ACTOR}@users.noreply.github.com"
+          REMOTE="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+          git tag "$VERSION"
+          git push "$REMOTE" "$VERSION"
+          echo "Published immutable tag $VERSION."
+
+          if [ "$MOVE_MAJOR" = "true" ]; then
+            # Force-moved by design: this IS the moving major tag, and moving
+            # it is what makes a fix reach everyone pinned to it. Moving it
+            # BACK is also the only recall this design has.
+            git tag -f "$MAJOR"
+            git push --force "$REMOTE" "$MAJOR"
+            echo "::warning title=Major tag moved::${MAJOR} now points at ${VERSION}. Every repository pinned to @${MAJOR} receives these agent files on its next scheduled sync, with no pull request and no review on their side."
+          fi
+
+          gh release create "$VERSION" \
+            --title "$VERSION" \
+            --generate-notes \
+            --latest
+
+          {
+            echo "### 🏷️ Released $VERSION"
+            echo ""
+            echo "| Tag | Meaning |"
+            echo "| :--- | :--- |"
+            echo "| \`$VERSION\` | Immutable. Pin this for exactness, and nothing here can reach you again. |"
+            if [ "$MOVE_MAJOR" = "true" ]; then
+              echo "| \`$MAJOR\` | Now points here. Every consumer pinned to it receives this on its next sync. |"
+            fi
+            echo ""
+            echo "To recall: \`git tag -f ${MAJOR} <last-good-sha> && git push --force origin ${MAJOR}\`."
+            echo "It reaches consumers on their next scheduled run, not immediately."
+          } >> "$GITHUB_STEP_SUMMARY"

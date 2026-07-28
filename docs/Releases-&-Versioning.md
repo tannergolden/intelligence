@@ -33,7 +33,11 @@ A consumer pinning `@v1` receives every later fix in the v1 line automatically. 
 
 ## 🚀 Cutting A Release
 
-Two commands. There is no release workflow, because there is nothing to build:
+Run [`🏷️ Cut Release`](../.github/workflows/release.yml) from the Actions tab with a `vX.Y.Z` version. It validates the version, refuses one that already exists, checks that the published action still resolves, **runs the product's own gates one last time**, then cuts the immutable tag and force-moves the major.
+
+That last gate is the point of having a workflow rather than two `git tag` commands. There is no build step, so the files in the commit are the files that land, and the release is the final moment anything can check them: the sync pushes directly into consuming repositories, with no pull request and no CI anywhere downstream. It refuses to tag if a published skill fails its checks, if the hostile fixtures stop being rejected, or if any of the three delivered files is missing.
+
+By hand, the equivalent is two commands, and they skip every one of those checks:
 
 ```bash
 git tag v1.0.0 && git push origin v1.0.0
@@ -41,6 +45,9 @@ git tag -f v1 && git push --force origin v1
 ```
 
 The force-move on the second line is deliberate. `v1` **is** the moving pointer, and moving it is the entire mechanism by which a change reaches anyone.
+
+> [!NOTE]
+> **There is no prune job**, unlike the sibling publisher, which prunes with `keep: 1` and deletes the tag behind each removed release. It can, because every stub there pins the moving major and nothing pins a full version. This repository's contract permits an exact `@vX.Y.Z` pin, so deleting a version tag would break that consumer's sync at checkout with a message saying the repository does not exist. Version tags outlive their release pages here.
 
 > [!IMPORTANT]
 > **Never attach a release object to a bare major tag.** `v1` is a pointer every consumer resolves. A release attached to it turns it into an artifact that tooling may prune or freeze, which would kill distribution and the emergency brake in the same stroke.
