@@ -38,13 +38,6 @@ This file becomes deletable the day Gemini CLI discovers the canonical filename 
 
 ---
 
-## 🔗 See also
-
-> [!TIP]
-> The law itself is in `AGENTS.md`, imported above. This file exists only to make that import happen under the filename this tool looks for.
-
----
-
 <div align="center">
 
 `scope: gemini cli` &middot; `contains: no law`

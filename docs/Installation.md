@@ -136,10 +136,11 @@ There is nothing else. Nothing was installed outside the working tree and nothin
 
 ---
 
-## 🔗 See also
+## 📚 Documentation Index
 
-> [!TIP]
-> [Releases & Versioning](Releases-&-Versioning.md) explains what moving `v1` does to every repository pinned to it, which is the other half of understanding what installing this means.
+Everything explaining how this publisher works lives in the [Documentation Index](README.md). Follow it **by link**, never by copy.
+
+The other half of this page is [Releases & Versioning](Releases-&-Versioning.md), which explains what moving `v1` actually does to every repository pinned to it.
 
 ---
 

@@ -77,10 +77,11 @@ A rule that varies by repository cannot live in a file that is byte-identical in
 
 ---
 
-## 🔗 See also
+## 📚 Documentation Index
 
-> [!TIP]
-> [Vendor Facts](Vendor-Facts.md) carries the measurements behind these boundaries. Most exclusions above trace to one row there rather than to a preference.
+Everything explaining how this publisher works lives in the [Documentation Index](README.md). Follow it **by link**, never by copy.
+
+Most exclusions above trace to a measurement rather than a preference, and those are in [Vendor Facts](Vendor-Facts.md).
 
 ---
 

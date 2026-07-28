@@ -90,10 +90,11 @@ Every one of those makes this repository smaller. The churn runs in the right di
 
 ---
 
-## 🔗 See also
+## 📚 Documentation Index
 
-> [!TIP]
-> [Scope & Boundaries](Scope-&-Boundaries.md) is where these facts become rules. If a row here changes, that document is the one to re-read.
+Everything explaining how this publisher works lives in the [Documentation Index](README.md). Follow it **by link**, never by copy.
+
+Where these facts become rules is [Scope & Boundaries](Scope-&-Boundaries.md). If a row above changes, that is the document to re-read.
 
 ---
 

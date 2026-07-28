@@ -87,10 +87,11 @@ The most important job in [`skills.yml`](.github/workflows/skills.yml) is the on
 
 ---
 
-## 🔗 See also
+## 📚 Documentation Index
 
-> [!TIP]
-> [`docs/`](docs/README.md) is the index of everything above, in more detail and with the reasoning attached. [`AGENTS.md`](AGENTS.md) is the law itself. The engineering standards this repository is built to live in [`tannergolden/standards`](https://github.com/tannergolden/standards) and are followed by link, never by copy.
+Everything above in more detail, with the reasoning attached, lives in the [Documentation Index](docs/README.md). [`AGENTS.md`](AGENTS.md) is the law itself and the only file here with rules in it.
+
+The engineering standards this repository is built to are published in [`tannergolden/standards`](https://github.com/tannergolden/standards) and followed **by link**, never by copy. A standard copied into a repository is a standard that starts going stale the moment it is pasted.
 
 ---
 

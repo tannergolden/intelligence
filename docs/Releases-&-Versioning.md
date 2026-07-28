@@ -89,10 +89,11 @@ Everything else is a minor or a patch. Adding a skill, clarifying a rule, or del
 
 ---
 
-## 🔗 See also
+## 📚 Documentation Index
 
-> [!TIP]
-> [Installation](Installation.md) is the other side of this: what a consumer commits, and what moving `v1` actually does to them on their next scheduled run.
+Everything explaining how this publisher works lives in the [Documentation Index](README.md). Follow it **by link**, never by copy.
+
+The other side of this page is [Installation](Installation.md): what a consumer commits, and what a moved tag reaches them through.
 
 ---
 

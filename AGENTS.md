@@ -124,13 +124,6 @@ The only forbidden outcomes are silence and the unwatched push.
 
 ---
 
-## 🔗 See also
-
-> [!TIP]
-> Everything specific to this repository lives in this repository, and section 2 says how to find it. This file deliberately knows nothing about what this project is for.
-
----
-
 <div align="center">
 
 `scope: every agent, every repository` &middot; `authority: highest, unless this repository says otherwise`

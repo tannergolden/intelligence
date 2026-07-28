@@ -133,10 +133,11 @@ The unreferenced-file rule is a gate rather than a warning for a Gemini-specific
 
 ---
 
-## 🔗 See also
+## 📚 Documentation Index
 
-> [!TIP]
-> [`skills/conventional-commit/`](../skills/conventional-commit/SKILL.md) is the reference implementation and passes every gate above. [Vendor Facts](Vendor-Facts.md) carries the measurements these rules rest on.
+Everything explaining how this publisher works lives in the [Documentation Index](README.md). Follow it **by link**, never by copy.
+
+The reference implementation is [`skills/conventional-commit/`](../skills/conventional-commit/SKILL.md), which passes every gate above. The measurements these rules rest on are in [Vendor Facts](Vendor-Facts.md).
 
 ---
 
