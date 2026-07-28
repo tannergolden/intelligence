@@ -15,13 +15,12 @@ description: Processes CSV files.
 Strong, because it says when to reach for it:
 
 ```text
-description: Analyze CSV and tabular data files: compute summary statistics, add
-  derived columns, generate charts, and clean messy data. Use this skill when the
-  user has a CSV, TSV, or Excel file and wants to explore, transform, or visualize
-  the data, even if they never say "CSV" or "analysis".
+description: Analyze CSV and tabular data files: compute summary statistics, add derived columns, generate charts, and clean messy data. Use this skill when the user has a CSV, TSV, or Excel file and wants to explore, transform, or visualize the data, even if they never say "CSV" or "analysis".
 ```
 
 Three things changed. It names the capabilities rather than the mechanism. It broadens across the formats a user might actually have. And it covers the case where the user never uses the domain word at all, which is the case a narrow description misses.
+
+**On one line, however long it gets.** Frontmatter here is flat `key: value` pairs, so a description wrapped onto a second line reads as nested and is rejected rather than folded.
 
 ## Third person about the user, imperative toward the agent
 
