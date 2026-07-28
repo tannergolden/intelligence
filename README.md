@@ -64,7 +64,7 @@ The router is the one exception to a rule this repository held for its whole lif
 
 ## 🚀 Getting Started
 
-**To receive the agent files**, commit one workflow that checks this repository out at `ref: v1` and copies the three markdown files in. The full stub, the four ways it fails, and the removal steps are in [Installation](docs/Installation.md).
+**To receive the agent files**, commit one workflow that checks this repository out at `ref: v1` and copies the three markdown files in, plus the skill router if you want it. The full stub, every way it fails, and the removal steps are in [Installation](docs/Installation.md).
 
 **To install a skill**, copy its directory into `.claude/skills/` for Claude Code or `.agents/skills/` for Gemini CLI. There is no directory both tools read, which is why skills are installed rather than synced.
 

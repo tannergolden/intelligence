@@ -140,7 +140,7 @@ Nothing else was installed and nothing executed, so there is nothing further to 
 
 Everything explaining how this publisher works lives in the [Documentation Index](README.md). Follow it **by link**, never by copy.
 
-The agent files themselves arrive by a different mechanism, described in [Installation](Installation.md), because three root files want copying and a whole repository wants pinning.
+The agent files themselves arrive by a different mechanism, described in [Installation](Installation.md), because a handful of named files want copying and a whole repository wants pinning.
 
 ---
 

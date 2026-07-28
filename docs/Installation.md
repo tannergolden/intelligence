@@ -1,6 +1,6 @@
 <!--
 title: '📥 INSTALLATION'
-description: 'How another repository receives the agent files at a pinned tag, how a skill is installed, and the four ways the sync fails.'
+description: 'How another repository receives the agent files at a pinned tag, how a skill is installed, and every way the sync fails.'
 tags: [installation, distribution, sync, adoption]
 category: docs
 -->
@@ -12,7 +12,7 @@ category: docs
 
 <a name="top"></a>
 
-**One committed workflow, three files delivered, and nothing installed anywhere else.**
+**One committed workflow, seven files delivered, two of which execute unprompted.**
 
 _Pin it once, receive every fix, edit nothing._
 
@@ -131,7 +131,7 @@ In likelihood order, because the first is common and the last is structural. The
 | **`.claude/` is gitignored here**      | the sync fails with an error naming the directory  | Deliberate: forcing past a gitignore would commit files your repository chose to exclude. Un-ignore it, or delete the router block |
 
 > [!IMPORTANT]
-> **These three files become owned by this publisher.** There is no ownership engine, no lockfile and no merge: they are overwritten in full on every sync. Repository-specific law belongs in that repository's own context, which the law itself tells every agent to go and find.
+> **The three documents become owned by this publisher.** There is no ownership engine, no lockfile and no merge: they are overwritten in full on every sync. Repository-specific law belongs in that repository's own context, which the law itself tells every agent to go and find.
 
 ---
 
@@ -177,7 +177,7 @@ The other half of this page is [Releases & Versioning](Releases-&-Versioning.md)
 
 <div align="center">
 
-**One file in, three files out, and a delete that finishes the job.**
+**One workflow in, seven files out, and a delete that finishes the job.**
 
 [↑ Back to Top](#top)
 

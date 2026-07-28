@@ -120,7 +120,7 @@ Most exclusions above trace to a measurement rather than a preference, and those
 
 <div align="center">
 
-**Additive, deletable, and inert. Anything else needs an argument.**
+**Additive and deletable. Anything that also executes has to argue for itself.**
 
 [↑ Back to Top](#top)
 

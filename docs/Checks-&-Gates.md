@@ -36,7 +36,7 @@ Everything runs through `make`, and CI passes **no commands at all**: each stage
 | :--------------- | :------------------------------------------------------------- |
 | `make lint`      | Every skill, against the Agent Skills specification           |
 | `make lint-docs` | Every document, against the published styling standard        |
-| `make test`      | That both checkers still **reject** known-bad input           |
+| `make test`      | That both checkers, and the packager, still **reject** known-bad input |
 | `make build`     | That every skill still packages into an installable archive   |
 
 > [!IMPORTANT]
@@ -44,7 +44,7 @@ Everything runs through `make`, and CI passes **no commands at all**: each stage
 
 ---
 
-## 🧪 The Two Checkers
+## 🧪 The Two Checkers, And The Packager
 
 Both are standard library only. This matters more than it looks: [`actions/check-skills`](../actions/check-skills) runs in **other people's** continuous integration, where a dependency resolution would be a network call, a supply chain and a failure mode all at once.
 
@@ -65,6 +65,7 @@ The full rule list, and which are errors rather than warnings, is in [Skill Auth
 | The `MD041` suppression, header block, anchor, description, tagline   | error     |
 | Footer closing phrase and back-to-top link                            | error     |
 | Em dashes, en dashes, curly quotes, mojibake, invisible characters    | error     |
+| British spellings, from a curated list of pairs                       | error     |
 | Fence languages, shell prompt characters, image alt text              | error     |
 | Relative links that resolve, and `_` as a space anywhere in the tree  | error     |
 | Tagline and closing phrase uniqueness, reported against every owner   | error     |
@@ -77,6 +78,26 @@ The full rule list, and which are errors rather than warnings, is in [Skill Auth
 Link targets are read as URLs rather than paths, so `Scope-%26-Boundaries.md` and `Scope-&amp;-Boundaries.md` both resolve to the file whose name contains `&`.
 
 Exempt from the tree scan: submodules, `dist/`, anything that is not valid UTF-8, and the verbatim third-party text the law itself exempts, which is license files and lockfiles.
+
+**Spelling is a pairs list, not a dictionary.** Both spellings are correct English, so the shared workflow's spell check sees nothing wrong; what is wrong is the inconsistency with the sibling publisher, and only a list can judge that. The list omits every word with an American reading, `analyses` and `towards` among them, because a rule that fires on correct text is a rule somebody switches off. It runs in **both** checkers, since `skills/` is outside the document scan and nothing else ever reads a skill's prose for this.
+
+### 🗜️ The Packager
+
+[`skills/.unpackaged/develop/scripts/package.py`](../skills/.unpackaged/develop/scripts/package.py) builds the `.skill` archives attached to each release, and it is bundled inside the `develop` skill rather than sitting in `scripts/` because a skill author in another repository needs it and this repository's `scripts/` does not travel.
+
+`make test` runs its self-test alongside the two checkers, because it is the one piece of machinery whose output is a file somebody downloads rather than a message somebody reads. Seven invariants, each of which produced a broken or unverifiable archive when it did not hold:
+
+| Invariant | Why |
+| :--- | :--- |
+| The skill **folder** is the archive root, never `SKILL.md` | Unzipping the other shape scatters a skill across the current directory |
+| `evals/` is excluded by default | Read by tooling, never by an agent, so it is weight in every download |
+| Packing unchanged source twice is byte-identical | A build whose output changes without its input changing cannot be verified by anyone |
+| Every entry records a **fixed** creating system | `zipfile` takes that field from the host, so the same source packed on Windows differed from the same source packed anywhere else |
+| `--include-evals` ships them | The exclusion has to be an option rather than a rule, or the evidence is unshippable |
+| A name and directory mismatch is refused | The same defect the skill checker fails on, caught before it is sealed in an archive |
+| A directory with no `SKILL.md` is refused | It is not a skill, and an archive of it is a download that installs nothing |
+
+The fourth is the one the third could not see. Two runs on the same machine agree whatever the host-derived fields say, so a repeat-build check passes on every platform while the archives still differ across them. Only reading the field answers the question, and determinism that holds on the platform you happened to test on is a property nobody can check from the other side.
 
 ### 📏 The Delivered Budget
 
@@ -127,9 +148,12 @@ Both checkers build their own banned characters from codepoints rather than typi
 | :------------------------------------------------- | :----------------------------------------------------------- |
 | [`ci.yml`](../.github/workflows/ci.yml)            | All four `make` targets, plus shared spelling and link checks |
 | [`skills.yml`](../.github/workflows/skills.yml)    | The skill gate, and the negative test beside it              |
+| [`lint-workflows.yml`](../.github/workflows/lint-workflows.yml) | actionlint and zizmor, on any change under `.github/workflows/` or `actions/` |
 | [`release.yml`](../.github/workflows/release.yml)  | Both checkers, both negative tests, the packager's invariants, and every file the sync stub copies |
 
 `ci.yml` is a stub calling the shared reusable workflow in `standards` rather than a private copy, so spelling, link checking and documentation linting stay in one place for the whole fleet.
+
+**`lint-workflows.yml` is the gate for rules 4 and 5 of this repository's own law.** Until it existed, nothing here checked that third-party actions were pinned to a full SHA or that jobs held the narrowest permissions they could, so the repository published a law about continuous integration and exempted its own from it. actionlint validates Actions semantics and runs shellcheck over every `run:` block; zizmor audits for template injection, credential persistence, dangerous triggers and cache poisoning. Both are consumed by link from the sibling publisher rather than installed here. It caught its own first defect on its first run, an `ls` whose output was being parsed.
 
 **`skills.yml` reports, it does not gate a merge**, and that is not an oversight: work lands here by direct push, so nothing merges and a required status check would have nothing to sit in front of. What it buys is a red mark while the person who wrote it is still looking at it.
 

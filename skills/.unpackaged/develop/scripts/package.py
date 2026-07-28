@@ -62,6 +62,14 @@ NAME_RE = re.compile(r"\A[a-z0-9]+(?:-[a-z0-9]+)*\Z")
 FIXED_TIME = (1980, 1, 1, 0, 0, 0)
 FIXED_MODE = 0o644 << 16
 
+# PINNED, BECAUSE `zipfile` READS IT FROM THE HOST. `ZipInfo.__init__` sets
+# this field to 0 on Windows and 3 everywhere else, so the same source packed
+# on two machines produced two archives that differed in one byte per entry.
+# Determinism that holds only on the platform you happened to test on is not
+# determinism; it is a property nobody can check from the other side. 3 is
+# Unix, which is what a skill archive's permissions mean.
+FIXED_SYSTEM = 3
+
 
 def frontmatter_name(manifest: Path):
     """The `name` field, read without a YAML parser.
@@ -138,6 +146,7 @@ def package(skill_dir: Path, out_dir: Path, include_evals: bool, extension: str)
             # error does not say why.
             info = zipfile.ZipInfo(f"{folder}/{rel.as_posix()}", date_time=FIXED_TIME)
             info.external_attr = FIXED_MODE
+            info.create_system = FIXED_SYSTEM
             info.compress_type = zipfile.ZIP_DEFLATED
             zf.writestr(info, path.read_bytes())
 
@@ -212,6 +221,14 @@ def self_test() -> int:
         digest = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
         check("packing unchanged source twice is byte-identical",
               digest(first) == digest(second))
+
+        # THE PREVIOUS CHECK CANNOT SEE THIS ONE. Two runs on the same machine
+        # agree whatever the host-derived fields say; the question is whether
+        # two DIFFERENT machines agree, and only reading the field answers it.
+        with zipfile.ZipFile(first) as zf:
+            systems = {i.create_system for i in zf.infolist()}
+        check("every entry records a fixed creating system, not the host's",
+              systems == {FIXED_SYSTEM}, str(systems))
 
         with_evals = pack(src, root / "c", include_evals=True, extension="zip")
         with zipfile.ZipFile(with_evals) as zf:

@@ -78,7 +78,9 @@ git tag -f v1 <last-good-sha> && git push --force origin v1
 ```
 
 > [!CAUTION]
-> **Moving the tag back fixes nothing already delivered.** The previous content sits in every consuming repository until each one next syncs, which is up to a week on the default schedule and longer if GitHub has disabled a quiet repository's cron. For inert markdown that is an acceptable recall time, which is precisely why nothing executable ships through this path.
+> **Moving the tag back fixes nothing already delivered.** The previous content sits in every consuming repository until each one next syncs, which is up to a week on the default schedule and longer if GitHub has disabled a quiet repository's cron. For markdown, a week is an acceptable recall time.
+>
+> **It is not obviously acceptable for the skill router**, which is the one thing shipping through this path that executes, and it runs on every prompt in the meantime. That is a cost the [rule 4 amendment](Scope-&-Boundaries.md#-what-changed-in-rule-4-and-why) took on knowingly rather than a gap here. A consumer who wants a faster recall deletes the two hook scripts, which needs no publisher-side action and takes effect immediately.
 
 **Consumers pinned to `@vX.Y.Z` are unreachable by any publisher-side action.** For them the recovery path is a human editing their pin. That is the honest price of an exact pin, and it should be stated when one is recommended.
 

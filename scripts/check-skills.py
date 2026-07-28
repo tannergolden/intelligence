@@ -676,9 +676,9 @@ def check_skill(skill_dir: Path, root: Path):
     else:
         check_evals(evals, name or skill_dir.name, fail)
     if (skill_dir / "scripts").is_dir():
-        warn("this skill bundles scripts/, which is executable content in a "
-             "repository whose other files are inert. Deliberate is fine; "
-             "accidental is not.")
+        warn("this skill bundles scripts/, so installing it installs "
+             "executable content that arrives with the skill and runs on "
+             "somebody else's machine. Deliberate is fine; accidental is not.")
 
     return problems, warnings
 

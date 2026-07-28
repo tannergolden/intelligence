@@ -171,7 +171,7 @@ A bundled script is invoked by an agent, never by a person at a prompt, and that
 - **Destructive operations guarded** behind an explicit flag.
 - **Nothing written into the skill directory.** It is read-only in most installations, and on a packaged skill it may not exist on disk at all.
 
-The cost side is real: `scripts/` is executable content in a tree whose other files are inert, so the checker warns on its presence. Deliberate is fine, accidental is not.
+The cost side is real: installing a skill that bundles `scripts/` installs executable content that arrives with it and runs on somebody else's machine, so the checker warns on its presence. Deliberate is fine, accidental is not.
 
 ---
 
