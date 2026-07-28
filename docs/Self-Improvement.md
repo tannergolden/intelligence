@@ -55,13 +55,27 @@ An earlier draft of the skill asserted the second case unconditionally. It would
 
 ---
 
-## 🛡️ The Two Safeguards
+## 🛡️ The Three Safeguards
 
-Both are enforced by the skill, and both exist because this repository has been bitten by what they prevent.
+All three are enforced by the skill. Two come from this repository being bitten by what they prevent, and the third from published measurements of what goes wrong when a loop like this is built without it.
 
 **Nothing is recorded on a guess.** Every lesson carries the probed, documented or unverified grade that [Vendor Facts](Vendor-Facts.md) uses. Three claims in that file were wrong when first written; under an ungraded loop, all three would have become permanent instructions that every future agent obeyed.
 
 **Every addition names a subtraction.** Instructions are read in full, in every session, forever, so an append-only loop makes agents worse at finding the rule that applies. Where a lesson could be a gate instead, the gate is the better answer: it fires every time and costs no context.
+
+**Nothing untrusted is ever persisted.** A lesson whose origin is content the repository does not control, and which grants rather than restricts, is refused rather than graded down. Writing something down is what makes it permanent, so this step is the difference between a prompt injection that ruins an afternoon and one that becomes a rule nobody remembers agreeing to.
+
+### 📊 What The Measurements Say
+
+The second and third safeguards are not preferences. Both have numbers behind them, and they are the reason this loop refuses more than it records.
+
+| Finding | Why it shapes the design |
+| :--- | :--- |
+| Agents on an add-all memory strategy reached 2,400 stored records at **13%** task accuracy; the same agents with selective memory held 248 records at **39%** | Accumulating is not a milder version of curating. It is worse than doing nothing, by a wide margin |
+| Injection into agent memory succeeds against production systems at very high rates | A loop is a persistence mechanism, so it is the exact component an injection needs to become permanent |
+| Constraint compliance measured at 73% by turn five and 33% by turn sixteen | The loop runs at the end of long tasks, so it runs when recall is least reliable. Re-establish from the artifact, never from the session |
+
+The first row is the whole argument for a loop that treats "there is no lesson here" as the normal answer.
 
 ---
 
