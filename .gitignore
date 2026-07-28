@@ -9,6 +9,11 @@ __pycache__/
 grading.json
 benchmark.json
 
+# Build output. `make build` packages each skill into dist/, and the release
+# workflow does the same before attaching the archives to a release. Both are
+# rebuilt from source on every run, so a committed copy is a copy that rots.
+dist/
+
 # OS and editor noise
 .DS_Store
 Thumbs.db

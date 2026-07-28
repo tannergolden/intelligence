@@ -83,7 +83,18 @@ Nothing here executes on clone, and nothing is generated from anything else.
 
 The most important job in [`skills.yml`](.github/workflows/skills.yml) is the one asserting the checker still **rejects** known-bad input. It builds four deliberately broken skills in a temporary directory and checks that every rule fires by name, warnings included, since the rules catching the quietest defects are the advisory ones. A checker that has never rejected anything has never been tested, and one that silently stopped matching looks exactly like a clean repository.
 
-[`ci.yml`](.github/workflows/ci.yml) is a stub calling the shared reusable workflow in `standards` rather than a private copy of it, so spelling, link checking and documentation linting stay in one place for the whole fleet.
+[`scripts/check-docs.py`](scripts/check-docs.py) audits every document against the styling standard published in `standards`, followed **by link** rather than copied. It encodes only the subset a machine can decide: frontmatter shape and tag count, the header and footer blocks, banned typography, fence languages, prompt characters, alt text, and the uniqueness of every tagline and closing phrase.
+
+[`ci.yml`](.github/workflows/ci.yml) is a stub calling the shared reusable workflow in `standards` rather than a private copy of it, so spelling, link checking and documentation linting stay in one place for the whole fleet. It passes **no commands**: every stage resolves to the `make` target of the same name.
+
+```bash
+make lint       # skills, against the Agent Skills specification
+make lint-docs  # documents, against the styling standard
+make test       # prove both checkers still reject known-bad input
+make build      # package every skill into dist/
+```
+
+That `lint-docs` line is the reason the [`Makefile`](Makefile) exists at all. It is the one CI stage with no input override, so before there was a Makefile here the documentation step reported "skipped" on every green run, and the rule `AGENTS.md` calls the one broken most often was checked by nothing.
 
 ---
 

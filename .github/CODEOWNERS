@@ -1,0 +1,12 @@
+# Ownership for review routing.
+#
+# CODEOWNERS is NOT one of the community health files GitHub inherits from an
+# owner's `.github` repository: it is read from this repository or not at all.
+# `SECURITY.md` is the opposite case, which is why there is none here.
+#
+# Everything in this repository is published. `AGENTS.md` lands at the root of
+# every consuming repository and is read by an agent before it does anything,
+# and a moved tag delivers a change to all of them at once. There is no
+# staging step between a commit here and that, so nothing changes without the
+# owner seeing it.
+* @tannergolden

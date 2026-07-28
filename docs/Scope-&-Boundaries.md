@@ -37,9 +37,14 @@ _Argued for once. Argue with it, never drift past it._
 | `CLAUDE.md`       | Claude Code has no discovery path for `AGENTS.md`, verified by probe                   |
 | `GEMINI.md`       | Gemini CLI discovers only `GEMINI.md` unless a settings file says otherwise            |
 | `skills/.unpackaged/` | The second product. One canonical copy per skill, installed rather than synced      |
-| `.github/`        | The skill gate, and a stub calling the shared CI                                       |
+| `.github/`        | The skill gate, a stub calling the shared CI, and `CODEOWNERS`                          |
 | `docs/`           | These documents                                                                        |
+| `Makefile`        | The standardized task entry point. The shared CI resolves `lint-docs` here and nowhere else |
+| `scripts/`        | What the Makefile invokes. Inert until someone runs it, so rule 4 holds                |
 | `LICENSE`         | Output copied into other repositories with no licence is unusable by anyone but its author |
+
+> [!NOTE]
+> **`Makefile` and `scripts/` do not breach rule 4.** Nothing here runs on clone: `make` is invoked deliberately, by a person or by CI. That is the whole difference between a task runner and a git hook, and it is why one is permitted and the other is not.
 
 ---
 
@@ -58,6 +63,8 @@ Each row is a decision, not an oversight. That is the point of writing them down
 | A build step, emitters, a `payload/` directory  | The emit set is three root markdown files this repository wants at its own root regardless. A compiler whose output equals its input is overhead |
 | A local-law injection region                    | The law now tells agents to find a repository's own context wherever it lives, so there is nothing left to inject                               |
 | Committed skill archives                        | Build output nobody can review in a diff. The release builds them from source and attaches them to the release page instead |
+| `SECURITY.md`                                   | GitHub serves it from the owner's `.github` repository for every repository lacking one. A copy here would override that with a second one to keep current |
+| A copy of the styling specification             | It is followed by link. `scripts/check-docs.py` encodes the subset a machine can decide and names the upstream document as the source |
 
 ---
 

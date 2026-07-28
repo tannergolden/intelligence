@@ -44,9 +44,11 @@ Everything below was established on 2026-07-28 against **Claude Code 2.1.220**. 
 | Claude Code reads `CLAUDE.md`                                      | **probed**     | Control case above                                                                                      |
 | An import line in a router resolves                                | **probed**     | `CLAUDE.md` containing only the import returned the codeword held in `AGENTS.md`                        |
 | A large law loads whole, and its middle is retrievable             | **probed**     | A 113 KB imported file returned markers at byte 36, 56,359 and 112,895                                  |
-| Gemini CLI discovers only `GEMINI.md` by default                   | **documented** | Its docs: the default filename is `GEMINI.md`, and reading `AGENTS.md` needs `context.fileName` in settings |
+| Gemini CLI discovers only `GEMINI.md` by default                   | **documented** | Its docs: the default filename is `GEMINI.md`, and reading `AGENTS.md` needs `context.fileName` in settings. Re-verified 2026-07-28 |
 | Copilot's coding agent and CLI read `AGENTS.md` natively           | **documented** | Announced August 2025, alongside `.github/copilot-instructions.md` and `.github/instructions/**`         |
 | VS Code Copilot ignores `AGENTS.md` unless `chat.useAgentsMdFile`  | **documented** | Experimental, off by default. Several independent sources agree                                         |
+| `AGENTS.md` is an Agentic AI Foundation project under the Linux Foundation | **documented** | Contributed by OpenAI at the AAIF's formation, beside MCP. Reported at 60,000+ adopting projects |
+| A `CLAUDE.md` symlink to `AGENTS.md` is an alternative to the import | **documented** | Anthropic's memory docs give `ln -s AGENTS.md CLAUDE.md`. Rejected here: a symlink does not survive `core.symlinks=false`, and this repository delivers into trees it does not control |
 
 ---
 
@@ -87,6 +89,9 @@ Three of these rows are load-bearing enough that a change makes a file deletable
 - **VS Code Copilot enabling `chat.useAgentsMdFile` by default** removes the one manual step in installation.
 
 Every one of those makes this repository smaller. The churn runs in the right direction.
+
+> [!NOTE]
+> **Both router files were re-checked on 2026-07-28 and both are still needed.** A widely repeated summary lists Gemini CLI among the tools that read `AGENTS.md`, which is true of the ecosystem and false of the default configuration: the filename still has to be named in `context.fileName`, and the upstream request to change that is still open. This is the second time that particular summary has been believed here, which is why the row above now carries a re-verification date rather than only an original one.
 
 ---
 

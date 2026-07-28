@@ -147,6 +147,19 @@ jobs:
             fail=1
           fi
 
+          # The three delivered files are documents too, and this is the last
+          # point anything reads them before they are copied verbatim into
+          # every consuming tree.
+          if ! python3 scripts/check-docs.py .; then
+            echo "::error title=Release::A document does not satisfy the styling standard. Refusing to tag."
+            fail=1
+          fi
+
+          if ! python3 scripts/check-docs.py --self-test; then
+            echo "::error title=Release::The documentation checker no longer rejects known-bad input. Refusing to tag."
+            fail=1
+          fi
+
           for file in AGENTS.md CLAUDE.md GEMINI.md; do
             if [ ! -s "$file" ]; then
               echo "::error title=Release::${file} is missing or empty, and it is one of the three files this release delivers."
@@ -155,7 +168,7 @@ jobs:
           done
 
           [ "$fail" -eq 0 ] || exit 1
-          echo "Skills pass, known-bad input is still rejected, and all three delivered files are present."
+          echo "Skills and documents pass, both checkers still reject known-bad input, and all three delivered files are present."
 
       # Built here rather than committed. An archive in the tree is build
       # output nobody can review in a diff, and it goes stale silently the
@@ -165,11 +178,7 @@ jobs:
         id: package
         run: |
           set -euo pipefail
-          mkdir -p dist
-          for skill in skills/.unpackaged/*/; do
-            [ -d "$skill" ] || continue
-            python3 skills/.unpackaged/develop/scripts/package.py "${skill%/}" --out dist
-          done
+          make build
           echo "Packaged: $(ls dist | tr '\n' ' ')"
 
       # ⚠️ THE TAGS HERE ARE LIGHTWEIGHT, DELIBERATELY. A lightweight tag is a
