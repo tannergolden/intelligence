@@ -215,7 +215,7 @@ That baseline comparison is the bar. A skill that does not beat it should not sh
 
 ## 🔎 What Is Machine-Enforced
 
-[`.github/actions/check-skills`](../.github/actions/check-skills) gates on all of the following, because every one of them fails silently otherwise:
+[`actions/check-skills`](../actions/check-skills) gates on all of the following, because every one of them fails silently otherwise:
 
 Missing `SKILL.md`; malformed or nested frontmatter; missing or empty `name` or `description`; `name` failing its pattern, exceeding 64 characters, or disagreeing with the directory; `description` over 1024; unknown, banned or undeclared vendor keys; a body over 500 lines; a reference that does not exist or escapes the directory; a file in the directory that `SKILL.md` never references; a live import token; an invisible character; undeclared live shell; a byte order mark; a missing or doubled trailing newline; and an `evals.json` that is unreadable, misattributed, empty, missing a prompt or assertions, or reusing a case id.
 
@@ -225,7 +225,7 @@ Two of those deserve their reasoning stated. The unreferenced-file rule is a gat
 
 The content rules run over **every** bundled Markdown file, not only `SKILL.md`, since a reference enters context the moment the body sends an agent to it. Filler and anti-patterns quoted inside backticks or quotation marks are exempt, so a skill that teaches an anti-pattern can still name it.
 
-Run the checker locally with `python3 .github/actions/check-skills/check-skills.py skills/.unpackaged`, and prove the checker itself still rejects known-bad input with `--self-test`.
+Run the checker locally with `make lint`, and prove the checker itself still rejects known-bad input with `--self-test`.
 
 ---
 

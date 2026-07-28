@@ -16,7 +16,7 @@
 # =============================================================================
 
 .DEFAULT_GOAL := help
-.PHONY: help setup lint lint-docs test build clean
+.PHONY: help setup lint lint-docs lint-fix test build clean
 
 PYTHON ?= python3
 SKILLS := skills/.unpackaged
@@ -33,13 +33,19 @@ setup: ## Verify the toolchain (nothing to install: both checkers are stdlib onl
 	@echo "Nothing to install. Both checkers use the standard library only."
 
 lint: ## Check every published skill against the Agent Skills specification
-	$(PYTHON) .github/actions/check-skills/check-skills.py $(SKILLS)
+	$(PYTHON) scripts/check-skills.py $(SKILLS)
 
 lint-docs: ## Audit every document against the published styling standard
 	$(PYTHON) scripts/check-docs.py .
 
+lint-fix: ## Explain why there is nothing to auto-fix here
+	@echo "Nothing to auto-fix: both checkers report, they do not rewrite."
+	@echo "Each message names the file, the line and the rule. Fix the cause."
+	@echo "The shared CI failure tips suggest this target, which is why it"
+	@echo "exists: a missing target is a dead end when you are already debugging."
+
 test: ## Prove both checkers still reject known-bad input
-	$(PYTHON) .github/actions/check-skills/check-skills.py --self-test
+	$(PYTHON) scripts/check-skills.py --self-test
 	$(PYTHON) scripts/check-docs.py --self-test
 
 build: ## Package every skill into $(DIST)/ as an installable archive

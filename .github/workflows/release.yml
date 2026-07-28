@@ -109,8 +109,8 @@ jobs:
           fi
           echo "major=${VERSION%%.*}" >> "$GITHUB_OUTPUT"
 
-      # The README tells consumers to pin `tannergolden/ai/.github/actions/
-      # check-skills@v1`, and an action resolves against the ref it is called
+      # The README tells consumers to pin `tannergolden/ai/actions/check-skills@v1`,
+      # and an action resolves against the ref it is called
       # at. If it is missing at the tag being cut, their run fails with a
       # message about a repository that does not exist, which is the least
       # diagnosable failure this design can produce.
@@ -118,7 +118,7 @@ jobs:
         run: |
           set -euo pipefail
           missing=0
-          for path in .github/actions/check-skills; do
+          for path in actions/check-skills; do
             if [ ! -f "${path}/action.yml" ]; then
               echo "::error title=Release::${path}/action.yml does not exist at this commit, but the README tells consumers to pin it."
               missing=1
@@ -137,12 +137,12 @@ jobs:
           set -uo pipefail
           fail=0
 
-          if ! python3 .github/actions/check-skills/check-skills.py skills/.unpackaged; then
+          if ! python3 scripts/check-skills.py skills/.unpackaged; then
             echo "::error title=Release::A published skill does not pass its own checks. Refusing to tag."
             fail=1
           fi
 
-          if ! python3 .github/actions/check-skills/check-skills.py --self-test; then
+          if ! python3 scripts/check-skills.py --self-test; then
             echo "::error title=Release::The checker no longer rejects known-bad input, so the gate above proves nothing. Refusing to tag."
             fail=1
           fi

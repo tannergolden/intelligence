@@ -73,19 +73,17 @@ Nothing here executes on clone, and nothing is generated from anything else.
 
 ## 🔎 What Is Checked
 
-[`.github/actions/check-skills`](.github/actions/check-skills) validates every skill against the Agent Skills specification and the cross-vendor portability rules. It is a composite action, so any repository with skills can use it:
+[`actions/check-skills`](actions/check-skills) validates every skill against the Agent Skills specification and the cross-vendor portability rules. It is a composite action, so any repository with skills can use it:
 
 ```yaml
-- uses: tannergolden/ai/.github/actions/check-skills@v1
+- uses: tannergolden/ai/actions/check-skills@v1
   with:
     path: skills/.unpackaged
 ```
 
-The most important job in [`skills.yml`](.github/workflows/skills.yml) is the one asserting the checker still **rejects** known-bad input. It builds four deliberately broken skills in a temporary directory and checks that every rule fires by name, warnings included, since the rules catching the quietest defects are the advisory ones. A checker that has never rejected anything has never been tested, and one that silently stopped matching looks exactly like a clean repository.
+[`scripts/check-docs.py`](scripts/check-docs.py) audits every document against the styling standard published in `standards`, followed **by link** rather than copied, encoding only the subset a machine can decide.
 
-[`scripts/check-docs.py`](scripts/check-docs.py) audits every document against the styling standard published in `standards`, followed **by link** rather than copied. It encodes only the subset a machine can decide: frontmatter shape and tag count, the header and footer blocks, banned typography, fence languages, prompt characters, alt text, and the uniqueness of every tagline and closing phrase.
-
-[`ci.yml`](.github/workflows/ci.yml) is a stub calling the shared reusable workflow in `standards` rather than a private copy of it, so spelling, link checking and documentation linting stay in one place for the whole fleet. It passes **no commands**: every stage resolves to the `make` target of the same name.
+Everything runs through `make`, and [`ci.yml`](.github/workflows/ci.yml) passes **no commands**: each stage resolves to the target of the same name.
 
 ```bash
 make lint       # skills, against the Agent Skills specification
@@ -94,7 +92,9 @@ make test       # prove both checkers still reject known-bad input
 make build      # package every skill into dist/
 ```
 
-That `lint-docs` line is the reason the [`Makefile`](Makefile) exists at all. It is the one CI stage with no input override, so before there was a Makefile here the documentation step reported "skipped" on every green run, and the rule `AGENTS.md` calls the one broken most often was checked by nothing.
+`make test` runs neither checker against this repository. It builds deliberately broken input and asserts every rule still fires **by name**, because a checker that has never rejected anything has never been tested, and one that silently stopped matching looks exactly like a clean repository.
+
+Why each check exists, where it runs, and what the release gate refuses to tag on, is in [Checks & Gates](docs/Checks-&-Gates.md).
 
 ---
 

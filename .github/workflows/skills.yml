@@ -31,7 +31,8 @@ on:
     branches: ['Development']
     paths:
       - 'skills/**'
-      - '.github/actions/check-skills/**'
+      - 'actions/check-skills/**'
+      - 'scripts/check-skills.py'
       - '.github/workflows/skills.yml'
   workflow_dispatch:
 
@@ -61,7 +62,7 @@ jobs:
           persist-credentials: false
 
       - name: '🧪 Check Published Skills'
-        uses: ./.github/actions/check-skills
+        uses: ./actions/check-skills
         with:
           path: skills/.unpackaged
 
@@ -83,11 +84,11 @@ jobs:
         with:
           persist-credentials: false
 
-      # Builds three deliberately broken skills in a temporary directory and
+      # Builds four deliberately broken skills in a temporary directory and
       # asserts, by name, that every rule still fires. A bare non-zero exit
       # would be too weak a claim: any crash satisfies it, including one that
       # means the rules never ran at all.
       - name: '🚨 Known-Bad Input Must Be Rejected'
-        uses: ./.github/actions/check-skills
+        uses: ./actions/check-skills
         with:
           self-test: 'true'

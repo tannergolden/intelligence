@@ -22,7 +22,7 @@
 #
 # Used as:
 #
-#   - uses: tannergolden/ai/.github/actions/check-skills@v1
+#   - uses: tannergolden/ai/actions/check-skills@v1
 #     with:
 #       path: skills
 #
@@ -64,14 +64,19 @@ runs:
       env:
         SKILLS_PATH: ${{ inputs.path }}
         SELF_TEST: ${{ inputs.self-test }}
-        ACTION_PATH: ${{ github.action_path }}
+        # The checker lives in `scripts/`, beside the documentation checker
+        # and everything else the Makefile invokes, rather than inside this
+        # action. A composite action is fetched with its WHOLE repository, so
+        # reaching up two levels resolves in a consuming repository exactly as
+        # it does here. This is the pattern the sibling publisher uses.
+        SCRIPT: ${{ github.action_path }}/../../scripts/check-skills.py
       run: |
         set -uo pipefail
 
         if [ "$SELF_TEST" = "true" ]; then
           echo "errors=0" >> "$GITHUB_OUTPUT"
           echo "warnings=0" >> "$GITHUB_OUTPUT"
-          python3 "${ACTION_PATH}/check-skills.py" --self-test | tee "${RUNNER_TEMP}/self-test.txt"
+          python3 "${SCRIPT}" --self-test | tee "${RUNNER_TEMP}/self-test.txt"
           status="${PIPESTATUS[0]}"
           {
             echo "### 🧪 Skill checker self-test"
@@ -85,14 +90,14 @@ runs:
 
         report="${RUNNER_TEMP}/check-skills.json"
         status=0
-        python3 "${ACTION_PATH}/check-skills.py" "$SKILLS_PATH" --json > "$report" || status=$?
+        python3 "${SCRIPT}" "$SKILLS_PATH" --json > "$report" || status=$?
 
         errors=$(python3 -c 'import json,sys; print(len(json.load(open(sys.argv[1]))["errors"]))' "$report")
         warnings=$(python3 -c 'import json,sys; print(len(json.load(open(sys.argv[1]))["warnings"]))' "$report")
         echo "errors=${errors}" >> "$GITHUB_OUTPUT"
         echo "warnings=${warnings}" >> "$GITHUB_OUTPUT"
 
-        python3 "${ACTION_PATH}/check-skills.py" "$SKILLS_PATH" || true
+        python3 "${SCRIPT}" "$SKILLS_PATH" || true
 
         {
           echo "### 🧪 Skill check: \`${SKILLS_PATH}\`"
