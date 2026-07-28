@@ -72,6 +72,20 @@ The full rule list, and which are errors rather than warnings, is in [Skill Auth
 
 `skills/` is excluded on purpose: a `SKILL.md` requires the `---` frontmatter this specification forbids. Both are correct in their own domain.
 
+### 📏 The Delivered Budget
+
+One check in that file is **not** part of the styling standard, and is kept there because it is the only checker already reading those bytes.
+
+`AGENTS.md`, `CLAUDE.md` and `GEMINI.md` are delivered into other repositories and read by an agent in **every session there**, invoked or not. Nothing else in this tree costs that: a `SKILL.md` costs one session, a document costs whoever opens it, and these cost everyone, always. The checker had capped a `SKILL.md` at 500 lines for being expensive while leaving the far more expensive file unbounded, which was the wrong way round.
+
+| File | Budget | Why that ceiling |
+| :--- | ---: | :--- |
+| `AGENTS.md` | 14,000 bytes | The law. Every rule is paid in every session, everywhere |
+| `CLAUDE.md` | 3,000 bytes | An envelope. Growth here means law is leaking into a carrier |
+| `GEMINI.md` | 3,000 bytes | The same |
+
+**The numbers are a decision, not a discovery,** and a warning fires at 80% so the conversation happens before the ceiling rather than at it. Raising one has to be a commit somebody reviews, which is what turns "every addition names a subtraction" from an aspiration into a gate. It is also the hard stop behind the [self-improvement loop](Self-Improvement.md): a proposal that would breach the budget is a proposal to add one rule and retire another.
+
 ---
 
 ## 🚨 Why Both Checkers Test Themselves

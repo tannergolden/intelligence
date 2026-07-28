@@ -85,6 +85,30 @@ IMAGE_RE = re.compile(r"!\[([^\]]*)\]\(([^)\s]+)")
 LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
 FENCE_RE = re.compile(r"\A\s*(`{3,})\s*([A-Za-z0-9_+-]*)")
 
+# --- this repository's own product budget -----------------------------------
+# NOT part of the styling standard, and deliberately kept beside it anyway,
+# because this is the only checker that already reads these files.
+#
+# These three are DELIVERED into other people's repositories and read by an
+# agent in EVERY session there, whether or not anyone invokes anything.
+# Nothing else in this tree has that property: a SKILL.md costs a session, a
+# document costs whoever opens it, and these cost everyone, always.
+#
+# The checker caps a SKILL.md at 500 lines for being expensive. Until this
+# existed it left the far more expensive file unbounded, which is the wrong
+# way round.
+#
+# THE NUMBERS ARE A DECISION, NOT A DISCOVERY. Raising one has to be a commit
+# somebody reviews, which is what turns "every addition names a subtraction"
+# from an aspiration into a gate. The warning fires early so the conversation
+# happens before the ceiling, not at it.
+DELIVERED_BUDGETS = {
+    "AGENTS.md": 14000,   # the law. Every rule paid in every session, everywhere
+    "CLAUDE.md": 3000,    # an envelope. Growth here means law is leaking in
+    "GEMINI.md": 3000,    # the same
+}
+DELIVERED_WARN_AT = 0.80
+
 # `_` as a space is rejected across the WHOLE tree, not just docs. These are
 # the names a platform or a language fixes, which cannot move at all.
 UNDERSCORE_OK = {
@@ -370,6 +394,33 @@ def submodule_paths(root: Path):
     return found
 
 
+def check_delivered_budget(root: Path, fail, warn):
+    """Size ceilings on the files this repository delivers to others.
+
+    A file read in every session of every consuming repository is the one
+    place where a paragraph nobody needed is charged to everybody, forever.
+    Published research on agent memory found instructions that only ever grow
+    make agents measurably WORSE at following them, so this is a correctness
+    gate wearing a size gate's clothes.
+    """
+    for name, budget in sorted(DELIVERED_BUDGETS.items()):
+        path = root / name
+        if not path.is_file():
+            continue
+        size = path.stat().st_size
+        if size > budget:
+            fail(name, f"is {size} bytes against a budget of {budget}. This file "
+                       "is read in every session of every repository that "
+                       "receives it, so a line added here is paid by everyone "
+                       "forever. Remove something, move it into a document only "
+                       f"read when needed, or raise the budget in {__file__.rsplit('/', 1)[-1]} "
+                       "as a deliberate commit somebody reviews.")
+        elif size > budget * DELIVERED_WARN_AT:
+            warn(name, f"is {size} bytes, past {int(DELIVERED_WARN_AT * 100)}% of "
+                       f"its {budget}-byte budget. The next addition is the one "
+                       "that should name what it replaces.")
+
+
 def check_root(root: Path, docs_only: bool = False):
     problems, warnings = [], []
 
@@ -409,6 +460,7 @@ def check_root(root: Path, docs_only: bool = False):
                                 "argument that argues nothing.")
     if not docs_only:
         check_names(root, fail, vendored)
+        check_delivered_budget(root, fail, warn)
     return files, problems, warnings
 
 
@@ -432,6 +484,7 @@ SELF_TEST_WARNINGS = (
     "not fully capped",
     "spells out `AND`",
 )
+SELF_TEST_BUDGET = "against a budget of"
 
 GOOD = """<!--
 title: '📝 GOOD'
@@ -548,6 +601,19 @@ def self_test() -> int:
                 if not fired:
                     missing.append(f"{label}: {phrase}")
                 print(f"  {'fired    ' if fired else 'DID NOT  '} {label}: {phrase}")
+
+        # The budget gate runs over delivered files rather than documents, so
+        # it needs its own hostile input: a law that outgrew its allowance.
+        budget_hits = []
+        (root / "AGENTS.md").write_text(
+            "x" * (DELIVERED_BUDGETS["AGENTS.md"] + 1), encoding="utf-8")
+        check_delivered_budget(root, lambda f, m: budget_hits.append(m),
+                               lambda f, m: None)
+        fired = any(SELF_TEST_BUDGET in m for m in budget_hits)
+        print(f"  {'fired    ' if fired else 'DID NOT  '} error: {SELF_TEST_BUDGET}")
+        if not fired:
+            missing.append(f"error: {SELF_TEST_BUDGET}")
+        (root / "AGENTS.md").unlink()
 
         if any(p["file"] == "Good.md" for p in problems):
             print("::error title=Check Docs::The compliant document was REJECTED. "

@@ -74,9 +74,10 @@ body:
     attributes:
       label: What it costs
       description: >-
-        The law is read in full in every session in every repository. Name the line
-        this replaces, or make the argument for adding one. "It seemed useful" is
-        not an argument.
+        The law is read in full in every session in every repository, and it is held
+        to a byte budget that CI enforces. If accepting this would breach it, this is
+        a proposal to add one rule and retire another: say which. "It seemed useful"
+        is not an argument.
     validations:
       required: true
 

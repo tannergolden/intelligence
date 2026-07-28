@@ -28,6 +28,11 @@ A maintainer needs to judge it without the session it came from. Four things, an
 3. **Why it is universal**, answering the routing test explicitly: what makes it true regardless of language, toolchain and branch model.
 4. **What it costs**, because the law is read in full in every session in every repository. Name the line it replaces, or argue for the seat.
 
+On the fourth: a publisher may enforce a **byte budget** on the file, so
+"what it costs" can be a number rather than a sentiment. Where one exists,
+a proposal that would breach it is not a proposal to add a rule, it is a
+proposal to add one and remove another. Say which.
+
 ## The shape
 
 ```markdown
