@@ -54,13 +54,6 @@ Read [Scope & Boundaries](Scope-&-Boundaries.md) first if you are about to add s
 
 ---
 
-## 🔗 See also
-
-> [!TIP]
-> The [root README](../README.md) is the short version of all of this. If the two ever disagree, these documents are more specific and win.
-
----
-
 <div align="center">
 
 **Five questions, five owners, no orphaned claims.**
