@@ -8,10 +8,13 @@
 # is silent. That is the whole reason this file exists.
 #
 # STANDARD LIBRARY ONLY. There is no YAML parser on the runner image, so the
-# frontmatter reader below handles the flat scalar subset the spec actually
-# requires and REFUSES anything else rather than guessing. A parser that
-# guesses is worse than no parser, because it turns a loud failure into a
-# quiet misreading.
+# frontmatter reader below handles exactly the shapes the specification uses,
+# which is scalars, block scalars, and a mapping under `metadata`, and REFUSES
+# anything else rather than guessing. A parser that guesses is worse than no
+# parser, because it turns a loud failure into a quiet misreading. A parser
+# that refuses valid input is its own failure, and this one did that first:
+# a block-scalar description and the `metadata` mapping are both ordinary, and
+# both were rejected as "nested".
 #
 # THE THREE TIERS THIS IS DEFENDING, because every rule maps to one of them:
 #

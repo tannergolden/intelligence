@@ -20,7 +20,7 @@ description: Analyze CSV and tabular data files: compute summary statistics, add
 
 Three things changed. It names the capabilities rather than the mechanism. It broadens across the formats a user might actually have. And it covers the case where the user never uses the domain word at all, which is the case a narrow description misses.
 
-**On one line, however long it gets.** Frontmatter here is flat `key: value` pairs, so a description wrapped onto a second line reads as nested and is rejected rather than folded.
+**On one line, or in a block scalar.** A description that wraps needs `description: >` with the text indented beneath it, which folds the lines back into one string. What does not work is wrapping a plain `description:` onto a second line: that reads as nested and is refused rather than folded. See `frontmatter.md`.
 
 ## Third person about the user, imperative toward the agent
 
