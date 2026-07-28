@@ -32,7 +32,15 @@ Call scripts by a path relative to the skill directory root, never by an absolut
 
 ## Do not store data in the skill directory
 
-The skill directory is replaced on upgrade, so anything written there is lost without warning. Write to a path the caller provides, or to the location the host tool designates for persistent state.
+Physically nothing stops it: an installed skill is an ordinary folder, and an agent holding write access can put a file in it. Three things go wrong anyway, and the first is the one people miss.
+
+**A skill can be installed for the user, not the project.** Claude Code resolves skills at user scope as well as project scope, so one copy of a skill can serve every repository that person works in. Data written inside it is then read in all of them: notes from one project surface in another, and anything project-specific is now wrong everywhere else.
+
+**The directory is replaced on upgrade.** Installing a newer version copies the folder over the old one, and whatever was written inside goes with it, silently.
+
+**An unreferenced file is a defect.** A skill directory is content the manifest names; a checker that enforces that will reject the file, and Gemini CLI puts the folder structure in context and asks the user to approve access to the whole directory, so stored data costs context and widens the grant.
+
+Write to a path the caller provides, or to the location the host tool designates for persistent state.
 
 ## The cost side
 
