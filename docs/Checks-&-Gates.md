@@ -127,13 +127,22 @@ Both checkers build their own banned characters from codepoints rather than typi
 | :------------------------------------------------- | :----------------------------------------------------------- |
 | [`ci.yml`](../.github/workflows/ci.yml)            | All four `make` targets, plus shared spelling and link checks |
 | [`skills.yml`](../.github/workflows/skills.yml)    | The skill gate, and the negative test beside it              |
-| [`release.yml`](../.github/workflows/release.yml)  | Both checkers, both negative tests, and all three delivered files present |
+| [`release.yml`](../.github/workflows/release.yml)  | Both checkers, both negative tests, the packager's invariants, and every file the sync stub copies |
 
 `ci.yml` is a stub calling the shared reusable workflow in `standards` rather than a private copy, so spelling, link checking and documentation linting stay in one place for the whole fleet.
 
 **`skills.yml` reports, it does not gate a merge**, and that is not an oversight: work lands here by direct push, so nothing merges and a required status check would have nothing to sit in front of. What it buys is a red mark while the person who wrote it is still looking at it.
 
-**`release.yml` is the real gate.** It is the last moment anything reads these bytes before a moved tag carries them to every consumer, so it refuses to tag when a skill fails, a document fails, either checker has stopped rejecting known-bad input, or any of the three delivered files is missing.
+**`release.yml` is the real gate.** It is the last moment anything reads these bytes before a moved tag carries them to every consumer, so it refuses to tag when a skill fails, a document fails, either checker has stopped rejecting known-bad input, the packager has stopped holding its invariants, or any file the sync stub copies is missing. That last list is all seven, the two hook scripts and two settings files included, not only the three documents: one missing at the tag is a `cp` that fails in every consuming repository at once, on a schedule, with nobody watching.
+
+Four things it also refuses, each of which is about the tag rather than the bytes:
+
+| Refusal | Because |
+| :--- | :--- |
+| A version tag that already exists | A published `vX.Y.Z` is immutable. The checkout fetches tags so the question can actually be answered locally rather than by the remote after every gate has reported success |
+| A commit not reachable from the default branch | `workflow_dispatch` offers every ref, so nothing else stops a release being cut from unmerged work. An ancestor test rather than an equality test, so recutting from a known-good older commit still works |
+| An empty `dist/` | An unmatched glob is itself, so the release would attach a path that does not exist |
+| Publishing the release after moving the major | The release carries the skill archives. A failed upload used to leave the moving tag pointing at a version whose downloads do not exist, with the run reporting success. The pointer every consumer resolves is now the last thing to change |
 
 ---
 

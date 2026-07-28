@@ -33,9 +33,11 @@ A consumer pinning `@v1` receives every later fix in the v1 line automatically. 
 
 ## 🚀 Cutting A Release
 
-Run [`🏷️ Cut Release`](../.github/workflows/release.yml) from the Actions tab with a `vX.Y.Z` version. It validates the version, refuses one that already exists, checks that the published action still resolves, **runs the product's own gates one last time**, then cuts the immutable tag and force-moves the major.
+Run [`🏷️ Cut Release`](../.github/workflows/release.yml) from the Actions tab with a `vX.Y.Z` version. It validates the version, refuses one that already exists, refuses a commit that is not reachable from the default branch, checks that the published action still resolves, **runs the product's own gates one last time**, cuts the immutable tag, publishes the release with the skill archives attached, and only then force-moves the major.
 
-That last gate is the point of having a workflow rather than two `git tag` commands. There is no build step, so the files in the commit are the files that land, and the release is the final moment anything can check them: the sync pushes directly into consuming repositories, with no pull request and no CI anywhere downstream. It refuses to tag if a published skill fails its checks, if the hostile fixtures stop being rejected, or if any of the three delivered files is missing.
+That last gate is the point of having a workflow rather than two `git tag` commands. There is no build step, so the files in the commit are the files that land, and the release is the final moment anything can check them: the sync pushes directly into consuming repositories, with no pull request and no CI anywhere downstream. It refuses to tag if a published skill fails its checks, if either checker's hostile fixtures stop being rejected, if the packager stops holding its invariants, or if any file the sync stub copies is missing, which is all seven and not only the three documents.
+
+**The order of the last two steps is load-bearing.** The release page carries the archives, so publishing it before moving `v1` means a failed upload leaves an unreferenced `vX.Y.Z` rather than a moving pointer aimed at a version whose downloads do not exist. The tag every consumer resolves is the last thing that changes, which is the only ordering where a partial failure is recoverable without a recall.
 
 By hand, the equivalent is two commands, and they skip every one of those checks:
 

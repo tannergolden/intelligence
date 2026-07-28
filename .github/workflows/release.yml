@@ -82,12 +82,18 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          # ⚠️ WITHOUT THIS THE IMMUTABILITY CHECK BELOW PROVES NOTHING. It
+          # asks git whether a tag exists, and a checkout with no tags always
+          # answers no. The push would still be refused by the remote, but
+          # after every gate here had passed and reported success.
+          fetch-tags: true
           persist-credentials: false
 
       - name: '🔍 Validate Version'
         id: check
         env:
           VERSION: ${{ inputs.version }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           set -euo pipefail
           if ! printf '%s' "$VERSION" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
@@ -105,6 +111,17 @@ jobs:
           fi
           if git rev-parse -q --verify "refs/tags/$VERSION" >/dev/null; then
             echo "::error title=Release::Tag '$VERSION' already exists. A published version is immutable; cut a new patch instead."
+            exit 1
+          fi
+          # ⚠️ `workflow_dispatch` OFFERS EVERY REF, INCLUDING A FEATURE
+          # BRANCH. Nothing else stops a release being cut from work that was
+          # never reviewed or merged, and moving `v1` at it delivers those
+          # files to every consumer with no pull request anywhere downstream.
+          # An ancestor test rather than an equality test, so recutting from a
+          # known-good older commit on the default branch still works, which
+          # is exactly what a recall needs.
+          if ! git merge-base --is-ancestor HEAD "origin/${DEFAULT_BRANCH}"; then
+            echo "::error title=Release::HEAD is not reachable from origin/${DEFAULT_BRANCH}. A release is cut from the default branch's history and nowhere else."
             exit 1
           fi
           echo "major=${VERSION%%.*}" >> "$GITHUB_OUTPUT"
@@ -167,15 +184,23 @@ jobs:
             fail=1
           fi
 
-          for file in AGENTS.md CLAUDE.md GEMINI.md; do
+          # EVERY FILE THE SYNC STUB COPIES, not only the three documents. The
+          # stub in Installation.md names each of these by path, so one
+          # missing at the tag is a `cp` that fails in every consuming
+          # repository at once, on a schedule, with nobody watching. The
+          # three markdown files were checked here and the router was not,
+          # which is the half that actually executes.
+          for file in AGENTS.md CLAUDE.md GEMINI.md \
+                      .claude/hooks/skill-router.sh .claude/settings.json \
+                      .gemini/hooks/skill-router.sh .gemini/settings.json; do
             if [ ! -s "$file" ]; then
-              echo "::error title=Release::${file} is missing or empty, and it is one of the three files this release delivers."
+              echo "::error title=Release::${file} is missing or empty, and the sync stub copies it by name."
               fail=1
             fi
           done
 
           [ "$fail" -eq 0 ] || exit 1
-          echo "Skills and documents pass, both checkers still reject known-bad input, and all three delivered files are present."
+          echo "Skills and documents pass, both checkers still reject known-bad input, and every file the sync stub copies is present."
 
       # Built here rather than committed. An archive in the tree is build
       # output nobody can review in a diff, and it goes stale silently the
@@ -186,12 +211,22 @@ jobs:
         run: |
           set -euo pipefail
           make build
+          # AN UNMATCHED GLOB IS ITSELF, so `dist/*` over an empty directory
+          # is the literal string and every consumer of it downstream inherits
+          # a path that does not exist. `gh release create` would then attach
+          # nothing while reporting an obscure error, after the tags moved.
+          shopt -s nullglob
+          archives=(dist/*)
+          if [ "${#archives[@]}" -eq 0 ]; then
+            echo "::error title=Release::make build produced no archives. Refusing to publish a release with nothing attached."
+            exit 1
+          fi
           # A glob rather than `ls`, which shellcheck rejects (SC2012) because
           # parsing its output mangles any name carrying whitespace. A skill
           # name cannot contain whitespace, so nothing here was broken; the
           # habit is what the rule is against.
           printf 'Packaged:'
-          for archive in dist/*; do printf ' %s' "${archive##*/}"; done
+          for archive in "${archives[@]}"; do printf ' %s' "${archive##*/}"; done
           printf '\n'
 
       # ⚠️ THE TAGS HERE ARE LIGHTWEIGHT, DELIBERATELY. A lightweight tag is a
@@ -211,6 +246,14 @@ jobs:
           ACTOR_ID: ${{ github.actor_id }}
         run: |
           set -euo pipefail
+          # Re-globbed rather than carried over: each `run:` block is its own
+          # shell, so an array set in the packaging step above does not exist
+          # here. Under `set -u` that reads as an unbound variable at the exact
+          # moment the tags are being pushed.
+          shopt -s nullglob
+          archives=(dist/*)
+          [ "${#archives[@]}" -gt 0 ] || { echo "::error title=Release::dist/ is empty."; exit 1; }
+
           git config user.name "$ACTOR"
           git config user.email "${ACTOR_ID}+${ACTOR}@users.noreply.github.com"
           REMOTE="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
@@ -218,6 +261,20 @@ jobs:
           git tag "$VERSION"
           git push "$REMOTE" "$VERSION"
           echo "Published immutable tag $VERSION."
+
+          # ⚠️ THE RELEASE IS PUBLISHED BEFORE THE MAJOR TAG MOVES, and the
+          # order is the whole point. This release carries the skill archives
+          # as attachments, so a failure uploading them used to leave `v1`
+          # already pointing at a version whose downloads do not exist, with
+          # the summary below reporting success. Publishing first means the
+          # worst case is an unreferenced `vX.Y.Z`, which nothing resolves
+          # unless somebody pinned it deliberately. The moving pointer that
+          # reaches every consumer is the last thing to change.
+          gh release create "$VERSION" \
+            --title "$VERSION" \
+            --generate-notes \
+            --latest \
+            "${archives[@]}"
 
           if [ "$MOVE_MAJOR" = "true" ]; then
             # Force-moved by design: this IS the moving major tag, and moving
@@ -227,12 +284,6 @@ jobs:
             git push --force "$REMOTE" "$MAJOR"
             echo "::warning title=Major tag moved::${MAJOR} now points at ${VERSION}. Every repository pinned to @${MAJOR} receives these agent files on its next scheduled sync, with no pull request and no review on their side."
           fi
-
-          gh release create "$VERSION" \
-            --title "$VERSION" \
-            --generate-notes \
-            --latest \
-            dist/*
 
           {
             echo "### 🏷️ Released $VERSION"
