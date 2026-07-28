@@ -70,7 +70,7 @@ Fold templates into `assets/` rather than a separate directory. The specificatio
 **Claude-only, permitted with a declaration:** `when_to_use`, `argument-hint`, `arguments`, `disable-model-invocation`, `user-invocable`, `disallowed-tools`, `model`, `effort`, `context`, `agent`, `background`, `hooks`, `paths`, `shell`. Gemini CLI ignores every one of them.
 
 > [!IMPORTANT]
-> **A skill using any Claude-only key must set `compatibility`.** The harmless case is an optimisation that quietly does nothing. The dangerous case is a skill whose **correctness** depends on the key: one relying on `disable-model-invocation: true` to avoid auto-firing will auto-fire on Gemini.
+> **A skill using any Claude-only key must set `compatibility`.** The harmless case is an optimization that quietly does nothing. The dangerous case is a skill whose **correctness** depends on the key: one relying on `disable-model-invocation: true` to avoid auto-firing will auto-fire on Gemini.
 
 `SKILL.md` frontmatter uses `---` fences, unlike every other document in this repository. That is correct, and the specification requires it.
 
@@ -84,12 +84,12 @@ It is the only part loaded for every skill whether used or not, and it alone dec
 
 | Weak                          | Strong                                                                                        |
 | :---------------------------- | :---------------------------------------------------------------------------------------------- |
-| `Processes CSV files`         | `Use this skill when the user needs to read, filter, or summarise tabular data, including .csv and .tsv exports` |
+| `Processes CSV files`         | `Use this skill when the user needs to read, filter, or summarize tabular data, including .csv and .tsv exports` |
 | `Helps with commit messages`  | `Use this skill when the user is writing a commit message, or asks why a commit was rejected`  |
 
 The first column names a topic. The second names a **situation**, in the words someone would actually use to describe it.
 
-Five rules, each from observed runtime behaviour:
+Five rules, each from observed runtime behavior:
 
 1. **Be pushier than feels natural.** Agents measurably under-trigger. A description that reads as appropriately modest to a human is one the agent skips.
 2. **Name the symptom, not only the domain.** Someone with a broken skill says "it never activates", not "I need skill authoring help". List the phrasings they would really type.

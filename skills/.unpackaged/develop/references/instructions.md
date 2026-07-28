@@ -28,7 +28,7 @@ The mistake in both directions is common. Prescribing an exact sequence for a ta
 
 ## Anti-patterns
 
-**Vague instruction.** "Handle errors appropriately." "Follow best practices." These consume tier B space in every session and change no behaviour, because they carry no information the agent did not already have.
+**Vague instruction.** "Handle errors appropriately." "Follow best practices." These consume tier B space in every session and change no behavior, because they carry no information the agent did not already have.
 
 **Overly comprehensive.** A skill that documents everything makes the agent worse at finding the part that applies. Completeness is not the goal; retrievability is.
 

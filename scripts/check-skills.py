@@ -55,7 +55,7 @@ BANNED_KEYS = ("allowed-tools",)
 
 # Read by Claude Code, ignored by Gemini CLI. Not forbidden, but a skill using
 # one behaves differently per vendor, so it must SAY SO via `compatibility`.
-# The dangerous case is not the optimisation that silently does nothing, it is
+# The dangerous case is not the optimization that silently does nothing, it is
 # the skill whose correctness depends on the key: one relying on
 # `disable-model-invocation` to avoid auto-firing will auto-fire on Gemini.
 VENDOR_KEYS = (
@@ -89,7 +89,7 @@ BODY_MAX_CHARS = 20000  # the same guidance's other half, ~5,000 tokens
 DESC_TRIGGER_RE = re.compile(r"\b(?:when|whenever|if)\b", re.IGNORECASE)
 
 # Documented anti-patterns. Each occupies tier B in every session and changes
-# no behaviour, because it carries nothing the agent did not already have.
+# no behavior, because it carries nothing the agent did not already have.
 #
 # BOUNDED AT BOTH ENDS. Without the trailing `\b`, "as appropriate" matches
 # inside "appropriately", so a sentence about what reads as appropriately

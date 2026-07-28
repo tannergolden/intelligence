@@ -27,7 +27,7 @@ The name pattern forbids a leading hyphen, a trailing hyphen and consecutive hyp
 
 Every one of these is silently ignored by tools that do not implement it, so a skill using any of them behaves differently depending on who loaded it. Declare that with `compatibility`.
 
-The harmless case is an optimisation that quietly does nothing. **The dangerous case is a skill whose correctness depends on the field.** One relying on `disable-model-invocation` to avoid firing automatically will fire automatically everywhere that field is unknown.
+The harmless case is an optimization that quietly does nothing. **The dangerous case is a skill whose correctness depends on the field.** One relying on `disable-model-invocation` to avoid firing automatically will fire automatically everywhere that field is unknown.
 
 ## Keep it flat
 

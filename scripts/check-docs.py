@@ -200,11 +200,11 @@ def check_file(path: Path, root: Path, taglines, footers, fail, warn):
         want += 1
     if want >= len(lines) or lines[want].strip() != MD041:
         fail(rel, f"the first line after the frontmatter must be `{MD041}`. "
-                  "Without it, the centred `div` "
+                  "Without it, the centered `div` "
                   "before the Heading 1 trips MD041 in any repository that runs "
                   "markdownlint.")
 
-    # --- the centred header block -------------------------------------------
+    # --- the centered header block -------------------------------------------
     head = "\n".join(lines[:60])
     if '<div align="center">' not in head:
         fail(rel, 'the header must open a `<div align="center">` block.')

@@ -38,7 +38,7 @@ It is **repository-agnostic**. This exact text sits in repositories with differe
 ## 📝 Two Layers of Law
 
 1. **This file: what holds everywhere.** Encoding, secret handling, how to approach a change, how to report one. None of it depends on what the repository is for.
-2. **The repository's own context: everything that varies.** Architecture, stack decisions, domain rules, runbooks, branch model, review policy. No two repositories organise this the same way. Some use a `docs/` tree. Some place a set of instructions in each folder, beside the files those instructions govern. Some keep a knowledge base under a name this file has never heard of. NEVER assume a layout. Find the one actually in front of you.
+2. **The repository's own context: everything that varies.** Architecture, stack decisions, domain rules, runbooks, branch model, review policy. No two repositories organize this the same way. Some use a `docs/` tree. Some place a set of instructions in each folder, beside the files those instructions govern. Some keep a knowledge base under a name this file has never heard of. NEVER assume a layout. Find the one actually in front of you.
 
 > [!IMPORTANT]
 > **Where this repository documents a convention that differs from any rule below, the repository wins and this file yields.** Say so in your report when it happens. A rule that cannot be overridden locally is a rule that will be wrong somewhere, and this text is identical in repositories that have nothing else in common.
@@ -49,7 +49,7 @@ Some repositories additionally follow a shared external standard by link, never 
 
 Look in this order, and stop at the first that answers the question you have:
 
-1. **What the root `README.md` says.** A repository that organises its knowledge deliberately almost always says where, in the first screen.
+1. **What the root `README.md` says.** A repository that organizes its knowledge deliberately almost always says where, in the first screen.
 2. **The folder you are about to change.** An instruction file, a README, or a rules file sitting beside the code governs that code and outranks anything further away.
 3. **A repository-wide knowledge directory, under whatever name it carries.** A `docs/` tree, a notes folder, a vault, a wiki committed to the repository.
 
@@ -65,7 +65,7 @@ Read the document that governs a thing before changing the thing, and name the d
 Eight rules. Rules 1, 2, 7 and 8 hold in any repository. Rules 4 and 5 apply wherever the thing they govern exists. Rules 3 and 6 tell you to go and find the answer, because asserting one here would be wrong somewhere.
 
 1. **Commit messages are Conventional Commits.** `type(scope): subject`, imperative mood, lower-case subject, no trailing period. Types in use: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `security`, `revert`.
-2. **The em dash (U+2014) is banned in everything you write**: prose, code, comments, configuration, commit messages, issue text and release notes alike. Use a comma, a colon, parentheses, or a spaced hyphen (" - "). En dashes (U+2013) and curly quotes are banned on the same terms. Verbatim third-party text is exempt: licence files, vendored assets, lockfiles.
+2. **The em dash (U+2014) is banned in everything you write**: prose, code, comments, configuration, commit messages, issue text and release notes alike. Use a comma, a colon, parentheses, or a spaced hyphen (" - "). En dashes (U+2013) and curly quotes are banned on the same terms. Verbatim third-party text is exempt: license files, vendored assets, lockfiles.
 3. **Find out how work lands here before you land any.** NEVER assume a trunk name, and NEVER assume whether a pull request is required, optional or forbidden. Some repositories take direct pushes to their default branch and open no pull requests at all; others require one for every change. Read this repository's own context first, then its contributing guide if it has one, then how recent commits actually arrived on the default branch. Guessing wrong fails loudly, and it fails after the work is done.
 4. **Every third-party CI action or job template is pinned to an immutable revision**, a full 40-character commit SHA on GitHub Actions, with its human-readable version as a trailing comment on the same line. NEVER pin to a tag or a branch, and NEVER write a revision you have not read from a real source. A guessed SHA is a broken pipeline at best.
 5. **Every CI job holds the narrowest permissions it can do its work with.** On GitHub Actions that means `permissions: {}` at the top of the workflow, with each job granting itself only what it uses. A workflow-level block is a ceiling, not a grant: a job cannot hold a permission the workflow did not allow, and it does not receive one just because the workflow listed it.
@@ -91,7 +91,7 @@ The same discipline applies to what a CI job may assume is installed. A hosted r
 | Any file carrying a do-not-edit header   | It says so on its first line. Change the source and republish.            |
 | Content between generated-region markers | Regenerated from the tree. Edit the prose around the markers instead.     |
 | Lockfiles and vendored third-party files | Regenerated, or verbatim upstream. A hand edit is undone on the next run. |
-| Machine-written receipts and state files | They record what happened. Editing one rewrites history, not behaviour.   |
+| Machine-written receipts and state files | They record what happened. Editing one rewrites history, not behavior.   |
 
 If you believe one of these is wrong, fix what generates it and say so. Editing the output hides the defect and reintroduces it on the next run.
 

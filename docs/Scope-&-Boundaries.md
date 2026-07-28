@@ -42,7 +42,7 @@ _Argued for once. Argue with it, never drift past it._
 | `docs/`           | These documents                                                                        |
 | `Makefile`        | The standardized task entry point. The shared CI resolves `lint-docs` here and nowhere else |
 | `scripts/`        | Both checkers. What the Makefile invokes, and what `actions/` reaches up two levels for |
-| `LICENSE`         | Output copied into other repositories with no licence is unusable by anyone but its author |
+| `LICENSE`         | Output copied into other repositories with no license is unusable by anyone but its author |
 
 > [!NOTE]
 > **`Makefile` and `scripts/` do not breach rule 4.** Nothing here runs on clone: `make` is invoked deliberately, by a person or by CI. That is the whole difference between a task runner and a git hook, and it is why one is permitted and the other is not.

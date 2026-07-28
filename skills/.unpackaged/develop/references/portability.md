@@ -12,7 +12,7 @@ Nothing in the skill itself should assume a path. If the body needs to point at 
 
 Only `name` and `description` are read everywhere. Everything else is either optional and portable (`license`, `compatibility`, `metadata`) or implemented by one tool and dropped by the rest. See `frontmatter.md` for the full split.
 
-The rule that follows: a skill using any single-tool field declares that with `compatibility`. Not because the field is dangerous, but because the skill's behaviour is now conditional on who read it, and a reader deserves to know that from the file rather than from a bug report.
+The rule that follows: a skill using any single-tool field declares that with `compatibility`. Not because the field is dangerous, but because the skill's behavior is now conditional on who read it, and a reader deserves to know that from the file rather than from a bug report.
 
 ## Two content forms behave differently, and both are invisible
 

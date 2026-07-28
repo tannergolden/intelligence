@@ -85,7 +85,7 @@ Everything below was established on 2026-07-28 against **Claude Code 2.1.220**. 
 Three of these rows are load-bearing enough that a change makes a file deletable or a rule unnecessary:
 
 - **Gemini CLI adopting `AGENTS.md` by default** deletes `GEMINI.md`. There is an open upstream request for exactly this.
-- **Claude Code adopting `AGENTS.md`** deletes `CLAUDE.md`, though its documentation frames the current behaviour as a position rather than a gap.
+- **Claude Code adopting `AGENTS.md`** deletes `CLAUDE.md`, though its documentation frames the current behavior as a position rather than a gap.
 - **VS Code Copilot enabling `chat.useAgentsMdFile` by default** removes the one manual step in installation.
 
 Every one of those makes this repository smaller. The churn runs in the right direction.
