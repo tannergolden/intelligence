@@ -44,9 +44,10 @@ lint-fix: ## Explain why there is nothing to auto-fix here
 	@echo "The shared CI failure tips suggest this target, which is why it"
 	@echo "exists: a missing target is a dead end when you are already debugging."
 
-test: ## Prove both checkers still reject known-bad input
+test: ## Prove every checker and the packager still hold their guarantees
 	$(PYTHON) scripts/check-skills.py --self-test
 	$(PYTHON) scripts/check-docs.py --self-test
+	$(PYTHON) $(PACKAGER) --self-test
 
 build: ## Package every skill into $(DIST)/ as an installable archive
 	@mkdir -p $(DIST)

@@ -149,10 +149,101 @@ def package(skill_dir: Path, out_dir: Path, include_evals: bool, extension: str)
     return archive
 
 
+# --- the self-test -----------------------------------------------------------
+# THIS SCRIPT PRODUCES EVERY RELEASE ARTIFACT, and until this existed nothing
+# checked what it produced. `make build` proved only that it did not crash.
+# The three properties below are the ones a caller actually depends on, and
+# each fails silently: a wrong archive root is rejected on upload with an
+# error that does not say why, lost determinism makes every rebuild look
+# changed, and a shipped evals/ inflates the upload with cases no agent reads.
+SELF_TEST_SKILL = """---
+name: fixture
+description: Use this skill when the packager needs a known-good input to pack.
+---
+
+## Steps
+
+1. Do the thing.
+"""
+
+
+def self_test() -> int:
+    import contextlib
+    import hashlib
+    import io
+    import tempfile
+
+    # `package` prints the archive path to stdout, which is its contract for a
+    # caller. Here that path is an intermediate, so it is swallowed and only
+    # the invariant results reach the reader.
+    def pack(*a, **kw):
+        with contextlib.redirect_stdout(io.StringIO()), \
+                contextlib.redirect_stderr(io.StringIO()):
+            return package(*a, **kw)
+
+    failures = []
+
+    def check(label, ok, detail=""):
+        print(f"  {'ok      ' if ok else 'FAILED  '} {label}")
+        if not ok:
+            failures.append(f"{label}{': ' + detail if detail else ''}")
+
+    with tempfile.TemporaryDirectory() as scratch:
+        root = Path(scratch)
+        src = root / "fixture"
+        (src / "evals").mkdir(parents=True)
+        (src / "SKILL.md").write_text(SELF_TEST_SKILL, encoding="utf-8")
+        (src / "evals" / "evals.json").write_text("{}\n", encoding="utf-8")
+
+        first = pack(src, root / "a", include_evals=False, extension="zip")
+        with zipfile.ZipFile(first) as zf:
+            names = zf.namelist()
+
+        check("the skill FOLDER is the archive root, never SKILL.md",
+              all(n.startswith("fixture/") for n in names), str(names))
+        check("evals/ is excluded by default",
+              not any(n.startswith("fixture/evals/") for n in names), str(names))
+
+        second = pack(src, root / "b", include_evals=False, extension="zip")
+        digest = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+        check("packing unchanged source twice is byte-identical",
+              digest(first) == digest(second))
+
+        with_evals = pack(src, root / "c", include_evals=True, extension="zip")
+        with zipfile.ZipFile(with_evals) as zf:
+            check("--include-evals ships them",
+                  any(n.startswith("fixture/evals/") for n in zf.namelist()))
+
+        # A name that disagrees with its directory is found under one name and
+        # invoked under another, so the packager must refuse rather than warn.
+        wrong = root / "renamed"
+        wrong.mkdir()
+        (wrong / "SKILL.md").write_text(SELF_TEST_SKILL, encoding="utf-8")
+        try:
+            pack(wrong, root / "d", include_evals=False, extension="zip")
+            check("a name/directory mismatch is refused", False, "it was packed")
+        except SystemExit:
+            check("a name/directory mismatch is refused", True)
+
+        bare = root / "bare"
+        bare.mkdir()
+        try:
+            pack(bare, root / "e", include_evals=False, extension="zip")
+            check("a directory with no SKILL.md is refused", False, "it was packed")
+        except SystemExit:
+            check("a directory with no SKILL.md is refused", True)
+
+    if failures:
+        print(f"::error title=Package::{len(failures)} invariant(s) broken: {failures}")
+        return 1
+    print("Every packaging invariant holds.")
+    return 0
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(
         description="Pack a skill directory into a ZIP archive with the folder at its root.")
-    parser.add_argument("skill", type=Path, help="the skill directory to package")
+    parser.add_argument("skill", nargs="?", type=Path, help="the skill directory to package")
     parser.add_argument("--out", type=Path, default=Path("dist"),
                         help="where to write the archive (default: dist)")
     parser.add_argument("--include-evals", action="store_true",
@@ -161,7 +252,14 @@ def main(argv=None) -> int:
                         help="archive extension. The bytes are a ZIP either way, "
                              "and every documented upload path asks for zip, so "
                              "that is the default.")
+    parser.add_argument("--self-test", action="store_true",
+                        help="Prove the packaging invariants still hold, using a "
+                             "fixture skill built in a temporary directory.")
     args = parser.parse_args(argv)
+    if args.self_test:
+        return self_test()
+    if args.skill is None:
+        parser.error("a skill directory is required (or pass --self-test)")
     package(args.skill, args.out, args.include_evals, args.extension)
     return 0
 

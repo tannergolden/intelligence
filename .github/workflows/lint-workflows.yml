@@ -1,0 +1,44 @@
+# --- This Repository's Own Workflow Lint ---
+#
+# 🧰 Lint Workflows
+#
+# Purpose: the gate for rules 4 and 5 of this repository's own law.
+#
+# ⚠️ AGENTS.md REQUIRES EVERY THIRD-PARTY ACTION TO BE PINNED TO A FULL SHA
+# AND EVERY JOB TO HOLD THE NARROWEST PERMISSIONS IT CAN. Until this stub
+# existed, nothing here checked either one. The repository published a law
+# about continuous integration and exempted its own continuous integration
+# from it, which is the least defensible shape a rule can take.
+#
+# actionlint validates Actions semantics; zizmor audits for template
+# injection, credential persistence, dangerous triggers and cache poisoning.
+# Both are consumed BY LINK from the sibling publisher rather than installed
+# here, so a fix upstream reaches this repository with nothing to update.
+#
+# Runs on push rather than pull_request, unlike the stub the upstream comment
+# shows: work lands here by direct push, so a pull-request trigger would
+# never fire.
+#
+# ---
+
+name: '🧰 Lint Workflows'
+
+on:
+  push:
+    branches: ['Development']
+    paths:
+      - '.github/workflows/**'
+      - 'actions/**'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  lint:
+    permissions:
+      contents: read # read the workflows
+    uses: tannergolden/standards/.github/workflows/lint-workflows.yml@v1

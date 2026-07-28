@@ -160,6 +160,13 @@ jobs:
             fail=1
           fi
 
+          # The packager builds the archives attached to this release, so its
+          # invariants are asserted before it runs, not after.
+          if ! python3 skills/.unpackaged/develop/scripts/package.py --self-test; then
+            echo "::error title=Release::The packager no longer holds its invariants, and it builds the release artifacts. Refusing to tag."
+            fail=1
+          fi
+
           for file in AGENTS.md CLAUDE.md GEMINI.md; do
             if [ ! -s "$file" ]; then
               echo "::error title=Release::${file} is missing or empty, and it is one of the three files this release delivers."
