@@ -61,6 +61,12 @@ DESC_AIM = 90                      # "aim for 90 characters or fewer"
 # a hidden Unicode rule injected into AGENTS.md passed every gate here on its
 # way into every consuming repository.
 from _charclasses import BANNED_CHARS, INVISIBLE_RE  # noqa: E402
+from _spelling import BRITISH_SPELLINGS, british_hits  # noqa: E402
+
+# Taken from the shared table rather than typed, for the same reason the
+# em dash below is built from its codepoint: this file must not contain
+# what it rejects, or it fails its own repository on the first run.
+BRITISH_FIXTURE = sorted(BRITISH_SPELLINGS)[0]
 
 # UTF-8 read as Latin-1. The specification calls this zero-tolerance, and it
 # is invisible to a spell checker because the result is still valid Unicode.
@@ -297,6 +303,10 @@ def check_file(path: Path, root: Path, taglines, footers, fail, warn):
                       "the diff, which is the point of using it: a rule hidden "
                       "this way is delivered to every repository and read by "
                       "every agent while being invisible to every reviewer.")
+        for found, american in british_hits(line):
+            fail(rel, f"line {n}: {found!r} is the British spelling; this "
+                      f"repository is American throughout, matching the "
+                      f"publisher it is built alongside. Write {american!r}.")
 
     # --- the fence map, built BEFORE anything consults it --------------------
     fenced = scan_fences(rel, lines, fail, warn)
@@ -447,6 +457,13 @@ TREE_SKIP_DIRS = (".git", "dist", "node_modules", "__pycache__", ".venv")
 TREE_VERBATIM = ("LICENSE", "LICENSE.txt", "LICENCE", "NOTICE", "COPYING")
 TREE_VERBATIM_SUFFIXES = (".lock",)
 
+# The one file whose CONTENT is the rejected text. `_charclasses.py` solves the
+# same problem by building its characters from codepoints, which cannot be done
+# for words without making the table unreadable. Naming the exemption here is
+# the honest version: it is one path, visible in a diff, rather than a rule
+# that quietly declines to check itself.
+TREE_SELF_EXEMPT = ("_spelling.py",)
+
 
 def check_tree(root: Path, fail, skip, vendored=frozenset()):
     """Encoding and typography, over EVERY authored file rather than the docs.
@@ -476,6 +493,8 @@ def check_tree(root: Path, fail, skip, vendored=frozenset()):
             continue
         if rel in skip or path.name in TREE_VERBATIM:
             continue
+        if path.name in TREE_SELF_EXEMPT:
+            continue
         if path.suffix in TREE_VERBATIM_SUFFIXES:
             continue
         raw = path.read_bytes()
@@ -502,6 +521,9 @@ def check_tree(root: Path, fail, skip, vendored=frozenset()):
                           f"U+{ord(m.group()):04X} at column {m.start() + 1}. "
                           "In an executable file or a workflow this is the "
                           "shape nobody catches by reading the diff.")
+            for found, american in british_hits(line):
+                fail(rel, f"line {n}: {found!r} is the British spelling. "
+                          f"Write {american!r}.")
 
 
 def check_names(root: Path, fail, vendored=frozenset()):
@@ -722,6 +744,7 @@ SELF_TEST_ERRORS = (
     "does not resolve",
     "Back to Top",
     "is shared with",
+    "British spelling",
 )
 SELF_TEST_WARNINGS = (
     "not fully capped",
@@ -806,6 +829,8 @@ BROKEN_BODY = ("""
 
 A rule hidden from the reviewer: split{ZWSP}word.
 
+A sentence using {BRITISH}, on the wrong side of the Atlantic.
+
 _Broken by construction._
 
 </div>
@@ -833,7 +858,8 @@ below stops being reported and the gate goes quiet:
 **Everything to report.**
 
 </div>
-""").replace("{EM}", chr(0x2014)).replace("{ZWSP}", chr(0x200B))
+""").replace("{EM}", chr(0x2014)).replace("{ZWSP}", chr(0x200B)) \
+    .replace("{BRITISH}", BRITISH_FIXTURE)
 
 BAD = "---\ntitle: 'BAD'\ntags: [only, three, tags]\n-->\n" + BROKEN_BODY
 

@@ -44,4 +44,4 @@ Write to a path the caller provides, or to the location the host tool designates
 
 ## The cost side
 
-A bundled script is executable content travelling with a document. Wherever a skill is installed, that script arrives too, and whoever installs it is trusting it. Bundle one when it earns its place, keep it small enough to read, and prefer the standard library so it runs without an install step.
+A bundled script is executable content traveling with a document. Wherever a skill is installed, that script arrives too, and whoever installs it is trusting it. Bundle one when it earns its place, keep it small enough to read, and prefer the standard library so it runs without an install step.

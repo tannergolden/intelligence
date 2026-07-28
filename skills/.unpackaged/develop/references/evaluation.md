@@ -49,7 +49,7 @@ Context left over from writing the skill hides gaps in what the skill actually s
 
 **Make assertions checkable.** "The output is good" cannot fail. "Every heading matches the required pattern" can.
 
-**Cover the adjacent request you are most afraid of.** Every skill has one neighbouring task it will wrongly claim. That case is worth writing before any of the happy paths, because over-triggering is the failure that costs every session rather than one.
+**Cover the adjacent request you are most afraid of.** Every skill has one neighboring task it will wrongly claim. That case is worth writing before any of the happy paths, because over-triggering is the failure that costs every session rather than one.
 
 ## The loop
 

@@ -34,7 +34,7 @@ The failure this prevents is silent: a skill that never fires produces no error,
 
 ## Say what it is not for
 
-Any skill worth writing has one neighbouring task it will wrongly claim. Naming that boundary in the description costs a clause and prevents the failure that is hardest to notice, which is a skill quietly loading in every adjacent session and crowding out the ones that should have fired.
+Any skill worth writing has one neighboring task it will wrongly claim. Naming that boundary in the description costs a clause and prevents the failure that is hardest to notice, which is a skill quietly loading in every adjacent session and crowding out the ones that should have fired.
 
 ## Length
 

@@ -15,7 +15,9 @@ The name pattern forbids a leading hyphen, a trailing hyphen and consecutive hyp
 
 ## Optional and portable
 
-`license`, `compatibility` (at most 500 characters), and `metadata`, which is a free-form mapping no runtime reads. Use `metadata` for anything worth recording that nothing needs to act on.
+`license`, which is either an SPDX identifier or the name of a file the skill bundles; `compatibility`, at most 500 characters; and `metadata`, a mapping of string keys to string values with no keys the specification requires. Use `metadata` for anything worth recording that nothing needs to act on.
+
+A file named by `license` counts as referenced even though the body never mentions it. The frontmatter is what points at it.
 
 ## Banned
 
@@ -29,6 +31,16 @@ Every one of these is silently ignored by tools that do not implement it, so a s
 
 The harmless case is an optimization that quietly does nothing. **The dangerous case is a skill whose correctness depends on the field.** One relying on `disable-model-invocation` to avoid firing automatically will fire automatically everywhere that field is unknown.
 
-## Keep it flat
+## What shapes are allowed
 
-The specification needs only scalar values, and the checker reads exactly that. A nested block or a multi-line string is refused rather than half-read, because a parser that quietly drops what it cannot understand would pass a skill whose real frontmatter says something else.
+Scalars, block scalars, and a mapping under `metadata`. A description long enough to wrap is normally written as a block scalar, and that is ordinary YAML:
+
+```yaml
+description: >
+  Use this skill when the user is doing the thing, or when they describe
+  the symptom without naming the thing.
+metadata:
+  author: your name
+```
+
+Anything else nested is refused rather than half-read, because a parser that quietly drops what it cannot understand would pass a skill whose real frontmatter says something else. A key written twice is refused too: every YAML reader keeps the last one silently, so the value a reviewer read in the diff is not the value that loads.

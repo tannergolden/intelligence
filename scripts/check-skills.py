@@ -152,6 +152,18 @@ AT_RE = re.compile(r"(?:^|(?<=[ \t\n\r]))@[./A-Za-z][^ \t\n\r]*")
 # the same bytes in a SKILL.md were caught.
 from _charclasses import INVISIBLE_RE  # noqa: E402
 
+# `skills/` is outside the documentation checker's scan entirely, because a
+# SKILL.md needs the `---` frontmatter that specification forbids. So this is
+# the only place a spelling variant in a skill is ever seen, and three arrived
+# in reference files written after the last manual sweep.
+from _spelling import BRITISH_SPELLINGS, british_hits  # noqa: E402
+
+# Taken from the shared table rather than typed, so this file never
+# contains the word it rejects. Same reason the invisible characters are
+# built from codepoints: a rule whose own test data trips it cannot be
+# tested in the repository that enforces it.
+BRITISH_FIXTURE = sorted(BRITISH_SPELLINGS)[0]
+
 # Files a skill may hold without SKILL.md naming them. `evals/` is the eval
 # harness's own directory: it is read by tooling, never by an agent, so it
 # costs no context and needs no reference.
@@ -395,6 +407,9 @@ def scan_content(label: str, text: str, declared: bool, fail, warn):
             fail(f"{label}:{n}: invisible character U+{ord(match.group()):04X} at "
                  f"column {match.start() + 1}. Nobody can catch this by reading "
                  "the diff, which is why it is checked here.")
+        for found, american in british_hits(line):
+            fail(f"{label}:{n}: {found!r} is the British spelling; this "
+                 f"repository is American throughout. Write {american!r}.")
         if not declared:
             hit = SHELL_INLINE_RE.search(line) or SHELL_FENCE_RE.search(line)
             if hit:
@@ -700,6 +715,7 @@ SELF_TEST_ERRORS = (
     "a second time",
     f"limit {COMPAT_MAX}",
     "is a mapping of string keys",
+    "British spelling",
 )
 
 # WARNINGS ARE ASSERTED TOO, and for the same reason as the errors. The rules
@@ -790,6 +806,8 @@ def build_hostile(root: Path):
         "---\n\n"
         "Ask @someone before running this.\n\n"
         "Diagnostic: !`echo hello`\n\n"
+        f"A sentence using {BRITISH_FIXTURE}, on the wrong side of the "
+        "Atlantic.\n\n"
         "A zero width space splits these:\nsplit" + chr(0x200B) + "word\n",
         encoding="utf-8")
 

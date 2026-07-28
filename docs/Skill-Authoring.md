@@ -211,7 +211,7 @@ Three things decide whether the suite is worth running:
 
 1. **Start with two or three cases**, not twenty. The first run usually shows that the description, not the body, is what needs work, and twenty speculative prompts written beforehand are twenty prompts written against the wrong problem.
 2. **Run each in a fresh session.** Context left over from writing the skill hides gaps in what the skill actually says.
-3. **Cover the adjacent request you are most afraid of.** Every skill has one neighbouring task it will wrongly claim, and that should-not-trigger case is worth writing before any of the happy paths.
+3. **Cover the adjacent request you are most afraid of.** Every skill has one neighboring task it will wrongly claim, and that should-not-trigger case is worth writing before any of the happy paths.
 
 That baseline comparison is the bar. A skill that does not beat it should not ship, however well written, and the overhead is real: published research finds context files often fail to improve task success while adding over 20% inference cost.
 

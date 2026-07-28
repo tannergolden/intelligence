@@ -1,6 +1,6 @@
 ---
 name: develop
-description: Use this skill when the user is writing, fixing, reviewing, or packaging an Agent Skill, or when they describe a skill that never triggers, fires on the wrong requests, has grown too long, or behaves differently in one tool than another. Applies whenever a SKILL.md is being created or edited, even when the user does not call it a skill.
+description: Use this skill when the user is writing, fixing, reviewing, or packaging an Agent Skill, or when they describe a skill that never triggers, fires on the wrong requests, has grown too long, or behaves differently in one tool than another. Applies whenever a SKILL.md is being created or edited, even when the user does not call it a skill. Not for using an installed skill or for writing an agent instruction file; this is for authoring the skill itself.
 ---
 
 ## Decide whether it should be a skill
@@ -20,7 +20,7 @@ Do not create one for a single task, and do not create one whose whole body is a
 5. **Push detail into `references/`**, and name each one with the **condition** that should send an agent to it, not just its subject.
 6. **Bundle a script** if the agent would otherwise rebuild the same logic every run. Read `references/scripts.md` before writing one.
 7. **Write the evals** and compare against not having the skill at all. Read `references/evaluation.md` before believing it works.
-8. **Check portability**, then run the checker.
+8. **Check portability**, then run a checker over the skill directory. Read `references/checking.md` for what to run, in this repository and in one that has never seen this skill.
 
 ## Three tiers, three costs
 
@@ -71,6 +71,7 @@ Each of these is loaded only when its condition applies. Read the one that match
 - `references/scripts.md` - read **before bundling any script**. Carries the signal that one is needed and the interface rules that keep an agent from hanging on it.
 - `references/evaluation.md` - read **before shipping**, and whenever a skill is suspected of costing more than it buys. Carries the eval file format and the baseline comparison.
 - `references/portability.md` - read **before using any frontmatter field beyond `name` and `description`**, or when a skill behaves differently for different people.
-- `references/frontmatter.md` - read **when a field is rejected or you are unsure whether one is portable**. Carries every field, its limit, and which tools read it.
+- `references/frontmatter.md` - read **when a field is rejected or you are unsure whether one is portable**. Carries every field, its limit, its allowed shapes, and which tools read it.
+- `references/checking.md` - read **before running the checker**, and when a repository has none. Carries the command here, the published action, and what a clean run still does not prove.
 - `assets/skill-template.md` - copy this **when starting a new skill**, rather than beginning from a blank file.
 - `scripts/package.py` - run this **only when someone needs a single downloadable file**. Installing from the directory needs no packaging step.

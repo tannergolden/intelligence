@@ -107,7 +107,7 @@ Where these facts become rules is [Scope & Boundaries](Scope-&-Boundaries.md). I
 
 <div align="center">
 
-**Graded, dated, and reproducible. Anything ungraded is a rumour.**
+**Graded, dated, and reproducible. Anything ungraded is a rumor.**
 
 [↑ Back to Top](#top)
 
