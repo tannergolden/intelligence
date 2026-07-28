@@ -142,6 +142,23 @@ Both checkers build their own banned characters from codepoints rather than typi
 
 ---
 
+## 🌐 Two Gates `make` Cannot Run
+
+`ci.yml` calls the shared reusable workflow, which runs **spelling** and **link checking** in addition to the four `make` targets. Neither has a local equivalent, and that asymmetry is worth knowing before it costs a red build: a clean `make lint-docs` is not the same claim as a clean CI run.
+
+| Gate | Tool | Configuration |
+| :--- | :--- | :--- |
+| Spelling | `typos` | The shared `_typos.toml` in `standards`, an accept-list of terms its dictionary does not know |
+| Links | `lychee` | The shared `lychee.toml`, which accepts 403 and 429 so a host that blocks robots is not read as a broken link |
+
+**Both configurations are upstream on purpose**, so an accepted term or an excluded URL is decided once for every repository rather than per repository. The cost is that a word this repository is entitled to use can still fail here, and the fix is upstream rather than a local override: a local `_typos.toml` replaces the shared one outright, which forks a standard followed by link.
+
+That happened, and the cheaper answer was available. A citation naming a benchmark whose acronym `typos` reads as a transposition failed the build twice; the sentence was rewritten to name the benchmark by what it is, and the link already carried the identity. **Reword before overriding.** Add the term upstream only when it is a word this fleet will keep using.
+
+To run either gate before pushing, fetch the same pinned tool version and the shared configuration and run it against the tree. That is one command more than `make`, and it is the difference between finding this on your machine and finding it on the default branch.
+
+---
+
 ## 🌿 Where Each Check Runs
 
 | Where                                              | Runs                                                       |
