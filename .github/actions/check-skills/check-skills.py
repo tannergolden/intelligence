@@ -81,7 +81,12 @@ BODY_MAX_CHARS = 20000  # the same guidance's other half, ~5,000 tokens
 # agent ("Use this skill when the user ..."), not a label for the skill
 # ("Processes CSV files"). Agents measurably under-trigger, so a description
 # that reads as appropriately modest to a human is one that never fires.
-DESC_TRIGGER_RE = re.compile(r"\bwhen\b", re.IGNORECASE)
+#
+# DELIBERATELY PERMISSIVE. Every word here introduces a condition, and this
+# rule only warns. A false positive on a warning is worse than a miss, because
+# it teaches authors that the checker's advice is noise and the next warning
+# is the one they actually needed.
+DESC_TRIGGER_RE = re.compile(r"\b(?:when|whenever|if)\b", re.IGNORECASE)
 
 # Documented anti-patterns. Each occupies tier B in every session and changes
 # no behaviour, because it carries nothing the agent did not already have.
