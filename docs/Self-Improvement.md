@@ -60,9 +60,11 @@ So the skill guesses only where being wrong is cheap. Drafting an upstream propo
 
 ## 🛡️ The Three Safeguards
 
-All three are enforced by the skill. Two come from this repository being bitten by what they prevent, and the third from published measurements of what goes wrong when a loop like this is built without it.
+All three are enforced by the skill. Two come from this repository being bitten by what they prevent, and one from published work on what goes wrong when a loop like this is built without it.
 
-**Nothing is recorded on a guess.** Every lesson carries the probed, documented or unverified grade that [Vendor Facts](Vendor-Facts.md) uses. Three claims in that file were wrong when first written; under an ungraded loop, all three would have become permanent instructions that every future agent obeyed.
+**Nothing is recorded on a guess.** Every lesson carries the probed, documented or unverified grade that [Vendor Facts](Vendor-Facts.md) uses. Four claims in that file have been wrong, one of them because a confident correction replaced a right answer with a wrong one. Under an ungraded loop, every one of them would have become a permanent instruction that every future agent obeyed.
+
+An unverified entry is also **shaped** differently, not just labeled differently: the grade goes in the heading and the body describes rather than instructs. The template's own argument is that a reader skims headings and takes the rules from them, and a grade line four lines below the heading does not survive that skim.
 
 **Every addition names a subtraction.** Instructions are read in full, in every session, forever, so an append-only loop makes agents worse at finding the rule that applies. Where a lesson could be a gate instead, the gate is the better answer: it fires every time and costs no context.
 
@@ -70,15 +72,17 @@ All three are enforced by the skill. Two come from this repository being bitten 
 
 ### 📊 What The Measurements Say
 
-The second and third safeguards are not preferences. Both have numbers behind them, and they are the reason this loop refuses more than it records.
+The second and third safeguards are not preferences. Each rests on published work, and they are the reason this loop refuses more than it records.
 
-| Finding | Why it shapes the design |
-| :--- | :--- |
-| Agents on an add-all memory strategy reached 2,400 stored records at **13%** task accuracy; the same agents with selective memory held 248 records at **39%** | Accumulating is not a milder version of curating. It is worse than doing nothing, by a wide margin |
-| Injection into agent memory succeeds against production systems at very high rates | A loop is a persistence mechanism, so it is the exact component an injection needs to become permanent |
-| Constraint compliance measured at 73% by turn five and 33% by turn sixteen | The loop runs at the end of long tasks, so it runs when recall is least reliable. Re-establish from the artifact, never from the session |
+**These rows are graded like every other claim this repository makes**, using the same vocabulary as [Vendor Facts](Vendor-Facts.md). A document arguing that an ungraded lesson is worse than no lesson does not get to cite ungraded numbers, and an earlier version of this table did exactly that: three figures, no source, one of which could not be found again when somebody looked.
 
-The first row is the whole argument for a loop that treats "there is no lesson here" as the normal answer.
+| Finding | Grade | Why it shapes the design |
+| :--- | :--- | :--- |
+| On EHRAgents, an add-all memory strategy scored **13.04%** task accuracy against a fixed-memory baseline of **16.89%**, while selective addition under strict criteria scored **38.86%** | **documented**: Xiong et al., [*How Memory Management Impacts LLM Agents*](https://arxiv.org/abs/2505.16067), arXiv:2505.16067 | Accumulating is not a milder form of curating. It scores **below not learning at all**, which is the whole argument for a loop whose normal answer is "there is no lesson here" |
+| Instruction adherence degrades monotonically with turn count, and faster when constraints accumulate | **documented**: consistent across recent multi-turn benchmarks, one reporting a drop from 88% to 71% between the first and third turns | The loop runs at the end of long tasks, so it runs when recall is least reliable. Re-establish from the artifact, never from the session |
+| Injection into agent memory succeeds against production systems at high rates | **unverified**: the shape is widely reported, the rate is not something this repository has reproduced | A loop is a persistence mechanism, so it is the exact component an injection needs in order to become permanent. The design does not depend on the rate: one success is a rule nobody remembers agreeing to |
+
+An earlier version of this table gave the first row as "2,400 records at 13% against 248 at 39%". The accuracy figures survived checking and the record counts did not, so they are gone. The middle row gave "73% by turn five and 33% by turn sixteen", which could not be traced to any source and has been replaced by the finding that can be. **Neither correction changes a single decision in the skill**, which is the point worth keeping: a design that only stands up with a precise number it cannot cite was never standing on the number.
 
 ---
 

@@ -71,9 +71,19 @@ Search for the rule and for the words a future agent would hit it by, then take 
 | What you find | Do |
 | :--- | :--- |
 | Nothing | Record it |
-| The same lesson, still correct | **Nothing.** Say it was already covered and stop |
+| The same lesson, still correct | Do not add a second copy. Fix why it did not fire, below |
 | The same lesson, stated worse | Improve the existing entry rather than adding a second |
 | An entry this **contradicts** | Stop and resolve it, below |
+
+**Finding the lesson already recorded is a result, not a no-op.** The rule was written down, an agent read the file it lives in, and the mistake happened anyway. That is a retrieval failure, and it is invisible unless somebody says so: the entry is present, so nothing looks wrong.
+
+Ask which one it is, and fix that instead of re-recording the rule:
+
+- **The trigger does not match the situation.** The entry describes the fix but not the moment, so it is read on every task or on none. Rewrite the trigger in the words of what actually happened this time.
+- **It is in a file nothing led you to.** Right lesson, wrong destination. Move it or point at it from where the work happens.
+- **It is buried.** A file that only ever grew is one where the rule that applies cannot be found. This is the strongest argument for a retirement pass that exists.
+
+Then say in your report that the lesson recurred and what you changed, because a recurrence nobody hears about is the same rule going wrong a third time.
 
 **A contradiction is the most valuable thing this loop ever finds.** It means a recorded rule is wrong, and it has been steering every agent that read it since the day it was written. Do not add the new lesson beside it and leave a reader to guess. Establish which is true, per `references/evidence.md`, replace the loser, and say plainly in your report that a recorded rule was wrong and for how long if you can tell.
 

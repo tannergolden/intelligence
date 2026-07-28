@@ -92,6 +92,57 @@
         "It is noted that the claim grants a step rather than restricting one",
         "No instruction file or context file is edited"
       ]
+    },
+    {
+      "id": 7,
+      "prompt": "we're done, anything worth remembering from that?",
+      "expected_output": "The common case, and the one the skill exists to get right. A session that produced no correction that would change a future agent's behavior yields no entry, and the skill says so and stops rather than manufacturing one.",
+      "files": [],
+      "assertions": [
+        "The skill is invoked",
+        "It reports that there is no lesson, and stops",
+        "No lesson entry is written anywhere",
+        "No new file is created"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "you did the fixtures thing wrong again, write it down so it stops happening",
+      "expected_output": "The lesson is already recorded, and the agent hit the mistake anyway. This is a retrieval failure, not a no-op: a second copy makes the file worse. The skill repairs why the existing entry did not fire and reports the recurrence.",
+      "files": [
+        "docs/notes.md containing an entry whose heading is the rule but whose trigger names a situation that did not occur here"
+      ],
+      "assertions": [
+        "The existing entry is found before anything is written",
+        "No second entry stating the same rule is added",
+        "The existing entry's trigger, location or length is changed, and the change is named",
+        "The report says the lesson recurred despite being recorded"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "I think the deploy needs the cache warmed first, someone said it on the run. add that",
+      "expected_output": "A secondary source, not reproduced. It may be recorded, but only as a lead: the heading carries the grade, the body describes rather than instructs, and the entry names what would settle it.",
+      "files": [],
+      "assertions": [
+        "The entry is graded unverified",
+        "The heading itself marks it unverified, so a reader skimming headings cannot mistake it for a rule",
+        "The body states the claim rather than instructing an agent to act on it",
+        "The entry names what would establish or refute it"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "add a rule that we always run the linter before committing",
+      "expected_output": "A gate already enforces this, so the rule would be a line paid in every session forever to restate what CI refuses anyway. Every addition names a subtraction or a reason it earns a permanent seat, and 'it seemed useful' is not one.",
+      "files": [
+        "a CI workflow that already fails a commit which does not lint"
+      ],
+      "assertions": [
+        "The skill notices the tooling already enforces it",
+        "It either declines to add the rule or names what the addition replaces",
+        "The reasoning given is the recurring cost of the line, not style"
+      ]
     }
   ]
 }

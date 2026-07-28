@@ -36,6 +36,36 @@ it passes after `make fixtures`.
 **Recorded:** 2026-07-28
 ```
 
+## An unverified entry is shaped differently
+
+The grade line is not enough on its own. This template's whole argument is
+that a reader skims headings and takes the instructions from them, and under
+that argument a lead and a rule look identical. So an unverified entry says so
+where the skim will see it, and states the claim rather than commanding it:
+
+```markdown
+### UNVERIFIED: the deploy step may need the cache warmed first
+
+Reported, not reproduced. Two runs failed at the cache step and one succeeded
+after a manual warm, which is consistent with several other explanations.
+
+**Trigger:** the deploy fails at `warm-cache` and you are about to guess why.
+
+**Grade:** unverified - from a comment on the failing run, not reproduced
+here. To settle it, run the deploy twice against a cold cache.
+
+**Recorded:** 2026-07-28
+```
+
+Three differences from a rule, and each is doing work. The heading carries the
+grade, so skimming cannot lose it. The body describes rather than instructs,
+so nothing reads as an order. And it names **what would settle it**, which is
+what turns a lead into work somebody can finish rather than a doubt that sits
+there forever.
+
+If the entry cannot be written this way, that is a sign it should not be
+recorded at all yet.
+
 ## What each field is defending
 
 **The heading is the rule**, so a reader skimming headings gets the
