@@ -62,7 +62,9 @@ Everything below was established on 2026-07-28 against **Claude Code 2.1.220**. 
 | `description` is capped at 1024 characters                        | **documented** | The specification                                                                             |
 | A skill body persists for the whole session and is never re-read  | **documented** | Claude Code's docs. Compaction keeps the first 5,000 tokens each, sharing a 25,000-token budget |
 | Gemini CLI prompts for consent, naming the directory it will access | **documented** | Its docs. It also adds the folder structure to context                                        |
-| There is **no `.skill` package format**                           | **probed**     | Every `.skill` string in the binary is a property accessor. `skill package` and `unpackaged` return zero hits. Uploading to claude.ai uses a `.zip` |
+| There is **no `.skill` package format**                           | **probed**     | Every `.skill` string in the binary is a property accessor. `skill package` and `unpackaged` return zero hits |
+| A `.skill` file is a ZIP under another name, and the web upload wants `.zip` | **documented** | Both names circulate for the same bytes. The standing advice for a file arriving as `.skill` is to rename it to `.zip` before uploading at Settings, Capabilities, Skills. Checked 2026-07-28 |
+| The ZIP is the only install path that needs packaging at all      | **documented** | The command-line tools read directories. Packaging exists for the web upload and for handing someone one file |
 
 ---
 

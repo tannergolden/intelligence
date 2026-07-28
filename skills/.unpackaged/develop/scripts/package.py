@@ -13,13 +13,17 @@
 # discovers. So packaging is for the web upload and for handing someone a
 # single file, and never for the tools most of this repository targets.
 #
-# THE EXTENSION. Every source says the upload takes a ZIP: "package your skill
-# folder as a ZIP file", "upload a ZIP file containing your skill folder". No
-# documentation anywhere describes a `.skill` extension, and the file picker is
-# the thing that would reject it, so `.zip` is the default because installing
-# is the point. `--extension skill` writes the identical bytes under the other
-# name for anyone who wants it; if an upload refuses that file, the fix is to
-# rename it back.
+# THE EXTENSION, AND WHY IT IS `.zip` BY DEFAULT. A `.skill` file is a ZIP:
+# same bytes, same folder-at-root layout, different name. Both names are in
+# circulation and neither is a distinct format.
+#
+# The name still matters, because the web upload at Settings, Capabilities,
+# Skills asks for a ZIP, and the standing advice for a file that arrives named
+# `.skill` is to RENAME IT TO `.zip` BEFORE UPLOADING. Defaulting to `.skill`
+# would therefore hand every user a file they must rename before the only
+# install path that needs packaging at all accepts it. `--extension skill`
+# writes the identical bytes under the other name for anyone distributing
+# under that convention.
 #
 # THE MOST COMMON UPLOAD FAILURE is an archive whose root is SKILL.md rather
 # than the folder holding it. The upload then cannot find the manifest, and the
