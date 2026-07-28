@@ -118,9 +118,32 @@ DELIVERED_WARN_AT = 0.80
 #
 # Measured against a fixture rather than read from the source, because what
 # costs context is what the script PRINTS, not what it contains.
+# The budget is a PER-TURN figure. Claude Code appends hook output as a new
+# context block on every turn rather than refreshing one in place, so a session
+# pays budget x turns. It is also not a truncation guard: output passes through
+# verbatim up to 10,000 characters and is replaced by a preview beyond that.
 HOOK_SCRIPTS = (".claude/hooks/skill-router.sh", ".gemini/hooks/skill-router.sh")
 HOOK_OUTPUT_BUDGET = 256          # bytes, against the fixture below
 HOOK_FIXTURE_SKILLS = ("alpha", "bravo", "charlie")
+# EACH DIRECTORY CONTRIBUTES A UNIQUE NAME, plus one they all share. An earlier
+# fixture put the same three skills everywhere, so a router that stopped
+# reading a directory still produced a complete list and the gate saw nothing.
+# `shared` is present in all three, so a dedup regression doubles it.
+HOOK_FIXTURE_LAYOUT = {
+    ".claude/skills": ("alpha", "shared"),
+    ".gemini/skills": ("bravo", "shared"),
+    ".agents/skills": ("charlie", "shared"),
+}
+# What each router must name, given that layout. A router reading fewer
+# directories than its vendor does fails on the missing name.
+HOOK_EXPECTED = {
+    ".claude/hooks/skill-router.sh": ("alpha", "shared"),
+    ".gemini/hooks/skill-router.sh": ("bravo", "charlie", "shared"),
+}
+# Gemini parses hook stdout as JSON and degrades anything else to a message
+# shown to the user and never to the model. Shape is therefore correctness,
+# not neatness, and it is the check whose absence let an inert hook ship.
+HOOK_JSON_REQUIRED = (".gemini/hooks/skill-router.sh",)
 
 # `_` as a space is rejected across the WHOLE tree, not just docs. These are
 # the names a platform or a language fixes, which cannot move at all.
@@ -460,8 +483,8 @@ def check_hooks(root: Path, fail, warn):
             continue
 
         with tempfile.TemporaryDirectory() as scratch:
-            for base in (".claude/skills", ".gemini/skills"):
-                for name in HOOK_FIXTURE_SKILLS:
+            for base, names in HOOK_FIXTURE_LAYOUT.items():
+                for name in names:
                     d = Path(scratch) / base / name
                     d.mkdir(parents=True, exist_ok=True)
                     (d / "SKILL.md").write_text("---\n", encoding="utf-8")
@@ -470,6 +493,40 @@ def check_hooks(root: Path, fail, warn):
             run = subprocess.run(["sh", str(path)], capture_output=True,
                                  text=True, env=env)
             size = len(run.stdout.encode("utf-8"))
+
+        if run.returncode != 0:
+            fail(rel, f"exited {run.returncode} with skills installed. A "
+                      "non-zero hook is not a no-op to every vendor: some read "
+                      "the code as a decision about the turn.")
+        if run.stderr.strip():
+            fail(rel, f"wrote to stderr: {run.stderr.strip()[:120]!r}. A hook "
+                      "runs on every prompt, so anything on stderr is noise in "
+                      "the operator's terminal on every prompt.")
+
+        # Exactly the names this vendor discovers, each exactly once. Catches a
+        # dropped discovery directory (a name goes missing) and a dedup
+        # regression (`shared` appears twice).
+        for name in HOOK_EXPECTED.get(rel, ()):
+            seen = run.stdout.count(name)
+            if seen != 1:
+                fail(rel, f"names the fixture skill {name!r} {seen} times, "
+                          "expected exactly once. A missing name means a "
+                          "discovery directory is not being read; a repeated "
+                          "one means the dedup has regressed.")
+
+        if rel in HOOK_JSON_REQUIRED:
+            try:
+                doc = json.loads(run.stdout)
+                ctx = doc["hookSpecificOutput"]["additionalContext"]
+                if not isinstance(ctx, str) or not ctx.strip():
+                    raise ValueError("additionalContext is empty")
+            except Exception as exc:
+                fail(rel, f"does not emit the required JSON envelope ({exc}). "
+                          "Gemini CLI parses hook stdout as JSON and converts "
+                          "anything else into a message shown to the user and "
+                          "never to the model, so plain text here is a hook "
+                          "that runs, passes every other check, and injects "
+                          "nothing at all.")
 
         if size > HOOK_OUTPUT_BUDGET:
             fail(rel, f"prints {size} bytes for {len(HOOK_FIXTURE_SKILLS)} "

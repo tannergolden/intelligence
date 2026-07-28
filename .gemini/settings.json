@@ -5,7 +5,8 @@
     "hook is treated as new and untrusted and you are asked to approve it",
     "again. A sync that alters this file therefore prompts once, by design.",
     "The event is BeforeAgent, which is Gemini's equivalent of Claude Code's",
-    "UserPromptSubmit; no event name is shared between the two."
+    "UserPromptSubmit; no event name is shared between the two.",
+    "The command uses the plain $GEMINI_PROJECT_DIR form deliberately. Gemini resolves ${VAR:-DEFAULT} in settings at LOAD time, so the braced form collapses to '.' before the hook runner ever sees it; the plain form is the only spelling the runner substitutes at hook time."
   ],
   "hooks": {
     "BeforeAgent": [
@@ -13,7 +14,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh \"${GEMINI_PROJECT_DIR:-.}/.gemini/hooks/skill-router.sh\""
+            "command": "sh \"$GEMINI_PROJECT_DIR/.gemini/hooks/skill-router.sh\""
           }
         ]
       }

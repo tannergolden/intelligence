@@ -164,6 +164,13 @@ INVISIBLE_RE = re.compile(
 # costs no context and needs no reference.
 UNREFERENCED_OK_PREFIX = "evals/"
 
+# Generated or tool-owned paths that are not skill content at all. Without
+# this, running the bundled script once leaves a `__pycache__` beside it and
+# the next check fails on a file git already ignores. The packager already
+# excludes exactly these, so the checker agreeing with it is the fix.
+IGNORED_PARTS = ("__pycache__", ".git", ".DS_Store")
+IGNORED_SUFFIXES = (".pyc", ".pyo")
+
 FENCE_LINE_RE = re.compile(r"\A\s*`{3,}")
 
 
@@ -509,6 +516,11 @@ def check_skill(skill_dir: Path, root: Path):
 
     for path in sorted(skill_dir.rglob("*")):
         if not path.is_file():
+            continue
+        rel_parts = path.relative_to(skill_dir).parts
+        if any(part in IGNORED_PARTS for part in rel_parts):
+            continue
+        if path.suffix in IGNORED_SUFFIXES:
             continue
         item = path.relative_to(skill_dir).as_posix()
         if item == "SKILL.md" or item.startswith(UNREFERENCED_OK_PREFIX):
