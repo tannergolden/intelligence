@@ -1,6 +1,36 @@
 # Routing A Lesson
 
-Two destinations. Sending a lesson to the wrong one either loses it silently or forces it on repositories it was never true of.
+How many destinations exist depends on who owns the instruction files, so
+settle that first. Getting it wrong either destroys the lesson or refuses to
+record it anywhere useful.
+
+## Owned here, or published from elsewhere
+
+Open the instruction file the repository uses and read its opening. A file
+delivered by a sync **says so**, usually in its first paragraphs, because
+being silently overwritten is precisely what its author had to warn about.
+A workflow under `.github/workflows/` that checks out another repository and
+copies files in is the other reliable signal.
+
+| Signal | Arrangement | Destinations |
+| :--- | :--- | :--- |
+| Declares itself published, synced or generated | **Published** | Two: local context, and upstream |
+| Declares nothing, and nothing fetches it | **Owned here** | One: this repository |
+| No instruction file exists at all | **Owned here** | One: this repository |
+
+**Most repositories in the world are the owned-here case.** `AGENTS.md` is a
+widely adopted open standard that tens of thousands of projects write by
+hand. Assuming every one of them is a published copy is the mistake this
+section exists to prevent: it would refuse to write a lesson into the one
+file that is exactly the right place for it.
+
+**When the files are owned here, the instruction file is a normal
+destination.** There is no upstream, no sync to destroy the edit, and no
+proposal to draft. A lesson that sounds universal is still just a lesson;
+record it and move on.
+
+Everything below applies to the **published** arrangement, where the local
+copies are delivered and a second destination exists.
 
 ## The test
 
@@ -29,9 +59,13 @@ Look in this order and stop at the first that fits:
 
 **Append to what exists** rather than starting a parallel file. Create a new one only when nothing suitable does, put it where the repository's own convention indicates, and say plainly in your report that you created it and why.
 
-## The files that are never a destination
+## The files that are never a destination, when they are published
 
-`AGENTS.md`, `CLAUDE.md`, `GEMINI.md` and any router beside them are **published from upstream and overwritten in full on every sync**. An edit there survives until the next scheduled run and then vanishes, taking the lesson with it and leaving no trace that anything was lost.
+In a published arrangement, `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` and any
+router beside them are **delivered copies, overwritten in full on every
+sync**. An edit there survives until the next scheduled run and then
+vanishes, taking the lesson with it and leaving no trace that anything was
+lost.
 
 This is the most likely way to route a lesson wrongly, because those files are usually what the lesson is *about*. The instinct to fix the instructions where you read them is exactly the instinct to resist.
 

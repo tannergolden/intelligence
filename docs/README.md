@@ -37,7 +37,7 @@ Read [Scope & Boundaries](Scope-&-Boundaries.md) first if you are about to add s
 | [🌿 Standards Offline](Standards-Offline.md)       | Vendoring the engineering standards on disk so an agent can actually read them |
 | [📦 Skill Authoring](Skill-Authoring.md)           | How to write a skill that works in every supported tool, and what is enforced |
 | [🚦 Checks & Gates](Checks-&-Gates.md)             | Every check this repository runs on itself, and why it checks itself twice   |
-| [🔁 Self Improvement](Self-Improvement.md)         | How a lesson learned in one repository reaches every other one              |
+| [🔁 Self Improvement](Self-Improvement.md)         | Why the feedback loop ships as an optional skill rather than as law         |
 | [🤖 Vendor Facts](Vendor-Facts.md)                 | What each supported tool actually does, how it was checked, and when          |
 | [🏷️ Releases & Versioning](Releases-&-Versioning.md) | The two tags, what each promises, and how a bad release is recalled           |
 
@@ -55,7 +55,7 @@ Read [Scope & Boundaries](Scope-&-Boundaries.md) first if you are about to add s
 
 **"What stops a bad change shipping?"** [Checks & Gates](Checks-&-Gates.md). Nothing downstream reviews these bytes, so everything is checked before they leave.
 
-**"How do the instructions get better over time?"** [Self Improvement](Self-Improvement.md). A lesson learned once should stop the same mistake everywhere.
+**"How do the instructions get better over time?"** Install the [`improve`](../skills/.unpackaged/improve/SKILL.md) skill. [Self Improvement](Self-Improvement.md) explains why it is a download rather than a rule.
 
 **"Why is it built this way?"** [Vendor Facts](Vendor-Facts.md). Nearly every structural decision here traces to one row in that table.
 

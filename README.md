@@ -67,7 +67,7 @@ Nothing here executes on clone, and nothing is generated from anything else.
 
 **To write a skill**, install [`develop`](skills/.unpackaged/develop/SKILL.md), the meta skill that walks you through authoring one, and read [Skill Authoring](docs/Skill-Authoring.md) for the rules it enforces.
 
-**To stop repeating a mistake**, install [`improve`](skills/.unpackaged/improve/SKILL.md). It captures what an agent got wrong, grades the evidence, and routes the lesson either into this repository's own context or upstream where it reaches every repository. [Self Improvement](docs/Self-Improvement.md) explains why those are two different destinations.
+**To stop repeating a mistake**, install [`improve`](skills/.unpackaged/improve/SKILL.md). It captures what an agent got wrong, grades the evidence, and works out where the lesson belongs. It assumes nothing about how it was installed, so it works in any repository, including one that owns its instruction files outright. [Self Improvement](docs/Self-Improvement.md) explains why it is a download rather than a rule.
 
 **To let agents read the engineering standards directly**, vendor them as a git submodule pinned to a release. The law tells agents to read the styling specification before writing Markdown, and a submodule is what makes that specification a file they can open rather than a link they will not follow. [Standards Offline](docs/Standards-Offline.md) has the recipe and the one failure mode that matters.
 

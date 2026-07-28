@@ -1,6 +1,11 @@
 # Proposing A Change To The Shared Law
 
-A universal lesson goes to the repository that publishes the law, never into the local copy of it.
+**This applies only where the instruction files are published from
+elsewhere.** Where a repository owns its own, there is no upstream: record
+the lesson locally and stop. See `routing.md` for telling the two apart.
+
+A universal lesson goes to the repository that publishes the law, never into
+the local copy of it.
 
 ## Draft it, do not file it
 

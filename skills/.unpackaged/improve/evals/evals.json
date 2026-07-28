@@ -1,17 +1,19 @@
 {
   "$comment": [
-    "Four cases. Two happy paths, one over-trigger guard, and one that",
-    "checks the failure this skill exists to prevent.",
+    "Five cases. Two happy paths, one over-trigger guard, and two that cover",
+    "the arrangement question the skill has to settle before it routes.",
     "",
     "Case 3 is the name collision. `improve` is a word people use about",
     "ordinary code work, so the likeliest failure is not that it never",
     "fires but that it fires on every request to make something better.",
     "Over-triggering costs every session; a missed trigger costs one.",
     "",
-    "Case 4 is the one that matters most for correctness. Writing a lesson",
-    "into the local AGENTS.md is the intuitive move and the wrong one: the",
-    "file is overwritten on the next sync and the lesson vanishes with no",
-    "error. A run that does this has failed even if the prose is good."
+    "Cases 4 and 5 are the same prompt in opposite worlds, and the correct",
+    "answers are opposite. Where the instruction file is delivered by a sync,",
+    "editing it destroys the lesson silently. Where the repository owns it,",
+    "that same file is exactly the right place. An earlier draft asserted the",
+    "first unconditionally and would have refused the second, which is most",
+    "repositories."
   ],
   "skill_name": "improve",
   "evals": [
@@ -51,14 +53,26 @@
     },
     {
       "id": 4,
-      "prompt": "you got the branch name wrong again, add it to AGENTS.md so it stops happening",
-      "expected_output": "A refusal to write into the published law locally, an explanation that the sync overwrites it, and the lesson routed to this repository's own context instead.",
+      "prompt": "you got the branch name wrong again, add it to AGENTS.md so it stops happening (AGENTS.md here is synced from a publisher and says so at the top)",
+      "expected_output": "A refusal to write into the delivered copy, an explanation that the sync overwrites it, and the lesson routed to this repository's own context instead.",
       "files": [],
       "assertions": [
+        "The instruction file is read before anything is written",
         "AGENTS.md is not edited",
         "The reason given is that the file is overwritten on the next sync",
-        "The lesson is written into the repository's own context instead",
-        "The branch name is treated as repository-specific rather than universal"
+        "The lesson is written into the repository's own context instead"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "you got the branch name wrong again, add it to AGENTS.md so it stops happening (AGENTS.md here is hand-written and nothing syncs it)",
+      "expected_output": "The lesson written into AGENTS.md, because the repository owns that file and it is the right destination. No upstream proposal, because there is no upstream.",
+      "files": [],
+      "assertions": [
+        "The instruction file is read before anything is written",
+        "AGENTS.md is edited, because nothing overwrites it here",
+        "No upstream proposal is drafted",
+        "The entry carries a grade and a trigger"
       ]
     }
   ]

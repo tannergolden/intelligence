@@ -1,7 +1,7 @@
 <!--
 title: '🔁 SELF IMPROVEMENT'
-description: 'How a lesson learned in one repository reaches the others, and what stops the loop making things worse.'
-tags: [self-improvement, feedback, lessons, governance]
+description: 'Why the feedback loop ships as an optional skill rather than as law, and what it works on.'
+tags: [self-improvement, feedback, skills, governance]
 category: docs
 -->
 
@@ -14,77 +14,54 @@ category: docs
 
 **A mistake made once anywhere should stop being possible everywhere.**
 
-_Two channels, one test, and nothing recorded on a guess._
+_Optional, portable, and owned by the skill that implements it._
 
 </div>
 
 ---
 
-## 🎯 The Constraint That Shapes Everything
+## 🎯 What It Is
 
-`AGENTS.md` is **overwritten in full on every sync**. So a lesson written into the law inside a consuming repository survives until the next scheduled run and then disappears, taking itself with it and leaving no trace that anything was lost.
+The loop is the [`improve`](../skills/.unpackaged/improve/SKILL.md) skill. It decides whether a session produced a lesson at all (usually not), grades the evidence, works out where the lesson belongs, and writes or drafts it.
 
-That single fact rules out the obvious design. "Let the agent append what it learned to the instructions" deletes itself on a weekly cron, and the deletion is silent. Any loop that works has to answer *where does the lesson go* before it answers anything else.
-
----
-
-## 🔀 Two Channels
-
-| Lesson | Goes | Reaches |
-| :--- | :--- | :--- |
-| True of **this** repository | its own context, wherever that lives | this repository |
-| True of **any** repository | upstream, into the published law | every repository, on its next sync |
-
-The second channel is what makes this a loop rather than note-taking. A rule learned once, in one repository, stops the same mistake in all of them.
-
-**The routing test is the one already written into the law:** would this still be true in a repository with a different language, toolchain, branch model and review policy? When it is genuinely borderline, it is local. A local rule can be promoted later by a repository that has lived with it; a rule pushed into the shared law wrongly arrives everywhere at once.
-
-> [!IMPORTANT]
-> **The published files are never a destination.** `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` and any router beside them are overwritten by the sync. This is the most likely way to get routing wrong, precisely because those files are usually what the lesson is *about*.
+**Its rules live in the skill and nowhere else.** This page owns only the question the skill should not spend context answering: why it is shaped this way. For how the loop actually behaves, read the skill.
 
 ---
 
-## 🧪 Nothing Is Recorded On A Guess
+## 🧩 Why A Skill, Not Law
 
-An agent's account of why something failed is frequently wrong, and the failure is specific: the account is plausible, confident, and built from the same reasoning that produced the mistake. Written down, it becomes a permanent instruction every future agent obeys.
+Three reasons, and each one rules out the alternative:
 
-So every lesson carries a grade, the same three [Vendor Facts](Vendor-Facts.md) uses:
+**It is not universal.** The law is byte-identical in every repository, so it may only hold what is true of all of them. Plenty of repositories want no feedback loop at all, and a rule they must ignore is not a rule.
 
-| Grade | Earns it |
+**It costs context.** A loop written into the law is read in every session of every repository forever, whether or not anyone uses it. As a skill it is loaded only when invoked, which is the difference between paying always and paying on use.
+
+**It is a capability, and capabilities are skills.** That is the second question in [Scope & Boundaries](Scope-&-Boundaries.md), and the answer routes it here without further argument.
+
+---
+
+## 🌍 It Works Anywhere, Including Repositories That Never Heard Of This Publisher
+
+The skill is **an optional download that assumes nothing about how it was installed.** It settles one question before it routes anything: does this repository own its instruction files, or receive them?
+
+| Arrangement | Destinations |
 | :--- | :--- |
-| **probed** | Something ran and the result is reproduced in the entry |
-| **documented** | A primary source says so, and the entry names it and the date |
-| **unverified** | Believed from a secondary source. Recorded as a lead, never as a rule |
+| The repository **owns** its instruction files | One. The files are a legitimate place for a lesson |
+| The files are **delivered** by a sync | Two. Local context, and a proposal upstream |
 
-**An unverified lesson is allowed to exist and is not allowed to be written as a rule.** It is recorded as a question with the check that would settle it, and promoted when someone runs that check.
+That distinction is load-bearing rather than decorative. `AGENTS.md` is a widely adopted open standard that tens of thousands of projects write by hand, so **most repositories own theirs**. In those, writing a lesson into the instruction file is exactly right. In a repository that syncs from a publisher, the same edit is destroyed by the next scheduled run with no error and no trace.
 
-This is not hypothetical caution. Three claims in `Vendor-Facts.md` were wrong when first written: one recalled rather than re-measured and off by a factor of five, one describing a file that had been read through a rendering that stripped the relevant part, and one taken from a confident search summary the vendor's own documentation contradicts. Under a loop without grading, all three would have become permanent rules.
-
----
-
-## ✂️ Every Addition Names A Subtraction
-
-The law is read in full, in every session, in every repository, forever. A loop with an append path and no retirement path makes it grow without bound, and a longer instruction file makes agents **worse** at finding the rule that applies.
-
-So an addition names either the line it replaces or the argument for a permanent seat. Retire on sight anything now false, anything a gate started enforcing, and anything only ever true of a situation that no longer exists.
-
-**A gate beats a rule** wherever one is possible: it fires every time, it cannot be skimmed past, and it costs no context. Where a proposed lesson could be a check instead, the check is the better proposal.
+An earlier draft of the skill asserted the second case unconditionally. It would have refused to record a lesson in the one file that was the correct destination, in the majority of repositories it might ever be installed into.
 
 ---
 
-## 🤝 Drafted, Never Filed
+## 🛡️ The Two Safeguards
 
-A universal lesson produces a **proposal shown to the user**, not an issue opened automatically.
+Both are enforced by the skill, and both exist because this repository has been bitten by what they prevent.
 
-The reason is the blast radius rather than caution for its own sake. A change accepted upstream reaches every repository pinned to the moving major on its next sync, with no pull request and no review on the receiving side. That is a production change to every consumer at once, triggered by something that happened in one of them. A person decides that.
+**Nothing is recorded on a guess.** Every lesson carries the probed, documented or unverified grade that [Vendor Facts](Vendor-Facts.md) uses. Three claims in that file were wrong when first written; under an ungraded loop, all three would have become permanent instructions that every future agent obeyed.
 
----
-
-## 📦 How It Is Delivered
-
-The loop is the [`improve`](../skills/.unpackaged/improve/SKILL.md) skill: installed rather than synced, inert until invoked, and executing nothing on clone. It decides whether there is a lesson at all (usually there is not), grades it, routes it, writes local ones into the repository's own context, and drafts universal ones for a human.
-
-Installing it is the same as any skill, and [Installation](Installation.md) covers it.
+**Every addition names a subtraction.** Instructions are read in full, in every session, forever, so an append-only loop makes agents worse at finding the rule that applies. Where a lesson could be a gate instead, the gate is the better answer: it fires every time and costs no context.
 
 ---
 
@@ -92,13 +69,13 @@ Installing it is the same as any skill, and [Installation](Installation.md) cove
 
 Everything explaining how this publisher works lives in the [Documentation Index](README.md). Follow it **by link**, never by copy.
 
-What may enter the law at all is [Scope & Boundaries](Scope-&-Boundaries.md), and it governs any proposal this loop produces.
+Installing it is the same as any skill, and [Installation](Installation.md) covers that.
 
 ---
 
 <div align="center">
 
-**Learned once, graded before it counts, and paid for in every session it survives.**
+**Shipped as a download, not as a rule nobody asked for.**
 
 [↑ Back to Top](#top)
 
