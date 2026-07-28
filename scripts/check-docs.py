@@ -39,6 +39,8 @@ import sys
 import tempfile
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
 # --- what the specification requires ----------------------------------------
 FRONTMATTER_KEYS = ("title", "description", "tags", "category")
 TAG_COUNT = 4                      # exactly four, no more and no fewer
@@ -52,17 +54,12 @@ DESC_AIM = 90                      # "aim for 90 characters or fewer"
 # the assumption they carried no frontmatter; they do, and the exemption made
 # the checker look for the MD041 line in the wrong place.
 
-# Banned typography, BUILT FROM CODEPOINTS so this file never contains a
-# character it rejects. Writing them literally is the bug this checker exists
-# to catch, and it would fail its own repository on its first run.
-BANNED_CHARS = {
-    chr(0x2014): "em dash (U+2014)",
-    chr(0x2013): "en dash (U+2013)",
-    chr(0x2018): "curly opening quote (U+2018)",
-    chr(0x2019): "curly closing quote (U+2019)",
-    chr(0x201C): "curly opening double quote (U+201C)",
-    chr(0x201D): "curly closing double quote (U+201D)",
-}
+# Banned typography and invisible characters both live in `_charclasses.py`,
+# imported by BOTH checkers so neither class can drift from the other. The
+# invisible set was defined only in the skill checker until an audit found that
+# a hidden Unicode rule injected into AGENTS.md passed every gate here on its
+# way into every consuming repository.
+from _charclasses import BANNED_CHARS, INVISIBLE_RE  # noqa: E402
 
 # UTF-8 read as Latin-1. The specification calls this zero-tolerance, and it
 # is invisible to a spell checker because the result is still valid Unicode.
@@ -226,6 +223,12 @@ def check_file(path: Path, root: Path, taglines, footers, fail, warn):
         if MOJIBAKE_RE.search(line):
             fail(rel, f"line {n}: mojibake. This is UTF-8 that was read as "
                       "Latin-1 somewhere upstream; repair it at the source.")
+        for m in INVISIBLE_RE.finditer(line):
+            fail(rel, f"line {n}: invisible character U+{ord(m.group()):04X} at "
+                      f"column {m.start() + 1}. Nobody catches this by reading "
+                      "the diff, which is the point of using it: a rule hidden "
+                      "this way is delivered to every repository and read by "
+                      "every agent while being invisible to every reviewer.")
 
     # --- frontmatter ---------------------------------------------------------
     fields, body_start, error = parse_frontmatter(text)
@@ -596,6 +599,7 @@ SELF_TEST_ERRORS = (
     "exactly 4",
     "markdownlint-disable MD041",
     "em dash",
+    "invisible character",
     "declares no language",
     "leading prompt character",
     "empty alt text",
@@ -666,6 +670,8 @@ BROKEN_BODY = """
 
 **Broken in every way the checker is supposed to notice{EM}including this.**
 
+A rule hidden from the reviewer: split{ZWSP}word.
+
 _Broken by construction._
 
 </div>
@@ -687,7 +693,7 @@ $ make lint
 **Everything to report.**
 
 </div>
-""".replace("{EM}", chr(0x2014))
+""".replace("{EM}", chr(0x2014)).replace("{ZWSP}", chr(0x200B))
 
 BAD = "---\ntitle: 'BAD'\ntags: [only, three, tags]\n-->\n" + BROKEN_BODY
 

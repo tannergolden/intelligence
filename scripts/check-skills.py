@@ -42,6 +42,8 @@ import sys
 import tempfile
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
 # --- the specification -------------------------------------------------------
 # Verified at agentskills.io/specification: two required fields and four
 # optional ones. Everything outside this set is a vendor extension.
@@ -143,21 +145,11 @@ SHELL_FENCE_RE = re.compile(r"\A\s*```!")
 # vendors do not treat as token boundaries.
 AT_RE = re.compile(r"(?:^|(?<=[ \t\n\r]))@[./A-Za-z][^ \t\n\r]*")
 
-# Built from CODEPOINTS so this file never contains one of the characters it
-# rejects. Each family runs to its end: a range stopping one codepoint short
-# of the hazard is the failure this rule exists to prevent.
-INVISIBLE_FAMILIES = (
-    (0x00AD, 0x00AD), (0x034F, 0x034F), (0x061C, 0x061C), (0x115F, 0x1160),
-    (0x17B4, 0x17B5), (0x180B, 0x180E), (0x200B, 0x200F), (0x202A, 0x202E),
-    (0x2060, 0x2064), (0x2066, 0x2069), (0x3164, 0x3164), (0xFEFF, 0xFEFF),
-    (0xFFA0, 0xFFA0), (0xE0000, 0xE007F),
-)
-INVISIBLE_RE = re.compile(
-    "[" + "".join(
-        chr(lo) if lo == hi else f"{chr(lo)}-{chr(hi)}"
-        for lo, hi in INVISIBLE_FAMILIES
-    ) + "]"
-)
+# Invisible characters live in `_charclasses.py`, imported by BOTH checkers so
+# the class cannot drift. It used to be defined only here, which meant a hidden
+# Unicode rule injected into AGENTS.md passed every documentation gate while
+# the same bytes in a SKILL.md were caught.
+from _charclasses import INVISIBLE_RE  # noqa: E402
 
 # Files a skill may hold without SKILL.md naming them. `evals/` is the eval
 # harness's own directory: it is read by tooling, never by an agent, so it
