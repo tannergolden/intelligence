@@ -26,6 +26,8 @@ Claude Code has no discovery path for `AGENTS.md`. That is a stated position rat
 
 **It carries no law of its own.** It cannot drift from the canonical file, cannot contradict it, and cannot go stale, because there is nothing in it to drift. Every rule lives in one place. If you came here looking for a rule, it is not here.
 
+Like the file it imports, this one is **published rather than authored here** and is overwritten in full on the next sync, so a local edit is a change that will be silently reverted.
+
 ---
 
 ## 📝 The Import
