@@ -63,7 +63,7 @@ Fold templates into `assets/` rather than a separate directory. The specificatio
 | `name`        | 1 to 64 characters, matching `^[a-z0-9]+(-[a-z0-9]+)*$`, and equal to the directory name                   |
 | `description` | 1 to 1024 characters, saying what the skill does **and** when to use it                                   |
 
-**Optional and portable:** `license`, `compatibility`, `metadata`.
+**Optional and portable:** `license` (an SPDX identifier, or the name of a file the skill bundles), `compatibility` (1 to 500 characters), `metadata` (a mapping of string keys to string values, and the only field the specification defines as a mapping rather than a scalar).
 
 **Banned:** `allowed-tools`. The specification marks it experimental and it grants tool access without a per-use prompt, on a machine that is not yours.
 
@@ -73,6 +73,8 @@ Fold templates into `assets/` rather than a separate directory. The specificatio
 > **A skill using any Claude-only key must set `compatibility`.** The harmless case is an optimization that quietly does nothing. The dangerous case is a skill whose **correctness** depends on the key: one relying on `disable-model-invocation: true` to avoid auto-firing will auto-fire on Gemini.
 
 `SKILL.md` frontmatter uses `---` fences, unlike every other document in this repository. That is correct, and the specification requires it.
+
+**What the checker parses.** Scalars, block scalars (`description: |` and `description: >`, which is how any description long enough to wrap gets written), and a mapping under `metadata`. Anything else nested is refused rather than guessed at, and a key set twice is refused outright: every YAML reader keeps the last one silently, so the value a reviewer read in the diff is not the value that loads.
 
 ---
 
@@ -179,6 +181,8 @@ The cost side is real: `scripts/` is executable content in a tree whose other fi
 
 **At-tokens.** A whitespace-bounded `@token` is a live import in all three supported tools. It pulls a file into context, or on a failed resolve leaves a comment where your directive used to be. There is no declaration that makes this acceptable: rewrite the line.
 
+To write one literally, put it in backticks. Claude Code documents that import parsing skips code spans and fenced code blocks, so a skill teaching the syntax can show it, and the checker follows the same boundary. Everywhere else on the line it still fails.
+
 ---
 
 ## 🧪 Evidence, Not Craft
@@ -217,13 +221,13 @@ That baseline comparison is the bar. A skill that does not beat it should not sh
 
 [`actions/check-skills`](../actions/check-skills) gates on all of the following, because every one of them fails silently otherwise:
 
-Missing `SKILL.md`; malformed or nested frontmatter; missing or empty `name` or `description`; `name` failing its pattern, exceeding 64 characters, or disagreeing with the directory; `description` over 1024; unknown, banned or undeclared vendor keys; a body over 500 lines; a reference that does not exist or escapes the directory; a file in the directory that `SKILL.md` never references; a live import token; an invisible character; undeclared live shell; a byte order mark; a missing or doubled trailing newline; and an `evals.json` that is unreadable, misattributed, empty, missing a prompt or assertions, or reusing a case id.
+Missing `SKILL.md`; frontmatter that is malformed, nested outside `metadata`, or sets one key twice; missing or empty `name` or `description`; `name` failing its pattern, exceeding 64 characters, or disagreeing with the directory; `description` over 1024; `compatibility` over 500; `metadata` written as a scalar; unknown, banned or undeclared vendor keys; a body over 500 lines; a reference that does not exist or escapes the directory; a file in the directory that `SKILL.md` never references; a live import token; an invisible character; undeclared live shell; a byte order mark; a missing or doubled trailing newline; and an `evals.json` that is unreadable, misattributed, empty, missing a prompt or assertions, or reusing a case id.
 
 It warns on a description that never says **when** to use the skill, a description over 500 characters, a body over roughly 5,000 tokens, vague filler, a machine-specific path, a missing eval suite, a reference more than one level deep, and a bundled `scripts/` directory.
 
 Two of those deserve their reasoning stated. The unreferenced-file rule is a gate rather than a warning for a Gemini-specific reason: it adds the **folder structure** to context and grants the model access to the **whole directory**, so a stray file costs context and widens what the user is asked to approve. And the eval file is checked as strictly as the skill because a malformed one looks like evidence right up until somebody tries to run it, which is usually the moment the skill is being changed and the evidence is most needed.
 
-The content rules run over **every** bundled Markdown file, not only `SKILL.md`, since a reference enters context the moment the body sends an agent to it. Filler and anti-patterns quoted inside backticks or quotation marks are exempt, so a skill that teaches an anti-pattern can still name it.
+The content rules run over **every** bundled Markdown file, not only `SKILL.md`, since a reference enters context the moment the body sends an agent to it. Filler and anti-patterns quoted inside backticks or quotation marks are exempt, so a skill that teaches an anti-pattern can still name it, and import tokens follow the same boundary the vendors do. A file the `license` field names counts as referenced: the frontmatter is what points at it, so the body never will.
 
 Run the checker locally with `make lint`, and prove the checker itself still rejects known-bad input with `--self-test`.
 

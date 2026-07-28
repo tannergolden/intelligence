@@ -45,7 +45,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 # --- the specification -------------------------------------------------------
-# Verified at agentskills.io/specification: two required fields and four
+# Verified at agentskills.io/specification: two required fields and three
 # optional ones. Everything outside this set is a vendor extension.
 SPEC_REQUIRED = ("name", "description")
 SPEC_OPTIONAL = ("license", "compatibility", "metadata")
@@ -74,6 +74,7 @@ NAME_RE = re.compile(r"\A[a-z0-9]+(?:-[a-z0-9]+)*\Z")
 NAME_MAX = 64
 DESC_MAX = 1024        # specification hard limit
 DESC_WARN = 500        # listing-budget pressure, see below
+COMPAT_MAX = 500       # specification hard limit
 BODY_MAX_LINES = 500   # specification recommendation
 BODY_MAX_CHARS = 20000  # the same guidance's other half, ~5,000 tokens
 
@@ -183,14 +184,45 @@ CODE_SPAN_RE = re.compile(r"`([^`\n]+)`")
 PATHLIKE_RE = re.compile(r"\A[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*\Z")
 
 
+# `description: |` and `description: >` are ordinary YAML and Anthropic ships
+# skills using them. A parser refusing block scalars refuses valid skills, and
+# this one is published as a composite action that runs against other people's
+# repositories, so its refusals have to be right.
+BLOCK_SCALAR_RE = re.compile(r"\A[|>][0-9+-]*\Z")
+
+# `metadata` is the ONE field the specification defines as a mapping rather
+# than a scalar: string keys to string values, no required keys. Everything
+# else nested is still refused, because a shape this cannot verify is a shape
+# it must not guess at.
+MAPPING_KEYS = ("metadata",)
+
+
+def _unquote(value: str) -> str:
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+        return value[1:-1]
+    return value
+
+
 def parse_frontmatter(text: str):
     """Return (fields, body_offset, error).
 
-    The flat scalar subset, and nothing more. A nested block, a multi-line
-    string or an anchor is REFUSED with a readable message rather than
+    Scalars, block scalars, and a mapping under `metadata`. Nothing else.
+    Anything outside that is REFUSED with a readable message rather than
     half-read: this gate decides whether a skill ships, and a parser that
     silently drops what it does not understand would pass a skill whose real
     frontmatter says something else.
+
+    WHAT THIS USED TO GET WRONG. It read flat `key: value` lines only, so it
+    rejected two shapes the specification allows outright: a block-scalar
+    `description`, which is how any description long enough to wrap gets
+    written, and the `metadata` mapping. Both were reported as "this
+    frontmatter is nested", which is a checker refusing conforming input, and
+    that is worse than a checker missing something: it teaches its users that
+    the specification is whatever the tool happens to accept.
+
+    Folding for `>` is approximated by joining lines with a space. That is
+    exact for the paragraph case every skill actually writes, and the value is
+    used here only to measure length and to search for a trigger word.
     """
     lines = text.split("\n")
     if not lines or lines[0].strip() != "---":
@@ -203,25 +235,80 @@ def parse_frontmatter(text: str):
     if close is None:
         return None, 0, "frontmatter is never closed by a second '---' line"
 
+    def indented_block(start: int):
+        """Every blank or indented line from `start`, and the line after it."""
+        end = start
+        while end < close and (not lines[end].strip()
+                               or lines[end][:1] in (" ", "\t")):
+            end += 1
+        return [line for line in lines[start:end] if line.strip()], end
+
     fields = {}
-    for n in range(1, close):
+    n = 1
+    while n < close:
         raw = lines[n]
         if not raw.strip() or raw.lstrip().startswith("#"):
+            n += 1
             continue
         if raw[:1] in (" ", "\t"):
             return None, 0, (
-                f"line {n + 1} is indented, so this frontmatter is nested. This "
-                "checker reads flat `key: value` pairs only, deliberately: it "
-                "refuses rather than guessing at a shape it cannot verify. Keep "
-                "the frontmatter flat.")
+                f"line {n + 1} is indented but no key opened a block above it. "
+                "This checker reads scalars, block scalars, and a mapping "
+                "under `metadata`. It refuses rather than guessing at a shape "
+                "it cannot verify.")
         if ":" not in raw:
             return None, 0, f"line {n + 1} is not a `key: value` pair: {raw!r}"
         key, _, value = raw.partition(":")
         key, value = key.strip(), value.strip()
-        # Inline lists and quoted scalars are both flat, so both are read.
-        if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
-            value = value[1:-1]
-        fields[key] = value
+        # A KEY WRITTEN TWICE IS NOT A STYLE PROBLEM. Every YAML reader keeps
+        # the last one silently, so the field a reviewer read in the diff is
+        # not the field the agent loads.
+        if key in fields:
+            return None, 0, (
+                f"line {n + 1} sets `{key}` a second time. YAML readers keep "
+                "the last one and report nothing, so the value a reviewer "
+                "sees is not necessarily the value that loads.")
+        n += 1
+
+        if BLOCK_SCALAR_RE.match(value):
+            block, n = indented_block(n)
+            if not block:
+                return None, 0, (
+                    f"`{key}` opens a block scalar with nothing indented under it.")
+            pad = min(len(line) - len(line.lstrip()) for line in block)
+            body = [line[pad:] for line in block]
+            fields[key] = "\n".join(body) if value[0] == "|" else " ".join(
+                line.strip() for line in body)
+            continue
+
+        if value:
+            fields[key] = _unquote(value)
+            continue
+
+        block, n = indented_block(n)
+        if not block:
+            fields[key] = ""
+            continue
+        if key not in MAPPING_KEYS:
+            return None, 0, (
+                f"`{key}` has a nested block under it. The specification "
+                f"defines only {', '.join(f'`{k}`' for k in MAPPING_KEYS)} as "
+                "a mapping; everything else is a scalar.")
+        mapping = {}
+        for line in block:
+            if ":" not in line:
+                return None, 0, (
+                    f"`{key}` contains {line.strip()!r}, which is not a "
+                    "`key: value` pair. This mapping is string to string.")
+            sub_key, _, sub_value = line.partition(":")
+            sub_key, sub_value = sub_key.strip(), sub_value.strip()
+            if not sub_value:
+                return None, 0, (
+                    f"`{key}.{sub_key}` has no value. This mapping is string "
+                    "to string, so a nested mapping or a list is not valid here.")
+            mapping[sub_key] = _unquote(sub_value)
+        fields[key] = mapping
+
     return fields, close + 1, None
 
 
@@ -283,12 +370,27 @@ def scan_content(label: str, text: str, declared: bool, fail, warn):
     file is loaded into context the moment the body sends the agent to it, so
     an import token or an invisible character does identical damage there, and
     a rule scoped to the manifest alone would never see it.
+
+    THE IMPORT RULE SKIPS CODE SPANS AND FENCES, because the vendor does.
+    Claude Code's memory documentation states it outright: "Import parsing
+    skips Markdown code spans and fenced code blocks", and gives backticks as
+    the documented way to write a path without importing it. This rule used to
+    scan every line on the reasoning that a fenced token still imports, which
+    is not what the tool does. The cost was not theoretical: it failed every
+    skill that teaches the import syntax, including ones the vendor publishes,
+    and a gate that rejects the vendor's own examples is a gate its users turn
+    off. Nothing else here relaxes; invisible characters and typography are
+    still scanned on every line, fenced or not, because those are hazards to a
+    reader rather than to a parser.
     """
+    fenced = strip_fences(text).split("\n")
     for n, line in enumerate(text.split("\n"), 1):
-        for match in AT_RE.finditer(line):
+        for match in AT_RE.finditer(CODE_SPAN_RE.sub(" ", fenced[n - 1])):
             fail(f"{label}:{n}: {match.group()!r} is a live import token in every "
                  "supported tool. It pulls a file into context, or leaves a "
-                 "comment where your directive was. Rewrite the line.")
+                 "comment where your directive was. Put it in backticks, which "
+                 "the vendors document as the way to write one literally, or "
+                 "rewrite the line.")
         for match in INVISIBLE_RE.finditer(line):
             fail(f"{label}:{n}: invisible character U+{ord(match.group()):04X} at "
                  f"column {match.start() + 1}. Nobody can catch this by reading "
@@ -453,6 +555,18 @@ def check_skill(skill_dir: Path, root: Path):
              "the user ...', and name the symptom someone would describe "
              "instead of the topic.")
 
+    # --- the other spec fields ------------------------------------------------
+    compat = fields.get("compatibility", "")
+    if isinstance(compat, str) and len(compat) > COMPAT_MAX:
+        fail(f"`compatibility` is {len(compat)} characters (limit {COMPAT_MAX}).")
+
+    meta = fields.get("metadata")
+    if meta is not None and not isinstance(meta, dict):
+        fail("`metadata` is a mapping of string keys to string values, not a "
+             "scalar. Written as one it is read as a mapping by anything "
+             "following the specification and as a string by anything that "
+             "is not, which is two different skills from one file.")
+
     # --- frontmatter policy --------------------------------------------------
     declared = bool(fields.get("compatibility"))
     for key in sorted(fields):
@@ -493,6 +607,16 @@ def check_skill(skill_dir: Path, root: Path):
 
     # --- tier C: the bundled files ------------------------------------------
     refs = referenced_paths(body, skill_dir)
+    # A `license` may be an SPDX identifier or the name of a bundled file. In
+    # the second case the frontmatter is what points at it, so the body never
+    # mentions it and the unreferenced-file rule below would demand that a
+    # skill delete its own license. A path that escapes the directory still
+    # fails, because the loop that follows checks that before anything else.
+    license_field = fields.get("license", "")
+    if isinstance(license_field, str) and license_field and (
+            skill_dir / license_field).is_file():
+        refs = refs | {license_field}
+
     for ref in sorted(refs):
         if ref.startswith("/") or ".." in Path(ref).parts:
             fail(f"reference {ref!r} escapes the skill directory. A skill may "
@@ -573,6 +697,9 @@ SELF_TEST_ERRORS = (
     "no `assertions`",
     "declares skill_name",
     "unknown key",
+    "a second time",
+    f"limit {COMPAT_MAX}",
+    "is a mapping of string keys",
 )
 
 # WARNINGS ARE ASSERTED TOO, and for the same reason as the errors. The rules
@@ -590,37 +717,50 @@ def build_compliant(root: Path):
     """One correct skill, which the checker must NOT reject.
 
     Every other fixture here is hostile, and a checker tested only on hostile
-    input can pass its whole suite while rejecting everything. This one also
-    carries a fenced example naming a file it does not ship, which is how a
-    skill teaches the resource syntax and was a false positive until fenced
-    blocks stopped being resolved.
+    input can pass its whole suite while rejecting everything.
+
+    IT IS DELIBERATELY THE AWKWARD KIND OF CORRECT, because every shape in it
+    was rejected by some earlier version of this checker: a fenced example
+    naming a file it does not ship, a block-scalar `description`, a `metadata`
+    mapping, a `license` naming a bundled file the body never mentions, and
+    both documented ways of writing an import token without importing it.
     """
     d = root / "compliant"
     d.mkdir()
     (d / "SKILL.md").write_text(
         "---\n"
         "name: compliant\n"
-        "description: Use this skill when the user wants a correct skill to "
-        "compare against, or when checking that the checker still accepts one.\n"
+        "description: >\n"
+        "  Use this skill when the user wants a correct skill to compare\n"
+        "  against, or when checking that the checker still accepts one\n"
+        "  written in the shapes the specification allows.\n"
+        "license: LICENSE.txt\n"
+        "metadata:\n"
+        "  author: the specification\n"
+        "  version: '1'\n"
         "---\n\n"
         "## Steps\n\n"
         "1. Do the thing.\n\n"
         "## Additional resources\n\n"
         "Check the repository's own `README.md` and `Makefile` first: those\n"
         "live in the tree this skill runs in, not in the skill.\n\n"
+        "To name a file without importing it, write `@README` in backticks.\n\n"
         "List your own resources like this:\n\n"
         "```markdown\n"
         "- `references/not-shipped.md` - read this if X.\n"
+        "@some/import.md\n"
         "```\n\n"
         "- `references/real.md` - read this when you need the real one.\n",
         encoding="utf-8")
+    (d / "LICENSE.txt").write_text(
+        "Named by the `license` field, never by the body.\n", encoding="utf-8")
     (d / "references").mkdir()
     (d / "references" / "real.md").write_text(
         "The reference this skill actually ships.\n", encoding="utf-8")
 
 
 def build_hostile(root: Path):
-    """Four deliberately broken skills, covering every asserted rule."""
+    """Six deliberately broken skills, covering every asserted rule."""
     d = root / "no-manifest"
     d.mkdir()
     (d / "stray.md").write_text("No SKILL.md here, so nothing discovers this.\n",
@@ -651,6 +791,37 @@ def build_hostile(root: Path):
         "Ask @someone before running this.\n\n"
         "Diagnostic: !`echo hello`\n\n"
         "A zero width space splits these:\nsplit" + chr(0x200B) + "word\n",
+        encoding="utf-8")
+
+    # The optional spec fields, both written as the wrong shape. Neither is a
+    # parse error, so both have to survive to the field checks, which is why
+    # they cannot share a directory with the duplicate key below.
+    d = root / "bad-fields"
+    d.mkdir()
+    (d / "SKILL.md").write_text(
+        "---\n"
+        "name: bad-fields\n"
+        "description: Use this when the optional specification fields are the "
+        "wrong shape and nothing else is.\n"
+        f"compatibility: {'x' * (COMPAT_MAX + 1)}\n"
+        "metadata: not-a-mapping\n"
+        "---\n\n"
+        "Nothing else here is wrong.\n",
+        encoding="utf-8")
+
+    # A key set twice. Every YAML reader keeps the last one silently, so this
+    # has to be a parse error rather than a field check: by the time the
+    # fields dictionary exists, the evidence is gone.
+    d = root / "duplicate-key"
+    d.mkdir()
+    (d / "SKILL.md").write_text(
+        "---\n"
+        "name: duplicate-key\n"
+        "description: Use this when a reviewer reads one description and the "
+        "agent loads another.\n"
+        "description: Whatever the reader keeps.\n"
+        "---\n\n"
+        "The body is irrelevant: this never parses.\n",
         encoding="utf-8")
 
     # The quiet defects: a description that labels instead of triggering, a
