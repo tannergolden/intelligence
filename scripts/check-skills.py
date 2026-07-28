@@ -226,12 +226,27 @@ def parse_frontmatter(text: str):
     return fields, close + 1, None
 
 
-def referenced_paths(body: str):
+# The directories the specification defines for bundled content. A path under
+# one of these is a file the skill SHIPS; anything else backticked is prose
+# about the world the skill runs in.
+BUNDLE_DIRS = ("references/", "assets/", "scripts/", "evals/", "templates/")
+
+
+def referenced_paths(body: str, skill_dir: Path):
     """Every relative path the body points an agent at.
 
     Two syntaxes, because authors use both: a markdown link target, and a
     backticked path. A code span only counts when it actually looks like a
     path, so prose like `name` or `true` is not mistaken for a missing file.
+
+    A PATH-SHAPED TOKEN IS NOT AUTOMATICALLY A BUNDLED FILE. A skill routinely
+    names files in the repository it RUNS IN: `README.md`, `AGENTS.md`, a
+    `Makefile`. Those are the subject of the instruction, not cargo, and
+    demanding the skill ship them is nonsense. So a token counts only when it
+    sits under a bundle directory or when the skill actually ships a file by
+    that name. The first keeps the missing-reference rule sharp where it
+    matters, since `references/gone.md` still fails; the second keeps the
+    unreferenced-file rule working for anything bundled at the top level.
 
     FENCED BLOCKS ARE SKIPPED. A skill that shows an author how to list their
     own resources writes the example in a fence, and that example names files
@@ -256,7 +271,10 @@ def referenced_paths(body: str):
         # is exactly what happens to any skill that explains a file format.
         if "/" in token or re.search(r"[A-Za-z0-9_-]\.[A-Za-z0-9]{1,5}\Z", token):
             found.add(token)
-    return found
+    return {
+        token for token in found
+        if token.startswith(BUNDLE_DIRS) or (skill_dir / token).exists()
+    }
 
 
 def scan_content(label: str, text: str, declared: bool, fail, warn):
@@ -475,7 +493,7 @@ def check_skill(skill_dir: Path, root: Path):
     scan_content("SKILL.md", text, declared, fail, warn)
 
     # --- tier C: the bundled files ------------------------------------------
-    refs = referenced_paths(body)
+    refs = referenced_paths(body, skill_dir)
     for ref in sorted(refs):
         if ref.startswith("/") or ".." in Path(ref).parts:
             fail(f"reference {ref!r} escapes the skill directory. A skill may "
@@ -584,6 +602,8 @@ def build_compliant(root: Path):
         "## Steps\n\n"
         "1. Do the thing.\n\n"
         "## Additional resources\n\n"
+        "Check the repository's own `README.md` and `Makefile` first: those\n"
+        "live in the tree this skill runs in, not in the skill.\n\n"
         "List your own resources like this:\n\n"
         "```markdown\n"
         "- `references/not-shipped.md` - read this if X.\n"
