@@ -69,6 +69,8 @@ Nothing here executes on clone, and nothing is generated from anything else.
 
 **To stop repeating a mistake**, install [`improve`](skills/.unpackaged/improve/SKILL.md). It captures what an agent got wrong, grades the evidence, and routes the lesson either into this repository's own context or upstream where it reaches every repository. [Self Improvement](docs/Self-Improvement.md) explains why those are two different destinations.
 
+**To let agents read the engineering standards directly**, vendor them as a git submodule pinned to a release. The law tells agents to read the styling specification before writing Markdown, and a submodule is what makes that specification a file they can open rather than a link they will not follow. [Standards Offline](docs/Standards-Offline.md) has the recipe and the one failure mode that matters.
+
 **To add anything to this repository**, read [Scope & Boundaries](docs/Scope-&-Boundaries.md) first. It exists to stop a second law appearing here.
 
 ---

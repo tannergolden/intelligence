@@ -12,7 +12,7 @@ category: docs
 
 <a name="top"></a>
 
-**Seven documents, each owning one question the README would answer badly.**
+**Eight documents, each owning one question the README would answer badly.**
 
 _Every claim here has a file that owns it._
 
@@ -34,6 +34,7 @@ Read [Scope & Boundaries](Scope-&-Boundaries.md) first if you are about to add s
 | :------------------------------------------------ | :---------------------------------------------------------------------------- |
 | [🛡️ Scope & Boundaries](Scope-&-Boundaries.md)     | What may live here, what never may, and why each exclusion holds              |
 | [📥 Installation](Installation.md)                 | How another repository receives the agent files, and how to install a skill   |
+| [🌿 Standards Offline](Standards-Offline.md)       | Vendoring the engineering standards on disk so an agent can actually read them |
 | [📦 Skill Authoring](Skill-Authoring.md)           | How to write a skill that works in every supported tool, and what is enforced |
 | [🚦 Checks & Gates](Checks-&-Gates.md)             | Every check this repository runs on itself, and why it checks itself twice   |
 | [🔁 Self Improvement](Self-Improvement.md)         | How a lesson learned in one repository reaches every other one              |
@@ -47,6 +48,8 @@ Read [Scope & Boundaries](Scope-&-Boundaries.md) first if you are about to add s
 **"Can I add this here?"** [Scope & Boundaries](Scope-&-Boundaries.md).
 
 **"How do I get these files into my repository?"** [Installation](Installation.md).
+
+**"How do agents read the standards without following a link?"** [Standards Offline](Standards-Offline.md).
 
 **"How do I write a skill?"** Install [`develop`](../skills/.unpackaged/develop/SKILL.md), the meta skill that walks you through it, then read [Skill Authoring](Skill-Authoring.md) for the rules it enforces.
 
@@ -62,7 +65,7 @@ Read [Scope & Boundaries](Scope-&-Boundaries.md) first if you are about to add s
 
 <div align="center">
 
-**Seven questions, seven owners, no orphaned claims.**
+**Eight questions, eight owners, no orphaned claims.**
 
 [↑ Back to Top](#top)
 

@@ -66,6 +66,7 @@ Each row is a decision, not an oversight. That is the point of writing them down
 | Committed skill archives                        | Build output nobody can review in a diff. The release builds them from source and attaches them to the release page instead |
 | `SECURITY.md`                                   | GitHub serves it from the owner's `.github` repository for every repository lacking one. A copy here would override that with a second one to keep current |
 | A copy of the styling specification             | It is followed by link. `scripts/check-docs.py` encodes the subset a machine can decide and names the upstream document as the source |
+| A vendored copy of `standards` in this tree      | A consuming repository may pin one as a submodule, which is a pin rather than a copy. This repository is the publisher's peer and reads it by link |
 
 ---
 

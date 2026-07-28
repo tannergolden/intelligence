@@ -330,10 +330,13 @@ def check_file(path: Path, root: Path, taglines, footers, fail, warn):
                 fail(rel, f"line {n}: relative link {target!r} does not resolve.")
 
 
-def check_names(root: Path, fail):
+def check_names(root: Path, fail, vendored=frozenset()):
     """`_` as a space, across the whole tree rather than only docs/."""
     for path in sorted(root.rglob("*")):
         if ".git" in path.parts:
+            continue
+        rel = path.relative_to(root).as_posix()
+        if any(rel.startswith(f"{v}/") or rel == v for v in vendored):
             continue
         name = path.name
         if name in UNDERSCORE_OK or name.startswith("_") or "_" not in name:
@@ -347,6 +350,26 @@ def check_names(root: Path, fail):
              "language fixes.")
 
 
+def submodule_paths(root: Path):
+    """Every path `.gitmodules` declares, so vendored trees are skipped.
+
+    A submodule is another repository's content pinned into this one. Its
+    documents answer to ITS specification and its own gates, and linting them
+    here would turn a change nobody in this repository made into a red build
+    nobody in this repository can fix. Read from `.gitmodules` rather than
+    hardcoded, so adding a submodule needs no edit here.
+    """
+    manifest = root / ".gitmodules"
+    if not manifest.is_file():
+        return set()
+    found = set()
+    for line in manifest.read_text(encoding="utf-8").split("\n"):
+        key, _, value = line.partition("=")
+        if key.strip() == "path" and value.strip():
+            found.add(value.strip().strip("/"))
+    return found
+
+
 def check_root(root: Path, docs_only: bool = False):
     problems, warnings = [], []
 
@@ -357,10 +380,14 @@ def check_root(root: Path, docs_only: bool = False):
         warnings.append({"file": rel, "level": "warning", "message": msg})
 
     taglines, footers = {}, {}
+    vendored = submodule_paths(root)
     files = []
     for path in sorted(root.rglob("*.md")):
-        parts = path.relative_to(root).parts
+        rel = path.relative_to(root)
+        parts = rel.parts
         if ".git" in parts or "skills" in parts:
+            continue
+        if any(rel.as_posix().startswith(f"{v}/") for v in vendored):
             continue
         files.append(path)
     for path in files:
@@ -381,7 +408,7 @@ def check_root(root: Path, docs_only: bool = False):
                                 "the document: a repeated one is a closing "
                                 "argument that argues nothing.")
     if not docs_only:
-        check_names(root, fail)
+        check_names(root, fail, vendored)
     return files, problems, warnings
 
 
