@@ -11,6 +11,11 @@ the local copy of it.
 
 **Produce the proposal and show it to the user.** Do not open an issue, a pull request or a discussion on another repository on your own initiative.
 
+Where the publisher offers a proposal form, fill its fields rather than
+inventing a shape: the sections below are the ones such a form asks for, so a
+draft written this way pastes in without being reshaped. Filing it is still
+the user's action.
+
 The reason is not caution for its own sake. A change accepted upstream reaches every repository pinned to the moving major tag on its next sync, with no pull request and no review on the receiving side. That is a production change to every consumer at once, triggered by a lesson learned in one of them. A human decides that.
 
 ## What makes a proposal actionable

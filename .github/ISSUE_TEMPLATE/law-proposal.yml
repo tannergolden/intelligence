@@ -1,0 +1,90 @@
+# --- Issue Form ---
+#
+# 📜 Law Proposal
+#
+# Purpose: the receiving end of the self-improvement loop.
+#
+# The `improve` skill drafts a proposal when a lesson learned in a consuming
+# repository turns out to be true of every repository. Until this form
+# existed the loop had a drafting step and nowhere to send the draft, so it
+# was a loop that never closed.
+#
+# The fields mirror `references/upstream.md` in that skill, so a drafted
+# proposal pastes straight in without being reshaped.
+#
+# ---
+
+name: '📜 Law Proposal'
+description: 'Propose a rule for AGENTS.md, which reaches every repository pinned to the moving major.'
+title: 'law: '
+labels: ['law-proposal']
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **This is the most consequential change anyone can make here.** An accepted
+        rule reaches every repository pinned to the moving major on its next sync,
+        with no pull request and no review on the receiving side.
+
+        Anything that varies by repository belongs in that repository's own context
+        instead, and anything a check could enforce should be proposed as the check.
+
+  - type: textarea
+    id: rule
+    attributes:
+      label: The rule
+      description: One sentence, imperative, no story.
+      placeholder: Read a file before asserting what it contains.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: grade
+    attributes:
+      label: Grade
+      description: How the claim was established. An ungraded proposal asks a maintainer to take your word for it.
+      options:
+        - 'probed: something ran and the result is below'
+        - 'documented: a primary source says so, named below'
+        - 'unverified: believed from a secondary source'
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: What ran and what it returned, or the primary source and the date read.
+    validations:
+      required: true
+
+  - type: textarea
+    id: universal
+    attributes:
+      label: Why it is universal
+      description: >-
+        Why it holds in a repository with a different language, toolchain, branch
+        model and review policy. If it does not, it is local and belongs elsewhere.
+    validations:
+      required: true
+
+  - type: textarea
+    id: cost
+    attributes:
+      label: What it costs
+      description: >-
+        The law is read in full in every session in every repository. Name the line
+        this replaces, or make the argument for adding one. "It seemed useful" is
+        not an argument.
+    validations:
+      required: true
+
+  - type: input
+    id: seen-in
+    attributes:
+      label: Repositories this was seen in
+      description: >-
+        A rule independently hit in several unrelated repositories has passed the
+        universality test by experiment rather than by argument. Say so here.
+      placeholder: two internal services and one documentation repository

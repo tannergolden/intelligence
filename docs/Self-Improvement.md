@@ -65,6 +65,14 @@ Both are enforced by the skill, and both exist because this repository has been 
 
 ---
 
+## 📮 Where A Proposal Lands
+
+A loop with a drafting step and nowhere to send the draft is a loop that never closes. The universal half ends at a **law proposal** on this repository, and [`.github/ISSUE_TEMPLATE/law-proposal.yml`](../.github/ISSUE_TEMPLATE/law-proposal.yml) is the form it lands on. Its fields are the same four the skill drafts, so a proposal pastes in unchanged: the rule, its grade and evidence, why it is universal, and what it costs.
+
+**A person files it, and a person judges it.** Acceptance is a production change to every repository pinned to the moving major, so nothing about that step is automated.
+
+---
+
 ## 📚 Documentation Index
 
 Everything explaining how this publisher works lives in the [Documentation Index](README.md). Follow it **by link**, never by copy.

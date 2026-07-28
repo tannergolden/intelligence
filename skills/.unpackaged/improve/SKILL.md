@@ -57,6 +57,21 @@ A published file usually announces itself in its first paragraphs, because being
 
 Read `references/routing.md` when the call is not obvious, and always before creating any new file.
 
+## Check whether it is already recorded
+
+**Search the destination before writing anything.** A loop that only appends writes the same lesson again every time it is rediscovered, and nothing is more corrosive to an instruction file than three entries saying the same thing slightly differently.
+
+Search for the rule and for the words a future agent would hit it by, then take one of four exits:
+
+| What you find | Do |
+| :--- | :--- |
+| Nothing | Record it |
+| The same lesson, still correct | **Nothing.** Say it was already covered and stop |
+| The same lesson, stated worse | Improve the existing entry rather than adding a second |
+| An entry this **contradicts** | Stop and resolve it, below |
+
+**A contradiction is the most valuable thing this loop ever finds.** It means a recorded rule is wrong, and it has been steering every agent that read it since the day it was written. Do not add the new lesson beside it and leave a reader to guess. Establish which is true, per `references/evidence.md`, replace the loser, and say plainly in your report that a recorded rule was wrong and for how long if you can tell.
+
 ## Writing a local lesson
 
 Find the repository's own context first: what its root `README.md` points to, then instructions sitting beside the code the lesson concerns, then a repository-wide knowledge directory under whatever name it carries.
