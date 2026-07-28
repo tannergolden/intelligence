@@ -67,6 +67,8 @@ Nothing here executes on clone, and nothing is generated from anything else.
 
 **To write a skill**, install [`develop`](skills/.unpackaged/develop/SKILL.md), the meta skill that walks you through authoring one, and read [Skill Authoring](docs/Skill-Authoring.md) for the rules it enforces.
 
+**To stop repeating a mistake**, install [`improve`](skills/.unpackaged/improve/SKILL.md). It captures what an agent got wrong, grades the evidence, and routes the lesson either into this repository's own context or upstream where it reaches every repository. [Self Improvement](docs/Self-Improvement.md) explains why those are two different destinations.
+
 **To add anything to this repository**, read [Scope & Boundaries](docs/Scope-&-Boundaries.md) first. It exists to stop a second law appearing here.
 
 ---

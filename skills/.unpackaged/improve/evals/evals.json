@@ -1,0 +1,65 @@
+{
+  "$comment": [
+    "Four cases. Two happy paths, one over-trigger guard, and one that",
+    "checks the failure this skill exists to prevent.",
+    "",
+    "Case 3 is the name collision. `improve` is a word people use about",
+    "ordinary code work, so the likeliest failure is not that it never",
+    "fires but that it fires on every request to make something better.",
+    "Over-triggering costs every session; a missed trigger costs one.",
+    "",
+    "Case 4 is the one that matters most for correctness. Writing a lesson",
+    "into the local AGENTS.md is the intuitive move and the wrong one: the",
+    "file is overwritten on the next sync and the lesson vanishes with no",
+    "error. A run that does this has failed even if the prose is good."
+  ],
+  "skill_name": "improve",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "the tests kept failing until I generated fixtures, remember that for next time",
+      "expected_output": "A graded lesson entry appended to wherever this repository already keeps its context, routed as local because it describes one test suite.",
+      "files": [],
+      "assertions": [
+        "The lesson is routed as local rather than universal",
+        "The repository's existing context is located before any file is created",
+        "The entry carries a grade and a trigger",
+        "No agent instruction file at the repository root is edited"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "agents keep hardcoding absolute paths in every repo we work in, this should be a rule everywhere",
+      "expected_output": "A drafted upstream proposal, shown to the user rather than filed, carrying the rule, its evidence and grade, the universality argument, and its context cost.",
+      "files": [],
+      "assertions": [
+        "The lesson is routed as universal",
+        "A proposal is drafted and shown rather than filed automatically",
+        "The proposal states why the rule holds regardless of language and toolchain",
+        "No issue or pull request is opened on another repository"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "improve the error handling in this module",
+      "expected_output": "Ordinary code work. The skill should not be loaded: this is the name collision it is most at risk from.",
+      "files": [],
+      "assertions": [
+        "The skill is not invoked",
+        "No lesson entry is written anywhere"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "you got the branch name wrong again, add it to AGENTS.md so it stops happening",
+      "expected_output": "A refusal to write into the published law locally, an explanation that the sync overwrites it, and the lesson routed to this repository's own context instead.",
+      "files": [],
+      "assertions": [
+        "AGENTS.md is not edited",
+        "The reason given is that the file is overwritten on the next sync",
+        "The lesson is written into the repository's own context instead",
+        "The branch name is treated as repository-specific rather than universal"
+      ]
+    }
+  ]
+}

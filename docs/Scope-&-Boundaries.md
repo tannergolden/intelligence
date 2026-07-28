@@ -36,7 +36,7 @@ _Argued for once. Argue with it, never drift past it._
 | `AGENTS.md`       | The law. The only file with rules in it                                                |
 | `CLAUDE.md`       | Claude Code has no discovery path for `AGENTS.md`, verified by probe                   |
 | `GEMINI.md`       | Gemini CLI discovers only `GEMINI.md` unless a settings file says otherwise            |
-| `skills/.unpackaged/` | The second product. One canonical copy per skill, installed rather than synced      |
+| `skills/.unpackaged/` | The second product. One canonical copy per skill, installed rather than synced. `develop` authors them; `improve` is the feedback loop |
 | `.github/`        | The workflows, and `CODEOWNERS`                                                        |
 | `actions/`        | The one published composite action, at the same path the sibling publisher uses        |
 | `docs/`           | These documents                                                                        |

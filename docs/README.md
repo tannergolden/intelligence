@@ -12,7 +12,7 @@ category: docs
 
 <a name="top"></a>
 
-**Six documents, each owning one question the README would answer badly.**
+**Seven documents, each owning one question the README would answer badly.**
 
 _Every claim here has a file that owns it._
 
@@ -36,6 +36,7 @@ Read [Scope & Boundaries](Scope-&-Boundaries.md) first if you are about to add s
 | [📥 Installation](Installation.md)                 | How another repository receives the agent files, and how to install a skill   |
 | [📦 Skill Authoring](Skill-Authoring.md)           | How to write a skill that works in every supported tool, and what is enforced |
 | [🚦 Checks & Gates](Checks-&-Gates.md)             | Every check this repository runs on itself, and why it checks itself twice   |
+| [🔁 Self Improvement](Self-Improvement.md)         | How a lesson learned in one repository reaches every other one              |
 | [🤖 Vendor Facts](Vendor-Facts.md)                 | What each supported tool actually does, how it was checked, and when          |
 | [🏷️ Releases & Versioning](Releases-&-Versioning.md) | The two tags, what each promises, and how a bad release is recalled           |
 
@@ -51,6 +52,8 @@ Read [Scope & Boundaries](Scope-&-Boundaries.md) first if you are about to add s
 
 **"What stops a bad change shipping?"** [Checks & Gates](Checks-&-Gates.md). Nothing downstream reviews these bytes, so everything is checked before they leave.
 
+**"How do the instructions get better over time?"** [Self Improvement](Self-Improvement.md). A lesson learned once should stop the same mistake everywhere.
+
 **"Why is it built this way?"** [Vendor Facts](Vendor-Facts.md). Nearly every structural decision here traces to one row in that table.
 
 **"How do I publish a change?"** [Releases & Versioning](Releases-&-Versioning.md).
@@ -59,7 +62,7 @@ Read [Scope & Boundaries](Scope-&-Boundaries.md) first if you are about to add s
 
 <div align="center">
 
-**Six questions, six owners, no orphaned claims.**
+**Seven questions, seven owners, no orphaned claims.**
 
 [↑ Back to Top](#top)
 
