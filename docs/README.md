@@ -12,7 +12,7 @@ category: docs
 
 <a name="top"></a>
 
-**Five documents, each answering one question this repository would otherwise answer badly in a README footnote.**
+**Five documents, each owning one question the README would answer badly.**
 
 _Every claim here has a file that owns it._
 

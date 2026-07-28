@@ -12,7 +12,7 @@ category: docs
 
 <a name="top"></a>
 
-**One set of agent instructions and a library of skills, authored once here and pulled by any repository at a pinned tag.**
+**Agent instructions and skills, authored once here and pulled at a tag you pin.**
 
 _Written once. Pinned deliberately. Never pasted by hand._
 
@@ -96,8 +96,6 @@ The engineering standards this repository is built to are published in [`tannerg
 ---
 
 <div align="center">
-
-`publishes: one law, two envelopes, many skills` &middot; `pinned by: tag`
 
 **One source of law. One copy of every skill. No stale duplicates anywhere.**
 

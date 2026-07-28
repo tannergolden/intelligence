@@ -12,7 +12,7 @@ category: docs
 
 <a name="top"></a>
 
-**One committed workflow pulls the agent files at a tag you choose, and skills are copied by hand because no directory every tool reads exists.**
+**One committed workflow, three files delivered, and nothing installed anywhere else.**
 
 _Pin it once, receive every fix, edit nothing._
 

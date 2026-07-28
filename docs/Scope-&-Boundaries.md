@@ -12,9 +12,9 @@ category: docs
 
 <a name="top"></a>
 
-**This repository publishes instructions into other people's trees, so the cost of adding one file here is paid everywhere it lands.**
+**Every file added here is paid for again in every repository it lands in.**
 
-_Every exclusion below was argued for once. Argue with it, do not drift past it._
+_Argued for once. Argue with it, never drift past it._
 
 </div>
 

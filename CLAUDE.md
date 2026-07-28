@@ -12,7 +12,7 @@ category: agents
 
 <a name="top"></a>
 
-**Claude Code reads this filename and never looks for the canonical instruction file, so this one imports it.**
+**Claude Code never looks for the canonical file, so this one imports it.**
 
 _An envelope, never a letter._
 
@@ -37,8 +37,6 @@ Like the file it imports, this one is **published rather than authored here** an
 ---
 
 <div align="center">
-
-`scope: claude code` &middot; `contains: no law`
 
 **One line of envelope. Every rule lives elsewhere.**
 

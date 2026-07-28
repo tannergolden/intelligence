@@ -12,7 +12,7 @@ category: docs
 
 <a name="top"></a>
 
-**Moving one tag changes what every repository pinned to it receives on its next run, with nobody on their side doing anything.**
+**Moving one tag changes what every pinned repository receives on its next run.**
 
 _A release here is a production change to every consumer at once._
 

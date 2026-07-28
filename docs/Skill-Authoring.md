@@ -12,7 +12,7 @@ category: docs
 
 <a name="top"></a>
 
-**A skill fails silently in every direction: it never fires, it fires on the wrong request, or it behaves differently on one vendor than another.**
+**A skill fails silently in every direction, so every rule below is a gate.**
 
 _Written once, loaded three ways, priced by the tier it sits in._
 

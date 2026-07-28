@@ -12,7 +12,7 @@ category: agents
 
 <a name="top"></a>
 
-**Gemini CLI discovers this filename and nothing else unless it is configured to, so this file imports the canonical one.**
+**Gemini CLI looks only for this filename, so this file imports the law.**
 
 _The name the tool looks for, pointing at the file that matters._
 
@@ -39,8 +39,6 @@ This file becomes deletable the day Gemini CLI discovers the canonical filename 
 ---
 
 <div align="center">
-
-`scope: gemini cli` &middot; `contains: no law`
 
 **A different filename over the same single source of law.**
 

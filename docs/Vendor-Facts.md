@@ -12,7 +12,7 @@ category: docs
 
 <a name="top"></a>
 
-**Nearly every structural decision in this repository traces to one row below, so the rows carry how they were checked rather than only what they say.**
+**Every structural decision here traces to one row below, graded by how it was checked.**
 
 _A dated measurement beats a confident sentence._
 
