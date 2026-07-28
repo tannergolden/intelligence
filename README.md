@@ -53,9 +53,12 @@ Claude Code has no discovery path for `AGENTS.md` at all, and Gemini CLI discove
 | :---------------------------- | :---------------------------------------------------------------- |
 | `AGENTS.md`                   | The law. The only file in this repository with rules in it        |
 | `CLAUDE.md`, `GEMINI.md`      | Envelopes. One import line each, carrying no law of their own     |
+| `.claude/`, `.gemini/`        | The skill router, one per vendor. The only executable content delivered |
 | `skills/.unpackaged/<name>/`  | Skills, one canonical copy each, installed rather than synced     |
 
-Nothing here executes on clone, and nothing is generated from anything else.
+Nothing is generated from anything else: the files here are the files that land.
+
+The router is the one exception to a rule this repository held for its whole life, and [Scope & Boundaries](docs/Scope-&-Boundaries.md) records what that cost. It prints nothing unless skills are installed, its output is capped in CI, and the two lines that deliver it can be dropped from the sync stub to take the instruction files alone.
 
 ---
 

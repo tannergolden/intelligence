@@ -1,0 +1,22 @@
+{
+  "$comment": [
+    "Delivered by tannergolden/ai. Overwritten in full on the next sync.",
+    "Gemini CLI fingerprints project hooks: when this command changes, the",
+    "hook is treated as new and untrusted and you are asked to approve it",
+    "again. A sync that alters this file therefore prompts once, by design.",
+    "The event is BeforeAgent, which is Gemini's equivalent of Claude Code's",
+    "UserPromptSubmit; no event name is shared between the two."
+  ],
+  "hooks": {
+    "BeforeAgent": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${GEMINI_PROJECT_DIR:-.}/.gemini/hooks/skill-router.sh\""
+          }
+        ]
+      }
+    ]
+  }
+}

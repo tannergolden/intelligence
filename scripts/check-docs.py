@@ -109,6 +109,19 @@ DELIVERED_BUDGETS = {
 }
 DELIVERED_WARN_AT = 0.80
 
+# The hooks are delivered too, and they are priced differently from a file.
+# A document costs whoever opens it and the law costs one load per session;
+# a hook that fires on every prompt is charged AGAIN ON EVERY TURN, which
+# makes its output the highest-frequency cost anything here produces. Claude
+# Code does not truncate that stream, so nothing but this stops a helpful
+# paragraph being added and silently billed forever.
+#
+# Measured against a fixture rather than read from the source, because what
+# costs context is what the script PRINTS, not what it contains.
+HOOK_SCRIPTS = (".claude/hooks/skill-router.sh", ".gemini/hooks/skill-router.sh")
+HOOK_OUTPUT_BUDGET = 256          # bytes, against the fixture below
+HOOK_FIXTURE_SKILLS = ("alpha", "bravo", "charlie")
+
 # `_` as a space is rejected across the WHOLE tree, not just docs. These are
 # the names a platform or a language fixes, which cannot move at all.
 UNDERSCORE_OK = {
@@ -421,6 +434,58 @@ def check_delivered_budget(root: Path, fail, warn):
                        "that should name what it replaces.")
 
 
+def check_hooks(root: Path, fail, warn):
+    """Syntax-check every delivered hook, and price what it prints.
+
+    Two failures this catches, both silent otherwise. A hook with a syntax
+    error does not stop the session, it just never contributes anything, so
+    the router looks installed and does nothing. And a hook that grew a
+    paragraph of advice costs that paragraph on every turn of every session
+    in every repository that received it.
+    """
+    import subprocess
+    import tempfile
+
+    for rel in HOOK_SCRIPTS:
+        path = root / rel
+        if not path.is_file():
+            continue
+
+        syntax = subprocess.run(["sh", "-n", str(path)],
+                                capture_output=True, text=True)
+        if syntax.returncode != 0:
+            fail(rel, f"is not valid POSIX shell: {syntax.stderr.strip()}. A "
+                      "broken hook does not stop a session, it silently "
+                      "contributes nothing, so it looks installed and is not.")
+            continue
+
+        with tempfile.TemporaryDirectory() as scratch:
+            for base in (".claude/skills", ".gemini/skills"):
+                for name in HOOK_FIXTURE_SKILLS:
+                    d = Path(scratch) / base / name
+                    d.mkdir(parents=True, exist_ok=True)
+                    (d / "SKILL.md").write_text("---\n", encoding="utf-8")
+            env = {"PATH": "/usr/bin:/bin",
+                   "CLAUDE_PROJECT_DIR": scratch, "GEMINI_PROJECT_DIR": scratch}
+            run = subprocess.run(["sh", str(path)], capture_output=True,
+                                 text=True, env=env)
+            size = len(run.stdout.encode("utf-8"))
+
+        if size > HOOK_OUTPUT_BUDGET:
+            fail(rel, f"prints {size} bytes for {len(HOOK_FIXTURE_SKILLS)} "
+                      f"skills, against a budget of {HOOK_OUTPUT_BUDGET}. This "
+                      "runs on EVERY prompt, so that is charged again on every "
+                      "turn of every session. Name the skills and stop; the "
+                      "model already holds their descriptions.")
+
+        # A router that says nothing when skills ARE present is the failure
+        # that looks exactly like a working one.
+        if size == 0:
+            fail(rel, "printed nothing with skills installed, so it is doing "
+                      "no work at all. A silent router is indistinguishable "
+                      "from a correct one until someone checks.")
+
+
 def check_root(root: Path, docs_only: bool = False):
     problems, warnings = [], []
 
@@ -461,6 +526,7 @@ def check_root(root: Path, docs_only: bool = False):
     if not docs_only:
         check_names(root, fail, vendored)
         check_delivered_budget(root, fail, warn)
+        check_hooks(root, fail, warn)
     return files, problems, warnings
 
 

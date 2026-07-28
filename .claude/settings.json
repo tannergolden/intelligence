@@ -1,0 +1,20 @@
+{
+  "$comment": [
+    "Delivered by tannergolden/ai. Overwritten in full on the next sync.",
+    "The hook fires on EVERY prompt, so its output is the only per-turn cost",
+    "in this repository. hooks/skill-router.sh keeps it bounded and prints",
+    "nothing at all when no skills are installed."
+  ],
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"$CLAUDE_PROJECT_DIR/.claude/hooks/skill-router.sh\""
+          }
+        ]
+      }
+    ]
+  }
+}

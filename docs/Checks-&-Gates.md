@@ -86,6 +86,18 @@ One check in that file is **not** part of the styling standard, and is kept ther
 
 **The numbers are a decision, not a discovery,** and a warning fires at 80% so the conversation happens before the ceiling rather than at it. Raising one has to be a commit somebody reviews, which is what turns "every addition names a subtraction" from an aspiration into a gate. It is also the hard stop behind the [self-improvement loop](Self-Improvement.md): a proposal that would breach the budget is a proposal to add one rule and retire another.
 
+### 🪝 The Hook Gates
+
+The skill router in `.claude/` and `.gemini/` is the only content here that runs on somebody else's machine without being asked, and the only thing charged **per turn** rather than per session. Three checks bound it, all in the same file:
+
+| Check | Catches |
+| :--- | :--- |
+| Valid POSIX shell (`sh -n`) | A broken hook does not stop a session, it silently contributes nothing. It looks installed and is not |
+| Output under 256 bytes, against a three-skill fixture | A paragraph of advice added to a script that fires every prompt, billed forever |
+| Output is not empty when skills exist | A router that says nothing is indistinguishable from a working one until someone measures it |
+
+The budget is measured by **running** the hook against a fixture rather than by reading it, because what costs context is what the script prints, not what it contains. Both failure modes were confirmed by breaking the script deliberately and watching the gate catch it.
+
 ---
 
 ## 🚨 Why Both Checkers Test Themselves
