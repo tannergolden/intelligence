@@ -80,7 +80,7 @@ Rule 4 read **"Nothing executes on clone. No hooks, no `settings.json`."** It wa
 | Risk | Still true? |
 | :--- | :--- |
 | A committed hook is code execution somebody did not opt into | **Yes.** Verified: a `UserPromptSubmit` hook ran in a headless session with no prompt at all |
-| Its output is unbounded | **Yes.** Verified: 15,024 characters passed through untruncated |
+| Its output is effectively unbounded | **Yes, up to a point nobody should rely on.** Re-probed: 10,000 characters arrive whole, and past that the whole payload is replaced by a notice and a file path. A router billing 9,000 characters on every turn is never truncated and never reported. See [Vendor Facts](Vendor-Facts.md) |
 | It fires on every prompt, so any cost recurs forever | **Yes** |
 
 **What changed is not the risk, it is that the risk is now bounded and visible.** The router prints **nothing** when no skills are installed, so a repository that ignores the feature pays exactly zero. When skills are present it prints their names and stops, and [`check-docs.py`](../scripts/check-docs.py) fails the build if that exceeds 256 bytes against a three-skill fixture, or if the script is not valid shell, or if it prints nothing when skills exist. Both failure modes were mutation-tested rather than assumed.

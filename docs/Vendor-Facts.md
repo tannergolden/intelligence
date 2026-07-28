@@ -22,7 +22,9 @@ _A dated measurement beats a confident sentence._
 
 ## 🎯 Why This File Exists
 
-Three claims in this table were wrong when first written, and each was believed until something ran. One was off by a factor of five. One described a hazard in a file type where it does not occur. One came from a confident search summary that the vendor's own documentation contradicts.
+Four claims in this table have been wrong, and each was believed until something ran. One described a hazard in a file type where it does not occur. One came from a confident search summary the vendor's own documentation contradicts. One was a row this file **corrected in the wrong direction**, replacing a right number with a wrong one. And one was a probe that measured the wrong thing, because the model under test could reach for a file it should not have been able to open.
+
+That last pair is why the grades below are not enough on their own. A probe is only worth its grade if it could have failed.
 
 So each row says **how it was established**, and the grades mean exactly this:
 
@@ -46,7 +48,7 @@ Everything below was established on 2026-07-28 against **Claude Code 2.1.220**. 
 | A large law loads whole, and its middle is retrievable             | **probed**     | A 113 KB imported file returned markers at byte 36, 56,359 and 112,895                                  |
 | Gemini CLI discovers only `GEMINI.md` by default                   | **documented** | Its docs: the default filename is `GEMINI.md`, and reading `AGENTS.md` needs `context.fileName` in settings. Re-verified 2026-07-28 |
 | Copilot's coding agent and CLI read `AGENTS.md` natively           | **documented** | Announced August 2025, alongside `.github/copilot-instructions.md` and `.github/instructions/**`         |
-| VS Code Copilot ignores `AGENTS.md` unless `chat.useAgentsMdFile`  | **documented** | Experimental, off by default. Several independent sources agree                                         |
+| VS Code Copilot ignores `AGENTS.md` unless `chat.useAgentsMdFile`  | **documented** | Still experimental and still off by default. Re-verified 2026-07-28, because this is the row whose change removes the one manual step in installation |
 | `AGENTS.md` is an Agentic AI Foundation project under the Linux Foundation | **documented** | Contributed by OpenAI at the AAIF's formation, beside MCP. Reported at 60,000+ adopting projects |
 | A `CLAUDE.md` symlink to `AGENTS.md` is an alternative to the import | **documented** | Anthropic's memory docs give `ln -s AGENTS.md CLAUDE.md`. Rejected here: a symlink does not survive `core.symlinks=false`, and this repository delivers into trees it does not control |
 
@@ -63,7 +65,8 @@ Everything below was established on 2026-07-28 against **Claude Code 2.1.220**. 
 | A skill body persists for the whole session and is never re-read  | **documented** | Claude Code's docs. Compaction keeps the first 5,000 tokens each, sharing a 25,000-token budget |
 | Gemini CLI prompts for consent, naming the directory it will access | **documented** | Its docs. It also adds the folder structure to context                                        |
 | There is **no `.skill` package format**                           | **probed**     | Every `.skill` string in the binary is a property accessor. `skill package` and `unpackaged` return zero hits |
-| A `.skill` file is a ZIP under another name, and the web upload wants `.zip` | **documented** | Both names circulate for the same bytes. The standing advice for a file arriving as `.skill` is to rename it to `.zip` before uploading at Settings, Capabilities, Skills. Checked 2026-07-28 |
+| A `.skill` file is a ZIP under another name | **probed** | The packager writes one with `zipfile` and reads it back with `zipfile`. The extension is a label on ZIP bytes |
+| The claude.ai upload wants the `.zip` extension | **unverified** | Circulating advice rather than a primary source, and not reproducible from here: it is a web interface no probe in this repository can reach. Graded rather than promoted. Recorded 2026-07-28 |
 | The ZIP is the only install path that needs packaging at all      | **documented** | The command-line tools read directories. Packaging exists for the web upload and for handing someone one file |
 
 ---
@@ -75,10 +78,13 @@ Everything below was established on 2026-07-28 against **Claude Code 2.1.220**. 
 | A whitespace-bounded at-token is a live import            | **probed** | It is the mechanism the routers use, so it is live by demonstration                               |
 | `` !`command` `` is **inert** in `CLAUDE.md`              | **probed** | A router carrying one returned the literal source text, not command output                        |
 | `` !`command` `` is **live** in `SKILL.md`               | **documented** | Anthropic's own first-skill example uses it to inline `git diff` output before the model sees the file |
-| A SessionStart hook's output is truncated at about 2 KB   | **probed** | A 2,034-byte payload survived whole; a 15,480-byte one was cut between markers at 1,806 and 2,064 |
+| Hook stdout passes through **whole up to 10,000 characters** | **probed** | Bisected on 2.1.220 with tools disabled: 9,999 and 10,000 arrived complete, 10,001 did not |
+| Beyond that it is **replaced**, not trimmed                | **probed** | 10,001 and 15,024 both returned a `<persisted-output>` block: "Output too large (14.7KB)", a file path, and a 2 KB preview |
 
 > [!IMPORTANT]
-> **That last row was first recorded as 10,000 characters, and was wrong by a factor of five in the direction that made a rejected design look better than it was.** It is the reason this file grades its rows.
+> **That pair of rows has been wrong twice, in both directions, and the second time was the worse one.** It was first recorded as 10,000 characters, which is correct. It was then "corrected" to about 2 KB, because the 2 KB preview *inside* the replacement block was read as the threshold itself. A confident correction that replaces a right answer with a wrong one is harder to catch than an original error, because it arrives wearing the clothes of a fix.
+>
+> The re-probe that settled it ran with the Read, Bash, Glob and Grep tools disabled. Without that, the model reads the persisted file the notice points at and reports the full payload as though it had arrived in context, which is how "15,024 characters passed through untruncated" was recorded elsewhere in this repository. **The probe has to be unable to cheat, or it measures the wrong thing and says so confidently.**
 
 ---
 
