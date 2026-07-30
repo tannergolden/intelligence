@@ -352,7 +352,7 @@ def check_file(path: Path, root: Path, taglines, footers, fail, warn):
                       "the diff, which is the point of using it: a rule hidden "
                       "this way is delivered to every repository and read by "
                       "every agent while being invisible to every reviewer.")
-        for found, american in british_hits(line):
+        for found, american in british_hits(CODE_SPAN_RE.sub(" ", line)):
             fail(rel, f"line {n}: {found!r} is the British spelling; this "
                       f"repository is American throughout, matching the "
                       f"publisher it is built alongside. Write {american!r}.")
@@ -580,7 +580,7 @@ def check_tree(root: Path, fail, skip, vendored=frozenset()):
                           f"U+{ord(m.group()):04X} at column {m.start() + 1}. "
                           "In an executable file or a workflow this is the "
                           "shape nobody catches by reading the diff.")
-            for found, american in british_hits(line):
+            for found, american in british_hits(CODE_SPAN_RE.sub(" ", line)):
                 fail(rel, f"line {n}: {found!r} is the British spelling. "
                           f"Write {american!r}.")
 
@@ -1012,6 +1012,9 @@ A tilde fence is a fence too, and nothing inside one is a claim either:
 
 Prose may name the `<details>` element without opening one, and may show
 `![](./neither.png)` inside a code span without failing the alt-text rule.
+
+Naming a third-party field the document does not control is a citation
+rather than a spelling: `colour` is what that API calls it.
 
 A link target is a URL rather than a path: [ampersand](Ampersand-%26-Test.txt)
 resolves, and so does [the escaped form](Ampersand-&amp;-Test.txt).

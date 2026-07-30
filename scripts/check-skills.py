@@ -458,7 +458,7 @@ def scan_content(label: str, text: str, declared: bool, fail, warn):
             fail(f"{label}:{n}: invisible character U+{ord(match.group()):04X} at "
                  f"column {match.start() + 1}. Nobody can catch this by reading "
                  "the diff, which is why it is checked here.")
-        for found, american in british_hits(line):
+        for found, american in british_hits(CODE_SPAN_RE.sub(" ", line)):
             fail(f"{label}:{n}: {found!r} is the British spelling; this "
                  f"repository is American throughout. Write {american!r}.")
         if not declared:
@@ -839,6 +839,8 @@ def build_compliant(root: Path):
         "Check the repository's own `README.md` and `Makefile` first: those\n"
         "live in the tree this skill runs in, not in the skill.\n\n"
         "To name a file without importing it, write `@README` in backticks.\n\n"
+        "The upstream API spells the field `colour`, and naming it is a\n"
+        "citation rather than a spelling choice this skill gets to make.\n\n"
         "List your own resources like this:\n\n"
         "```markdown\n"
         "- `references/not-shipped.md` - read this if X.\n"

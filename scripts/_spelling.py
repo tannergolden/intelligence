@@ -19,7 +19,9 @@ rule cannot fire on correct text:
     and this module's own importer names it to exempt exactly that.
   * `towards`, `amongst` and `burnt` are absent. All three are ordinary in
     American English, so flagging them would be a house style rather than a
-    consistency rule.
+    consistency rule. `amongst` was in the table anyway, three lines below
+    the sentence saying it must not be, and it is the entry that sorts first
+    so it was also the canary both self-tests reached for.
 
 Adding a pair is cheap. Adding one that fires on correct text is how a gate
 gets switched off, so the bar is that the British form has no American reading.
@@ -71,7 +73,7 @@ BRITISH_SPELLINGS = {
     "defence": "defense", "offence": "offense", "pretence": "pretense",
     "practise": "practice", "practised": "practiced",
     "fulfil": "fulfill", "fulfilment": "fulfillment",
-    "whilst": "while", "amongst": "among",
+    "whilst": "while",
     "learnt": "learned", "spelt": "spelled",
     "programme": "program", "programmes": "programs",
     "grey": "gray",
