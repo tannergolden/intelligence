@@ -100,6 +100,14 @@ FENCE_RE = re.compile(r"\A\s*(`{3,}|~{3,})\s*([A-Za-z0-9_+-]*)")
 # still read every column of every line.
 CODE_SPAN_RE = re.compile(r"`[^`\n]+`")
 
+# Two more places a tag NAME appears without being a tag. An HTML comment is
+# the note somebody leaves while working toward compliance, and link text is
+# prose that happens to be linked. Both used to open a `<details>` block that
+# never closed, which silenced the long-fence warning for the rest of the file.
+# Single-line forms only, which is what both are written as here.
+HTML_COMMENT_RE = re.compile(r"<!--.*?-->")
+LINK_TEXT_RE = re.compile(r"\[([^\]]*)\]\(")
+
 # --- this repository's own product budget -----------------------------------
 # NOT part of the styling standard, and deliberately kept beside it anyway,
 # because this is the only checker that already reads these files.
@@ -270,8 +278,15 @@ def scan_fences(rel: str, lines, fail, warn):
         if fence is not None:
             fenced.add(n)
         if fence is None:
-            # Code spans first: a mention is not an element.
-            markup = CODE_SPAN_RE.sub(" ", line)
+            # A MENTION IS NOT AN ELEMENT, and there are three ways to
+            # mention one. Code spans were blanked from the start; an HTML
+            # comment and link text were not, so `<!-- TODO: wrap this in a
+            # <details> block later -->` opened a block that never closed and
+            # every fence below it stopped being measured. The gate went quiet,
+            # and quiet is indistinguishable from clean.
+            markup = HTML_COMMENT_RE.sub(" ", line)
+            markup = LINK_TEXT_RE.sub("(", markup)
+            markup = CODE_SPAN_RE.sub(" ", markup)
             depth += markup.count("<details")
             depth = max(0, depth - markup.count("</details>"))
             m = FENCE_RE.match(line)
@@ -1059,7 +1074,11 @@ $ make lint
 [nowhere](./absent.md)
 
 Naming the `<details>` element in prose must not open one, or the long fence
-below stops being reported and the gate goes quiet:
+below stops being reported and the gate goes quiet. Neither must naming it in
+an HTML comment, which is exactly the note somebody leaves while working
+toward compliance:
+
+<!-- TODO: wrap the block below in a <details> block later -->
 
 ```text
 """ + "padding\n" * 25 + """```
