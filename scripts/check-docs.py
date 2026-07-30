@@ -260,6 +260,17 @@ def parse_frontmatter(text: str):
         key, value = key.strip(), value.strip()
         if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
             value = value[1:-1]
+        # A KEY WRITTEN TWICE IS NOT A STYLE PROBLEM, and the skill checker
+        # has refused it from the day it was written. This parser kept the
+        # last one silently, on the only three files in this repository that
+        # are copied verbatim into somebody else's tree, so the description a
+        # reviewer read in the diff was not necessarily the one anything
+        # loaded. Same hazard, same reasoning, one checker apart.
+        if key in fields:
+            return None, 0, (
+                f"frontmatter line {n + 1} sets `{key}` a second time. The "
+                "last one wins silently, so the value a reviewer sees is not "
+                "necessarily the value that is read.")
         fields[key] = value
     return fields, close + 1, None
 
@@ -1264,6 +1275,23 @@ def self_test() -> int:
             return 1
         settings.unlink()
         (hook / "skill-router.sh").unlink()
+
+        # A key set twice. The skill checker refuses this and says why; the
+        # document parser kept the last one silently, on the three files that
+        # are delivered into other people's repositories.
+        (root / "Twice.md").write_text(
+            GOOD.replace("description: 'A document that satisfies every rule "
+                         "this checker enforces.'",
+                         "description: 'The one a reviewer reads in the diff.'\n"
+                         "description: 'The one that actually loads.'"),
+            encoding="utf-8")
+        _, twice, _ = check_root(root, docs_only=True)
+        fired = any("a second time" in p["message"] for p in twice
+                    if p["file"] == "Twice.md")
+        print(f"  {'fired    ' if fired else 'DID NOT  '} error: a second time")
+        if not fired:
+            missing.append("error: a second time")
+        (root / "Twice.md").unlink()
 
         # Mojibake is diagnosed as mojibake, and not also as something else.
         ch, want, unwanted = SELF_TEST_MOJIBAKE
