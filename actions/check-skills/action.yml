@@ -88,12 +88,45 @@ runs:
           exit "$status"
         fi
 
+        # ⚠️ CHECKED BEFORE THE CHECKER RUNS, and the default input makes this
+        # the likeliest way to use the action wrong. `check-skills.py` writes
+        # "not a directory" to stderr and exits 2 with an EMPTY stdout, so the
+        # two JSON parses below used to crash on a zero-byte report. There is
+        # no `-e` here, deliberately, so neither crash stopped anything: the
+        # consumer got two twelve-line tracebacks naming only `<string>`, the
+        # one diagnosable line buried between them, `errors` and `warnings`
+        # published as the EMPTY STRING against an `outputs:` block promising a
+        # count, and a summary table with blank cells that reads as "nothing
+        # found".
+        if [ ! -d "$SKILLS_PATH" ]; then
+          echo "errors=" >> "$GITHUB_OUTPUT"
+          echo "warnings=" >> "$GITHUB_OUTPUT"
+          echo "::error title=Check Skills::'${SKILLS_PATH}' is not a directory. Point \`path\` at the directory holding one subdirectory per skill; the default is 'skills'."
+          {
+            echo "### 🧪 Skill check: \`${SKILLS_PATH}\`"
+            echo ""
+            echo "Not a directory. Nothing was checked."
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+        fi
+
         report="${RUNNER_TEMP}/check-skills.json"
         status=0
         python3 "${SCRIPT}" "$SKILLS_PATH" --json > "$report" || status=$?
 
-        errors=$(python3 -c 'import json,sys; print(len(json.load(open(sys.argv[1]))["errors"]))' "$report")
-        warnings=$(python3 -c 'import json,sys; print(len(json.load(open(sys.argv[1]))["warnings"]))' "$report")
+        # A COUNT OR NOTHING, NEVER A BLANK THAT READS AS ZERO. If the report
+        # is unparseable for any reason the guard above did not anticipate,
+        # these stay empty and the step fails, rather than publishing a value
+        # a consumer's `!= '0'` comparison would silently pass.
+        errors=$(python3 -c 'import json,sys; print(len(json.load(open(sys.argv[1]))["errors"]))' "$report" 2>/dev/null || true)
+        warnings=$(python3 -c 'import json,sys; print(len(json.load(open(sys.argv[1]))["warnings"]))' "$report" 2>/dev/null || true)
+        if [ -z "$errors" ] || [ -z "$warnings" ]; then
+          echo "errors=" >> "$GITHUB_OUTPUT"
+          echo "warnings=" >> "$GITHUB_OUTPUT"
+          echo "::error title=Check Skills::The checker produced no readable report for '${SKILLS_PATH}', so the counts below cannot be trusted."
+          python3 "${SCRIPT}" "$SKILLS_PATH" || true
+          exit "${status:-1}"
+        fi
         echo "errors=${errors}" >> "$GITHUB_OUTPUT"
         echo "warnings=${warnings}" >> "$GITHUB_OUTPUT"
 
