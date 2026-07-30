@@ -441,7 +441,17 @@ def check_file(path: Path, root: Path, taglines, footers, fail, warn):
     # The footer is the LAST centered block, not the last 25 lines. A fixed
     # window is a guess about how long a footer is, and it reads whatever
     # content happens to sit above one that runs long.
-    centered = [i for i, ln in enumerate(lines) if '<div align="center">' in ln]
+    # FENCED LINES EXCLUDED, for the same reason the Heading 1 scan excludes
+    # them twenty lines above. A document that TEACHES this format has to be
+    # able to show a footer, and a fenced example is not a second footer: it
+    # used to become the last centered block, so the window slid past the real
+    # one and both footer rules stopped seeing it. A correct document was then
+    # reported as having no back-to-top link and no closing phrase, and the
+    # placeholder inside the example was what got recorded in the uniqueness
+    # registry. Third instance of this bug class in this function, after the
+    # fenced `# TITLE` and the `<details>` named in prose.
+    centered = [i for i, ln in enumerate(lines)
+                if '<div align="center">' in ln and (i + 1) not in fenced]
     tail = lines[centered[-1]:] if len(centered) > 1 else lines[-25:]
     if not any("[↑ Back to Top](#top)" in ln for ln in tail):
         fail(rel, "the footer carries no `[↑ Back to Top](#top)` link.")
@@ -1000,6 +1010,21 @@ resolves, and so does [the escaped form](Ampersand-&amp;-Test.txt).
 [↑ Back to Top](#top)
 
 </div>
+
+---
+
+## 📐 Appendix
+
+A document that teaches this format has to be able to show it, and the
+template below is a fenced example rather than a second footer:
+
+```markdown
+<div align="center">
+
+**Your closing phrase, which is unique to your document.**
+
+</div>
+```
 """
 
 # The em dash is BUILT FROM ITS CODEPOINT so this file never contains the
