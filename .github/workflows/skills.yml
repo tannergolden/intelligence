@@ -33,6 +33,11 @@ on:
       - 'skills/**'
       - 'actions/check-skills/**'
       - 'scripts/check-skills.py'
+      # The modules it imports. Without these a change to the shared character
+      # class or the spelling table did not run the skill gate or its negative
+      # test, and only ci.yml, which has no path filter, covered the gap.
+      - 'scripts/_charclasses.py'
+      - 'scripts/_spelling.py'
       - '.github/workflows/skills.yml'
   workflow_dispatch:
 

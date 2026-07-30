@@ -174,7 +174,6 @@ IMPORT_LINE = "@./AGENTS.md"
 # verbatim up to 10,000 characters and is replaced by a preview beyond that.
 HOOK_SCRIPTS = (".claude/hooks/skill-router.sh", ".gemini/hooks/skill-router.sh")
 HOOK_OUTPUT_BUDGET = 256          # bytes, against the fixture below
-HOOK_FIXTURE_SKILLS = ("alpha", "bravo", "charlie")
 # EACH DIRECTORY CONTRIBUTES A UNIQUE NAME, plus one they all share. An earlier
 # fixture put the same three skills everywhere, so a router that stopped
 # reading a directory still produced a complete list and the gate saw nothing.
@@ -705,7 +704,7 @@ def check_delivered_budget(root: Path, fail, warn):
                        "is read in every session of every repository that "
                        "receives it, so a line added here is paid by everyone "
                        "forever. Remove something, move it into a document only "
-                       f"read when needed, or raise the budget in {__file__.rsplit('/', 1)[-1]} "
+                       f"read when needed, or raise the budget in {Path(__file__).name} "
                        "as a deliberate commit somebody reviews.")
         elif size > budget * DELIVERED_WARN_AT:
             warn(name, f"is {size} bytes, past {int(DELIVERED_WARN_AT * 100)}% of "
@@ -723,7 +722,6 @@ def check_hooks(root: Path, fail, warn):
     in every repository that received it.
     """
     import subprocess
-    import tempfile
 
     for rel in HOOK_SCRIPTS:
         path = root / rel
@@ -795,8 +793,9 @@ def check_hooks(root: Path, fail, warn):
                           "nothing at all.")
 
         if size > HOOK_OUTPUT_BUDGET:
-            fail(rel, f"prints {size} bytes for {len(HOOK_FIXTURE_SKILLS)} "
-                      f"skills, against a budget of {HOOK_OUTPUT_BUDGET}. This "
+            fail(rel, f"prints {size} bytes for "
+                      f"{len(HOOK_EXPECTED.get(rel, ()))} skills, against a "
+                      f"budget of {HOOK_OUTPUT_BUDGET}. This "
                       "runs on EVERY prompt, so that is charged again on every "
                       "turn of every session. Name the skills and stop; the "
                       "model already holds their descriptions.")
