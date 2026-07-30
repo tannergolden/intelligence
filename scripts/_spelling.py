@@ -79,12 +79,25 @@ BRITISH_SPELLINGS = {
     "grey": "gray",
 }
 
+# CASE-SENSITIVE, AND THAT IS A TRADE RATHER THAN AN OVERSIGHT. Matching
+# case-insensitively fired on proper nouns a document cannot spell differently:
+# `Centre for Internet Security` and `UN Environment Programme` are
+# organization names, and the only ways to satisfy the gate were to misquote
+# the source or to delete the citation. There is no way to tell those from a
+# sentence-initial `Colour` by looking at the word, so one of the two has to
+# give.
+#
+# The lowercase form is what this keeps, because the two failures are not
+# priced the same. A missed sentence-initial spelling is the author's own text,
+# where every other instance in the document still fails and the fix is theirs
+# to make. A flagged proper noun is somebody else's name, which nobody can fix,
+# and this file's own bar is that a rule firing on correct text is a rule
+# somebody switches off.
 BRITISH_RE = re.compile(
-    r"\b(" + "|".join(sorted(BRITISH_SPELLINGS, key=len, reverse=True)) + r")\b",
-    re.IGNORECASE)
+    r"\b(" + "|".join(sorted(BRITISH_SPELLINGS, key=len, reverse=True)) + r")\b")
 
 
 def british_hits(line: str):
     """Every British spelling on one line, as (found, american) pairs."""
-    return [(m.group(), BRITISH_SPELLINGS[m.group().lower()])
+    return [(m.group(), BRITISH_SPELLINGS[m.group()])
             for m in BRITISH_RE.finditer(line)]

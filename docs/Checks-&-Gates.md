@@ -83,7 +83,7 @@ Link targets are read as URLs rather than paths, so `Scope-%26-Boundaries.md` an
 
 Exempt from the tree scan: submodules, `dist/`, anything that is not valid UTF-8, and the verbatim third-party text the law itself exempts, which is license files and lockfiles.
 
-**Spelling is a pairs list, not a dictionary.** Both spellings are correct English, so the shared workflow's spell check sees nothing wrong; what is wrong is the inconsistency with the sibling publisher, and only a list can judge that. The list omits every word with an American reading, `analyses` and `towards` among them, because a rule that fires on correct text is a rule somebody switches off. It runs in **both** checkers, since `skills/` is outside the document scan and nothing else ever reads a skill's prose for this.
+**Spelling is a pairs list, not a dictionary.** Both spellings are correct English, so the shared workflow's spell check sees nothing wrong; what is wrong is the inconsistency with the sibling publisher, and only a list can judge that. The list omits every word with an American reading, `analyses` and `towards` among them, because a rule that fires on correct text is a rule somebody switches off. It matches **case-sensitively** for the same reason: `Centre for Internet Security` and `UN Environment Programme` are organization names no citation can spell differently, and nothing distinguishes them from a sentence-initial `Colour` by looking at the word. The residual is that one missed sentence-initial spelling, which is the author's own text and where every other instance in the document still fails. It runs in **both** checkers, since `skills/` is outside the document scan and nothing else ever reads a skill's prose for this.
 
 ### 🗜️ The Packager
 
