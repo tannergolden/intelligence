@@ -35,6 +35,21 @@ set -eu
 
 root="${GEMINI_PROJECT_DIR:-.}"
 found=""
+seen=""
+kept=0
+total=0
+
+# THE CEILING IS IN THE SCRIPT, NOT ONLY IN THE GATE. `check-docs.py` measured
+# the output against a three-skill fixture, which recorded a number rather than
+# a bound: a repository with forty skills was billed nearly a kilobyte on every
+# turn, forever, and no gate anywhere saw it because the fixture never grew.
+# A cue is a list of names, and a list this long has stopped being a cue.
+#
+# BOUNDED ON LENGTH RATHER THAN COUNT, because bytes are what this costs and
+# what the gate measures. A count cap still lets twelve 64-character names,
+# which the specification permits, blow the budget on their own. The limit is
+# lower than the gate's because the JSON envelope below is charged too.
+MAX=140
 
 for base in .gemini/skills .agents/skills; do
 	for dir in "$root"/"$base"/*/; do
@@ -47,12 +62,26 @@ for base in .gemini/skills .agents/skills; do
 		# all. Anything outside the specification's name class is not a skill.
 		case "$name" in *[!A-Za-z0-9._-]*) continue ;; esac
 		# The same skill can sit in both directories. Name it once.
-		case ", $found," in *", $name,"*) continue ;; esac
-		found="${found}${found:+, }${name}"
+		# TESTED AGAINST `seen` RATHER THAN `found`, because `found` stops
+		# growing at the cap: a duplicate past that point would not be found
+		# there and would be counted twice in the total.
+		case ", $seen," in *", $name,"*) continue ;; esac
+		seen="${seen}${seen:+, }${name}"
+		total=$((total + 1))
+		candidate="${found}${found:+, }${name}"
+		[ "${#candidate}" -gt "$MAX" ] && continue
+		kept=$((kept + 1))
+		found="$candidate"
 	done
 done
 
 [ -n "$found" ] || exit 0
+
+# SAY WHAT WAS LEFT OUT. A truncated list that looks complete is worse than a
+# long one: the model would take the absence of a name as evidence.
+if [ "$total" -gt "$kept" ]; then
+	found="${found}, and $((total - kept)) more"
+fi
 
 # The enumeration and nothing else, wrapped in the only envelope the model
 # ever sees. An imperative attached to it would assert more than the list

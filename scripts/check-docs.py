@@ -183,6 +183,13 @@ HOOK_EXPECTED = {
 # shown to the user and never to the model. Shape is therefore correctness,
 # not neatness, and it is the check whose absence let an inert hook ship.
 HOOK_JSON_REQUIRED = (".gemini/hooks/skill-router.sh",)
+# THE THREE-SKILL FIXTURE PROVES A NUMBER, NOT A BOUND. Three names fit the
+# budget and forty do not: both routers printed over 900 bytes for forty, on
+# every turn, forever, in a repository this publisher never sees. So the
+# ceiling is asserted against a fixture large enough that only a router which
+# actually truncates can pass, which is the difference between measuring the
+# cost and bounding it.
+HOOK_FIXTURE_MANY = 40
 
 # The registration beside each router, and nothing here used to read it.
 # `check_hooks` executes the script by hardcoded path, which proves the script
@@ -778,6 +785,28 @@ def check_hooks(root: Path, fail, warn):
                       "runs on EVERY prompt, so that is charged again on every "
                       "turn of every session. Name the skills and stop; the "
                       "model already holds their descriptions.")
+
+        # THE SAME BUDGET, AGAINST A REPOSITORY THAT USES THE FEATURE HARD.
+        with tempfile.TemporaryDirectory() as scratch:
+            for base in HOOK_FIXTURE_LAYOUT:
+                for i in range(HOOK_FIXTURE_MANY):
+                    d = Path(scratch) / base / f"skill-name-number-{i:02d}"
+                    d.mkdir(parents=True, exist_ok=True)
+                    (d / "SKILL.md").write_text("---\n", encoding="utf-8")
+            env = {"PATH": "/usr/bin:/bin",
+                   "CLAUDE_PROJECT_DIR": scratch, "GEMINI_PROJECT_DIR": scratch}
+            many = subprocess.run(["sh", str(path)], capture_output=True,
+                                  text=True, env=env)
+            many_size = len(many.stdout.encode("utf-8"))
+        if many_size > HOOK_OUTPUT_BUDGET:
+            fail(rel, f"prints {many_size} bytes for {HOOK_FIXTURE_MANY} "
+                      f"skills, against a budget of {HOOK_OUTPUT_BUDGET}. The "
+                      "budget was only ever measured against three, so it "
+                      "recorded a number rather than a ceiling: this runs on "
+                      "EVERY prompt of every session in every repository that "
+                      "received it, and nothing in the script stops the list "
+                      "growing with the number of skills installed. Name a "
+                      "bounded number of them and say how many were left out.")
 
         # A router that says nothing when skills ARE present is the failure
         # that looks exactly like a working one.

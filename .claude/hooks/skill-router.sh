@@ -27,6 +27,19 @@ set -eu
 
 root="${CLAUDE_PROJECT_DIR:-.}"
 found=""
+kept=0
+total=0
+
+# THE CEILING IS IN THE SCRIPT, NOT ONLY IN THE GATE. `check-docs.py` measured
+# the output against a three-skill fixture, which recorded a number rather than
+# a bound: a repository with forty skills was billed over 900 bytes on every
+# turn, forever, and no gate anywhere saw it because the fixture never grew.
+# A cue is a list of names, and a list this long has stopped being a cue.
+#
+# BOUNDED ON LENGTH RATHER THAN COUNT, because bytes are what this costs and
+# what the gate measures. A count cap still lets twelve 64-character names,
+# which the specification permits, blow the budget on their own.
+MAX=140
 
 for dir in "$root"/.claude/skills/*/; do
 	[ -f "$dir/SKILL.md" ] || continue
@@ -36,10 +49,20 @@ for dir in "$root"/.claude/skills/*/; do
 	# every prompt. Anything outside the specification's own name character
 	# class is not a skill name and is not repeated.
 	case "$name" in *[!A-Za-z0-9._-]*) continue ;; esac
-	found="${found}${found:+, }${name}"
+	total=$((total + 1))
+	candidate="${found}${found:+, }${name}"
+	[ "${#candidate}" -gt "$MAX" ] && continue
+	kept=$((kept + 1))
+	found="$candidate"
 done
 
 [ -n "$found" ] || exit 0
+
+# SAY WHAT WAS LEFT OUT. A truncated list that looks complete is worse than a
+# long one: the model would take the absence of a name as evidence.
+if [ "$total" -gt "$kept" ]; then
+	found="${found}, and $((total - kept)) more"
+fi
 
 # The enumeration and nothing else. An imperative attached to it would assert
 # more than the list supports: this sees project-level skills only, while both
