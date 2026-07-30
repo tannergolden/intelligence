@@ -179,19 +179,50 @@ UNREFERENCED_OK_PREFIX = "evals/"
 IGNORED_PARTS = ("__pycache__", ".git", ".DS_Store")
 IGNORED_SUFFIXES = (".pyc", ".pyo")
 
-FENCE_LINE_RE = re.compile(r"\A\s*`{3,}")
+# BOTH FENCE CHARACTERS, AND THE INFO STRING, matching check-docs.py exactly.
+# CommonMark defines `~~~` alongside the backtick form, and a checker knowing
+# only one reads the contents of the other as live prose: a fenced example
+# naming files it does not ship got its references resolved, and a fenced
+# import token was reported as live. The published action was failing correct
+# skills in other people's repositories over it.
+FENCE_RE = re.compile(r"\A\s*(`{3,}|~{3,})\s*([A-Za-z0-9_+-]*)")
 
 
-def strip_fences(text: str) -> str:
-    """Blank every line inside a fenced code block, keeping line numbering."""
-    out, inside = [], False
-    for line in text.split("\n"):
-        if FENCE_LINE_RE.match(line):
-            inside = not inside
-            out.append("")
+def strip_fences(text: str):
+    """Blank every line inside a fenced code block, keeping line numbering.
+
+    Returns `(blanked, unclosed)`, where `unclosed` is the line number of a
+    fence that never closes, or None.
+
+    PAIRED, NOT TOGGLED, and the difference is two separate defects. A toggle
+    flips on any fence line, so an inner ``` opener inside a ```` block reads
+    as a closer and the nested example's content is scanned as live prose,
+    which is the shape any skill teaching SKILL.md authoring writes. And a
+    single unclosed fence inverts parity for the whole remainder of the file,
+    so every import token, missing reference and hazard after it is blanked
+    and reported as nothing.
+
+    That second one is why the unclosed fence is returned rather than
+    swallowed. Silence is the only failure indistinguishable from a clean
+    skill, so the caller reports it instead of quietly reading less.
+    """
+    out, fence = [], None
+    for n, line in enumerate(text.split("\n"), 1):
+        m = FENCE_RE.match(line)
+        if fence is None:
+            if m:
+                fence = (n, m.group(1))
+                out.append("")
+            else:
+                out.append(line)
             continue
-        out.append("" if inside else line)
-    return "\n".join(out)
+        out.append("")
+        # A closer uses the SAME character, runs at least as long, and carries
+        # no info string.
+        if (m and m.group(1)[0] == fence[1][0]
+                and len(m.group(1)) >= len(fence[1]) and not m.group(2)):
+            fence = None
+    return "\n".join(out), (fence[0] if fence else None)
 
 
 MD_LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
@@ -366,7 +397,7 @@ def referenced_paths(body: str, skill_dir: Path):
     filename. Note this does NOT relax the content-hazard rules: those still
     scan every line, because an at-token inside a fence still imports.
     """
-    body = strip_fences(body)
+    body, _ = strip_fences(body)
     found = set()
     for match in MD_LINK_RE.finditer(body):
         target = match.group(1).split("#")[0]
@@ -408,7 +439,14 @@ def scan_content(label: str, text: str, declared: bool, fail, warn):
     still scanned on every line, fenced or not, because those are hazards to a
     reader rather than to a parser.
     """
-    fenced = strip_fences(text).split("\n")
+    blanked, unclosed = strip_fences(text)
+    if unclosed is not None:
+        fail(f"{label}:{unclosed}: this code fence is never closed. Everything "
+             "below it is read as fenced, so every import token, missing "
+             "reference and portability hazard in the rest of the file is "
+             "silently skipped. A gate that goes quiet looks exactly like one "
+             "with nothing to report.")
+    fenced = blanked.split("\n")
     for n, line in enumerate(text.split("\n"), 1):
         for match in AT_RE.finditer(CODE_SPAN_RE.sub(" ", fenced[n - 1])):
             fail(f"{label}:{n}: {match.group()!r} is a live import token in every "
@@ -755,6 +793,7 @@ SELF_TEST_ERRORS = (
     # terminator is read the way YAML reads it. See `hidden-keys` below.
     "read by Claude Code and ignored by Gemini CLI",
     "is a symlink",
+    "is never closed",
 )
 
 # WARNINGS ARE ASSERTED TOO, and for the same reason as the errors. The rules
@@ -805,6 +844,19 @@ def build_compliant(root: Path):
         "- `references/not-shipped.md` - read this if X.\n"
         "@some/import.md\n"
         "```\n\n"
+        "A tilde fence is a fence too, and nothing inside one is a claim:\n\n"
+        "~~~markdown\n"
+        "- `references/also-not-shipped.md` - read this if Y.\n"
+        "@another/import.md\n"
+        "~~~\n\n"
+        "Showing a fenced example inside a fenced example needs a longer\n"
+        "opener, and the inner one is content rather than a closer:\n\n"
+        "````markdown\n"
+        "```text\n"
+        "- `references/still-not-shipped.md` - read this if Z.\n"
+        "@a/third/import.md\n"
+        "```\n"
+        "````\n\n"
         "- `references/real.md` - read this when you need the real one.\n",
         encoding="utf-8")
     (d / "LICENSE.txt").write_text(
@@ -815,7 +867,7 @@ def build_compliant(root: Path):
 
 
 def build_hostile(root: Path):
-    """Eight deliberately broken skills, covering every asserted rule."""
+    """Nine deliberately broken skills, covering every asserted rule."""
     d = root / "no-manifest"
     d.mkdir()
     (d / "stray.md").write_text("No SKILL.md here, so nothing discovers this.\n",
@@ -879,6 +931,27 @@ def build_hostile(root: Path):
         "description: Whatever the reader keeps.\n"
         "---\n\n"
         "The body is irrelevant: this never parses.\n",
+        encoding="utf-8")
+
+    # AN UNCLOSED FENCE USED TO BE THE QUIETEST DEFECT HERE. Under a toggle it
+    # inverts parity for the rest of the file, so every hazard below it is
+    # blanked and reported as nothing: the import token and the missing
+    # reference in this fixture both went unreported. Silence is the one
+    # failure indistinguishable from a clean skill, so the fence itself has to
+    # be the error.
+    d = root / "unclosed-fence"
+    d.mkdir()
+    (d / "SKILL.md").write_text(
+        "---\n"
+        "name: unclosed-fence\n"
+        "description: Use this when a fence is opened and never closed, and "
+        "everything after it stops being read.\n"
+        "---\n\n"
+        "An example that was never closed:\n\n"
+        "```text\n"
+        "some sample\n\n"
+        "Then ordinary prose carrying a live import: @real/import.md\n"
+        "and a reference this skill does not ship: `references/gone.md`.\n",
         encoding="utf-8")
 
     # A SYMLINK DEFEATS THE ESCAPE RULE, because that rule reads the spelling
