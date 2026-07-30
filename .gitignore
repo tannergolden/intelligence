@@ -1,7 +1,9 @@
-# Python bytecode. The only Python here is stdlib-only and runs from source,
-# so a stray __pycache__ is always local noise.
+# Python bytecode and linter cache. The only Python here is stdlib-only and
+# runs from source, so a stray __pycache__ is always local noise, and the
+# cache the linter writes beside it is the same kind of thing.
 __pycache__/
 *.py[cod]
+.ruff_cache/
 
 # Skill eval output. `evals/evals.json` is authored and committed; the
 # grading and benchmark files beside it are run artifacts that record one

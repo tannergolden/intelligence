@@ -556,7 +556,8 @@ def check_file(path: Path, root: Path, taglines, footers, fail, warn):
 
 
 # Directories that are output or machinery rather than authored text.
-TREE_SKIP_DIRS = (".git", "dist", "node_modules", "__pycache__", ".venv")
+TREE_SKIP_DIRS = (".git", "dist", "node_modules", "__pycache__", ".venv",
+                  ".ruff_cache")
 
 # Verbatim third-party text, exempt from the typography rule by the law itself:
 # "license files, vendored assets, lockfiles". A hyphen normalized inside one

@@ -1,0 +1,64 @@
+# --- This Repository's Own Python Lint ---
+#
+# 🐍 Lint Python
+#
+# Purpose: the gate on the three programs that decide what ships.
+#
+# ⚠️ THERE WAS NO STATIC ANALYSIS AT ALL. Three thousand lines of Python
+# decide whether a skill is publishable, whether a document satisfies the
+# styling standard, and what bytes go into a release archive, and nothing read
+# them but a person. The `# noqa: E402` directives in both checkers are the
+# tell: the code was written for a linter that had never been run.
+#
+# ⚠️ THIS CANNOT BE A `make` TARGET, and that is deliberate rather than
+# awkward. `make setup` says there is nothing to install, and the reason is
+# load-bearing: the skill checker ships as a composite action into other
+# people's continuous integration, where a dependency resolution is a network
+# call, a supply chain and a failure mode at once. Adding a tool to `make lint`
+# would make that claim false for everyone who runs it.
+#
+# So this joins spelling and link checking as a gate `make` cannot run, which
+# Checks & Gates already describes as a category. The cost is stated there: a
+# clean `make lint-docs` is not the same claim as a clean CI run.
+#
+# ---
+
+name: '🐍 Lint Python'
+
+on:
+  push:
+    branches: ['Development']
+    paths:
+      - '**.py'
+      - '.github/workflows/lint-python.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  ruff:
+    name: '🐍 Ruff'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read # read the source
+    steps:
+      - name: '🛡️ Harden Runner'
+        uses: tannergolden/standards/actions/harden@a6ee0c23a1614b75a69353190dd7dd67faf59101 # v1.6.0
+        with:
+          egress-policy: audit
+          notice: '🐍 Python lint: static analysis over the checkers and the packager.'
+
+      - name: '📂 Checkout'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: '🐍 Ruff'
+        uses: astral-sh/ruff-action@4919ec5cf1f49eff0871dbcea0da843445b837e6 # v3.6
+        with:
+          args: 'check --output-format github'

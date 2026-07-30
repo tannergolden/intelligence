@@ -248,7 +248,10 @@ def self_test() -> int:
               not any(n.startswith("fixture/evals/") for n in names), str(names))
 
         second = pack(src, root / "b", include_evals=False, extension="zip")
-        digest = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+
+        def digest(path):
+            return hashlib.sha256(path.read_bytes()).hexdigest()
+
         check("packing unchanged source twice is byte-identical",
               digest(first) == digest(second))
 
