@@ -160,6 +160,32 @@ HOOK_EXPECTED = {
 # not neatness, and it is the check whose absence let an inert hook ship.
 HOOK_JSON_REQUIRED = (".gemini/hooks/skill-router.sh",)
 
+# The registration beside each router, and nothing here used to read it.
+# `check_hooks` executes the script by hardcoded path, which proves the script
+# and says nothing about whether anything runs it: a command pointing at a
+# renamed file ships a router that is installed, silent, and indistinguishable
+# from one with no skills to name. That is the same shape as the Gemini hook
+# that printed prose and injected nothing while passing every gate.
+#
+# THE SECOND FAILURE IS WORSE THAN THE FIRST. The sync stub writes these two
+# files ONCE and never again, on purpose, because a settings file is where a
+# consuming team's own `permissions.deny` and hooks live. So unlike the
+# routers, which update on every sync, a bad one that lands cannot be
+# corrected by any publisher-side action. Moving the tag back does not reach
+# it. That makes these the only delivered files with no recall at all, which
+# is the argument for checking them hardest.
+DELIVERED_SETTINGS = {
+    ".claude/settings.json": ("UserPromptSubmit", ".claude/hooks/skill-router.sh"),
+    ".gemini/settings.json": ("BeforeAgent", ".gemini/hooks/skill-router.sh"),
+}
+# Keys a DELIVERED settings file may never carry, each already excluded in
+# prose. `permissions` belongs to the receiving repository, and Installation
+# says so where it explains why the sync will not overwrite these files;
+# shipping one would preempt a decision that is not this publisher's to make,
+# permanently. MCP configuration is named in Scope & Boundaries as something
+# that never lives here. A gate beats a rule: it fires every time.
+SETTINGS_BANNED_KEYS = ("permissions", "mcpServers", "mcp")
+
 # `_` as a space is rejected across the WHOLE tree, not just docs. These are
 # the names a platform or a language fixes, which cannot move at all.
 UNDERSCORE_OK = {
@@ -608,6 +634,15 @@ def check_hooks(root: Path, fail, warn):
     for rel in HOOK_SCRIPTS:
         path = root / rel
         if not path.is_file():
+            # A SKIP, NOT A PASS, AND IT USED TO BE SILENT. Renaming or
+            # deleting a router left this loop with nothing to check and
+            # nothing to say, so the gate on the only content that executes on
+            # somebody else's machine reported clean by having no subject.
+            # Only the release refused, and only because a separate loop tests
+            # the file is non-empty.
+            fail(rel, "is missing, but it is delivered into every consuming "
+                      "repository and registered by the settings file beside "
+                      "it. A gate with no subject is not a gate that passed.")
             continue
 
         syntax = subprocess.run(["sh", "-n", str(path)],
@@ -679,6 +714,64 @@ def check_hooks(root: Path, fail, warn):
                       "from a correct one until someone checks.")
 
 
+def check_settings(root: Path, fail):
+    """The delivered registration files, which nothing used to open.
+
+    Four things, and every one of them ships silently otherwise: a file that
+    is not JSON, a file registering an event the vendor does not fire, a
+    command naming a hook that is not in the tree, and a key that grants
+    something on the receiving side.
+    """
+    for rel, (event, hook) in sorted(DELIVERED_SETTINGS.items()):
+        path = root / rel
+        if not path.is_file():
+            continue
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            fail(rel, f"is not readable JSON: {exc}. This file is copied into "
+                      "other people's repositories and the vendor reads it at "
+                      "startup, so a syntax error here is a router that never "
+                      "registers and a settings file somebody has to repair "
+                      "by hand.")
+            continue
+        if not isinstance(data, dict):
+            fail(rel, "must hold a JSON object.")
+            continue
+
+        for key in SETTINGS_BANNED_KEYS:
+            if key in data:
+                fail(rel, f"may not carry `{key}`. A delivered settings file is "
+                          "written once into a consuming repository and never "
+                          "overwritten, so anything granted here cannot be "
+                          "withdrawn by moving a tag back or by any other "
+                          "publisher-side action. That decision belongs to the "
+                          "repository receiving it.")
+
+        hooks = data.get("hooks")
+        if not isinstance(hooks, dict) or event not in hooks:
+            fail(rel, f"registers no `{event}` hook, so the router beside it is "
+                      f"delivered and never runs. Found: "
+                      f"{sorted(hooks) if isinstance(hooks, dict) else hooks!r}.")
+            continue
+
+        # The command has to name a file this repository actually ships. A
+        # rename on either side leaves a registration pointing at nothing,
+        # which looks exactly like a repository with no skills installed.
+        commands = [entry.get("command", "")
+                    for group in hooks[event] if isinstance(group, dict)
+                    for entry in group.get("hooks", [])
+                    if isinstance(entry, dict)]
+        if not any(hook in command for command in commands):
+            fail(rel, f"names a hook this repository does not ship: no "
+                      f"registered command references {hook!r}. Found "
+                      f"{commands!r}. A registration pointing at a path that "
+                      "does not exist is a router that is installed, silent, "
+                      "and indistinguishable from one with nothing to say.")
+        elif not (root / hook).is_file():
+            fail(rel, f"registers {hook!r}, which is not in this tree.")
+
+
 def check_root(root: Path, docs_only: bool = False):
     problems, warnings = [], []
 
@@ -725,6 +818,7 @@ def check_root(root: Path, docs_only: bool = False):
                    vendored=vendored)
         check_delivered_budget(root, fail, warn)
         check_hooks(root, fail, warn)
+        check_settings(root, fail)
     return files, problems, warnings
 
 
@@ -756,6 +850,9 @@ SELF_TEST_WARNINGS = (
 )
 SELF_TEST_BUDGET = "against a budget of"
 SELF_TEST_TREE = "tree-wide"
+
+# Each is one hostile settings file, written in turn and run through
+# `check_root` so the call site is proved along with the rule.
 
 # THE HIDDEN-CHARACTER CLASS, ASSERTED CODEPOINT BY CODEPOINT. Asserted here
 # rather than in `_charclasses.py` because that module is a table with no
@@ -967,6 +1064,45 @@ def self_test() -> int:
         if not fired:
             missing.append(f"error: {SELF_TEST_TREE}")
         (root / "hook.sh").unlink()
+
+        # The delivered registration files. RUN THROUGH check_root for the same
+        # reason the tree gate is: calling the function proves the function, not
+        # that anything still calls it.
+        hook = root / ".claude" / "hooks"
+        hook.mkdir(parents=True, exist_ok=True)
+        (hook / "skill-router.sh").write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+        settings = root / ".claude" / "settings.json"
+        good = json.dumps({"hooks": {"UserPromptSubmit": [{"hooks": [
+            {"type": "command",
+             "command": 'sh "$CLAUDE_PROJECT_DIR/.claude/hooks/skill-router.sh"'}]}]}})
+        hostile = {
+            "is not readable JSON": '{"hooks": {},,}',
+            "registers no `": json.dumps({"hooks": {"WrongEvent": []}}),
+            "names a hook this repository does not ship":
+                good.replace("skill-router.sh", "renamed-router.sh"),
+            "may not carry `permissions`":
+                json.dumps({"permissions": {"allow": ["Bash(curl:*)"]},
+                            **json.loads(good)}),
+        }
+        for phrase, body in hostile.items():
+            settings.write_text(body + "\n", encoding="utf-8")
+            _, found, _ = check_root(root, docs_only=False)
+            fired = any(phrase in p["message"] for p in found)
+            print(f"  {'fired    ' if fired else 'DID NOT  '} error: {phrase}")
+            if not fired:
+                missing.append(f"error: {phrase}")
+        # And the correct pair must be accepted, or the gate cries wolf.
+        settings.write_text(good + "\n", encoding="utf-8")
+        _, found, _ = check_root(root, docs_only=False)
+        noisy_settings = [p for p in found
+                          if p["file"] == ".claude/settings.json"]
+        if noisy_settings:
+            print("::error title=Check Docs::A CORRECT settings file was rejected.")
+            for p in noisy_settings:
+                print(f"    {p['message']}")
+            return 1
+        settings.unlink()
+        (hook / "skill-router.sh").unlink()
 
         # The class both checkers import, one codepoint at a time.
         hidden_bad = []
