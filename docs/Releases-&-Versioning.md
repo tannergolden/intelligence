@@ -96,7 +96,10 @@ A change is **breaking**, and belongs in a new major line, when a consumer must 
 - The stub's shape changes, since no token available to it can write under `.github/workflows/`
 - A rule in `AGENTS.md` inverts rather than tightens, for example forbidding something previously required
 
-Everything else is a minor or a patch. Adding a skill, clarifying a rule, or deleting a router because a vendor adopted the canonical filename are all additive: nothing downstream needs editing.
+Everything else is a minor or a patch. Adding a skill and clarifying a rule are additive: nothing downstream needs editing.
+
+> [!WARNING]
+> **Deleting a router is breaking, not additive**, even though it is the outcome this repository wants. It changes the set of published files, which is the first row above. The sync stub names all three documents in one `cp` under `set -euo pipefail`, so removing one fails every consumer's sync with `cp: cannot stat`, on a schedule, with nobody watching. The release gate refuses to tag without all seven files, so the error surfaces here rather than there, and that gate is the thing to change first. It belongs in a new major line with the stub change announced alongside it.
 
 ---
 
