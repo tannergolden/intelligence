@@ -659,6 +659,28 @@ def check_skill(skill_dir: Path, root: Path):
                  "pointing at files is a chain an agent abandons partway.")
 
     for path in sorted(skill_dir.rglob("*")):
+        # CHECKED BEFORE `is_file()`, WHICH FOLLOWS THE LINK. The escape rule
+        # above reads the SPELLING of a reference, and a symlink is spelled
+        # like any other relative path, so `references/guide.md` pointing
+        # anywhere on the filesystem satisfied it. `exists()` follows too, so
+        # the reference resolved and the file counted as shipped. The packager
+        # then read through the link and wrote the TARGET's bytes into the
+        # archive attached to a public release, under the in-skill name.
+        #
+        # A DIRECTORY SYMLINK NEEDS THE SAME CHECK AND IS NOT COVERED BY THE
+        # NEXT LINE: `rglob` does not descend into one, and `is_file()` is
+        # false for it, so it used to be skipped entirely rather than reported.
+        if path.is_symlink():
+            item = path.relative_to(skill_dir).as_posix()
+            fail(f"{item!r} is a symlink. A skill may only ship files it "
+                 "actually contains, and the escape rule cannot see this: a "
+                 "link is spelled like an ordinary relative path, while "
+                 "everything that reads it follows the link. The packager "
+                 "writes the target's bytes into the published archive under "
+                 "this name, so anything readable where the build runs is "
+                 "shipped to everyone who downloads it. Replace it with the "
+                 "file, or delete it.")
+            continue
         if not path.is_file():
             continue
         rel_parts = path.relative_to(skill_dir).parts
@@ -732,6 +754,7 @@ SELF_TEST_ERRORS = (
     # Only this fixture can produce it, and only once the frontmatter
     # terminator is read the way YAML reads it. See `hidden-keys` below.
     "read by Claude Code and ignored by Gemini CLI",
+    "is a symlink",
 )
 
 # WARNINGS ARE ASSERTED TOO, and for the same reason as the errors. The rules
@@ -792,7 +815,7 @@ def build_compliant(root: Path):
 
 
 def build_hostile(root: Path):
-    """Seven deliberately broken skills, covering every asserted rule."""
+    """Eight deliberately broken skills, covering every asserted rule."""
     d = root / "no-manifest"
     d.mkdir()
     (d / "stray.md").write_text("No SKILL.md here, so nothing discovers this.\n",
@@ -857,6 +880,28 @@ def build_hostile(root: Path):
         "---\n\n"
         "The body is irrelevant: this never parses.\n",
         encoding="utf-8")
+
+    # A SYMLINK DEFEATS THE ESCAPE RULE, because that rule reads the spelling
+    # of a reference and a symlink is spelled like any other relative path.
+    # `exists()` and `is_file()` both follow it, so the checker validates it as
+    # a shipped file, and the packager then writes the TARGET's bytes into the
+    # archive attached to a public release.
+    (root / "outside-any-skill.txt").write_text(
+        "Content from outside every skill directory.\n", encoding="utf-8")
+    d = root / "symlinked"
+    d.mkdir()
+    (d / "SKILL.md").write_text(
+        "---\n"
+        "name: symlinked\n"
+        "description: Use this when a reference is spelled like a shipped file "
+        "and resolves to one the skill does not ship.\n"
+        "---\n\n"
+        "## Additional resources\n\n"
+        "- `references/guide.md` - read this when you need the guide.\n",
+        encoding="utf-8")
+    (d / "references").mkdir()
+    (d / "references" / "guide.md").symlink_to(
+        Path("..") / ".." / "outside-any-skill.txt")
 
     # A FRONTMATTER TERMINATOR THAT IS NOT ONE. The `---` below is indented
     # inside a block scalar, so YAML and every vendor reader treat it as

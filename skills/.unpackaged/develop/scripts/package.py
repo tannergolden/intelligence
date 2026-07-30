@@ -128,6 +128,23 @@ def package(skill_dir: Path, out_dir: Path, include_evals: bool, extension: str)
             "They must match: discovery uses the directory and the listing uses the "
             "field, so a mismatch is found under one name and invoked under another.")
 
+    # REFUSED BEFORE ANYTHING IS READ. `is_file()` and `read_bytes()` both
+    # follow a symlink, so a link named `references/guide.md` used to put the
+    # TARGET's content into the archive under that name. An archive is
+    # published and downloaded, so that is any file readable where the build
+    # runs, shipped to everyone, under a name that looks like documentation.
+    # The checker refuses these too; this is the second lock, because the
+    # packager is what actually writes the bytes.
+    links = sorted(p.relative_to(skill_dir).as_posix()
+                   for p in skill_dir.rglob("*") if p.is_symlink())
+    if links:
+        raise SystemExit(
+            f"error: {skill_dir} contains symlinks and a skill may only ship "
+            f"files it actually contains: {', '.join(links)}. Everything that "
+            "reads these follows the link, so packing one writes the target's "
+            "bytes into a published archive under the in-skill name. Replace "
+            "each with the real file, or delete it.")
+
     members = sorted(
         p for p in skill_dir.rglob("*")
         if p.is_file() and included(p.relative_to(skill_dir), include_evals)
@@ -245,6 +262,25 @@ def self_test() -> int:
             check("a name/directory mismatch is refused", False, "it was packed")
         except SystemExit:
             check("a name/directory mismatch is refused", True)
+
+        # A symlink is the one input where packing SUCCEEDS and the archive is
+        # wrong: the entry carries the target's bytes under the in-skill name,
+        # so nothing downstream can tell it was ever a link.
+        linked = root / "linked"
+        (linked / "references").mkdir(parents=True)
+        (linked / "SKILL.md").write_text(
+            SELF_TEST_SKILL.replace("name: fixture", "name: linked"),
+            encoding="utf-8")
+        (root / "outside.txt").write_text("Outside every skill.\n",
+                                          encoding="utf-8")
+        (linked / "references" / "guide.md").symlink_to(
+            Path("..") / ".." / "outside.txt")
+        try:
+            pack(linked, root / "f", include_evals=False, extension="zip")
+            check("a symlink out of the skill is refused", False,
+                  "it was packed, and the archive carries the target's bytes")
+        except SystemExit:
+            check("a symlink out of the skill is refused", True)
 
         bare = root / "bare"
         bare.mkdir()
