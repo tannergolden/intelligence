@@ -72,8 +72,16 @@ BRITISH_FIXTURE = sorted(BRITISH_SPELLINGS)[0]
 # is invisible to a spell checker because the result is still valid Unicode.
 # Also built from codepoints: the second class is a control range whose
 # endpoints do not survive being typed into a source file.
+# TWO BRANCHES, BECAUSE ONE ONLY SAW HALF THE PROBLEM. The first is the
+# two-byte case: a UTF-8 lead byte of 0xC2 or 0xC3, which is everything
+# encoding U+0080 to U+00FF. Three- and four-byte sequences decode to a
+# LOWERCASE letter outside that pair, so the mojibake most likely to arrive
+# here, a smart quote or a dash or an ellipsis, matched nothing. The second
+# branch is any C1 control, which every three- and four-byte sequence carries
+# as a continuation byte and which never appears in legitimate text.
 MOJIBAKE_RE = re.compile(
     f"[{chr(0x00C2)}{chr(0x00C3)}][{chr(0x0080)}-{chr(0x00BF)}]"
+    f"|[{chr(0x0080)}-{chr(0x009F)}]"
 )
 
 # A prompt character copied with the command is a command that fails when
@@ -346,7 +354,15 @@ def check_file(path: Path, root: Path, taglines, footers, fail, warn):
         if MOJIBAKE_RE.search(line):
             fail(rel, f"line {n}: mojibake. This is UTF-8 that was read as "
                       "Latin-1 somewhere upstream; repair it at the source.")
+        # SPANS MOJIBAKE ALREADY OWNS ARE NOT REPORTED TWICE. A C1 control is
+        # both an invisible character and the tell-tale of a mangled encoding,
+        # and only one of those two messages carries the right instruction:
+        # removing one byte of a three-byte sequence leaves the other two.
+        mangled = {i for m in MOJIBAKE_RE.finditer(line)
+                   for i in range(m.start(), m.end())}
         for m in INVISIBLE_RE.finditer(line):
+            if m.start() in mangled:
+                continue
             fail(rel, f"line {n}: invisible character U+{ord(m.group()):04X} at "
                       f"column {m.start() + 1}. Nobody catches this by reading "
                       "the diff, which is the point of using it: a rule hidden "
@@ -575,7 +591,11 @@ def check_tree(root: Path, fail, skip, vendored=frozenset()):
             if MOJIBAKE_RE.search(line):
                 fail(rel, f"line {n}: mojibake, which is UTF-8 read as Latin-1 "
                           "somewhere upstream.")
+            mangled = {i for m in MOJIBAKE_RE.finditer(line)
+                       for i in range(m.start(), m.end())}
             for m in INVISIBLE_RE.finditer(line):
+                if m.start() in mangled:
+                    continue
                 fail(rel, f"line {n}: invisible character "
                           f"U+{ord(m.group()):04X} at column {m.start() + 1}. "
                           "In an executable file or a workflow this is the "
@@ -927,6 +947,11 @@ SELF_TEST_WARNINGS = (
     # this warning for the rest of the file and nothing said so.
     "this fence is",
 )
+# One defect, one diagnosis. A three-byte mojibake sequence carries a C1
+# continuation byte, so it trips the invisible-character rule too, and that
+# rule's advice ("remove it") is wrong here: removing one byte of three leaves
+# the other two.
+SELF_TEST_MOJIBAKE = (chr(0x2019), "mojibake", "invisible character")
 SELF_TEST_BUDGET = "against a budget of"
 SELF_TEST_TREE = "tree-wide"
 
@@ -1239,6 +1264,22 @@ def self_test() -> int:
             return 1
         settings.unlink()
         (hook / "skill-router.sh").unlink()
+
+        # Mojibake is diagnosed as mojibake, and not also as something else.
+        ch, want, unwanted = SELF_TEST_MOJIBAKE
+        (root / "Mojibake.md").write_text(
+            GOOD.replace("## \U0001F4A1 Body",
+                         "## \U0001F4A1 Body\n\nA mangled quote: it"
+                         + ch.encode("utf-8").decode("latin-1") + "s here."),
+            encoding="utf-8")
+        _, moji, _ = check_root(root, docs_only=True)
+        msgs = [p["message"] for p in moji if p["file"] == "Mojibake.md"]
+        fired = any(want in m for m in msgs) and not any(unwanted in m for m in msgs)
+        print(f"  {'fired    ' if fired else 'DID NOT  '} error: {want}, "
+              f"and not also {unwanted!r}")
+        if not fired:
+            missing.append(f"error: {want} diagnosed alone (got {msgs})")
+        (root / "Mojibake.md").unlink()
 
         # The class both checkers import, one codepoint at a time.
         hidden_bad = []
