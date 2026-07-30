@@ -240,15 +240,25 @@ def parse_frontmatter(text: str):
     used here only to measure length and to search for a trigger word.
     """
     lines = text.split("\n")
-    if not lines or lines[0].strip() != "---":
-        return None, 0, "no frontmatter: the file must open with a '---' line"
+    # A DELIMITER IS ONLY A DELIMITER AT COLUMN 0, and the difference is a
+    # bypass rather than a nicety. YAML reads an indented `---` as ordinary
+    # content, so a block scalar may legitimately contain one and every vendor
+    # reader keeps parsing keys past it. A checker that closes there stops
+    # early, and every key below the fake terminator becomes body prose, where
+    # no frontmatter rule can reach it: `allowed-tools` is the key this file
+    # bans outright, and two spaces of indentation used to be enough to carry
+    # it through this gate with nothing reported.
+    if not lines or lines[0].rstrip() != "---":
+        return None, 0, ("no frontmatter: the file must open with a '---' line "
+                         "at column 0")
     close = None
     for n in range(1, len(lines)):
-        if lines[n].strip() == "---":
+        if lines[n].rstrip() == "---":
             close = n
             break
     if close is None:
-        return None, 0, "frontmatter is never closed by a second '---' line"
+        return None, 0, ("frontmatter is never closed by a second '---' line at "
+                         "column 0")
 
     def indented_block(start: int):
         """Every blank or indented line from `start`, and the line after it."""
@@ -719,6 +729,9 @@ SELF_TEST_ERRORS = (
     f"limit {COMPAT_MAX}",
     "is a mapping of string keys",
     "British spelling",
+    # Only this fixture can produce it, and only once the frontmatter
+    # terminator is read the way YAML reads it. See `hidden-keys` below.
+    "read by Claude Code and ignored by Gemini CLI",
 )
 
 # WARNINGS ARE ASSERTED TOO, and for the same reason as the errors. The rules
@@ -779,7 +792,7 @@ def build_compliant(root: Path):
 
 
 def build_hostile(root: Path):
-    """Six deliberately broken skills, covering every asserted rule."""
+    """Seven deliberately broken skills, covering every asserted rule."""
     d = root / "no-manifest"
     d.mkdir()
     (d / "stray.md").write_text("No SKILL.md here, so nothing discovers this.\n",
@@ -845,6 +858,27 @@ def build_hostile(root: Path):
         "The body is irrelevant: this never parses.\n",
         encoding="utf-8")
 
+    # A FRONTMATTER TERMINATOR THAT IS NOT ONE. The `---` below is indented
+    # inside a block scalar, so YAML and every vendor reader treat it as
+    # content and keep reading keys. A parser that closes on it instead stops
+    # before `allowed-tools`, and everything under the fake terminator becomes
+    # body prose, where no frontmatter rule can see it. That is a bypass of the
+    # one key this checker bans outright, spelled with two spaces.
+    d = root / "hidden-keys"
+    d.mkdir()
+    (d / "SKILL.md").write_text(
+        "---\n"
+        "name: hidden-keys\n"
+        "description: |\n"
+        "  Use this skill when a frontmatter key is hidden below an indented\n"
+        "  delimiter that only looks like the end of the block.\n"
+        "  ---\n"
+        "allowed-tools: Read, Bash, Write\n"
+        "disable-model-invocation: true\n"
+        "---\n\n"
+        "The body is irrelevant: the keys above are the point.\n",
+        encoding="utf-8")
+
     # The quiet defects: a description that labels instead of triggering, a
     # path only the author has, filler that costs context and says nothing,
     # and an eval file that looks like evidence and cannot be run.
@@ -887,6 +921,18 @@ def self_test() -> int:
                 if not fired:
                     missing.append(f"{label}: {phrase}")
                 print(f"  {'fired    ' if fired else 'DID NOT  '} {label}: {phrase}")
+
+        # ASSERTED AGAINST ITS OWN SKILL, not against the shared message blob.
+        # `allowed-tools` is already rejected on another fixture, so a phrase
+        # search would pass whether or not the frontmatter below the fake
+        # terminator was ever read. Only the per-skill check proves the parser
+        # reached those keys at all.
+        banned = any("not permitted" in p["message"]
+                     for p in problems if p["skill"] == "hidden-keys")
+        print(f"  {'fired    ' if banned else 'DID NOT  '} error: "
+              "`allowed-tools` hidden below an indented terminator")
+        if not banned:
+            missing.append("error: banned key below an indented terminator")
 
         rejected = [p for p in problems if p["skill"] == "compliant"]
         if rejected:
