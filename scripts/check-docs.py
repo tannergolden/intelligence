@@ -94,7 +94,18 @@ FENCE_MAX_LINES = 20               # beyond this the spec requires <details>
 
 HEADING_RE = re.compile(r"\A#\s+(.+?)\s*\Z")
 IMAGE_RE = re.compile(r"!\[([^\]]*)\]\(([^)\s]+)")
-LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
+# EVERY FORM CommonMark DEFINES, because the resolver is what protects
+# cross-document navigation and three of them used to opt out of it silently.
+# The old pattern required the closing paren to follow the target with no
+# whitespace, so an optional link TITLE, which is ordinary Markdown, made the
+# whole link invisible. Reference-style links and raw HTML `href` were outside
+# it entirely. An author adding a hover title to a link removed it from the
+# gate, and the link then rotted with nothing reporting it.
+LINK_RE = re.compile(r"""\[[^\]]*\]\(\s*<?([^)\s>]+)>?(?:\s+['"(][^)]*)?\s*\)""")
+# A reference DEFINITION is where the path actually sits, so resolving the
+# definition covers every usage of it without matching usages at all.
+REF_DEF_RE = re.compile(r"""\A {0,3}\[[^\]]+\]:\s*<?([^\s>]+)>?""")
+HTML_HREF_RE = re.compile(r"""<(?:a|img)\s[^>]*(?:href|src)=["']([^"']+)["']""")
 # BOTH FENCE CHARACTERS. CommonMark defines `~~~` alongside ``` ``` ```, and a
 # checker that knows only one treats the contents of the other as live prose:
 # its links get resolved, its example images get an alt-text failure, and its
@@ -528,8 +539,12 @@ def check_file(path: Path, root: Path, taglines, footers, fail, warn):
             if not m.group(1).strip():
                 fail(rel, f"line {n}: an image has empty alt text. Every image, "
                           "badges included, carries a description.")
-        for m in LINK_RE.finditer(prose):
-            target = m.group(1)
+        targets = [m.group(1) for m in LINK_RE.finditer(prose)]
+        targets += [m.group(1) for m in HTML_HREF_RE.finditer(prose)]
+        ref = REF_DEF_RE.match(prose)
+        if ref:
+            targets.append(ref.group(1))
+        for target in targets:
             if "://" in target or target.startswith(("#", "mailto:")):
                 continue
             # A LINK TARGET IS A URL, NOT A PATH. `Scope-&-Boundaries.md` is
@@ -1312,6 +1327,33 @@ def self_test() -> int:
             return 1
         settings.unlink()
         (hook / "skill-router.sh").unlink()
+
+        # Every link FORM, not just the one the pattern happened to match.
+        (root / "Links.md").write_text(
+            GOOD.replace("## \U0001F4A1 Body", """## \U0001F4A1 Body
+
+A plain broken link: [one](./Missing-A.md)
+
+A broken link carrying a title: [two](./Missing-B.md "hover text")
+
+An angle-bracket destination: [three](<./Missing-C.md>)
+
+A reference-style link: [four][ref]
+
+[ref]: ./Missing-D.md
+
+A raw HTML link: <a href="./Missing-E.md">five</a>"""),
+            encoding="utf-8")
+        _, links, _ = check_root(root, docs_only=True)
+        blob = " ".join(p["message"] for p in links if p["file"] == "Links.md")
+        unseen = [n for n in ("Missing-A", "Missing-B", "Missing-C",
+                              "Missing-D", "Missing-E") if n not in blob]
+        fired = not unseen
+        print(f"  {'fired    ' if fired else 'DID NOT  '} error: "
+              f"every link form is resolved")
+        if unseen:
+            missing.append(f"error: link forms never resolved: {unseen}")
+        (root / "Links.md").unlink()
 
         # The name rule walks the same tree as the typography rule and did
         # not share its skip list, so a virtualenv or a populated dist/ turned
