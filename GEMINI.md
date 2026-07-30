@@ -26,7 +26,7 @@ _The name the tool looks for, pointing at the file that matters._
 
 **It carries no law of its own.** It cannot drift from the canonical file, cannot contradict it, and cannot go stale, because there is nothing in it to drift. Every rule lives in one place. If you came here looking for a rule, it is not here.
 
-Like the file it imports, this one is **published rather than authored here** and is overwritten in full on the next sync, so a local edit is a change that will be silently reverted.
+Like the file it imports, this one is **published rather than authored here** and is overwritten in full on the next sync, so a local edit is a change that will be silently reverted. In the repository that publishes it, it is the source.
 
 This file becomes deletable the day Gemini CLI discovers the canonical filename by default. That is an open request upstream, not a promise.
 

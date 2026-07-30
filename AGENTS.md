@@ -27,7 +27,7 @@ The canonical instruction file for every AI agent working in this repository. Wh
 Two properties follow, and both bound what may ever be written here. It is **tool-agnostic**, because a rule only half the agents can follow is not a rule, so nothing here rests on a mechanism a single vendor ships. It is **repository-agnostic**, because this exact text sits in repositories with different languages, toolchains, branch models and review policies, so it can only hold what is true across all of them. Anything that varies is delegated rather than asserted.
 
 > [!IMPORTANT]
-> **This file is published, not authored here.** It arrives from an upstream repository and is overwritten in full on the next sync, so a local edit is silently reverted. To change a rule for everyone, change it upstream. To change one for this repository only, write it in this repository's own context, which the next section explains how to find.
+> **This file is published, not authored here.** It arrives from an upstream repository and is overwritten in full on the next sync, so a local edit is silently reverted. The exception is the publishing repository itself, where this file IS the source and editing it is the only way to change anything. To change a rule for everyone, change it upstream. To change one for this repository only, write it in this repository's own context, which the next section explains how to find.
 
 ---
 
@@ -83,7 +83,7 @@ The same holds for what a CI job may assume is installed. A hosted runner provid
 
 | Path                                     | Why                                                                       |
 | :--------------------------------------- | :------------------------------------------------------------------------ |
-| This file, and any router beside it      | Published from upstream. Overwritten in full on the next sync.            |
+| This file, and any router beside it      | Published from upstream, except in the repository that publishes it.     |
 | Any file carrying a do-not-edit header   | It says so on its first line. Change the source and republish.            |
 | Content between generated-region markers | Regenerated from the tree. Edit the prose around the markers instead.     |
 | Lockfiles and vendored third-party files | Regenerated, or verbatim upstream. A hand edit is undone on the next run. |
