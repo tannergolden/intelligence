@@ -757,6 +757,41 @@ SELF_TEST_WARNINGS = (
 SELF_TEST_BUDGET = "against a budget of"
 SELF_TEST_TREE = "tree-wide"
 
+# THE HIDDEN-CHARACTER CLASS, ASSERTED CODEPOINT BY CODEPOINT. Asserted here
+# rather than in `_charclasses.py` because that module is a table with no
+# entry point, and a table nothing runs is a table nothing checks. Both
+# checkers import the class, so proving it once proves it for both.
+#
+# The end-to-end fixtures below prove that ONE hidden character is reported.
+# They cannot prove which ones, and that is the whole question: the class
+# covered the tag block while missing the variation selectors one range over,
+# which is the channel the published emoji-smuggling technique actually uses.
+SELF_TEST_HIDDEN = (
+    (0x200B, "zero width space"),
+    (0xE0001, "language tag"),
+    (0xE0100, "variation selector-17, the smuggling channel"),
+    (0xE01EF, "variation selector-256"),
+    (0xFE00, "variation selector-1"),
+    (0x2800, "Braille pattern blank"),
+    (0x001B, "ESC, which writes an ANSI sequence to the operator's terminal"),
+    (0x007F, "DELETE"),
+    (0x009B, "CSI"),
+    (0x00A0, "no-break space, which changes shell word splitting"),
+    (0x2003, "em space"),
+    (0x2028, "line separator"),
+    (0x3000, "ideographic space"),
+)
+# The carve-outs, each one a decision rather than an oversight. U+FE0F is the
+# emoji presentation selector and sits inside 42 of this repository's own
+# headings, so the family is added without it: 15 of the 16 selectors and all
+# 240 of the E0100 block still fail. Tab and newline are structure.
+SELF_TEST_NOT_HIDDEN = (
+    (0xFE0F, "variation selector-16, which every emoji heading here carries"),
+    (0x0009, "tab"),
+    (0x000A, "newline"),
+    (0x000D, "carriage return, which the line splitter never sees"),
+)
+
 GOOD = """<!--
 title: '📝 GOOD'
 description: 'A document that satisfies every rule this checker enforces.'
@@ -932,6 +967,23 @@ def self_test() -> int:
         if not fired:
             missing.append(f"error: {SELF_TEST_TREE}")
         (root / "hook.sh").unlink()
+
+        # The class both checkers import, one codepoint at a time.
+        hidden_bad = []
+        for cp, label in SELF_TEST_HIDDEN:
+            if not INVISIBLE_RE.search(chr(cp)):
+                hidden_bad.append(f"U+{cp:04X} ({label}) is not caught")
+        for cp, label in SELF_TEST_NOT_HIDDEN:
+            if INVISIBLE_RE.search(chr(cp)):
+                hidden_bad.append(f"U+{cp:04X} ({label}) must NOT be caught")
+        fired = not hidden_bad
+        print(f"  {'fired    ' if fired else 'DID NOT  '} error: "
+              f"every hidden-character family, {len(SELF_TEST_HIDDEN)} caught "
+              f"and {len(SELF_TEST_NOT_HIDDEN)} deliberately not")
+        if hidden_bad:
+            for item in hidden_bad:
+                print(f"    {item}")
+            missing.append(f"error: hidden-character class: {hidden_bad}")
 
         # NEITHER ERRORS NOR WARNINGS. A warning on correct input is still a
         # gate crying wolf, and two of the rules fixed here reported one: a
