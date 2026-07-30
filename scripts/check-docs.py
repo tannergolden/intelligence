@@ -619,7 +619,15 @@ def check_tree(root: Path, fail, skip, vendored=frozenset()):
 def check_names(root: Path, fail, vendored=frozenset()):
     """`_` as a space, across the whole tree rather than only docs/."""
     for path in sorted(root.rglob("*")):
-        if ".git" in path.parts:
+        # THE SAME SKIP LIST THE TYPOGRAPHY RULE USES. This walk filtered only
+        # `.git`, so `dist/`, `node_modules/`, `__pycache__/` and `.venv/`
+        # were all name-checked, and `make lint-docs` reads the working tree
+        # rather than what is tracked. Creating a virtualenv, which is the
+        # reflex before running any Python here, turned the documentation gate
+        # into hundreds of errors from package names nobody can rename, with
+        # every real finding underneath them. The intent was already written
+        # down twice, in `.gitignore` and in TREE_SKIP_DIRS; this reads it.
+        if any(part in TREE_SKIP_DIRS for part in path.relative_to(root).parts):
             continue
         rel = path.relative_to(root).as_posix()
         if any(rel.startswith(f"{v}/") or rel == v for v in vendored):
@@ -1275,6 +1283,20 @@ def self_test() -> int:
             return 1
         settings.unlink()
         (hook / "skill-router.sh").unlink()
+
+        # The name rule walks the same tree as the typography rule and did
+        # not share its skip list, so a virtualenv or a populated dist/ turned
+        # `make lint-docs` into a wall of errors from names nobody can rename.
+        noise = root / ".venv" / "lib" / "site_packages_x"
+        noise.mkdir(parents=True, exist_ok=True)
+        (noise / "a_module.py").write_text("x = 1\n", encoding="utf-8")
+        name_hits = []
+        check_names(root, lambda f, m: name_hits.append(f))
+        fired = not any(h.startswith(".venv/") for h in name_hits)
+        print(f"  {'fired    ' if fired else 'DID NOT  '} error: "
+              f"generated trees are skipped by the name rule too")
+        if not fired:
+            missing.append(f"error: name rule walks skipped trees ({name_hits})")
 
         # A key set twice. The skill checker refuses this and says why; the
         # document parser kept the last one silently, on the three files that
