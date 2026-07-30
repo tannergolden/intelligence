@@ -642,15 +642,16 @@ def check_hooks(root: Path, fail, warn):
     for rel in HOOK_SCRIPTS:
         path = root / rel
         if not path.is_file():
-            # A SKIP, NOT A PASS, AND IT USED TO BE SILENT. Renaming or
-            # deleting a router left this loop with nothing to check and
-            # nothing to say, so the gate on the only content that executes on
-            # somebody else's machine reported clean by having no subject.
-            # Only the release refused, and only because a separate loop tests
-            # the file is non-empty.
-            fail(rel, "is missing, but it is delivered into every consuming "
-                      "repository and registered by the settings file beside "
-                      "it. A gate with no subject is not a gate that passed.")
+            # SKIPPED, AND THE ABSENCE IS REPORTED ELSEWHERE. A missing router
+            # used to be a silent pass here and nothing else looked, so
+            # renaming one left the gate on the only content that executes on
+            # somebody else's machine reporting clean by having no subject.
+            # `check_settings` is where that is caught now, because it can tell
+            # the two cases apart: a tree whose settings file REGISTERS this
+            # path and does not ship it is broken, and a tree that ships no
+            # routers at all is most other repositories. Failing here would
+            # fail every one of them, which is the false positive this file
+            # exists to avoid.
             continue
 
         syntax = subprocess.run(["sh", "-n", str(path)],
