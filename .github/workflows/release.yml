@@ -221,6 +221,21 @@ jobs:
             echo "::error title=Release::make build produced no archives. Refusing to publish a release with nothing attached."
             exit 1
           fi
+          # ⚠️ NON-EMPTY IS NOT THE SAME CLAIM AS COMPLETE. This used to be the
+          # only test, so a build that packaged three skills out of four
+          # satisfied it and the release published short one download, with
+          # the summary reporting success and the log showing no absence.
+          # `make build` no longer discards a failure, and this is the second
+          # lock: the count has to match the number of skills that exist.
+          skills=(skills/.unpackaged/*/)
+          expected=0
+          for skill in "${skills[@]}"; do
+            [ -f "${skill}SKILL.md" ] && expected=$((expected + 1))
+          done
+          if [ "${#archives[@]}" -ne "$expected" ]; then
+            echo "::error title=Release::${#archives[@]} archive(s) built for ${expected} skill(s). A release attaches one per skill, so this would publish a page missing a download."
+            exit 1
+          fi
           # A glob rather than `ls`, which shellcheck rejects (SC2012) because
           # parsing its output mangles any name carrying whitespace. A skill
           # name cannot contain whitespace, so nothing here was broken; the

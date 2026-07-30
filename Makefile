@@ -50,8 +50,15 @@ test: ## Prove every checker and the packager still hold their guarantees
 	$(PYTHON) $(PACKAGER) --self-test
 
 build: ## Package every skill into $(DIST)/ as an installable archive
+# `set -e` because a recipe is ONE shell running a loop, so without it the
+# exit status is the last iteration's and every earlier failure is discarded.
+# A skill that failed to package then left `make build` reporting success with
+# its archive missing from $(DIST), and the release only checks that the
+# directory is non-empty, so the tag moved and the release page was published
+# short one download with nothing anywhere reporting it. Order-dependent,
+# which is worse than always broken: it appears and disappears with names.
 	@mkdir -p $(DIST)
-	@for skill in $(SKILLS)/*/; do \
+	@set -e; for skill in $(SKILLS)/*/; do \
 		[ -f "$$skill/SKILL.md" ] || continue; \
 		$(PYTHON) $(PACKAGER) "$$skill" --out $(DIST); \
 	done
