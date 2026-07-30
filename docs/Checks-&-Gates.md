@@ -69,6 +69,9 @@ The full rule list, and which are errors rather than warnings, is in [Skill Auth
 | Fence languages, shell prompt characters, image alt text              | error     |
 | Relative links that resolve, and `_` as a space anywhere in the tree  | error     |
 | Tagline and closing phrase uniqueness, reported against every owner   | error     |
+| A frontmatter key set twice, which every reader resolves silently     | error     |
+| Each envelope still carrying a live `@./AGENTS.md` import             | error     |
+| The delivered `settings.json` files: JSON, event, hook path, no grants | error    |
 | Fully-capped headings, `&` over `AND`, masthead length, long fences   | warning   |
 
 `skills/` is excluded from the **document** rules on purpose: a `SKILL.md` requires the `---` frontmatter this specification forbids. Both are correct in their own domain.
@@ -83,9 +86,9 @@ Exempt from the tree scan: submodules, `dist/`, anything that is not valid UTF-8
 
 ### 🗜️ The Packager
 
-[`skills/.unpackaged/develop/scripts/package.py`](../skills/.unpackaged/develop/scripts/package.py) builds the `.skill` archives attached to each release, and it is bundled inside the `develop` skill rather than sitting in `scripts/` because a skill author in another repository needs it and this repository's `scripts/` does not travel.
+[`skills/.unpackaged/develop/scripts/package.py`](../skills/.unpackaged/develop/scripts/package.py) builds the archives attached to each release, and it is bundled inside the `develop` skill rather than sitting in `scripts/` because a skill author in another repository needs it and this repository's `scripts/` does not travel.
 
-`make test` runs its self-test alongside the two checkers, because it is the one piece of machinery whose output is a file somebody downloads rather than a message somebody reads. Seven invariants, each of which produced a broken or unverifiable archive when it did not hold:
+`make test` runs its self-test alongside the two checkers, because it is the one piece of machinery whose output is a file somebody downloads rather than a message somebody reads. Ten invariants, each of which produced a broken or unverifiable archive when it did not hold:
 
 | Invariant | Why |
 | :--- | :--- |
@@ -95,6 +98,9 @@ Exempt from the tree scan: submodules, `dist/`, anything that is not valid UTF-8
 | Every entry records a **fixed** creating system | `zipfile` takes that field from the host, so the same source packed on Windows differed from the same source packed anywhere else |
 | `--include-evals` ships them | The exclusion has to be an option rather than a rule, or the evidence is unshippable |
 | A name and directory mismatch is refused | The same defect the skill checker fails on, caught before it is sealed in an archive |
+| A symlink out of the skill is refused | Everything that reads one follows it, so packing one writes the target's bytes into a published archive under the in-skill name |
+| A `name` under `metadata` does not win | Both tools have to agree what the skill is called, or one passes it and the other refuses it |
+| A `name:` line inside a block scalar does not win | The same disagreement, from the other shape the checker accepts |
 | A directory with no `SKILL.md` is refused | It is not a skill, and an archive of it is a download that installs nothing |
 
 The fourth is the one the third could not see. Two runs on the same machine agree whatever the host-derived fields say, so a repeat-build check passes on every platform while the archives still differ across them. Only reading the field answers the question, and determinism that holds on the platform you happened to test on is a property nobody can check from the other side.
@@ -115,12 +121,17 @@ One check in that file is **not** part of the styling standard, and is kept ther
 
 ### 🪝 The Hook Gates
 
-The skill router in `.claude/` and `.gemini/` is the only content here that runs on somebody else's machine without being asked, and the only thing charged **per turn** rather than per session. Three checks bound it, all in the same file:
+The skill router in `.claude/` and `.gemini/` is the only content here that runs on somebody else's machine without being asked, and the only thing charged **per turn** rather than per session. Eight checks bound it, all in the same file:
 
 | Check | Catches |
 | :--- | :--- |
 | Valid POSIX shell (`sh -n`) | A broken hook does not stop a session, it silently contributes nothing. It looks installed and is not |
+| A zero exit status | Some vendors read a non-zero code as a decision about the turn rather than as a no-op |
+| Nothing on stderr | This runs every prompt, so anything there is noise in the operator's terminal every prompt |
+| Every discovery directory is read, each name once | A dropped directory loses a name; a broken deduplication doubles one |
+| The JSON envelope, on Gemini | Its hook output is parsed as JSON, and anything else becomes a message shown to the user and never to the model. This is the check whose absence shipped a router that ran, passed everything, and injected nothing |
 | Output under 256 bytes, against a three-skill fixture | A paragraph of advice added to a script that fires every prompt, billed forever |
+| The same ceiling against a **forty**-skill fixture | The three-skill measurement recorded a number rather than a bound. Nothing in the script capped the list, so a repository with forty skills paid over 900 bytes per turn and no gate saw it |
 | Output is not empty when skills exist | A router that says nothing is indistinguishable from a working one until someone measures it |
 
 The budget is measured by **running** the hook against a fixture rather than by reading it, because what costs context is what the script prints, not what it contains. Both failure modes were confirmed by breaking the script deliberately and watching the gate catch it.

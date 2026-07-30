@@ -84,7 +84,7 @@ jobs:
         with:
           persist-credentials: false
 
-      # Builds four deliberately broken skills in a temporary directory and
+      # Builds ten deliberately broken skills in a temporary directory and
       # asserts, by name, that every rule still fires. A bare non-zero exit
       # would be too weak a claim: any crash satisfies it, including one that
       # means the rules never ran at all.

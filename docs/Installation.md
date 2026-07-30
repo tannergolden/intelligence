@@ -118,7 +118,7 @@ Pin `@v1` to receive fixes, or a full `@v1.4.2` for exactness that no publisher-
 
 ## 🧯 The Ways It Fails
 
-In likelihood order, because the first is common and the last is structural. There were four before the router shipped; there are six now, and that growth is part of what the router costs.
+In likelihood order, because the first is common and the last is structural. There were four before the router shipped; there are seven now, and that growth is part of what the router costs.
 
 | Failure                                | What you see                                       | Fix                                                                        |
 | :------------------------------------- | :------------------------------------------------- | :-------------------------------------------------------------------------- |

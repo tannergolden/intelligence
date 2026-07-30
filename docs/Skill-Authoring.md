@@ -74,7 +74,7 @@ Fold templates into `assets/` rather than a separate directory. The specificatio
 
 `SKILL.md` frontmatter uses `---` fences, unlike every other document in this repository. That is correct, and the specification requires it.
 
-**What the checker parses.** Scalars, block scalars (`description: |` and `description: >`, which is how any description long enough to wrap gets written), and a mapping under `metadata`. Anything else nested is refused rather than guessed at, and a key set twice is refused outright: every YAML reader keeps the last one silently, so the value a reviewer read in the diff is not the value that loads.
+**What the checker parses.** Scalars, block scalars (`description: |` and `description: >`, which is how any description long enough to wrap gets written), and a mapping under `metadata`. The `---` delimiters count only at column 0, which is where YAML puts them: an indented one inside a block scalar is content, and reading it as the end of the block let every key below it through unchecked. Anything else nested is refused rather than guessed at, and a key set twice is refused outright: every YAML reader keeps the last one silently, so the value a reviewer read in the diff is not the value that loads.
 
 ---
 
@@ -221,7 +221,7 @@ That baseline comparison is the bar. A skill that does not beat it should not sh
 
 [`actions/check-skills`](../actions/check-skills) gates on all of the following, because every one of them fails silently otherwise:
 
-Missing `SKILL.md`; frontmatter that is malformed, nested outside `metadata`, or sets one key twice; missing or empty `name` or `description`; `name` failing its pattern, exceeding 64 characters, or disagreeing with the directory; `description` over 1024; `compatibility` over 500; `metadata` written as a scalar; unknown, banned or undeclared vendor keys; a body over 500 lines; a reference that does not exist or escapes the directory; a file in the directory that `SKILL.md` never references; a live import token; an invisible character; undeclared live shell; a byte order mark; a missing or doubled trailing newline; and an `evals.json` that is unreadable, misattributed, empty, missing a prompt or assertions, or reusing a case id.
+Missing `SKILL.md`; frontmatter that is malformed, nested outside `metadata`, or sets one key twice; missing or empty `name` or `description`; `name` failing its pattern, exceeding 64 characters, or disagreeing with the directory; `description` over 1024; `compatibility` over 500; `metadata` written as a scalar; unknown, banned or undeclared vendor keys; a body over 500 lines; a reference that does not exist or escapes the directory; a file in the directory that `SKILL.md` never references; a live import token; an invisible character; a British spelling from the curated pairs list; a symlink, which is spelled like an ordinary relative path while everything that reads it follows the link; a code fence that is never closed, since everything below one is read as fenced and silently skipped; undeclared live shell; a byte order mark; a missing or doubled trailing newline; and an `evals.json` that is unreadable, misattributed, empty, missing a prompt or assertions, or reusing a case id.
 
 It warns on a description that never says **when** to use the skill, a description over 500 characters, a body over roughly 5,000 tokens, vague filler, a machine-specific path, a missing eval suite, a reference more than one level deep, and a bundled `scripts/` directory.
 
