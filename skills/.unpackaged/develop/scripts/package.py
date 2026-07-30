@@ -74,16 +74,29 @@ FIXED_SYSTEM = 3
 def frontmatter_name(manifest: Path):
     """The `name` field, read without a YAML parser.
 
-    Flat scalars only, which is all the specification requires. Anything more
-    elaborate is refused by the repository's own checker before a skill gets
-    this far, so this reads the simple shape and reports when it cannot.
+    Flat scalars only, which is all the specification requires for this field.
+
+    THE ASSUMPTION THAT THE CHECKER HAS ALREADY REFUSED EVERYTHING ELSE WAS
+    WRONG IN ONE DIRECTION. The checker accepts a `metadata` mapping and a
+    block-scalar `description`, both ordinary YAML, and this read every line
+    with its indentation stripped. So a `name:` nested under `metadata`, or a
+    line inside a description block that happens to start with `name:`, won a
+    race against the real key whenever it came first. The result was a skill
+    that passed `make lint` cleanly and was then refused by `make build` for a
+    name it does not have.
+
+    Indented lines are therefore skipped, since a top-level key is never
+    indented, and a `---` only closes the block at column 0, matching the
+    checker.
     """
     lines = manifest.read_text(encoding="utf-8").split("\n")
-    if not lines or lines[0].strip() != "---":
+    if not lines or lines[0].rstrip() != "---":
         return None
     for line in lines[1:]:
-        if line.strip() == "---":
+        if line.rstrip() == "---":
             break
+        if line[:1] in (" ", "\t"):
+            continue
         key, _, value = line.partition(":")
         if key.strip() == "name":
             value = value.strip()
@@ -281,6 +294,26 @@ def self_test() -> int:
                   "it was packed, and the archive carries the target's bytes")
         except SystemExit:
             check("a symlink out of the skill is refused", True)
+
+        # THE CHECKER AND THE PACKAGER MUST AGREE ON THE NAME. Both shapes
+        # below are accepted by the checker, so a skill using either passes
+        # `make lint` and then gets refused by `make build` for a name it does
+        # not have.
+        for label, front in (
+            ("a `name` inside the metadata mapping does not win",
+             "---\nmetadata:\n  name: something-else\nname: fixture\n"
+             "description: Use this when metadata is declared above the name.\n---\n"),
+            ("a `name:` line inside a block scalar does not win",
+             "---\ndescription: |\n  Use this skill when the description block\n"
+             "  contains a line like\n  name: not-the-skill-name\n"
+             "name: fixture\n---\n"),
+        ):
+            probe = root / "probe"
+            probe.mkdir(exist_ok=True)
+            (probe / "SKILL.md").write_text(front + "\n## Steps\n\n1. Go.\n",
+                                            encoding="utf-8")
+            check(label, frontmatter_name(probe / "SKILL.md") == "fixture",
+                  repr(frontmatter_name(probe / "SKILL.md")))
 
         bare = root / "bare"
         bare.mkdir()
