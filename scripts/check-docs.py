@@ -227,6 +227,153 @@ DELIVERED_SETTINGS = {
 # that never lives here. A gate beats a rule: it fires every time.
 SETTINGS_BANNED_KEYS = ("permissions", "mcpServers", "mcp")
 
+# --- documented numbers, asserted against the constants they describe -------
+# WHY THIS EXISTS. An audit found NINE stated facts that no longer matched the
+# code: a budget, two counts of checks, a count of failure modes, a count of
+# hostile fixtures, an archive extension, and a rule the definitive list never
+# mentioned. Every one was written correctly and then went stale in silence,
+# because prose and the constant it describes live in different files and
+# nothing compared them. Nine in a repository three days old is a rate, not an
+# accident, and this repository's product IS its documentation.
+#
+# A GATE BEATS A RULE, which is the argument the law makes for itself and the
+# argument the upstream-proposal reference makes for preferring a check. So the
+# numbers are read out of the documents and compared to the values they claim
+# to describe, and a mismatch is an error naming both sides.
+#
+# WHAT THIS CANNOT DO: it checks numbers, not meaning. A sentence that is
+# wrong about what a check does still passes. That is the honest boundary,
+# and it is where a machine stops being able to decide.
+NUMBER_WORDS = {
+    "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6,
+    "seven": 7, "eight": 8, "nine": 9, "ten": 10, "eleven": 11,
+    "twelve": 12, "thirteen": 13, "fourteen": 14, "fifteen": 15,
+    "sixteen": 16, "seventeen": 17, "eighteen": 18, "nineteen": 19,
+    "twenty": 20, "thirty": 30, "forty": 40, "fifty": 50,
+}
+
+
+def _sibling(name: str):
+    """Load a sibling checker so its constants can be compared to the prose.
+
+    A hyphen makes the module unimportable by name, and the point of this rule
+    is that the number and the sentence live in different files, so reaching
+    across is the job rather than a shortcut.
+    """
+    import importlib.util
+    path = Path(__file__).resolve().parent / name
+    spec = importlib.util.spec_from_file_location(name.replace("-", "_"), path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _count_in(path: Path, pattern: str) -> int:
+    return len(re.findall(pattern, path.read_text(encoding="utf-8")))
+
+
+def documented_numbers(root: Path):
+    """Every (document, pattern, expected) triple, resolved against the code.
+
+    Built lazily rather than as a module constant, because half of these read
+    another file and one counts call sites in a third.
+    """
+    skills = _sibling("check-skills.py")
+    packager = root / "skills/.unpackaged/develop/scripts/package.py"
+    # READ FROM THE TREE BEING CHECKED rather than from this file's own path,
+    # so the gate describes the repository it was pointed at.
+    checks = root / "scripts" / "check-docs.py"
+    hook_block = ""
+    if checks.is_file():
+        # ANCHORED ON A REAL DEFINITION, at column 0, running to the next one.
+        # A plain substring search found this rule's OWN mention of the
+        # function name, which sits above the function, and measured the thirty
+        # characters between two string literals instead. The gate reported
+        # zero and was describing itself.
+        found = re.search(r"^def check_hooks\b.*?(?=^def )",
+                          checks.read_text(encoding="utf-8"), re.M | re.S)
+        hook_block = found.group() if found else ""
+
+    items = [
+        ("docs/Checks-&-Gates.md",
+         r"\| `AGENTS\.md` \| ([\d,]+) bytes", DELIVERED_BUDGETS["AGENTS.md"],
+         "the AGENTS.md byte budget"),
+        ("docs/Checks-&-Gates.md",
+         r"\| `CLAUDE\.md` \| ([\d,]+) bytes", DELIVERED_BUDGETS["CLAUDE.md"],
+         "the CLAUDE.md byte budget"),
+        ("docs/Checks-&-Gates.md",
+         r"a warning fires at ([\d]+)%", int(DELIVERED_WARN_AT * 100),
+         "the budget warning threshold"),
+        ("docs/Checks-&-Gates.md",
+         r"Output under ([\d,]+) bytes", HOOK_OUTPUT_BUDGET,
+         "the hook output budget"),
+        ("docs/Checks-&-Gates.md",
+         r"against a \*\*(\w+)\*\*-skill fixture", HOOK_FIXTURE_MANY,
+         "the large hook fixture"),
+        ("docs/Skill-Authoring.md",
+         r"1 to ([\d,]+) characters, matching", skills.NAME_MAX,
+         "the skill name limit"),
+        ("docs/Skill-Authoring.md",
+         r"1 to ([\d,]+) characters, saying what", skills.DESC_MAX,
+         "the description limit"),
+        ("docs/Skill-Authoring.md",
+         r"`compatibility` \(1 to ([\d,]+) characters\)", skills.COMPAT_MAX,
+         "the compatibility limit"),
+        ("docs/Skill-Authoring.md",
+         r"Under ([\d,]+) lines \*\*and\*\*", skills.BODY_MAX_LINES,
+         "the skill body line cap"),
+        ("docs/Skill-Authoring.md",
+         r"a description over ([\d,]+) characters", skills.DESC_WARN,
+         "the description warning threshold"),
+    ]
+    if packager.is_file():
+        # COUNTED FROM WHAT IT PRINTS, not from how its source is written. Two
+        # of its invariants come from one call site in a loop, so counting
+        # `check(` in the source gives a number no reader would recognize.
+        import subprocess
+        run = subprocess.run(["python3", str(packager), "--self-test"],
+                             capture_output=True, text=True)
+        printed = len(re.findall(r"^  ok ", run.stdout, re.MULTILINE))
+        if printed:
+            items.append(("docs/Checks-&-Gates.md",
+                          r"(\w+) invariants, each of which", printed,
+                          "the packaging invariant count"))
+    if hook_block:
+        items.append(("docs/Checks-&-Gates.md", r"(\w+) checks bound it",
+                      len(re.findall(r"fail\(rel,", hook_block)),
+                      "the hook gate check count"))
+    return items
+
+
+def check_documented_numbers(root: Path, fail):
+    """Compare every stated number to the constant it describes."""
+    for rel, pattern, expected, label in documented_numbers(root):
+        path = root / rel
+        if not path.is_file():
+            continue
+        found = re.search(pattern, path.read_text(encoding="utf-8"))
+        if not found:
+            fail(rel, f"no longer states {label}, which this checker asserts "
+                      f"against the code. Either the sentence was reworded past "
+                      f"the pattern in check-docs.py, or the claim was dropped. "
+                      f"A number nothing compares is a number that goes stale.")
+            continue
+        raw = found.group(1).replace(",", "").strip().lower()
+        actual = NUMBER_WORDS.get(raw, None)
+        if actual is None:
+            try:
+                actual = int(raw)
+            except ValueError:
+                fail(rel, f"states {label} as {found.group(1)!r}, which is "
+                          "neither a number nor a number word.")
+                continue
+        if actual != expected:
+            fail(rel, f"says {label} is {found.group(1)!r}, and the code says "
+                      f"{expected}. One of them is wrong, and prose is the one "
+                      "that goes stale silently: nothing else in this "
+                      "repository compares the two.")
+
+
 # `_` as a space is rejected across the WHOLE tree, not just docs. These are
 # the names a platform or a language fixes, which cannot move at all.
 UNDERSCORE_OK = {
@@ -980,6 +1127,7 @@ def check_root(root: Path, docs_only: bool = False):
         check_delivered_budget(root, fail, warn)
         check_hooks(root, fail, warn)
         check_envelopes(root, fail)
+        check_documented_numbers(root, fail)
         check_settings(root, fail)
     return files, problems, warnings
 
@@ -1253,6 +1401,32 @@ def self_test() -> int:
         if not fired:
             missing.append(f"error: {SELF_TEST_TREE}")
         (root / "hook.sh").unlink()
+
+        # A documented number that no longer matches its constant. Mutated in
+        # a COPY of the real tree, because this rule reads the repository it is
+        # given rather than a fixture: a synthetic document would prove the
+        # regex and not that the numbers here are right.
+        import shutil
+        mirror = root / "mirror"
+        for item in ("docs", "scripts", "skills"):
+            src = Path(__file__).resolve().parent.parent / item
+            if src.is_dir():
+                shutil.copytree(src, mirror / item, dirs_exist_ok=True,
+                                symlinks=True)
+        drifted = mirror / "docs" / "Checks-&-Gates.md"
+        if drifted.is_file():
+            drifted.write_text(
+                drifted.read_text(encoding="utf-8").replace(
+                    "| `AGENTS.md` | 14,000 bytes", "| `AGENTS.md` | 99,000 bytes"),
+                encoding="utf-8")
+            hits = []
+            check_documented_numbers(mirror, lambda f, m: hits.append(m))
+            fired = any("the AGENTS.md byte budget" in m for m in hits)
+            print(f"  {'fired    ' if fired else 'DID NOT  '} error: "
+                  "a documented number that drifted from its constant")
+            if not fired:
+                missing.append("error: documented number drift")
+        shutil.rmtree(mirror, ignore_errors=True)
 
         # The envelopes. Same hostile-then-correct shape, same reason for
         # going through check_root.

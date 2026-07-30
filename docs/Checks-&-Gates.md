@@ -70,6 +70,7 @@ The full rule list, and which are errors rather than warnings, is in [Skill Auth
 | Relative links that resolve, and `_` as a space anywhere in the tree  | error     |
 | Tagline and closing phrase uniqueness, reported against every owner   | error     |
 | A frontmatter key set twice, which every reader resolves silently     | error     |
+| A stated number that no longer matches the constant it describes      | error     |
 | Each envelope still carrying a live `@./AGENTS.md` import             | error     |
 | The delivered `settings.json` files: JSON, event, hook path, no grants | error    |
 | Fully-capped headings, `&` over `AND`, masthead length, long fences   | warning   |
@@ -116,6 +117,9 @@ One check in that file is **not** part of the styling standard, and is kept ther
 | `AGENTS.md` | 14,000 bytes | The law. Every rule is paid in every session, everywhere |
 | `CLAUDE.md` | 3,000 bytes | An envelope. Growth here means law is leaking into a carrier |
 | `GEMINI.md` | 3,000 bytes | The same |
+
+> [!NOTE]
+> **The numbers on this page are compared to the code that holds them.** Twelve stated figures, the budgets and thresholds above among them, are read out of these documents and checked against the constants they describe. An audit found nine facts that had drifted, in a repository three days old, every one written correctly and then gone stale in silence. A gate beats a rule, so this is a gate. What it cannot do is check meaning: a sentence that is wrong about what a check *does* still passes.
 
 **The numbers are a decision, not a discovery,** and a warning fires at 80% so the conversation happens before the ceiling rather than at it. Raising one has to be a commit somebody reviews, which is what turns "every addition names a subtraction" from an aspiration into a gate. It is also the hard stop behind the [self-improvement loop](Self-Improvement.md): a proposal that would breach the budget is a proposal to add one rule and retire another.
 
