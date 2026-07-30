@@ -124,6 +124,14 @@ DELIVERED_BUDGETS = {
 }
 DELIVERED_WARN_AT = 0.80
 
+# The one line each envelope exists to carry, and the file it carries it to.
+# `CLAUDE.md` and `GEMINI.md` hold no law of their own; this token is the whole
+# of their job, and until it was checked the budget rule measured their size
+# while nothing measured whether they still did anything.
+ENVELOPES = ("CLAUDE.md", "GEMINI.md")
+LAW = "AGENTS.md"
+IMPORT_LINE = "@./AGENTS.md"
+
 # The hooks are delivered too, and they are priced differently from a file.
 # A document costs whoever opens it and the law costs one load per session;
 # a hook that fires on every prompt is charged AGAIN ON EVERY TURN, which
@@ -714,6 +722,50 @@ def check_hooks(root: Path, fail, warn):
                       "from a correct one until someone checks.")
 
 
+def check_envelopes(root: Path, fail):
+    """Each envelope still carries the one line it exists for.
+
+    NOTHING CHECKED THIS, and every other gate passes without it. The budget
+    rule measures size, the release loop measures presence, and a `CLAUDE.md`
+    whose import has been replaced by the sentence "See AGENTS.md in this
+    repository" satisfies both while reading perfectly correctly in a diff. It
+    is also the one delivered failure with no symptom: the router is present,
+    the law is present, and the agent simply never receives it.
+
+    THE TOKEN HAS TO BE LIVE, which is why this consults the fence map rather
+    than searching the text. Both vendors document that import parsing skips
+    code spans and fenced blocks, so a backticked `@./AGENTS.md` is exactly the
+    documented way to write the token WITHOUT importing, and an envelope
+    carrying only that one is inert.
+    """
+    for rel in ENVELOPES:
+        path = root / rel
+        if not path.is_file():
+            continue
+        lines = path.read_text(encoding="utf-8").split("\n")
+        fenced = scan_fences(rel, lines, lambda *_: None, lambda *_: None)
+        live = [n for n, line in enumerate(lines, 1)
+                if n not in fenced and line.strip() == IMPORT_LINE]
+        if not live:
+            fail(rel, f"carries no live `{IMPORT_LINE}` line, so it imports "
+                      "nothing. This file exists only to carry that one line "
+                      "to a tool that cannot discover the canonical filename. "
+                      "Without it the envelope is a correct-looking document "
+                      "that delivers no law at all, in every repository that "
+                      "receives it, with nothing anywhere reporting a problem. "
+                      "A token inside backticks or a fence does not import: "
+                      "that is the documented way to write one literally.")
+
+    law = root / LAW
+    if law.is_file():
+        lines = law.read_text(encoding="utf-8").split("\n")
+        fenced = scan_fences(LAW, lines, lambda *_: None, lambda *_: None)
+        for n, line in enumerate(lines, 1):
+            if n not in fenced and line.strip() == IMPORT_LINE:
+                fail(LAW, f"line {n}: the law imports itself. `{IMPORT_LINE}` "
+                          "belongs in an envelope; here it is a loop.")
+
+
 def check_settings(root: Path, fail):
     """The delivered registration files, which nothing used to open.
 
@@ -818,6 +870,7 @@ def check_root(root: Path, docs_only: bool = False):
                    vendored=vendored)
         check_delivered_budget(root, fail, warn)
         check_hooks(root, fail, warn)
+        check_envelopes(root, fail)
         check_settings(root, fail)
     return files, problems, warnings
 
@@ -1064,6 +1117,41 @@ def self_test() -> int:
         if not fired:
             missing.append(f"error: {SELF_TEST_TREE}")
         (root / "hook.sh").unlink()
+
+        # The envelopes. Same hostile-then-correct shape, same reason for
+        # going through check_root.
+        (root / "AGENTS.md").write_text("The law.\n", encoding="utf-8")
+        envelope = root / "CLAUDE.md"
+        for phrase, body in (
+            # Prose about the import reads correctly to a reviewer and imports
+            # nothing. This is the exact edit that passed every gate.
+            ("carries no live `@./AGENTS.md`", "See AGENTS.md in this repository.\n"),
+            # Backticks are the documented way to write the token WITHOUT
+            # importing, so a router carrying only that one is inert.
+            ("carries no live `@./AGENTS.md`", "Write it as `@./AGENTS.md` here.\n"),
+            # And inside a fence, for the same reason.
+            ("carries no live `@./AGENTS.md`",
+             "```markdown\n@./AGENTS.md\n```\n"),
+        ):
+            envelope.write_text(body, encoding="utf-8")
+            _, found, _ = check_root(root, docs_only=False)
+            fired = any(phrase in p["message"] and p["file"] == "CLAUDE.md"
+                        for p in found)
+            print(f"  {'fired    ' if fired else 'DID NOT  '} error: "
+                  f"{phrase} ({body.splitlines()[0][:34]!r})")
+            if not fired:
+                missing.append(f"error: {phrase} for {body!r}")
+        envelope.write_text("@./AGENTS.md\n", encoding="utf-8")
+        _, found, _ = check_root(root, docs_only=False)
+        noisy_env = [p for p in found if p["file"] == "CLAUDE.md"
+                     and "@./AGENTS.md" in p["message"]]
+        if noisy_env:
+            print("::error title=Check Docs::A CORRECT envelope was rejected.")
+            for p in noisy_env:
+                print(f"    {p['message']}")
+            return 1
+        envelope.unlink()
+        (root / "AGENTS.md").unlink()
 
         # The delivered registration files. RUN THROUGH check_root for the same
         # reason the tree gate is: calling the function proves the function, not
