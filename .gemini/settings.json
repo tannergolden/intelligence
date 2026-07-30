@@ -1,6 +1,6 @@
 {
   "$comment": [
-    "Delivered by tannergolden/ai. Overwritten in full on the next sync.",
+    "Delivered by tannergolden/intelligence. Overwritten in full on the next sync.",
     "Gemini CLI fingerprints project hooks: when this command changes, the",
     "hook is treated as new and untrusted and you are asked to approve it",
     "again. A sync that alters this file therefore prompts once, by design.",

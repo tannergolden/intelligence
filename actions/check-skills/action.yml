@@ -22,7 +22,7 @@
 #
 # Used as:
 #
-#   - uses: tannergolden/ai/actions/check-skills@v1
+#   - uses: tannergolden/intelligence/actions/check-skills@v1
 #     with:
 #       path: skills
 #

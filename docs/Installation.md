@@ -63,7 +63,7 @@ jobs:
       - name: '📥 Fetch the agent files at the pinned tag'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: tannergolden/ai
+          repository: tannergolden/intelligence
           ref: v1
           path: .ai-source
           persist-credentials: false
@@ -99,7 +99,7 @@ jobs:
 
           rm -rf .ai-source
           if git diff --cached --quiet; then echo 'Already current.'; exit 0; fi
-          git commit -m 'chore(agents): sync agent files from tannergolden/ai tag v1'
+          git commit -m 'chore(agents): sync agent files from tannergolden/intelligence tag v1'
           git push
 ```
 

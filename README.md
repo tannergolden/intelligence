@@ -83,7 +83,7 @@ The router is the one exception to a rule this repository held for its whole lif
 [`actions/check-skills`](actions/check-skills) validates every skill against the Agent Skills specification and the cross-vendor portability rules. It is a composite action, so any repository with skills can use it:
 
 ```yaml
-- uses: tannergolden/ai/actions/check-skills@v1
+- uses: tannergolden/intelligence/actions/check-skills@v1
   with:
     path: skills/.unpackaged
 ```

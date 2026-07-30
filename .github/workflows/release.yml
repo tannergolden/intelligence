@@ -126,7 +126,7 @@ jobs:
           fi
           echo "major=${VERSION%%.*}" >> "$GITHUB_OUTPUT"
 
-      # The README tells consumers to pin `tannergolden/ai/actions/check-skills@v1`,
+      # The README tells consumers to pin `tannergolden/intelligence/actions/check-skills@v1`,
       # and an action resolves against the ref it is called
       # at. If it is missing at the tag being cut, their run fails with a
       # message about a repository that does not exist, which is the least

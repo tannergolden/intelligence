@@ -17,7 +17,7 @@ make lint
 The checker is published as a composite action, so a repository with skills can gate them without copying anything:
 
 ```yaml
-- uses: tannergolden/ai/actions/check-skills@v1
+- uses: tannergolden/intelligence/actions/check-skills@v1
   with:
     path: skills
 ```
@@ -27,7 +27,7 @@ Pin the moving major to receive fixes, or a full `vX.Y.Z` for exactness.
 To run it once without adding a workflow, check the publisher out and invoke the script directly. It is standard library only, so there is nothing to install:
 
 ```bash
-git clone --depth 1 https://github.com/tannergolden/ai /tmp/ai-checker
+git clone --depth 1 https://github.com/tannergolden/intelligence /tmp/ai-checker
 python3 /tmp/ai-checker/scripts/check-skills.py path/to/skills
 ```
 
