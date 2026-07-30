@@ -1,0 +1,40 @@
+# --- Dependency Updates ---
+#
+# 🤖 Dependabot
+#
+# Purpose: keep the SHA pins rule 4 requires from rotting.
+#
+# ⚠️ THIS EXISTS BECAUSE OF RULE 4, NOT IN SPITE OF IT. Pinning every action
+# to an immutable commit is what the law asks for, and it buys nothing on its
+# own: a pin nobody moves is a pin that keeps a fixed, eventually-vulnerable
+# revision forever. The pin is the safety property; this is what makes it
+# maintainable. Dependabot rewrites the SHA and the trailing version comment
+# together, so the human-readable half cannot drift from the revision.
+#
+# ⚠️ IT OPENS PULL REQUESTS, AND NOTHING HERE MERGES THEM. Work lands in this
+# repository by direct push, so these arrive as a review queue rather than as
+# something that lands on its own. That is the intended shape: an upstream
+# change to `tannergolden/standards` used to reach this repository's own
+# continuous integration with no review at all, because the reference was a
+# moving tag. Now it reaches a pull request somebody reads.
+#
+# Only `github-actions` is watched. There is no package manifest in this
+# repository and there must not be one: both checkers are standard library
+# only, on purpose, because the skill checker ships as a composite action into
+# other people's continuous integration.
+#
+# ---
+
+version: 2
+
+updates:
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'build(actions)'
+    labels:
+      - 'dependencies'

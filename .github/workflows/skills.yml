@@ -56,7 +56,7 @@ jobs:
       contents: read # read the skills
     steps:
       - name: '🛡️ Harden Runner'
-        uses: tannergolden/standards/actions/harden@v1
+        uses: tannergolden/standards/actions/harden@a6ee0c23a1614b75a69353190dd7dd67faf59101 # v1.6.0
         with:
           egress-policy: audit
           notice: '🧪 Skill gate: validates published skills against the Agent Skills specification.'
@@ -79,7 +79,7 @@ jobs:
       contents: read # read the checker
     steps:
       - name: '🛡️ Harden Runner'
-        uses: tannergolden/standards/actions/harden@v1
+        uses: tannergolden/standards/actions/harden@a6ee0c23a1614b75a69353190dd7dd67faf59101 # v1.6.0
         with:
           egress-policy: audit
           notice: '🚨 Negative test: asserts the skill checker still rejects known-bad input.'
