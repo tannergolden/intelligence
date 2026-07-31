@@ -16,19 +16,20 @@
 # Called, never copied. The scanner is published once in
 # tannergolden/standards, so a fix there arrives here without an edit here.
 #
-# PINNED TO A COMMIT, like every other first-party reference in this
-# directory, for the reason `dependabot.yml` sets out at length: a moving tag
-# changes what this repository runs with no review at all, and the pull
-# request Dependabot opens is where that change gets read.
+# `@v1`, like every other first-party reference in this directory. That tag is
+# repointed at each release in the v1 line, which is the mechanism the account
+# is built on: a fix lands once upstream and reaches every repository without
+# a pull request in each of them. The review happens at the release that moves
+# the tag rather than at this call site, and a major is the one thing it never
+# crosses.
 #
 # NO `timeout-minutes` HERE, because a job that calls a reusable workflow
 # cannot carry one. The called workflow sets its own, per job.
 #
 # WHAT THIS COVERS TODAY IS THE PYTHON. Languages are detected upstream, and
 # the detection that emits GitHub Actions as a language of its own landed
-# after the release pinned below. The workflows and the composite action join
-# the analysis when that pin moves, which is a pull request rather than a
-# surprise.
+# after the release `@v1` currently points at. The workflows and the composite
+# action join the analysis on the next release that moves the tag.
 #
 # ---
 
@@ -55,4 +56,4 @@ jobs:
       actions: read # CodeQL resolves workflow run metadata during analysis
       contents: read # walk the checkout to build the language matrix
       security-events: write # upload CodeQL results to code scanning
-    uses: tannergolden/standards/.github/workflows/codeql.yml@a6ee0c23a1614b75a69353190dd7dd67faf59101 # v1.6.0
+    uses: tannergolden/standards/.github/workflows/codeql.yml@v1

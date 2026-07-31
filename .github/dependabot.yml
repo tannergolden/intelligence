@@ -16,14 +16,19 @@
 # review queue; a patch or a minor is approved and queued once the checks
 # agree, and a major waits for a human.
 #
-# The property that queue was created to protect is untouched. An upstream
-# change to `tannergolden/standards` used to reach this repository's own
-# continuous integration with no review at all, because the reference was a
-# moving tag: nothing named the revision and nothing recorded the change.
-# Every first-party reference here is a commit, so what arrives is still a
-# specific revision in a diff. Automating the click is not the same as
-# restoring the moving tag, and a major, which is where a breaking change to
-# a published workflow would appear, is still read by somebody.
+# ⚠️ AN EARLIER VERSION OF THIS FILE ARGUED THE OPPOSITE, and it is worth
+# saying why rather than quietly deleting it. It held that first-party
+# references must be commits, because a moving tag had once carried an
+# upstream change into this repository's continuous integration with no
+# review at all.
+#
+# The account settled that question the other way: `@v1` everywhere, in every
+# repository, because a tag that moves is precisely what lets a fix land once
+# upstream and reach everything that calls it. The review moves upstream with
+# it, to the release that repoints the tag. So this file no longer keeps a
+# revision from arriving unread; what it keeps current are the THIRD-PARTY
+# pins, which stay commits under rule 4 and have no tag moving on their
+# behalf. That is the job it is actually good at.
 #
 # Only `github-actions` is watched. There is no package manifest in this
 # repository and there must not be one: both checkers are standard library

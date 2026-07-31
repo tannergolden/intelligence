@@ -42,7 +42,7 @@ jobs:
   ci:
     permissions:
       contents: read # read this repository
-    uses: tannergolden/standards/.github/workflows/ci.yml@a6ee0c23a1614b75a69353190dd7dd67faf59101 # v1.6.0
+    uses: tannergolden/standards/.github/workflows/ci.yml@v1
     with:
       # No SPDX headers and no LICENSES/ directory here: the published files
       # are copied verbatim into other people's trees, where a license header

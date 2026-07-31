@@ -41,4 +41,4 @@ jobs:
   lint:
     permissions:
       contents: read # read the workflows
-    uses: tannergolden/standards/.github/workflows/lint-workflows.yml@a6ee0c23a1614b75a69353190dd7dd67faf59101 # v1.6.0
+    uses: tannergolden/standards/.github/workflows/lint-workflows.yml@v1

@@ -8,16 +8,22 @@
 # Called, never copied. The logic is published once in tannergolden/standards
 # and this file holds the trigger and nothing else.
 #
-# ⚠️ THIS NARROWS AN EARLIER POSITION, AND THE NARROWING IS THE POINT.
-# `dependabot.yml` used to say that nothing here merges these, because a
+# ⚠️ THIS REVERSES AN EARLIER POSITION, AND THE REVERSAL IS DELIBERATE.
+# `dependabot.yml` used to say that nothing here merges these, and every
+# first-party reference used to be a commit, both for the same reason: a
 # moving tag had once carried an upstream change into this repository's
-# continuous integration with no review at all. The pins are still commits
-# rather than tags, so that property is intact: what arrives is a specific
-# revision, named in a diff. What changes is who clicks merge on a patch or a
-# minor once the checks agree. A major still waits for a human, which is where
-# a breaking change to a published workflow would actually appear.
+# continuous integration with no review at all.
 #
-# PINNED TO A COMMIT, like every other first-party reference here.
+# The account settled the question the other way, and uniformly. `@v1` is the
+# pin everywhere, because a tag that moves is what lets a fix land once
+# upstream and reach every repository, which is the whole argument for sharing
+# the logic rather than copying it. Review moves with it: the release that
+# repoints the tag is the thing somebody reads, rather than a pull request in
+# each of six repositories saying the same thing. What is left here for a
+# human is a major, which the tag never crosses and the automation never
+# merges.
+#
+# `@v1`, like every other first-party reference here.
 #
 # NO `timeout-minutes`, because a job that calls a reusable workflow cannot
 # carry one. The called workflow sets its own, per job.
@@ -44,5 +50,5 @@ jobs:
     permissions:
       contents: write # allow the squash merge once required checks pass
       pull-requests: write # approve the pull request
-    uses: tannergolden/standards/.github/workflows/dependabot-automerge.yml@a6ee0c23a1614b75a69353190dd7dd67faf59101 # v1.6.0
+    uses: tannergolden/standards/.github/workflows/dependabot-automerge.yml@v1
     secrets: inherit # zizmor: ignore[secrets-inherit] - first-party callee at the ref pinned above.
