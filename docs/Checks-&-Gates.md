@@ -157,15 +157,20 @@ Both checkers build their own banned characters from codepoints rather than typi
 
 ---
 
-## 🌐 Three Gates `make` Cannot Run
+## 🌐 Four Gates `make` Cannot Run
 
-`ci.yml` calls the shared reusable workflow, which runs **spelling** and **link checking** in addition to the four `make` targets, and `lint-python.yml` runs **ruff** over the three programs that decide what ships. None has a local equivalent, and that asymmetry is worth knowing before it costs a red build: a clean `make lint-docs` is not the same claim as a clean CI run.
+`ci.yml` calls the shared reusable workflow, which runs **spelling** and **link checking** in addition to the four `make` targets, `lint-python.yml` runs **ruff** over the three programs that decide what ships, and `codeql.yml` runs **CodeQL** over those same programs and over the workflows and composite action that run in other people's continuous integration. None has a local equivalent, and that asymmetry is worth knowing before it costs a red build: a clean `make lint-docs` is not the same claim as a clean CI run.
 
 | Gate | Tool | Configuration |
 | :--- | :--- | :--- |
 | Spelling | `typos` | The shared `_typos.toml` in `standards`, an accept-list of terms its dictionary does not know |
 | Links | `lychee` | The shared `lychee.toml`, which accepts 403 and 429 so a host that blocks robots is not read as a broken link |
 | Python | `ruff` | `ruff.toml` here, with the version pinned in `lint-python.yml`. Both halves: one fixes which tool runs, the other fixes what it looks for |
+| Security | `CodeQL` | The shared `codeql.yml` in `standards`, pinned to a commit. Languages are detected from the tree rather than declared, so a new one is analyzed without an edit here |
+
+**Ruff and CodeQL are not the same claim, and the gap between them is the point.** A linter reads a line; a taint analysis follows a value. The programs gated here are the last reader before a skill, a document or an archive is published, and `check-skills.py` ships as a composite action into repositories nobody here can see. Style and correctness rules had been reading those three thousand lines for a while. Nothing had been asking whether an input reaches a place it should not, which is the question that matters most in code that runs on somebody else's machine.
+
+**It analyzes what is published, not only what is imported.** GitHub Actions is a language CodeQL reads, so the workflows in `.github/workflows/` and the `action.yml` under `actions/` are analyzed as code rather than skipped as configuration. That is the half `actionlint` and `zizmor` in `lint-workflows.yml` cannot reach: they check shape and known-bad patterns, and this follows an expression to where it is expanded.
 
 **Ruff's version and rule set are both pinned, and the first run is why.** Without a pinned version the action resolves the latest release, so the gate ran one version locally and another in continuous integration, with a different default rule set and eighteen findings no local run could reproduce. A check that cannot be reproduced is a check nobody can act on, which is the same argument behind every SHA pin here and behind the packager's fixed timestamps.
 

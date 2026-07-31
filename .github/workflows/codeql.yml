@@ -1,0 +1,52 @@
+# --- This Repository's Own Security Audit ---
+#
+# 🔓 Security Audit
+#
+# Purpose: static analysis over the programs that decide what ships, and over
+# the workflows and the composite action that run in other people's
+# continuous integration.
+#
+# ⚠️ RUFF IS A LINTER, NOT A TAINT ANALYSIS. The Python here is the last
+# reader before a skill, a document or an archive is published, and
+# `actions/check-skills` runs inside somebody else's continuous integration.
+# Style and correctness rules had been reading those lines for a while;
+# nothing had been reading them for injection, unsafe expansion, or a path
+# that escapes the tree it was handed. This is that reader.
+#
+# Called, never copied. The scanner is published once in
+# tannergolden/standards, so a fix there arrives here without an edit here.
+#
+# PINNED TO A COMMIT, like every other first-party reference in this
+# directory, for the reason `dependabot.yml` sets out at length: a moving tag
+# changes what this repository runs with no review at all, and the pull
+# request Dependabot opens is where that change gets read.
+#
+# NO `timeout-minutes` HERE, because a job that calls a reusable workflow
+# cannot carry one. The called workflow sets its own, per job.
+#
+# ---
+
+name: '🔓 Security Audit'
+
+on:
+  push:
+    branches: ['Development']
+  schedule:
+    - cron: '0 3 * * 1' # weekly, so a new query pack reaches untouched code
+  workflow_dispatch:
+
+concurrency:
+  # An analysis in flight is never canceled: a partial upload would replace a
+  # complete one, and the next scheduled sweep is a week away.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  codeql:
+    permissions:
+      actions: read # CodeQL resolves workflow run metadata during analysis
+      contents: read # walk the checkout to build the language matrix
+      security-events: write # upload CodeQL results to code scanning
+    uses: tannergolden/standards/.github/workflows/codeql.yml@a6ee0c23a1614b75a69353190dd7dd67faf59101 # v1.6.0

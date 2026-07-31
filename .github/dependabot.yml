@@ -23,6 +23,17 @@
 # only, on purpose, because the skill checker ships as a composite action into
 # other people's continuous integration.
 #
+# ⚠️ ONE SWEEP IS ONE PULL REQUEST. Ungrouped, an interval's updates arrive as
+# a pull request per action, and this repository references six: three
+# third-party and three into `tannergolden/standards`. A grouped sweep is one
+# branch, one review and one commit for what is one decision.
+#
+# ⚠️ THE COMPOSITE ACTION NEEDS NAMING SEPARATELY. Dependabot discovers
+# workflows under `.github/workflows/`, and an `action.yml` anywhere else is
+# invisible to it. `actions/check-skills` pins nothing today, which is exactly
+# why this is a glob rather than a list: the entry that is only correct while
+# a folder stays empty is the entry nobody notices going wrong.
+#
 # ---
 
 version: 2
@@ -38,3 +49,23 @@ updates:
       prefix: 'build(actions)'
     labels:
       - 'dependencies'
+    groups:
+      github-actions:
+        patterns:
+          - '*'
+
+  - package-ecosystem: 'github-actions'
+    directories:
+      - '/actions/*'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'build(actions)'
+    labels:
+      - 'dependencies'
+    groups:
+      github-actions:
+        patterns:
+          - '*'
