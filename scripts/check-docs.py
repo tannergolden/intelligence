@@ -1109,7 +1109,7 @@ def check_root(root: Path, docs_only: bool = False):
     # correct because of a copy made somewhere else. Both ends of a collision
     # need changing anyway: only the author knows which one owns the phrase.
     for kind, table in (("tagline", taglines), ("footer phrase", footers)):
-        for value, owners in sorted(table.items()):
+        for _value, owners in sorted(table.items()):
             if len(owners) > 1:
                 for owner in owners:
                     others = [o for o in owners if o != owner]

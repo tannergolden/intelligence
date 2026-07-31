@@ -58,7 +58,14 @@ jobs:
         with:
           persist-credentials: false
 
+      # ⚠️ THE VERSION IS PINNED, and the first run of this workflow is why.
+      # Without it the action resolves "latest", so the gate ran 0.15.8 on the
+      # machine it was written on and 0.16.1 in CI, with a different default
+      # rule set and eighteen findings that no local run could reproduce. The
+      # rules are pinned beside it in `ruff.toml`. Both halves are needed: one
+      # fixes which tool runs, the other fixes what it looks for.
       - name: '🐍 Ruff'
         uses: astral-sh/ruff-action@4919ec5cf1f49eff0871dbcea0da843445b837e6 # v3.6
         with:
+          version: '0.15.8'
           args: 'check --output-format github'

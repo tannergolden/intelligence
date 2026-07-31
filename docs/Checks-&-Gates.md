@@ -165,7 +165,9 @@ Both checkers build their own banned characters from codepoints rather than typi
 | :--- | :--- | :--- |
 | Spelling | `typos` | The shared `_typos.toml` in `standards`, an accept-list of terms its dictionary does not know |
 | Links | `lychee` | The shared `lychee.toml`, which accepts 403 and 429 so a host that blocks robots is not read as a broken link |
-| Python | `ruff` | Its defaults, pinned by SHA in `lint-python.yml` |
+| Python | `ruff` | `ruff.toml` here, with the version pinned in `lint-python.yml`. Both halves: one fixes which tool runs, the other fixes what it looks for |
+
+**Ruff's version and rule set are both pinned, and the first run is why.** Without a pinned version the action resolves the latest release, so the gate ran one version locally and another in continuous integration, with a different default rule set and eighteen findings no local run could reproduce. A check that cannot be reproduced is a check nobody can act on, which is the same argument behind every SHA pin here and behind the packager's fixed timestamps.
 
 **Ruff cannot be a `make` target, and that is the point of the category.** `make setup` says there is nothing to install, and that claim is load-bearing: the skill checker ships as a composite action into other people's continuous integration, where a dependency resolution is a network call, a supply chain and a failure mode at once. A tool added to `make lint` would make the claim false for everyone who runs it. Until this gate existed, three thousand lines of Python that decide whether a skill ships, whether a document passes, and what bytes go into a release archive had no static analysis at all; the `# noqa` directives in both checkers were written for a linter that had never run.
 

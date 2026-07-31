@@ -1,0 +1,37 @@
+# =============================================================================
+# ruff.toml - the rule set, stated rather than inherited
+# =============================================================================
+# WHY THIS FILE EXISTS. The lint gate was added without one, so the action
+# resolved "latest" and ran whatever that version happened to default to. It
+# passed locally on 0.15.8 and failed on 0.16.1 with eighteen findings from
+# rules the older version does not enable. A gate whose meaning changes with
+# the calendar is not a gate: it goes red on a day nobody changed anything,
+# and the fix looks like appeasing a tool rather than fixing a defect.
+#
+# So both halves are pinned. The version is pinned in `lint-python.yml`, and
+# the rules are pinned here. Same reasoning as the SHA on every action and the
+# fixed timestamp in the packager: a check that cannot be reproduced is a check
+# nobody can act on.
+#
+# THE SET IS DELIBERATE, NOT MAXIMAL. Each family earns its place:
+#
+#   E, W  pycodestyle. `E402` is the one that matters here, because both
+#         checkers import after `sys.path.insert` and carry a `noqa` for it.
+#         Under the default set that rule was never enabled, so those
+#         directives were dead: written for a linter that had never run.
+#   F     pyflakes. Undefined names and unused imports, which is the class
+#         that actually breaks a checker at runtime.
+#   B     bugbear. Real bug shapes rather than style.
+#   RUF   ruff's own, including `RUF100`, which reports a `noqa` that no
+#         longer suppresses anything. That is what caught the dead directives.
+#
+# Deliberately absent: the opinionated and preview families, `FURB`, `PLW`,
+# `ISC`, `EXE` among them. They produced most of the eighteen and most of
+# those were style. Adding one is a commit somebody reviews, which is the same
+# rule this repository applies to its byte budgets.
+# =============================================================================
+
+line-length = 100
+
+[lint]
+select = ["E", "W", "F", "B", "RUF"]
