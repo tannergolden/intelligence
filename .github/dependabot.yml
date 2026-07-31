@@ -11,12 +11,19 @@
 # maintainable. Dependabot rewrites the SHA and the trailing version comment
 # together, so the human-readable half cannot drift from the revision.
 #
-# ⚠️ IT OPENS PULL REQUESTS, AND NOTHING HERE MERGES THEM. Work lands in this
-# repository by direct push, so these arrive as a review queue rather than as
-# something that lands on its own. That is the intended shape: an upstream
+# ⚠️ IT OPENS PULL REQUESTS, AND `dependabot-automerge.yml` MERGES SOME OF
+# THEM. Work lands in this repository by direct push, so these arrive as a
+# review queue; a patch or a minor is approved and queued once the checks
+# agree, and a major waits for a human.
+#
+# The property that queue was created to protect is untouched. An upstream
 # change to `tannergolden/standards` used to reach this repository's own
 # continuous integration with no review at all, because the reference was a
-# moving tag. Now it reaches a pull request somebody reads.
+# moving tag: nothing named the revision and nothing recorded the change.
+# Every first-party reference here is a commit, so what arrives is still a
+# specific revision in a diff. Automating the click is not the same as
+# restoring the moving tag, and a major, which is where a breaking change to
+# a published workflow would appear, is still read by somebody.
 #
 # Only `github-actions` is watched. There is no package manifest in this
 # repository and there must not be one: both checkers are standard library
@@ -27,6 +34,13 @@
 # a pull request per action, and this repository references six: three
 # third-party and three into `tannergolden/standards`. A grouped sweep is one
 # branch, one review and one commit for what is one decision.
+#
+# THE SETTINGS BELOW ARE THE ACCOUNT'S, NOT THIS REPOSITORY'S. Every
+# repository that runs Dependabot runs the same configuration, cadence,
+# grouping and labels alike, so the decision is made once rather than drifting
+# into a slightly different file per repository. Monthly rather than weekly:
+# grouping makes the cadence the only remaining source of noise, and a pin
+# four weeks old is not worth a weekly interruption.
 #
 # ⚠️ THE COMPOSITE ACTION NEEDS NAMING SEPARATELY. Dependabot discovers
 # workflows under `.github/workflows/`, and an `action.yml` anywhere else is
@@ -42,12 +56,15 @@ updates:
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
-      interval: 'weekly'
-      day: 'monday'
+      interval: 'monthly'
+      time: '07:00'
+      timezone: 'Etc/UTC'
     open-pull-requests-limit: 5
     commit-message:
-      prefix: 'build(actions)'
+      prefix: 'build'
+      include: 'scope'
     labels:
+      - 'type: build'
       - 'dependencies'
     groups:
       github-actions:
@@ -58,12 +75,15 @@ updates:
     directories:
       - '/actions/*'
     schedule:
-      interval: 'weekly'
-      day: 'monday'
+      interval: 'monthly'
+      time: '07:00'
+      timezone: 'Etc/UTC'
     open-pull-requests-limit: 5
     commit-message:
-      prefix: 'build(actions)'
+      prefix: 'build'
+      include: 'scope'
     labels:
+      - 'type: build'
       - 'dependencies'
     groups:
       github-actions:
