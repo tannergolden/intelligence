@@ -1,0 +1,51 @@
+# --- This Repository's Pull Request Gate ---
+#
+# ⚖️ Governance
+#
+# Purpose: title and DCO sign-off validation on pull requests, called from
+# tannergolden/standards.
+#
+# ⚠️ THE FILE NAME IS PART OF THE CONTRACT. The account's shared zizmor
+# configuration accepts a `pull_request_target` trigger for `governance.yml`
+# by name, with the reasoning recorded there: the called workflow has no
+# checkout of pull request code at all and reads titles and trailers through
+# the API. Rename this file and the exemption silently stops applying, which
+# reddens `lint-workflows.yml` on a file nothing else changed.
+#
+# ⚠️ RULESET-LOAD-BEARING JOB ID: `pr` reports as 'pr / ✍️ DCO Sign-Off'.
+#
+# `pull_request_target`, not `pull_request`, because a fork's pull request
+# runs with a read-only token and cannot publish a status check at all.
+#
+# WORK LANDS HERE BY DIRECT PUSH, so the pull requests this validates are
+# mostly Dependabot's. Those are not exempt from the check and do not need to
+# be: bot-authored commits are exempt from the DCO trailer by contract in the
+# called workflow, so the job passes them rather than skipping, and a skipped
+# required check would wait forever.
+#
+# Only the `pr` job is installed. The wider governance workflow greets
+# newcomers and sweeps stale threads, which needs Issues; they are disabled
+# on this repository.
+#
+# ---
+
+name: '⚖️ Governance'
+
+on:
+  pull_request_target:
+    # `edited` re-validates a corrected title; the rest are idempotent.
+    types: [opened, edited, synchronize, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  # RULESET-LOAD-BEARING JOB ID: reports as 'pr / ✍️ DCO Sign-Off'.
+  pr:
+    permissions:
+      pull-requests: read # read the PR title under validation
+      statuses: write # publish the semantic-title status check on the PR
+    uses: tannergolden/standards/.github/workflows/semantic-pr.yml@v1

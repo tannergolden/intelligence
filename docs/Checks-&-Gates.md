@@ -157,16 +157,18 @@ Both checkers build their own banned characters from codepoints rather than typi
 
 ---
 
-## 🌐 Four Gates `make` Cannot Run
+## 🌐 Six Gates `make` Cannot Run
 
-`ci.yml` calls the shared reusable workflow, which runs **spelling** and **link checking** in addition to the four `make` targets, `lint-python.yml` runs **ruff** over the three programs that decide what ships, and `codeql.yml` runs **CodeQL** over those same programs. None has a local equivalent, and that asymmetry is worth knowing before it costs a red build: a clean `make lint-docs` is not the same claim as a clean CI run.
+`ci.yml` calls the shared reusable workflow, which runs **spelling** and **link checking** in addition to the four `make` targets, `lint-python.yml` runs **ruff** over the three programs that decide what ships, `codeql.yml` runs **CodeQL** over those same programs, `secrets.yml` runs **gitleaks** over the full history, and `governance.yml` validates the title and DCO sign-off on every pull request. None has a local equivalent, and that asymmetry is worth knowing before it costs a red build: a clean `make lint-docs` is not the same claim as a clean CI run.
 
 | Gate | Tool | Configuration |
 | :--- | :--- | :--- |
 | Spelling | `typos` | The shared `_typos.toml` in `standards`, an accept-list of terms its dictionary does not know |
 | Links | `lychee` | The shared `lychee.toml`, which accepts 403 and 429 so a host that blocks robots is not read as a broken link |
 | Python | `ruff` | `ruff.toml` here, with the version pinned in `lint-python.yml`. Both halves: one fixes which tool runs, the other fixes what it looks for |
-| Security | `CodeQL` | The shared `codeql.yml` in `standards`, pinned to a commit. Languages are detected from the tree rather than declared, so a new one is analyzed without an edit here |
+| Security | `CodeQL` | The shared `codeql.yml` in `standards`, at `@v1`. Languages are detected from the tree rather than declared, so a new one is analyzed without an edit here |
+| Secrets | `gitleaks` | The shared `gitleaks.yml` in `standards`, over the **full history**: a credential removed in a later commit is still in the pack file and still valid until it is rotated |
+| Pull requests | `semantic-pr` | The shared `semantic-pr.yml` in `standards`. Bot commits are exempt from the DCO trailer by contract, so Dependabot's pull requests pass rather than skip |
 
 **Ruff and CodeQL are not the same claim, and the gap between them is the point.** A linter reads a line; a taint analysis follows a value. The programs gated here are the last reader before a skill, a document or an archive is published, and `check-skills.py` ships as a composite action into repositories nobody here can see. Style and correctness rules had been reading those three thousand lines for a while. Nothing had been asking whether an input reaches a place it should not, which is the question that matters most in code that runs on somebody else's machine.
 
