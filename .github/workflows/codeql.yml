@@ -24,6 +24,12 @@
 # NO `timeout-minutes` HERE, because a job that calls a reusable workflow
 # cannot carry one. The called workflow sets its own, per job.
 #
+# WHAT THIS COVERS TODAY IS THE PYTHON. Languages are detected upstream, and
+# the detection that emits GitHub Actions as a language of its own landed
+# after the release pinned below. The workflows and the composite action join
+# the analysis when that pin moves, which is a pull request rather than a
+# surprise.
+#
 # ---
 
 name: '🔓 Security Audit'
