@@ -97,14 +97,19 @@ The universal rules: Invariants, then Defaults, each with an ID such as SEC-001.
 ## Overrides
 ```
 
-Both copies of the rules carry the same precedence text, so an agent that loads
-two of them knows which one wins. Its current draft, worded finally in v0.1:
+Both copies open with the same precedence text, so an agent that loads both
+knows which rule wins:
 
-> Invariants from every copy of these rules apply. For Defaults, this
-> repository's block wins over your user-level copy, this repository's own
-> sections win over the block, and an entry under "Overrides" in this file
-> replaces the Default it names. Invariants cannot be overridden: if one
-> conflicts with another instruction, stop and ask.
+> - Invariants: follow every one in every copy; nothing waives one. If a request
+>   needs what one forbids, do the rest, skip that part and name the rule ID.
+> - Defaults: your user's explicit request for this task wins, then the
+>   repository's "Overrides" entry for that rule ID, then the repository's copy
+>   of these rules. In forks, and in repositories tannergolden does not own, the
+>   project's own rules win and owner-only Defaults do not apply; a repository
+>   with no remote yet counts as tannergolden's.
+
+A repository changes a Default only through an Overrides entry naming its rule
+ID, and `make audit` rejects one that names an Invariant.
 
 **How a release reaches the repositories**, from v0.3:
 
@@ -172,7 +177,7 @@ with the options it was weighed against:
 - [ADR-0006](docs/adrs/ADR-0006-Build-The-Law-Adopt-The-Plumbing.md): build the law, adopt the plumbing
 - [ADR-0007](docs/adrs/ADR-0007-Public-MIT-Hub.md): this hub is public and MIT-licensed
 - [ADR-0008](docs/adrs/ADR-0008-Names-Without-Prefixes.md): rule IDs are `DOMAIN-NNN`, and nothing carries an owner prefix
-- [ADR-0009](docs/adrs/ADR-0009-Agents-Follow-The-Standards.md): every agent follows the engineering standards in all development work
+- [ADR-0009](docs/adrs/ADR-0009-Agents-Follow-The-Standards.md): every agent follows the engineering standards in every repository you own
 
 ---
 
@@ -182,7 +187,8 @@ with the options it was weighed against:
 [tannergolden/standards](https://github.com/tannergolden/standards/blob/Development/docs/README.md)**,
 by link: how to branch, commit, review, release, test and write documents. The
 rules this hub publishes point agents at the same standards, so the work an
-agent does in any repository meets them too.
+agent does in any repository you own meets them too, a new one included. Forks
+and other people's repositories follow their own rules.
 
 ---
 

@@ -69,7 +69,7 @@ The first design also carried an agent hierarchy, a knowledge layer and behaviou
 
 ### Rationale for Selection
 
-Each piece covers sessions the other cannot. The home copy is the only thing that reaches scratch folders and repositories the owner does not control. The repository block is the only thing that reaches a cloud agent or a collaborator's agent, which run with nothing installed. Rendering both from one law keeps them identical, and the precedence sentence ([ADR-0004](ADR-0004-Precedence-Overrides-&-Hash-Marker.md)) settles which copy wins when an agent loads both.
+Each piece covers sessions the other cannot. The home copy is the only thing that reaches scratch folders and repositories the owner does not control. The repository block is the only thing that reaches a cloud agent or a collaborator's agent, which run with nothing installed. Rendering both from one law keeps them identical, and the precedence text ([ADR-0004](ADR-0004-Precedence-Overrides-&-Hash-Marker.md)) settles which copy wins when an agent loads both.
 
 Repository only was a close second, since every cloud agent already relies on the repository block. It loses because the owner asked for the home layer, and only that layer reaches repositories nobody can add a block to.
 

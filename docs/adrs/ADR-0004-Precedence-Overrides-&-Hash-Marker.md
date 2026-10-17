@@ -1,6 +1,6 @@
 <!--
 title: '📄 ADR-0004: PRECEDENCE, OVERRIDES & HASH MARKER'
-description: 'Invariants from every copy of the rules apply, Defaults resolve from the repository outwards with overrides by rule ID, and the managed block is marked with a hash of its content.'
+description: 'Invariants from every copy of the rules apply and nothing waives one, Defaults yield to the user''s request and then to an Overrides entry by rule ID, and the managed block is marked with a hash of its content.'
 tags: [adr, precedence, instructions, versioning]
 category: docs
 status: 'Proposed'
@@ -45,13 +45,14 @@ An agent can load the home copy, the repository's block and the repository's own
 - Codex and Grok Build let the deeper file win.
 - Claude Code weighs conflicts by judgment.
 
-So the rules must state their own precedence. The first draft said the repository's copy wins. That lets a stale block override a newer invariant: a repository still carrying an older block would tell the agent to ignore a security invariant added since. The draft marker also carried the release version, so every release would rewrite every repository's `AGENTS.md`, even a release that changed only the home kit.
+So the rules must state their own precedence. The first draft said the repository's copy wins. That lets a stale block override a newer invariant: a repository still carrying an older block would tell the agent to ignore a security invariant added since. Its fallback, "stop and ask", strands an unattended run that nobody is there to answer, and its trigger, "another instruction", would let a comment injected into an issue halt the agent. The draft marker also carried the release version, so every release would rewrite every repository's `AGENTS.md`, even a release that changed only the home kit.
 
 ---
 
 ## 🚦 Decision Drivers
 
 - **A newer Invariant is never undone by an older copy.**
+- **A conflict never strands a run**, attended or not, and outside text cannot trigger one.
 - **A repository can change a Default without editing the managed block**, which sync owns.
 - **A release that leaves the block unchanged touches no repository.**
 - **Drift is detectable** by a tool, not only by reading.
@@ -62,7 +63,7 @@ So the rules must state their own precedence. The first draft said the repositor
 
 1. **The repository's copy wins outright.**
 2. **The home copy wins outright.**
-3. **Invariants from every copy apply; Defaults resolve from the repository outwards, and an Overrides section replaces a Default by its ID.**
+3. **Invariants from every copy apply; Defaults follow one ladder: the user's explicit request, then an Overrides entry naming the rule ID, then the repository's copy.**
 
 The marker had two candidates of its own: **the release version** (`INTELLIGENCE:BEGIN v0.4.0`), or **a hash of the block's content** (`INTELLIGENCE:BEGIN sha256:...`).
 
@@ -74,13 +75,14 @@ The marker had two candidates of its own: **the release version** (`INTELLIGENCE
 
 ### Rationale for Selection
 
-Both copies carry the same precedence text. Its current draft:
+The precedence text is the first two lines of the block, word for word the same in the home copy and the repository copy:
 
-> Invariants from every copy of these rules apply. For Defaults, this repository's block wins over your user-level copy, this repository's own sections win over the block, and an entry under "Overrides" in this file replaces the Default it names. Invariants cannot be overridden: if one conflicts with another instruction, stop and ask.
+> - Invariants: follow every one in every copy; nothing waives one. If a request needs what one forbids, do the rest, skip that part and name the rule ID.
+> - Defaults: your user's explicit request for this task wins, then the repository's "Overrides" entry for that rule ID, then the repository's copy of these rules. In forks, and in repositories tannergolden does not own, the project's own rules win and owner-only Defaults do not apply; a repository with no remote yet counts as tannergolden's.
 
-This record fixes the structure, not the words. The final wording ships with the law in v0.1, once the research into universal rules has tested it against how each app resolves conflicts, including what an agent does when nobody is there to answer.
+Invariants only accumulate: whichever copy is newer, its invariants hold, so an old block can never undo a new one. When a request needs what an Invariant forbids, the agent does the rest, skips that part and names the rule ID, so an unattended run still finishes and outside text cannot halt it.
 
-Invariants only accumulate: whichever copy is newer, its invariants hold, so an old block can never undo a new one. A repository changes a Default with one line under Overrides naming its ID, and sync never touches that section. Options 1 and 2 each let one stale copy win everything.
+A repository changes a Default only with an entry under Overrides naming its ID, and sync never touches that section. `make audit` rejects an entry that names an Invariant, and asks for a reason on one that names STD-001, the pointer to the standards. Because both copies carry the same words, an agent that loads both reads one text twice, never two paraphrases that could look like a conflict. Options 1 and 2 each let one stale copy win everything.
 
 The marker carries a hash: `<!-- INTELLIGENCE:BEGIN sha256:<hash of the block> -->`. A release that does not change the block renders the same hash, so sync opens no pull request. `make audit` maps each hash to the release that produced it, and reports a block whose content no longer matches its hash.
 
@@ -88,11 +90,11 @@ The marker carries a hash: `<!-- INTELLIGENCE:BEGIN sha256:<hash of the block> -
 
 ## 📈 Consequence Matrix
 
-| Category         | Impact / Consequence                                                                                                                                               |
-| :--------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Positive (+)** | Invariants hold across stale copies; overrides need no edit to the block; quiet releases touch nothing; hand edits are caught by `make audit`                      |
-| **Negative (-)** | Overrides are prose an agent must apply by rule ID; an Invariant that conflicts with another instruction stops the agent to ask, which can pause an unattended run |
-| **Neutral (~)**  | The marker is for tools; no agent needs to read it                                                                                                                 |
+| Category         | Impact / Consequence                                                                                                                                                          |
+| :--------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Positive (+)** | Invariants hold across stale copies; a conflict never strands a run; overrides need no edit to the block; quiet releases touch nothing; hand edits are caught by `make audit` |
+| **Negative (-)** | Overrides are prose an agent must apply by rule ID; a request that needs what an Invariant forbids is done only in part, with the skipped part named                          |
+| **Neutral (~)**  | The marker is for tools; no agent needs to read it                                                                                                                            |
 
 ---
 
@@ -108,10 +110,10 @@ The marker carries a hash: `<!-- INTELLIGENCE:BEGIN sha256:<hash of the block> -
 - ✅ The newest rules on the machine always apply
 - ❌ A repository cannot adjust anything, and collaborators' agents have no home copy
 
-### Option 3: Invariants accumulate, Defaults resolve outwards
+### Option 3: Invariants accumulate, Defaults follow one ladder
 
-- ✅ Safe across stale copies, and flexible where it is allowed to be
-- ❌ One more sentence every agent must follow
+- ✅ Safe across stale copies, and every run can finish
+- ❌ Two lines of precedence every agent must follow
 
 ---
 
@@ -120,6 +122,7 @@ The marker carries a hash: `<!-- INTELLIGENCE:BEGIN sha256:<hash of the block> -
 - [ADR-0002](ADR-0002-One-Root-AGENTS-File.md): the file the marker lives in
 - [ADR-0003](ADR-0003-Push-Sync-&-Owner-Merge.md): sync, which the hash keeps quiet
 - [ADR-0008](ADR-0008-Names-Without-Prefixes.md): the rule IDs an Overrides entry cites
+- [ADR-0009](ADR-0009-Agents-Follow-The-Standards.md): STD-001, and where the owner-only Defaults reach
 
 ### 🔗 See also
 
