@@ -50,9 +50,18 @@ trade-offs that shaped it before changing it.
 
 <!-- AUTO-INDEX:BEGIN dir=. style=log fields=status,date,evidence -->
 
-| Entry                    | Status | Date | Evidence | Purpose    |
-| :----------------------- | :----- | :--- | :------- | :--------- |
-| [`README.md`](README.md) | -      | -    | -        | This file. |
+| Entry                                                                                              | Status   | Date       | Evidence | Purpose                                                                                                                                                                                 |
+| :------------------------------------------------------------------------------------------------- | :------- | :--------- | :------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`ADR-0001-Two-Pieces-Home-&-Repository.md`](ADR-0001-Two-Pieces-Home-&-Repository.md)             | Proposed | 2026-10-17 | N/A      | The universal rules reach agents in two pieces, a copy in each app's home folder and a managed block in every repository, both rendered from one source.                                |
+| [`ADR-0002-One-Root-AGENTS-File.md`](ADR-0002-One-Root-AGENTS-File.md)                             | Proposed | 2026-10-17 | N/A      | Each repository carries exactly one AGENTS.md, at its root, holding the managed block and the sections the repository owns, with no CLAUDE.md or per-tool files.                        |
+| [`ADR-0003-Push-Sync-&-Owner-Merge.md`](ADR-0003-Push-Sync-&-Owner-Merge.md)                       | Proposed | 2026-10-17 | N/A      | The hub delivers each release as one pull request per repository, opened under the owner's own login, and the owner merges them, with no stub, secret or bot merge in any repository.   |
+| [`ADR-0004-Precedence-Overrides-&-Hash-Marker.md`](ADR-0004-Precedence-Overrides-&-Hash-Marker.md) | Proposed | 2026-10-17 | N/A      | Invariants from every copy of the rules apply, Defaults resolve from the repository outwards with overrides by rule ID, and the managed block is marked with a hash of its content.     |
+| [`ADR-0005-Home-Copies-Not-Links.md`](ADR-0005-Home-Copies-Not-Links.md)                           | Proposed | 2026-10-17 | N/A      | The home kit writes byte-identical copies of the rules into each app's own home location, checked against the release, instead of linking every app to one shared file.                 |
+| [`ADR-0006-Build-The-Law-Adopt-The-Plumbing.md`](ADR-0006-Build-The-Law-Adopt-The-Plumbing.md)     | Proposed | 2026-10-17 | N/A      | The hub builds its own renderer and installer in the Python standard library, and adopts existing tools for the plumbing around them, with set triggers to revisit.                     |
+| [`ADR-0007-Public-MIT-Hub.md`](ADR-0007-Public-MIT-Hub.md)                                         | Proposed | 2026-10-17 | N/A      | The hub is a public repository under the MIT License, with every seeded document footer to match, because consumers fetch its releases without credentials.                             |
+| [`ADR-0008-Names-Without-Prefixes.md`](ADR-0008-Names-Without-Prefixes.md)                         | Proposed | 2026-10-17 | N/A      | Rule IDs take the form DOMAIN-NNN and every file and skill is named for what it does, with no owner prefix on either.                                                                   |
+| [`ADR-0009-Agents-Follow-The-Standards.md`](ADR-0009-Agents-Follow-The-Standards.md)               | Proposed | 2026-10-17 | N/A      | Every AI agent follows the engineering standards in tannergolden/standards in all development work, and the universal rules point at them instead of carrying conventions of their own. |
+| [`README.md`](README.md)                                                                           | -        | -          | -        | This file.                                                                                                                                                                              |
 
 <!-- AUTO-INDEX:END -->
 
