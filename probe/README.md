@@ -1,0 +1,174 @@
+<!--
+title: '🧪 LOADER PROBE'
+description: 'Proves, on the machine that runs it, which instruction files each AI coding app actually loads.'
+tags: [ai-agents, agents-md, probe, testing]
+category: docs
+-->
+
+<!-- markdownlint-disable MD041 -->
+<div align="center">
+
+# 🧪 LOADER PROBE
+
+<a name="top"></a>
+
+**Proof, on your own machine, of which instruction file each AI coding app reads.**
+
+_Phase 0: nothing later rests on a claim this has not checked._
+
+</div>
+
+---
+
+## 💡 What This Folder Is For
+
+The plan rests on claims about where each app looks for its instructions,
+gathered from documentation and source code. Apps change where they look
+without notice, so the probe checks every claim on the machine that will rely
+on it, before anything is built on top.
+
+**It plants a random twelve-character code in each file an app should read,
+then asks the app, headless, which codes its instructions define.** A code
+cannot be guessed, so an app that reports one has loaded the file that holds
+it.
+
+| Value          | Planted in                                  | Expected                                                  |
+| :------------- | :------------------------------------------ | :-------------------------------------------------------- |
+| `PROBE_REPO`   | A scratch git repository's root `AGENTS.md` | Every app reads it                                        |
+| `PROBE_HOME`   | The home copy in each app's own folder      | Every app with a home copy reads it                       |
+| `PROBE_MASTER` | `~/.agents/AGENTS.md`                       | No app reads it, so the kit's copies can never load twice |
+
+---
+
+## 🎯 What It Checks
+
+| App             | Command                                     | Home copy it should read                                     |
+| :-------------- | :------------------------------------------ | :----------------------------------------------------------- |
+| Claude Code     | `claude -p`, with its file tools disallowed | `~/.claude/rules/intelligence-probe.md`                      |
+| Codex           | `codex exec --sandbox read-only`            | A marked block in `~/.codex/AGENTS.md`                       |
+| Antigravity CLI | `agy -p`                                    | A marked block in `~/.gemini/AGENTS.md`                      |
+| Copilot CLI     | `copilot -p --trust-folder`                 | `~/.copilot/instructions/intelligence-probe.instructions.md` |
+| Grok Build      | `GROK_FOLDER_TRUST=0 grok -p`               | Claude Code's copy, which it reads by default                |
+| Cursor CLI      | `cursor-agent -p`                           | None: Cursor's User Rules are pasted by hand                 |
+
+Every flag that decides whether instructions load is set explicitly, because
+headless runs skip them silently in documented cases. **Controls check those
+cases, and each expects the repository's `AGENTS.md` to be skipped unless
+stated:**
+
+| Control                                              | Expected                       |
+| :--------------------------------------------------- | :----------------------------- |
+| Claude Code beside a `CLAUDE.md`                     | Skips `AGENTS.md`              |
+| Claude Code beside a `CLAUDE.md`, reading both       | Reads it, through `--settings` |
+| Claude Code beside a `CLAUDE.local.md`               | Skips `AGENTS.md`              |
+| Claude Code beside a `CLAUDE.local.md`, reading both | Reads it, through `--settings` |
+| Grok Build in an untrusted folder                    | Skips `AGENTS.md`              |
+
+If your own Claude settings already read both files, the two Claude controls
+expect `AGENTS.md` to load, and their labels say so.
+
+---
+
+## 🚀 Running It
+
+From the root of the repository:
+
+```bash
+python3 probe/loader-probe.py --dry-run     # show the plan, change nothing
+python3 probe/loader-probe.py               # every installed app
+python3 probe/loader-probe.py --apps claude,grok
+python3 probe/loader-probe.py --keep        # set up a check by hand
+python3 probe/loader-probe.py --cleanup     # undo --keep, or a crash
+```
+
+It needs Python 3.9 or later and git, and nothing else. Each check is one model
+call: twelve in a full run, on your own subscriptions. An app installed under
+another name takes `--command`, which must keep the `{prompt}` slot:
+
+```bash
+python3 probe/loader-probe.py --apps codex --command "codex=codex-beta exec {prompt}"
+```
+
+**Checking by hand.** Copilot in VS Code and the Cursor editor have no headless
+mode. `--keep` writes the same files and fixtures, prints the question and the
+codes a correct answer names, and leaves everything in place until
+`--cleanup`.
+
+---
+
+## 🛡️ What It Touches
+
+- **Nothing it did not create is ever overwritten.** A file the probe would own
+  that already exists stops the run.
+- **Your own files keep every byte.** In `~/.codex/AGENTS.md`,
+  `~/.gemini/AGENTS.md` and `~/.agents/AGENTS.md`, the probe appends a marked
+  block and keeps an exact backup.
+- **Every change is written down before it is made**, in
+  `~/.cache/intelligence-probe/manifest.json`, and undone newest first when
+  the run finishes, fails or is stopped with Ctrl-C, `SIGTERM` or `SIGHUP`.
+- **A run that dies anyway leaves its manifest behind.** The next run refuses
+  to start until `--cleanup` replays it.
+- **Results stay on your machine**, in
+  `~/.cache/intelligence-probe/results-<time>.json`, with each app's version
+  and its raw answer.
+
+---
+
+## 📊 Results So Far
+
+| Date       | App         | Version | Where                       | Result             |
+| :--------- | :---------- | :------ | :-------------------------- | :----------------- |
+| 2026-10-17 | Claude Code | 2.1.302 | Linux, Claude cloud session | 5 of 5 checks pass |
+
+The Claude Code run, as the probe printed it:
+
+| Check                                              | PROBE_REPO | PROBE_HOME | PROBE_MASTER | Result |
+| :------------------------------------------------- | :--------- | :--------- | :----------- | :----- |
+| Claude Code                                        | read       | read       | not read     | pass   |
+| Claude Code beside a CLAUDE.md                     | not read   | read       | not read     | pass   |
+| Claude Code beside a CLAUDE.md, reading both       | read       | read       | not read     | pass   |
+| Claude Code beside a CLAUDE.local.md               | not read   | read       | not read     | pass   |
+| Claude Code beside a CLAUDE.local.md, reading both | read       | read       | not read     | pass   |
+
+Add a row for each machine and app as it runs. Phase 0 is done when every app
+you use has one that passes, headless and by hand.
+
+---
+
+## 🔬 Its Own Tests
+
+```bash
+python3 -m unittest discover -s probe -p 'test_*.py'
+```
+
+They run whole probes against a fake app and a throwaway home folder, and
+check every write and restore to the byte. They never call a real model and
+never touch your home folder.
+
+---
+
+## 📝 File Log
+
+<!-- AUTO-INDEX:BEGIN dir=. style=log -->
+
+| Entry                                          | Purpose                                                                        |
+| :--------------------------------------------- | :----------------------------------------------------------------------------- |
+| [`loader-probe.py`](loader-probe.py)           | Phase 0 loader probe: proves which AI coding app reads which instruction file. |
+| [`README.md`](README.md)                       | This file.                                                                     |
+| [`test_loader_probe.py`](test_loader_probe.py) | Tests for the loader probe.                                                    |
+
+<!-- AUTO-INDEX:END -->
+
+---
+
+<div align="center">
+
+**Every claim checked on the machine that relies on it.**
+
+[↑ Back to Top](#top)
+
+<br />
+
+Built with ❤️ by the Engineering Team. Distributed under the terms in [LICENSE](../LICENSE).
+
+</div>
