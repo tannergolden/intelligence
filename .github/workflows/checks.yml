@@ -86,6 +86,8 @@ jobs:
     # a blank line apart, means a change to one never lands next to a change
     # to the other - which is what turns a merge into a conflict.
     with:
+      setup-command: 'make setup'
+
       lint-command: 'make lint'
 
       test-command: 'make test'
