@@ -35,7 +35,11 @@ probe = importlib.util.module_from_spec(_spec)
 sys.modules[_spec.name] = probe
 _spec.loader.exec_module(probe)
 
-CODES = {'PROBE_REPO': 'aaaaaaaaaaaa', 'PROBE_HOME': 'bbbbbbbbbbbb', 'PROBE_MASTER': 'cccccccccccc'}
+CODES = {'PROBE_REPO': 'aaaaaaaaaaaa', 'PROBE_HOME': 'bbbbbbbbbbbb', 'PROBE_MASTER': 'cccccccccccc',
+         'PROBE_SKILL_SHARED': 'dddddddddddd', 'PROBE_SKILL_CLAUDE': 'eeeeeeeeeeee',
+         'PROBE_SKILL_ANTIGRAVITY': 'ffffffffffff'}
+SHARED_SKILL = '~/.agents/skills/intelligence-probe-canary/SKILL.md'
+CLAUDE_SKILL = '~/.claude/skills/intelligence-probe-canary/SKILL.md'
 
 # A stand-in for an AI app. Its second argument says what to load: paths
 # starting with ~/ are under the home folder, the rest under the folder it
@@ -59,7 +63,7 @@ found = []
 for name in loads.split(','):
     path = home / name[2:] if name.startswith('~/') else pathlib.Path(name)
     if path.exists():
-        found += re.findall(r'The value of (PROBE_[A-Z]+) is ([0-9a-f]+)', path.read_text())
+        found += re.findall(r'The value of (PROBE_[A-Z_]+) is ([0-9a-f]+)', path.read_text())
 print('\\n'.join(key + '=' + code for key, code in found) or 'NONE')
 '''
 
@@ -224,6 +228,16 @@ class TestJudging(unittest.TestCase):
     def test_letter_case_does_not_matter(self) -> None:
         self.assertTrue(probe.observe('PROBE_REPO=AAAAAAAAAAAA', CODES)['PROBE_REPO'])
 
+    def test_the_skill_canary_wants_exactly_one_copy(self) -> None:
+        expect = {'PROBE_SKILL_SHARED': None, 'PROBE_SKILL_CLAUDE': None, 'PROBE_SKILL_ANTIGRAVITY': False}
+        one = {'PROBE_SKILL_SHARED': True, 'PROBE_SKILL_CLAUDE': False, 'PROBE_SKILL_ANTIGRAVITY': False}
+        self.assertTrue(probe.judge(expect, one, exactly_one=True))
+        self.assertFalse(probe.judge(expect, {**one, 'PROBE_SKILL_CLAUDE': True}, exactly_one=True))
+        self.assertFalse(probe.judge(expect, {**one, 'PROBE_SKILL_SHARED': False}, exactly_one=True))
+
+    def test_echoing_the_skill_question_proves_nothing(self) -> None:
+        self.assertFalse(any(probe.observe(probe.SKILL_QUESTION, CODES, probe.SKILL_NAMES).values()))
+
     def test_a_value_expected_as_none_is_not_judged(self) -> None:
         expect = {'PROBE_REPO': True, 'PROBE_HOME': None, 'PROBE_MASTER': False}
         self.assertTrue(probe.judge(expect, {'PROBE_REPO': True, 'PROBE_HOME': True, 'PROBE_MASTER': False}))
@@ -258,6 +272,18 @@ class TestPlan(unittest.TestCase):
         (check,) = probe.plan_checks(['cursor'], 'read-both.json')
         self.assertIsNone(check.expect['PROBE_HOME'])
 
+    def test_the_skill_canary_adds_one_check_per_app(self) -> None:
+        checks = [c for c in probe.plan_checks(list(probe.APPS), 'read-both.json', skills=True)
+                  if c.names == probe.SKILL_NAMES]
+        self.assertEqual(sorted(c.app for c in checks), sorted(probe.APPS))
+        by_app = {c.app: c for c in checks}
+        self.assertEqual(by_app['claude'].expect, {'PROBE_SKILL_SHARED': False, 'PROBE_SKILL_CLAUDE': True,
+                                                   'PROBE_SKILL_ANTIGRAVITY': False})
+        self.assertIs(by_app['copilot'].expect['PROBE_SKILL_SHARED'], True)
+        self.assertIs(by_app['antigravity'].expect['PROBE_SKILL_ANTIGRAVITY'], True)
+        self.assertIsNone(by_app['grok'].expect['PROBE_SKILL_CLAUDE'])
+        self.assertTrue(all(c.exactly_one and c.question == probe.SKILL_QUESTION for c in checks))
+
     def test_no_app_may_read_the_master(self) -> None:
         # One that did would load the rules twice once the kit writes its copy.
         for check in probe.plan_checks(list(probe.APPS), 'read-both.json'):
@@ -278,6 +304,15 @@ class TestPlannedWrites(unittest.TestCase):
 
     def test_grok_is_probed_through_claudes_copy(self) -> None:
         self.assertIn('.claude/rules/intelligence-probe.md', self.writes(['grok']))
+
+    def test_the_skill_canary_plants_one_copy_per_skills_folder(self) -> None:
+        writes = {path.relative_to(self.home).as_posix(): (text, mode)
+                  for path, text, mode in probe.planned_writes(['cursor'], self.home, CODES, skills=True)}
+        for name, root in probe.SKILL_ROOTS.items():
+            text, mode = writes[f'{root}/intelligence-probe-canary/SKILL.md']
+            self.assertEqual(mode, 'file')
+            self.assertTrue(text.startswith('---\nname: intelligence-probe-canary\n'))
+            self.assertIn(f'The value of {name} is {CODES[name]}.', text)
 
     def test_personal_files_get_a_block_and_folders_get_a_file(self) -> None:
         self.assertEqual(self.writes(['claude', 'codex', 'antigravity', 'copilot']), {
@@ -346,6 +381,15 @@ class TestMatrix(unittest.TestCase):
         }])
         self.assertIn('| Codex | read | not read, expected read | not read | fail |', table)
 
+    def test_skill_checks_get_a_table_of_their_own(self) -> None:
+        table = probe.matrix([{
+            'check': 'Codex skill copies', 'status': 'fail', 'names': list(probe.SKILL_NAMES),
+            'expected': {'PROBE_SKILL_SHARED': True, 'PROBE_SKILL_CLAUDE': False, 'PROBE_SKILL_ANTIGRAVITY': False},
+            'observed': {'PROBE_SKILL_SHARED': True, 'PROBE_SKILL_CLAUDE': True, 'PROBE_SKILL_ANTIGRAVITY': False},
+        }])
+        self.assertIn('| Check | PROBE_SKILL_SHARED | PROBE_SKILL_CLAUDE | PROBE_SKILL_ANTIGRAVITY | Result |', table)
+        self.assertIn('| Codex skill copies | read | read, expected not read | not read | fail |', table)
+
     def test_a_row_with_no_answer_has_no_cells(self) -> None:
         table = probe.matrix([{'check': 'Cursor CLI', 'status': 'skipped'}])
         self.assertIn('| Cursor CLI | - | - | - | skipped |', table)
@@ -382,6 +426,18 @@ class TestWholeRun(Sandbox):
         (results,) = self.state.glob('results-*.json')
         report = json.loads(results.read_text(encoding='utf-8'))
         self.assertEqual([row['status'] for row in report['results']], ['pass'])
+
+    def test_an_app_that_sees_one_skill_copy_passes_the_canary(self) -> None:
+        before = self.snapshot()
+        code, out = self.run_probe(f'AGENTS.md,~/.codex/AGENTS.md,{SHARED_SKILL}', '--skills')
+        self.assertEqual(code, 0, out)
+        self.assertIn('| Codex skill copies | read | not read | not read | pass |', out)
+        self.assertEqual(self.snapshot(), before, 'the canary skills are gone again')
+
+    def test_an_app_that_sees_two_skill_copies_fails_the_canary(self) -> None:
+        code, out = self.run_probe(f'AGENTS.md,~/.codex/AGENTS.md,{SHARED_SKILL},{CLAUDE_SKILL}', '--skills')
+        self.assertEqual(code, 1, out)
+        self.assertIn('| Codex skill copies | read | read, expected not read | not read | fail |', out)
 
     def test_an_app_that_reads_the_master_fails(self) -> None:
         code, out = self.run_probe('AGENTS.md,~/.codex/AGENTS.md,~/.agents/AGENTS.md')

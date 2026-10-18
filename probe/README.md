@@ -67,6 +67,21 @@ stated:**
 If your own Claude settings already read both files, the two Claude controls
 expect `AGENTS.md` to load, and their labels say so.
 
+**The skill canary, with `--skills`.** The home kit installs each skill as a
+copy in three folders, which is safe only if every app sees exactly one copy.
+The canary plants one skill name in each folder, each copy with its own code,
+and asks every app which copies it can see:
+
+| App                   | The copy it should see, and no other              |
+| :-------------------- | :------------------------------------------------ |
+| Claude Code           | `~/.claude/skills/`                               |
+| Codex and Copilot CLI | `~/.agents/skills/`                               |
+| Antigravity CLI       | `~/.gemini/antigravity-cli/skills/`               |
+| Grok Build and Cursor | Either `~/.agents/skills/` or `~/.claude/skills/` |
+
+VS Code reads both of those folders and has no headless mode, so check it by
+hand with `--keep --skills`.
+
 ---
 
 ## 🚀 Running It
@@ -77,12 +92,14 @@ From the root of the repository:
 python3 probe/loader-probe.py --dry-run     # show the plan, change nothing
 python3 probe/loader-probe.py               # every installed app
 python3 probe/loader-probe.py --apps claude,grok
+python3 probe/loader-probe.py --skills      # add the skill canary
 python3 probe/loader-probe.py --keep        # set up a check by hand
 python3 probe/loader-probe.py --cleanup     # undo --keep, or a crash
 ```
 
 It needs Python 3.9 or later and git, and nothing else. Each check is one model
-call: twelve in a full run, on your own subscriptions. An app installed under
+call: twelve in a full run, and one more per app with `--skills`, on your own
+subscriptions. An app installed under
 another name takes `--command`, which must keep the `{prompt}` slot:
 
 ```bash
