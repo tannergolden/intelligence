@@ -1,6 +1,6 @@
 <!--
 title: '☁️ CLOUD SETUP'
-description: 'The setup script that installs the universal rules into every Claude Code cloud session, pinned to one release and unable to fail the session.'
+description: 'The setup script that installs the universal rules and the kit into every Claude Code cloud session, pinned to one release and unable to fail the session.'
 tags: [claude-code, cloud, setup-script, home-kit]
 category: docs
 -->
@@ -26,10 +26,18 @@ kit installed on your machines is there. Each repository's own `AGENTS.md`
 still carries the rules; this script adds the home copy, so a session in a
 repository with no block of its own gets them too.
 
-It downloads the home file and the installer from one release, checks each
-against its pin, and writes `~/.claude/CLAUDE.md`. **It always exits 0**:
-a setup script that fails stops the session from starting, so every failure
-prints a notice instead.
+It downloads the home file, the kit and the installer from one release,
+checks each against its pin, and installs Claude Code's share:
+
+- `~/.claude/CLAUDE.md`, with the rules and the knowledge facts, each between
+  their own markers;
+- the guard hook, registered in `~/.claude/settings.json`;
+- the skills in `~/.claude/skills/` and the subagents in `~/.claude/agents/`.
+
+A kit that cannot be downloaded or misses its pin is left out, and the rules
+still install; an empty kit pin, from a release before the kit, installs the
+rules alone. **It always exits 0**: a setup script that fails stops the
+session from starting, so every failure prints a notice instead.
 
 ---
 

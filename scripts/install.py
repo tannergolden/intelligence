@@ -23,17 +23,31 @@ sessions and in Grok's sandbox. A file the kit owns outright holds nothing
 else. In a file that also holds your own notes, the rules sit in a marked
 block and your text stays.
 
+THE KIT. Given a release's `kit.json` as well, it installs the modules around
+the rules, each only where that app reads it:
+
+- the public knowledge facts, as their own marked block beside every copy of
+  the rules
+- the guard hook, `~/.agents/hooks/intelligence-guard.py`, registered as a
+  pre-tool hook in Claude Code's settings (which Grok Build and Cursor also
+  read), in Codex's `hooks.json`, in a file of its own for Copilot, and in
+  Antigravity's `hooks.json`
+- the skills, copied into `~/.agents/skills/`, `~/.claude/skills/` and
+  Antigravity's own skills folder
+- the subagents, for Claude Code, Copilot and Codex
+
 SAFETY. Before changing a file, it records the setting's prior value and
 whether it created the file. `uninstall` uses that record to put everything
-back. It never overwrites a file it does not own. It runs on the Python 3.9
-that macOS ships, with the standard library only, and makes no network
-calls: whoever runs it has already downloaded the home file and checked
-its SHA-256.
+back. It never overwrites a file it does not own: a file, folder or hook is
+the kit's only if it carries the kit's mark. It runs on the Python 3.9 that
+macOS ships, with the standard library only, and makes no network calls:
+whoever runs it has already downloaded the release files and checked their
+SHA-256.
 
 Run it:
 
-    python3 install.py install --home-file intelligence.md
-    python3 install.py check --home-file intelligence.md
+    python3 install.py install --home-file intelligence.md [--kit-file kit.json]
+    python3 install.py check --home-file intelligence.md [--kit-file kit.json]
     python3 install.py uninstall
     python3 install.py install --home-file intelligence.md --cloud   # Claude cloud session
 """
@@ -47,21 +61,44 @@ import json
 import os
 import pathlib
 import re
+import shlex
+import shutil
 import sys
 import tempfile
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 
-REGION = re.compile(
-    r'^<!-- INTELLIGENCE:BEGIN sha256:(?P<hash>[0-9a-f]{64}) -->[ \t]*\r?\n'
-    r'(?P<inner>.*?)'
-    r'^<!-- INTELLIGENCE:END -->[ \t]*(?:\r?\n|\Z)',
-    re.M | re.S,
-)
+MARKERS = {'rules': 'INTELLIGENCE', 'knowledge': 'INTELLIGENCE:KNOWLEDGE'}
+
+
+def pattern(name: str) -> re.Pattern:
+    return re.compile(
+        rf'^<!-- {re.escape(name)}:BEGIN sha256:(?P<hash>[0-9a-f]{{64}}) -->[ \t]*\r?\n'
+        r'(?P<inner>.*?)'
+        rf'^<!-- {re.escape(name)}:END -->[ \t]*(?:\r?\n|\Z)',
+        re.M | re.S,
+    )
+
+
+REGIONS = {piece: pattern(name) for piece, name in MARKERS.items()}
+REGION = REGIONS['rules']
 
 PLUGIN_IDS = ('cc-plugin-agents-md@builtin', 'agents-md@builtin')
 READ_BOTH = 'claude-md-and-agents-md'
 SETTINGS = '.claude/settings.json'
 COPILOT_PREFIX = '---\napplyTo: "**"\n---\n\n'
+
+# What marks a file or folder as the kit's own; it matches kit.py's OWNED.
+OWNED = "Part of tannergolden/intelligence's home kit, which replaces this file on every install."
+GUARD = '.agents/hooks/intelligence-guard.py'
+GUARD_NAME = 'intelligence-guard'
+SKILL_MARK = '.intelligence-kit'
+HOOK_TIMEOUT = 30
+# The tools each app's guard registration covers. Claude and Codex filter by
+# name, so most tool calls never start Python; Copilot and Antigravity name
+# tools in ways this kit cannot pin down, so every call reaches the guard,
+# which checks the tool itself.
+CLAUDE_MATCHER = '^(Bash|PowerShell|Edit|Write|MultiEdit|NotebookEdit)$|mcp__'
+CODEX_MATCHER = '^(Bash|apply_patch|Edit|Write)$|mcp__'
 
 
 @dataclasses.dataclass(frozen=True)
@@ -73,6 +110,11 @@ class Target:
     mode: str  # 'file': the kit owns the file; 'block': a marked block in a personal file
     where: str  # 'local', 'cloud' or 'both'
     prefix: str = ''  # what precedes the block in a file the kit owns
+    piece: str = 'rules'  # 'rules', from the home file, or 'knowledge', from the kit
+
+    def key(self, path: pathlib.Path) -> str:
+        """The install record's name for this target; one file can hold both pieces."""
+        return str(path) if self.piece == 'rules' else f'{path}#{self.piece}'
 
 
 TARGETS = (
@@ -83,6 +125,20 @@ TARGETS = (
     Target('Antigravity CLI', '.gemini/AGENTS.md', 'block', 'local'),
     Target('Copilot', '.copilot/instructions/intelligence.instructions.md', 'file', 'local',
            COPILOT_PREFIX),
+    Target('master copy', '.agents/AGENTS.md', 'block', 'local', piece='knowledge'),
+    Target('Claude Code', '.claude/rules/intelligence-knowledge.md', 'file', 'local', piece='knowledge'),
+    Target('Claude Code', '.claude/CLAUDE.md', 'block', 'cloud', piece='knowledge'),
+    Target('Codex', '.codex/AGENTS.md', 'block', 'local', piece='knowledge'),
+    Target('Antigravity CLI', '.gemini/AGENTS.md', 'block', 'local', piece='knowledge'),
+    Target('Copilot', '.copilot/instructions/intelligence-knowledge.instructions.md', 'file', 'local',
+           COPILOT_PREFIX, piece='knowledge'),
+)
+
+# Where each app reads skills; Claude Code reads nothing under .agents/.
+SKILL_ROOTS = (
+    ('the shared skills folder', '.agents/skills', 'local'),
+    ('Claude Code', '.claude/skills', 'both'),
+    ('Antigravity CLI', '.gemini/antigravity-cli/skills', 'local'),
 )
 
 # Files that would hide a copy, or load the rules a second time.
@@ -113,10 +169,10 @@ class Found:
         return digest(self.inner) != self.marker
 
 
-def find(text: str) -> Found | None:
-    matches = list(REGION.finditer(text))
+def find(text: str, piece: str = 'rules') -> Found | None:
+    matches = list(REGIONS[piece].finditer(text))
     if len(matches) > 1:
-        raise Refused('holds more than one INTELLIGENCE block; remove the extra by hand')
+        raise Refused(f'holds more than one {MARKERS[piece]} block; remove the extra by hand')
     if not matches:
         return None
     match = matches[0]
@@ -124,28 +180,75 @@ def find(text: str) -> Found | None:
     return Found(match.start(), match.end(), match.group('hash'), inner)
 
 
-def read_home_file(path: pathlib.Path) -> tuple[str, str]:
-    """The region to install and its hash, from a home file rendered by the hub."""
+def read_region_file(path: pathlib.Path, piece: str, what: str) -> tuple[str, str]:
+    """The region in a file that must be exactly one unedited block, and its hash."""
     try:
         text = path.read_text(encoding='utf-8')
     except (OSError, UnicodeDecodeError) as error:
-        raise SystemExit(f'cannot read the home file {path}: {error}') from error
-    found = find(text)
+        raise SystemExit(f'cannot read the {what} {path}: {error}') from error
+    return exact_region(text, piece, f'{path}', what)
+
+
+def exact_region(text: str, piece: str, where: str, what: str) -> tuple[str, str]:
+    found = find(text, piece)
     if found is None or text[:found.start].strip() or text[found.end:].strip():
-        raise SystemExit(f'{path} is not a home file: it must be exactly one INTELLIGENCE block')
+        raise SystemExit(f'{where} is not a {what}: it must be exactly one {MARKERS[piece]} block')
     if found.edited:
-        raise SystemExit(f'{path} was edited: its content does not match the hash in its marker')
+        raise SystemExit(f'{where} was edited: its content does not match the hash in its marker')
     return text[found.start:found.end], found.marker
 
 
+def read_home_file(path: pathlib.Path) -> tuple[str, str]:
+    """The region to install and its hash, from a home file rendered by the hub."""
+    return read_region_file(path, 'rules', 'home file')
+
+
+@dataclasses.dataclass(frozen=True)
+class Kit:
+    """A release's kit.json: the guard, the knowledge block, the skills and the subagents."""
+
+    guard: str
+    knowledge: str
+    knowledge_hash: str
+    skills: dict[str, dict[str, str]]
+    subagents: dict[str, dict[str, str]]
+
+
+def read_kit(path: pathlib.Path) -> Kit:
+    try:
+        data = json.loads(path.read_text(encoding='utf-8'))
+        if data.get('format') != 1:
+            raise SystemExit(f'{path} is a kit in format {data.get("format")}; this installer reads format 1')
+        guard, skills, subagents = data['guard'], data['skills'], data['subagents']
+        knowledge, knowledge_hash = exact_region(data['knowledge'], 'knowledge', f'{path}', 'kit')
+    except (OSError, UnicodeDecodeError, ValueError, KeyError, TypeError, AttributeError) as error:
+        raise SystemExit(f'cannot read the kit {path}: {error}') from error
+    if OWNED not in guard:
+        raise SystemExit(f'{path} carries a guard without the kit\'s mark')
+    for name, files in skills.items():
+        for rel in files:
+            if rel.startswith('/') or '..' in pathlib.PurePosixPath(rel).parts or not re.match(
+                    r'^[a-z0-9]+(-[a-z0-9]+)*$', name):
+                raise SystemExit(f'{path} names a skill file outside its folder: {name}/{rel}')
+    for name in subagents:
+        if not re.match(r'^[a-z0-9]+(-[a-z0-9]+)*$', name):
+            raise SystemExit(f'{path} names a subagent that is not a plain name: {name}')
+    return Kit(guard, knowledge, knowledge_hash, skills, subagents)
+
+
+def codex_home(home: pathlib.Path, env: Mapping[str, str]) -> pathlib.Path:
+    return pathlib.Path(env['CODEX_HOME']) if env.get('CODEX_HOME') else home / '.codex'
+
+
 def resolve(target: Target, home: pathlib.Path, env: Mapping[str, str]) -> pathlib.Path:
-    if target.rel == '.codex/AGENTS.md' and env.get('CODEX_HOME'):
-        return pathlib.Path(env['CODEX_HOME']) / 'AGENTS.md'
+    if target.rel == '.codex/AGENTS.md':
+        return codex_home(home, env) / 'AGENTS.md'
     return home / target.rel
 
 
-def targets_for(cloud: bool) -> list[Target]:
-    return [t for t in TARGETS if t.where in ('both', 'cloud' if cloud else 'local')]
+def targets_for(cloud: bool, knowledge: bool = False) -> list[Target]:
+    return [t for t in TARGETS if t.where in ('both', 'cloud' if cloud else 'local')
+            and (knowledge or t.piece == 'rules')]
 
 
 def read(path: pathlib.Path) -> str | None:
@@ -155,9 +258,10 @@ def read(path: pathlib.Path) -> str | None:
         return handle.read()
 
 
-def write(path: pathlib.Path, text: str) -> None:
-    """Replace `path` in one step, keeping its permissions."""
-    mode = path.stat().st_mode & 0o777 if path.exists() else None
+def write(path: pathlib.Path, text: str, mode: int | None = None) -> None:
+    """Replace `path` in one step, keeping its permissions unless told otherwise."""
+    if mode is None and path.exists():
+        mode = path.stat().st_mode & 0o777
     fd, tmp = tempfile.mkstemp(prefix='.intelligence-', dir=path.parent)
     try:
         with os.fdopen(fd, 'w', encoding='utf-8', newline='') as handle:
@@ -175,6 +279,11 @@ def missing_dirs(path: pathlib.Path) -> list[pathlib.Path]:
     return [parent for parent in reversed(path.parents) if not parent.exists()]
 
 
+def make_dirs(path: pathlib.Path) -> None:
+    for folder in missing_dirs(path):
+        folder.mkdir()
+
+
 def placed(target: Target, current: str | None, region: str) -> tuple[str, str]:
     """The file's new text with the block in place, and what was added before the block.
 
@@ -183,21 +292,21 @@ def placed(target: Target, current: str | None, region: str) -> tuple[str, str]:
     replaced an older one or the file is new.
     """
     if target.mode == 'file':
-        if current is not None and find(current) is None:
+        if current is not None and find(current, target.piece) is None:
             raise Refused("exists and is not the kit's; it is never overwritten")
         return target.prefix + region, ''
     if not current:
         return region, ''
-    found = find(current)
+    found = find(current, target.piece)
     if found is not None:
         return current[:found.start] + region + current[found.end:], ''
     joiner = '\n' if current.endswith('\n') else '\n\n'
     return current + joiner + region, joiner
 
 
-def removed(current: str, joiner: str) -> str:
+def removed(current: str, joiner: str, piece: str = 'rules') -> str:
     """The file's text with the kit's block, and the separator it added, taken out."""
-    found = find(current)
+    found = find(current, piece)
     if found is None:
         return current
     before, after = current[:found.start], current[found.end:]
@@ -212,9 +321,12 @@ def state_path(home: pathlib.Path, env: Mapping[str, str]) -> pathlib.Path:
 
 
 def load_state(path: pathlib.Path) -> dict:
-    if not path.exists():
-        return {'format': 1, 'files': {}, 'settings': None}
-    return json.loads(path.read_text(encoding='utf-8'))
+    state = json.loads(path.read_text(encoding='utf-8')) if path.exists() else {}
+    state.setdefault('format', 1)
+    for key in ('files', 'owned', 'folders', 'hooks'):
+        state.setdefault(key, {})
+    state.setdefault('settings', None)
+    return state
 
 
 def save_state(path: pathlib.Path, state: dict) -> None:
@@ -222,7 +334,7 @@ def save_state(path: pathlib.Path, state: dict) -> None:
     write(path, json.dumps(state, indent=2) + '\n')
 
 
-def read_settings(path: pathlib.Path) -> dict:
+def read_json(path: pathlib.Path) -> dict:
     text = read(path)
     if text is None or not text.strip():
         return {}
@@ -233,6 +345,9 @@ def read_settings(path: pathlib.Path) -> dict:
     if not isinstance(data, dict):
         raise Refused('is not a JSON object; it is never overwritten')
     return data
+
+
+read_settings = read_json
 
 
 def reads_both(data: dict, plugin: str) -> bool:
@@ -259,43 +374,51 @@ def apply_setting(data: dict) -> dict:
     return data
 
 
+def report(status: str, label: str) -> None:
+    print(f'  {status}  {label}')
+
+
 def install(home: pathlib.Path, home_file: pathlib.Path, cloud: bool, env: Mapping[str, str],
-            dry_run: bool = False) -> int:
+            dry_run: bool = False, kit_file: pathlib.Path | None = None) -> int:
     region, block_hash = read_home_file(home_file)
+    kit = read_kit(kit_file) if kit_file else None
     spath = state_path(home, env)
     state = load_state(spath)
     failures = 0
-    for target in targets_for(cloud):
+    for target in targets_for(cloud, kit is not None):
         path = resolve(target, home, env)
-        label = f'{target.app}: {path}'
+        label = f'{target.app}{" knowledge" if target.piece == "knowledge" else ""}: {path}'
         try:
             current = read(path)
-            text, joiner = placed(target, current, region)
+            text, joiner = placed(target, current, region if target.piece == 'rules' else kit.knowledge)
         except (Refused, UnicodeDecodeError) as error:
-            print(f'  refused  {label} {error}')
+            report('refused', f'{label} {error}')
             failures += 1
             continue
         changed = text != current
-        print(f'  {"current" if not changed else "would write" if dry_run else "wrote"}  {label}')
+        report('current' if not changed else 'would write' if dry_run else 'wrote', label)
         if dry_run:
             continue
         # Recorded before the write, and kept from the first install, so an
         # uninstall restores what was there before the kit ever ran.
-        record = state['files'].setdefault(str(path), {
-            'mode': target.mode, 'created': current is None, 'joiner': joiner,
-            'dirs': [str(folder) for folder in missing_dirs(path)],
+        record = state['files'].setdefault(target.key(path), {
+            'path': str(path), 'piece': target.piece, 'mode': target.mode, 'created': current is None,
+            'joiner': joiner, 'dirs': [str(folder) for folder in missing_dirs(path)],
         })
         if joiner:
             record['joiner'] = joiner
         save_state(spath, state)
         if changed:
-            for folder in missing_dirs(path):
-                folder.mkdir()
+            make_dirs(path)
             write(path, text)
     if not cloud:
         failures += install_setting(home, state, spath, dry_run)
+    if kit is not None:
+        failures += install_kit(home, kit, cloud, env, state, spath, dry_run)
     if not dry_run:
         state['hash'] = block_hash
+        if kit is not None:
+            state['knowledge_hash'] = kit.knowledge_hash
         save_state(spath, state)
     print('  manual   Cursor: paste the home file into Settings > Rules > User Rules, '
           'and again whenever the block changes')
@@ -311,12 +434,12 @@ def install_setting(home: pathlib.Path, state: dict, spath: pathlib.Path, dry_ru
         data = read_settings(path)
         updated = apply_setting(data)
     except Refused as error:
-        print(f'  refused  {label} {error}')
+        report('refused', f'{label} {error}')
         return 1
     if updated == data:
-        print(f'  current  {label}')
+        report('current', label)
         return 0
-    print(f'  {"would write" if dry_run else "wrote"}  {label}')
+    report('would write' if dry_run else 'wrote', label)
     if dry_run:
         return 0
     if state.get('settings') is None:
@@ -330,31 +453,268 @@ def install_setting(home: pathlib.Path, state: dict, spath: pathlib.Path, dry_ru
                       for plugin in PLUGIN_IDS},
         }
         save_state(spath, state)
-    for folder in missing_dirs(path):
-        folder.mkdir()
+    make_dirs(path)
     write(path, json.dumps(updated, indent=2) + '\n')
+    return 0
+
+
+# --- the kit ------------------------------------------------------------------
+
+
+@dataclasses.dataclass(frozen=True)
+class Owned:
+    """A file the kit writes whole, and the text that marks it as the kit's."""
+
+    label: str
+    path: pathlib.Path
+    text: str
+    mark: str = OWNED
+    mode: int | None = None
+
+
+@dataclasses.dataclass(frozen=True)
+class Registration:
+    """The guard's entry in a hook file that other hooks share."""
+
+    label: str
+    path: pathlib.Path
+    apply: Callable[[dict], dict]  # the file's data with the guard registered
+    remove: Callable[[dict], dict]  # the file's data with the guard taken out
+
+
+def guard_command(home: pathlib.Path, app: str) -> str:
+    # The interpreter that is running the install, which is known to work here.
+    python = sys.executable or 'python3'
+    return f'{shlex.quote(python)} {shlex.quote(str(home / GUARD))} --app {app}'
+
+
+def guard_commands(data: object) -> list[str]:
+    """Every hook command in a JSON document that runs the guard."""
+    if isinstance(data, dict):
+        found = [data['command']] if is_guard(data) else []
+        return found + [c for value in data.values() for c in guard_commands(value)]
+    if isinstance(data, list):
+        return [command for value in data for command in guard_commands(value)]
+    return []
+
+
+def is_guard(entry: object) -> bool:
+    return isinstance(entry, dict) and GUARD_NAME in str(entry.get('command', ''))
+
+
+def group_is_guard(group: object) -> bool:
+    return isinstance(group, dict) and any(is_guard(h) for h in group.get('hooks') or [])
+
+
+def put_group(data: dict, event: str, group: dict) -> dict:
+    """`data` with the guard's group for `event` in place: replaced where it was, else appended.
+
+    Replacing in place matters to Codex, which trusts a hook by its position.
+    """
+    data = json.loads(json.dumps(data))
+    hooks = data.setdefault('hooks', {})
+    if not isinstance(hooks, dict):
+        raise Refused('has hooks that are not an object; it is never overwritten')
+    groups = hooks.setdefault(event, [])
+    if not isinstance(groups, list):
+        raise Refused(f'has {event} hooks that are not a list; it is never overwritten')
+    for index, existing in enumerate(groups):
+        if group_is_guard(existing):
+            groups[index] = group
+            break
+    else:
+        groups.append(group)
+    return data
+
+
+def drop_groups(data: dict, event: str) -> dict:
+    data = json.loads(json.dumps(data))
+    hooks = data.get('hooks')
+    if isinstance(hooks, dict) and isinstance(hooks.get(event), list):
+        hooks[event] = [group for group in hooks[event] if not group_is_guard(group)]
+        if not hooks[event]:
+            del hooks[event]
+        if not hooks:
+            del data['hooks']
+    return data
+
+
+def entry(command: str, **extra: object) -> dict:
+    return {'type': 'command', 'command': command, 'timeout': HOOK_TIMEOUT, **extra}
+
+
+def kit_owned(home: pathlib.Path, kit: Kit, cloud: bool, env: Mapping[str, str]) -> list[Owned]:
+    """Every file the kit writes whole, for this machine."""
+    owned = [Owned('guard hook', home / GUARD, kit.guard, mode=0o755)]
+    for name, forms in sorted(kit.subagents.items()):
+        owned.append(Owned(f'Claude Code subagent {name}', home / '.claude' / 'agents' / f'{name}.md',
+                           forms['claude']))
+        if not cloud:
+            owned.append(Owned(f'Copilot agent {name}', home / '.copilot' / 'agents' / f'{name}.agent.md',
+                               forms['copilot']))
+            owned.append(Owned(f'Codex agent {name}', codex_home(home, env) / 'agents' / f'{name}.toml',
+                               forms['codex']))
+    if not cloud:
+        copilot = {'version': 1, 'hooks': {'PreToolUse': [
+            {'hooks': [entry(guard_command(home, 'copilot'))]}]}}
+        owned.append(Owned('Copilot guard hook', home / '.copilot' / 'hooks' / 'intelligence.json',
+                           json.dumps(copilot, indent=2) + '\n', mark=GUARD_NAME))
+    return owned
+
+
+def kit_registrations(home: pathlib.Path, cloud: bool, env: Mapping[str, str]) -> list[Registration]:
+    """The guard's entries in hook files the kit shares with your own hooks."""
+    claude = {'matcher': CLAUDE_MATCHER,
+              'hooks': [entry(guard_command(home, 'claude'), onFailure='block')]}
+    found = [Registration('Claude Code guard hook (also read by Grok Build and Cursor)', home / SETTINGS,
+                          lambda data: put_group(data, 'PreToolUse', claude),
+                          lambda data: drop_groups(data, 'PreToolUse'))]
+    if cloud:
+        return found
+    codex = {'matcher': CODEX_MATCHER, 'hooks': [entry(guard_command(home, 'codex'))]}
+    antigravity = {'PreToolUse': [{'hooks': [entry(guard_command(home, 'antigravity'))]}]}
+
+    def put_named(data: dict) -> dict:
+        if 'intelligence' in data and GUARD_NAME not in json.dumps(data['intelligence']):
+            raise Refused('holds an "intelligence" hook that is not the kit\'s; it is never overwritten')
+        data = json.loads(json.dumps(data))
+        data['intelligence'] = antigravity
+        return data
+
+    def drop_named(data: dict) -> dict:
+        data = json.loads(json.dumps(data))
+        data.pop('intelligence', None)
+        return data
+
+    found += [
+        Registration('Codex guard hook', codex_home(home, env) / 'hooks.json',
+                     lambda data: put_group(data, 'PreToolUse', codex),
+                     lambda data: drop_groups(data, 'PreToolUse')),
+        Registration('Antigravity CLI guard hook', home / '.gemini' / 'config' / 'hooks.json',
+                     put_named, drop_named),
+    ]
+    return found
+
+
+def skill_folders(home: pathlib.Path, cloud: bool) -> list[tuple[str, pathlib.Path]]:
+    return [(app, home / rel) for app, rel, where in SKILL_ROOTS if where == 'both' or not cloud]
+
+
+def is_kits(path: pathlib.Path, mark: str) -> bool:
+    try:
+        return mark in (read(path) or '')
+    except (OSError, UnicodeDecodeError):
+        return False
+
+
+def install_kit(home: pathlib.Path, kit: Kit, cloud: bool, env: Mapping[str, str], state: dict,
+                spath: pathlib.Path, dry_run: bool) -> int:
+    failures = 0
+    for item in kit_owned(home, kit, cloud, env):
+        label = f'{item.label}: {item.path}'
+        current = read(item.path) if item.path.exists() else None
+        if current is not None and item.mark not in current:
+            report('refused', f"{label} exists and is not the kit's; it is never overwritten")
+            failures += 1
+            continue
+        mode_ok = item.mode is None or (item.path.exists() and item.path.stat().st_mode & 0o777 == item.mode)
+        changed = current != item.text or not mode_ok
+        report('current' if not changed else 'would write' if dry_run else 'wrote', label)
+        if dry_run or not changed:
+            continue
+        state['owned'].setdefault(str(item.path), {
+            'created': current is None, 'dirs': [str(folder) for folder in missing_dirs(item.path)]})
+        save_state(spath, state)
+        make_dirs(item.path)
+        write(item.path, item.text, item.mode)
+    for registration in kit_registrations(home, cloud, env):
+        failures += install_registration(registration, state, spath, dry_run)
+    for name, files in sorted(kit.skills.items()):
+        for app, root in skill_folders(home, cloud):
+            failures += install_skill(f'{app} skill {name}', root / name, files, state, spath, dry_run)
+    return failures
+
+
+def install_registration(registration: Registration, state: dict, spath: pathlib.Path,
+                         dry_run: bool) -> int:
+    path = registration.path
+    label = f'{registration.label}: {path}'
+    try:
+        data = read_json(path)
+        updated = registration.apply(data)
+    except Refused as error:
+        report('refused', f'{label} {error}')
+        return 1
+    if updated == data:
+        report('current', label)
+        return 0
+    report('would write' if dry_run else 'wrote', label)
+    if dry_run:
+        return 0
+    state['hooks'].setdefault(str(path), {
+        'created': not path.exists(), 'dirs': [str(folder) for folder in missing_dirs(path)]})
+    save_state(spath, state)
+    make_dirs(path)
+    write(path, json.dumps(updated, indent=2) + '\n')
+    return 0
+
+
+def install_skill(label: str, folder: pathlib.Path, files: dict[str, str], state: dict,
+                  spath: pathlib.Path, dry_run: bool) -> int:
+    label = f'{label}: {folder}'
+    if folder.exists() and not (folder / SKILL_MARK).exists():
+        report('refused', f"{label} exists and is not the kit's; it is never overwritten")
+        return 1
+    wanted = {**files, SKILL_MARK: OWNED + '\n'}
+    present = {path.relative_to(folder).as_posix() for path in folder.rglob('*') if path.is_file()} \
+        if folder.exists() else set()
+    changed = present != set(wanted) or any(read(folder / rel) != text for rel, text in wanted.items())
+    report('current' if not changed else 'would write' if dry_run else 'wrote', label)
+    if dry_run or not changed:
+        return 0
+    state['folders'].setdefault(str(folder), {
+        'created': not folder.exists(), 'dirs': [str(path) for path in missing_dirs(folder)]})
+    save_state(spath, state)
+    for rel in sorted(present - set(wanted)):
+        (folder / rel).unlink()
+    for rel, text in sorted(wanted.items()):
+        path = folder / rel
+        make_dirs(path)
+        write(path, text)
+    for path in sorted(folder.rglob('*'), key=lambda p: len(p.parts), reverse=True):
+        if path.is_dir() and not any(path.iterdir()):
+            path.rmdir()
     return 0
 
 
 def shadows(home: pathlib.Path, env: Mapping[str, str]) -> list[str]:
     found = []
     for rel, why in SHADOWS:
-        path = (pathlib.Path(env['CODEX_HOME']) / 'AGENTS.override.md'
-                if rel == '.codex/AGENTS.override.md' and env.get('CODEX_HOME') else home / rel)
+        path = (codex_home(home, env) / 'AGENTS.override.md'
+                if rel == '.codex/AGENTS.override.md' else home / rel)
         if path.exists():
             found.append(f'{path} exists: {why}')
     return found
 
 
-def check(home: pathlib.Path, home_file: pathlib.Path, cloud: bool, env: Mapping[str, str]) -> int:
+# --- check ----------------------------------------------------------------------
+
+
+def check(home: pathlib.Path, home_file: pathlib.Path, cloud: bool, env: Mapping[str, str],
+          kit_file: pathlib.Path | None = None) -> int:
     region, block_hash = read_home_file(home_file)
+    kit = read_kit(kit_file) if kit_file else None
     failures = 0
-    for target in targets_for(cloud):
+    for target in targets_for(cloud, kit is not None):
         path = resolve(target, home, env)
-        status = target_status(target, read(path), region, block_hash)
+        if target.piece == 'rules':
+            status = target_status(target, read(path), region, block_hash)
+        else:
+            status = target_status(target, read(path), kit.knowledge, kit.knowledge_hash)
         if status != 'current':
             failures += 1
-        print(f'  {status:<8} {target.app}: {path}')
+        piece = ' knowledge' if target.piece == 'knowledge' else ''
+        print(f'  {status:<8} {target.app}{piece}: {path}')
     if not cloud:
         path = home / SETTINGS
         try:
@@ -364,17 +724,58 @@ def check(home: pathlib.Path, home_file: pathlib.Path, cloud: bool, env: Mapping
             ok = False
         failures += 0 if ok else 1
         print(f'  {"current" if ok else "missing":<8} Claude Code setting: {path}')
+    if kit is not None:
+        failures += check_kit(home, kit, cloud, env)
     for line in shadows(home, env):
         print(f'  warning  {line}')
     print('  manual   Cursor: check Settings > Rules > User Rules by hand')
     return 1 if failures else 0
 
 
+def check_kit(home: pathlib.Path, kit: Kit, cloud: bool, env: Mapping[str, str]) -> int:
+    failures = 0
+    for item in kit_owned(home, kit, cloud, env):
+        current = read(item.path) if item.path.exists() else None
+        status = ('missing' if current is None else 'foreign' if item.mark not in current
+                  else 'edited' if current != item.text else 'current')
+        failures += status != 'current'
+        print(f'  {status:<8} {item.label}: {item.path}')
+    for registration in kit_registrations(home, cloud, env):
+        try:
+            data = read_json(registration.path)
+            commands = guard_commands(data)
+            if any(not os.path.exists(shlex.split(command)[0]) for command in commands):
+                status = 'broken'  # the Python it runs with is gone; install again
+            elif registration.apply(data) == data:
+                status = 'current'
+            else:
+                status = 'stale' if commands else 'missing'
+        except (Refused, ValueError):
+            status = 'broken'
+        failures += status != 'current'
+        print(f'  {status:<8} {registration.label}: {registration.path}')
+    for name, files in sorted(kit.skills.items()):
+        for app, root in skill_folders(home, cloud):
+            folder = root / name
+            if not folder.exists():
+                status = 'missing'
+            elif not (folder / SKILL_MARK).exists():
+                status = 'foreign'
+            else:
+                present = {p.relative_to(folder).as_posix() for p in folder.rglob('*') if p.is_file()}
+                wanted = {**files, SKILL_MARK: OWNED + '\n'}
+                status = 'current' if present == set(wanted) and all(
+                    read(folder / rel) == text for rel, text in wanted.items()) else 'edited'
+            failures += status != 'current'
+            print(f'  {status:<8} {app} skill {name}: {folder}')
+    return failures
+
+
 def target_status(target: Target, current: str | None, region: str, block_hash: str) -> str:
     if current is None:
         return 'missing'
     try:
-        found = find(current)
+        found = find(current, target.piece)
     except Refused:
         return 'broken'
     if found is None:
@@ -388,40 +789,27 @@ def target_status(target: Target, current: str | None, region: str, block_hash: 
     return 'current'
 
 
+# --- uninstall ------------------------------------------------------------------
+
+
 def uninstall(home: pathlib.Path, env: Mapping[str, str], dry_run: bool = False) -> int:
     spath = state_path(home, env)
     state = load_state(spath)
-    records = state.get('files') or {}
+    records = state['files']
     recorded = bool(records)
     if not recorded:
         # No record of an install: take out only what is unmistakably the kit's.
-        records = {str(resolve(t, home, env)): {'mode': t.mode, 'created': False,
-                                                  'joiner': '\n', 'dirs': []}
+        records = {t.key(resolve(t, home, env)): {'path': str(resolve(t, home, env)), 'piece': t.piece,
+                                                  'mode': t.mode, 'created': False, 'joiner': '\n',
+                                                  'dirs': []}
                    for t in TARGETS}
         print("  note     no install record, so only marked blocks and the kit's own files go")
-    for name, record in records.items():
-        path = pathlib.Path(name)
-        current = read(path)
-        if current is None:
-            continue
-        try:
-            found = find(current)
-        except Refused as error:
-            print(f'  refused  {path} {error}')
-            continue
-        if found is None:
-            continue
-        rest = '' if record['mode'] == 'file' else removed(current, record.get('joiner', ''))
-        created = record.get('created') if recorded else True
-        gone = record['mode'] == 'file' or (created and not rest.strip())
-        print(f'  {"would remove" if dry_run else "removed"}  {path}' if gone
-              else f'  {"would restore" if dry_run else "restored"}  {path}')
-        if dry_run:
-            continue
-        if gone:
-            path.unlink()
-        else:
-            write(path, rest)
+    by_path: dict[str, list[dict]] = {}
+    for key, record in records.items():
+        by_path.setdefault(record.get('path', key), []).append(record)
+    for name, pieces in by_path.items():
+        uninstall_path(pathlib.Path(name), pieces, recorded, dry_run)
+    uninstall_kit(home, env, state, dry_run)
     settings = state.get('settings')
     if settings:
         restore_setting(settings, dry_run)
@@ -432,6 +820,8 @@ def uninstall(home: pathlib.Path, env: Mapping[str, str], dry_run: bool = False)
     # Folders the install created, deepest first: one made for an early copy
     # may only empty out once a later one is gone.
     created = {pathlib.Path(folder) for record in records.values() for folder in record.get('dirs', [])}
+    for group in ('owned', 'folders', 'hooks'):
+        created |= {pathlib.Path(f) for record in state[group].values() for f in record.get('dirs', [])}
     created |= {pathlib.Path(folder) for folder in (settings or {}).get('dirs', [])}
     created.add(spath.parent)
     if spath.exists():
@@ -440,6 +830,88 @@ def uninstall(home: pathlib.Path, env: Mapping[str, str], dry_run: bool = False)
         if folder.is_dir() and not any(folder.iterdir()):
             folder.rmdir()
     return 0
+
+
+def uninstall_path(path: pathlib.Path, pieces: list[dict], recorded: bool, dry_run: bool) -> None:
+    """Take every piece of the kit out of one file, then restore or remove the file."""
+    current = read(path)
+    if current is None:
+        return
+    rest = current
+    touched = False
+    # Knowledge went in after the rules, so it comes out first.
+    for record in sorted(pieces, key=lambda r: r.get('piece', 'rules') == 'rules'):
+        piece = record.get('piece', 'rules')
+        try:
+            found = find(rest, piece)
+        except Refused as error:
+            print(f'  refused  {path} {error}')
+            return
+        if found is None:
+            continue
+        touched = True
+        rest = '' if record['mode'] == 'file' else removed(rest, record.get('joiner', ''), piece)
+    if not touched:
+        return
+    created = any(record.get('created') for record in pieces) if recorded else True
+    gone = all(record['mode'] == 'file' for record in pieces) or (created and not rest.strip())
+    print(f'  {"would remove" if dry_run else "removed"}  {path}' if gone
+          else f'  {"would restore" if dry_run else "restored"}  {path}')
+    if dry_run:
+        return
+    if gone:
+        path.unlink()
+    else:
+        write(path, rest)
+
+
+def uninstall_kit(home: pathlib.Path, env: Mapping[str, str], state: dict, dry_run: bool) -> None:
+    owned_paths = {pathlib.Path(p) for p in state['owned']}
+    # Without a record, the kit's files are found where the kit puts them, by their mark.
+    owned_paths |= {home / GUARD, home / '.copilot' / 'hooks' / 'intelligence.json'}
+    for folder in (home / '.claude' / 'agents', home / '.copilot' / 'agents', codex_home(home, env) / 'agents'):
+        if folder.is_dir():
+            owned_paths |= {p for p in folder.iterdir() if p.is_file()}
+    for path in sorted(owned_paths):
+        if path.is_file() and (is_kits(path, OWNED) or (path.name == 'intelligence.json'
+                                                         and is_kits(path, GUARD_NAME))):
+            print(f'  {"would remove" if dry_run else "removed"}  {path}')
+            if not dry_run:
+                path.unlink()
+    folders = {pathlib.Path(p) for p in state['folders']}
+    for _app, rel, _where in SKILL_ROOTS:
+        root = home / rel
+        if root.is_dir():
+            folders |= {p for p in root.iterdir() if p.is_dir()}
+    for folder in sorted(folders):
+        if (folder / SKILL_MARK).is_file():
+            print(f'  {"would remove" if dry_run else "removed"}  {folder}')
+            if not dry_run:
+                shutil.rmtree(folder)
+    hook_files = {pathlib.Path(p): r for p, r in state['hooks'].items()}
+    for registration in kit_registrations(home, False, env):
+        hook_files.setdefault(registration.path, {'created': False})
+    removers = {r.path: r.remove for r in kit_registrations(home, False, env)}
+    for path, record in sorted(hook_files.items()):
+        if not path.exists() or path not in removers:
+            continue
+        try:
+            data = read_json(path)
+        except Refused as error:
+            print(f'  refused  {path} {error}')
+            continue
+        updated = removers[path](data)
+        if updated == data:
+            continue
+        gone = bool(record.get('created')) and not updated
+        verb = ('would remove' if dry_run else 'removed') if gone else ('would restore' if dry_run else 'restored')
+        print(f'  {verb}  {path}')
+        if dry_run:
+            continue
+        if gone:
+            path.unlink()
+        else:
+            write(path, json.dumps(updated, indent=2) + '\n')
 
 
 def restore_setting(settings: dict, dry_run: bool) -> None:
@@ -462,7 +934,8 @@ def restore_setting(settings: dict, dry_run: bool) -> None:
     if dry_run:
         return
     if settings['created'] and not data:
-        path.unlink()
+        if path.exists():
+            path.unlink()
     else:
         write(path, json.dumps(data, indent=2) + '\n')
 
@@ -478,15 +951,17 @@ def main(argv: list[str] | None = None, env: Mapping[str, str] | None = None) ->
         if name != 'uninstall':
             command.add_argument('--home-file', type=pathlib.Path, required=True,
                                  help='the home file from a release, already checked against its pin')
+            command.add_argument('--kit-file', type=pathlib.Path,
+                                 help="the release's kit.json, already checked against its pin")
             command.add_argument('--cloud', action='store_true',
-                                 help='a Claude cloud session: write ~/.claude/CLAUDE.md only')
+                                 help="a Claude cloud session: write only Claude Code's files")
         if name != 'check':
             command.add_argument('--dry-run', action='store_true', help='print the plan, change nothing')
     args = parser.parse_args(argv)
     if args.command == 'install':
-        return install(args.home, args.home_file, args.cloud, env, args.dry_run)
+        return install(args.home, args.home_file, args.cloud, env, args.dry_run, args.kit_file)
     if args.command == 'check':
-        return check(args.home, args.home_file, args.cloud, env)
+        return check(args.home, args.home_file, args.cloud, env, args.kit_file)
     return uninstall(args.home, env, args.dry_run)
 
 

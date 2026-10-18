@@ -4,10 +4,14 @@
 # WHY THIS EXISTS. A Claude cloud session starts in a fresh container, so
 # nothing the home kit installed on your machines is there. Pasted into the
 # cloud environment's setup script, this downloads one pinned release's home
-# file and installer, checks each against its pin, and writes
-# ~/.claude/CLAUDE.md. Copy it with its pins filled in: run
-# `make cloud-setup VERSION=vX.Y.Z` in the hub, which prints this file ready
-# to paste.
+# file, kit and installer, checks each against its pin, and writes
+# ~/.claude/CLAUDE.md with the rules and the knowledge facts, plus Claude
+# Code's share of the kit: the guard hook, the skills and the subagents.
+# Copy it with its pins filled in: run `make cloud-setup VERSION=vX.Y.Z` in
+# the hub, which prints this file ready to paste.
+#
+# A kit that cannot be downloaded or misses its pin is left out, and the
+# rules still install. An empty kit pin means a release from before the kit.
 #
 # IT NEVER FAILS THE SESSION. A setup script that exits non-zero stops the
 # session from starting, so every failure here prints a notice and the
@@ -17,6 +21,7 @@
 VERSION='@VERSION@'
 HOME_SHA256='@HOME_SHA256@'
 INSTALL_SHA256='@INSTALL_SHA256@'
+KIT_SHA256='@KIT_SHA256@'
 BASE="${INTELLIGENCE_BASE:-https://raw.githubusercontent.com/tannergolden/intelligence}"
 
 notice() {
@@ -52,7 +57,20 @@ main() {
     || { notice "the home file for $VERSION does not match its pin, so nothing was installed"; return 0; }
   [ "$(sha256 "$dir/install.py")" = "$INSTALL_SHA256" ] \
     || { notice "the installer for $VERSION does not match its pin, so nothing was installed"; return 0; }
-  python3 "$dir/install.py" install --home-file "$dir/intelligence.md" --cloud \
+  set -- --home-file "$dir/intelligence.md" --cloud
+  case "$KIT_SHA256" in
+    '' | @*) ;;
+    *)
+      if ! fetch "$BASE/$VERSION/home/kit.json" "$dir/kit.json"; then
+        notice "could not download the kit for $VERSION, so only the rules were installed"
+      elif [ "$(sha256 "$dir/kit.json")" != "$KIT_SHA256" ]; then
+        notice "the kit for $VERSION does not match its pin, so only the rules were installed"
+      else
+        set -- "$@" --kit-file "$dir/kit.json"
+      fi
+      ;;
+  esac
+  python3 "$dir/install.py" install "$@" \
     || notice 'the installer reported a problem; see above'
 }
 

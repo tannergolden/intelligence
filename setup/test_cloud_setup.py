@@ -29,6 +29,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent
 SCRIPT = HERE / 'claude-cloud-setup.sh'
 HOME_FILE = ROOT / 'home' / 'intelligence.md'
+KIT_FILE = ROOT / 'home' / 'kit.json'
 INSTALLER = ROOT / 'scripts' / 'install.py'
 
 
@@ -49,19 +50,21 @@ class CloudSetup(unittest.TestCase):
         (release / 'home').mkdir(parents=True)
         (release / 'scripts').mkdir()
         shutil.copy(HOME_FILE, release / 'home' / 'intelligence.md')
+        shutil.copy(KIT_FILE, release / 'home' / 'kit.json')
         shutil.copy(INSTALLER, release / 'scripts' / 'install.py')
 
     def tearDown(self) -> None:
         shutil.rmtree(self.root, ignore_errors=True)
 
     def script(self, version: str | None = None, home_sha: str | None = None,
-               install_sha: str | None = None) -> pathlib.Path:
+               install_sha: str | None = None, kit_sha: str = '') -> pathlib.Path:
         """The setup script with its pins filled in, the way `make cloud-setup` fills them."""
         text = SCRIPT.read_text(encoding='utf-8')
         if version is not None:
             text = (text.replace("VERSION='@VERSION@'", f"VERSION='{version}'")
                     .replace("HOME_SHA256='@HOME_SHA256@'", f"HOME_SHA256='{home_sha}'")
-                    .replace("INSTALL_SHA256='@INSTALL_SHA256@'", f"INSTALL_SHA256='{install_sha}'"))
+                    .replace("INSTALL_SHA256='@INSTALL_SHA256@'", f"INSTALL_SHA256='{install_sha}'")
+                    .replace("KIT_SHA256='@KIT_SHA256@'", f"KIT_SHA256='{kit_sha}'"))
         path = self.root / 'setup.sh'
         path.write_text(text, encoding='utf-8')
         return path
@@ -81,6 +84,26 @@ class CloudSetup(unittest.TestCase):
         done = self.run_script(self.script(self.version, sha256(HOME_FILE), sha256(INSTALLER)))
         self.assertEqual(done.returncode, 0, done.stderr)
         self.assertEqual(self.claude_md().read_bytes(), HOME_FILE.read_bytes())
+
+    def guard(self) -> pathlib.Path:
+        return self.home / '.agents' / 'hooks' / 'intelligence-guard.py'
+
+    def test_a_pinned_kit_brings_claude_codes_share_of_it(self) -> None:
+        done = self.run_script(self.script(self.version, sha256(HOME_FILE), sha256(INSTALLER), sha256(KIT_FILE)))
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertIn('INTELLIGENCE:KNOWLEDGE:BEGIN', self.claude_md().read_text(encoding='utf-8'))
+        self.assertTrue(self.guard().is_file())
+        self.assertTrue((self.home / '.claude' / 'skills' / 'building-skills' / 'SKILL.md').is_file())
+        self.assertTrue((self.home / '.claude' / 'agents' / 'reviewer.md').is_file())
+        self.assertIn('intelligence-guard', (self.home / '.claude' / 'settings.json').read_text(encoding='utf-8'))
+        self.assertFalse((self.home / '.codex').exists(), 'a cloud session gets Claude Code\'s files only')
+
+    def test_a_kit_that_misses_its_pin_is_left_out_and_the_rules_still_install(self) -> None:
+        done = self.run_script(self.script(self.version, sha256(HOME_FILE), sha256(INSTALLER), '0' * 64))
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertIn('kit', done.stderr)
+        self.assertEqual(self.claude_md().read_bytes(), HOME_FILE.read_bytes())
+        self.assertFalse(self.guard().exists())
 
     def test_running_it_twice_changes_nothing(self) -> None:
         path = self.script(self.version, sha256(HOME_FILE), sha256(INSTALLER))

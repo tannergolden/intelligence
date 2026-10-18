@@ -23,6 +23,7 @@ import io
 import json
 import pathlib
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -41,6 +42,7 @@ def load(name: str, file: str):
 
 install = load('install', 'install.py')
 render = load('render', 'render.py')
+kit = load('kit', 'kit.py')
 
 BLOCK = '## Working rules\n\n- SEC-001: Never put a credential in a file.\n'
 NEWER = '## Working rules\n\n- SEC-001: Never put a credential anywhere.\n'
@@ -295,6 +297,299 @@ class TestCheck(Home):
         self.run_kit('install', '--home-file', str(self.home_file), '--cloud')
         code, out = self.run_kit('check', '--home-file', str(self.home_file), '--cloud')
         self.assertEqual(code, 0, out)
+
+
+FACTS = '## Facts about this setup\n\n- Every repository has one maintainer.\n'
+NEWER_FACTS = '## Facts about this setup\n\n- Every repository has one maintainer and one owner.\n'
+GUARD = f'#!/usr/bin/env python3\n# {kit.OWNED}\nimport sys\nprint("blocked", file=sys.stderr)\nsys.exit(2)\n'
+SKILL = '---\nname: building-skills\ndescription: Builds skills. Use when asked.\n---\n\n# Building skills\n'
+AGENT = kit.render_subagent('worker', 'Does one change. Use for small tasks.', ['read', 'edit'], 'Work.\n')
+
+KIT_LOCAL = [
+    '.agents/hooks/intelligence-guard.py',
+    '.agents/skills/building-skills/SKILL.md',
+    '.claude/agents/worker.md',
+    '.claude/rules/intelligence-knowledge.md',
+    '.claude/skills/building-skills/SKILL.md',
+    '.codex/agents/worker.toml',
+    '.codex/hooks.json',
+    '.copilot/agents/worker.agent.md',
+    '.copilot/hooks/intelligence.json',
+    '.copilot/instructions/intelligence-knowledge.instructions.md',
+    '.gemini/antigravity-cli/skills/building-skills/SKILL.md',
+    '.gemini/config/hooks.json',
+]
+
+
+class KitHome(Home):
+    """A throwaway home, a home file, and a kit rendered the way the hub renders one."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.kit_file = self.make_kit(FACTS)
+
+    def make_kit(self, facts: str, name: str = 'kit.json', **changes: object) -> pathlib.Path:
+        data = {'format': 1, 'guard': GUARD, 'knowledge': kit.knowledge_region(facts),
+                'skills': {'building-skills': {'SKILL.md': SKILL, 'references/notes.md': 'Notes.\n'}},
+                'subagents': {'worker': AGENT}}
+        data.update(changes)
+        path = self.root / name
+        path.write_text(json.dumps(data), encoding='utf-8')
+        return path
+
+    def install_kit(self, *extra: str) -> tuple[int, str]:
+        return self.run_kit('install', '--home-file', str(self.home_file), '--kit-file', str(self.kit_file),
+                            *extra)
+
+    def check_kit(self, *extra: str) -> tuple[int, str]:
+        return self.run_kit('check', '--home-file', str(self.home_file), '--kit-file', str(self.kit_file),
+                            *extra)
+
+    def json(self, rel: str) -> dict:
+        return json.loads(self.text(rel))
+
+
+class TestKitInstall(KitHome):
+    """What a first install with the kit writes, and where."""
+
+    def test_every_piece_lands_where_its_app_reads_it(self) -> None:
+        code, out = self.install_kit()
+        self.assertEqual(code, 0, out)
+        for rel in KIT_LOCAL:
+            with self.subTest(rel=rel):
+                self.assertTrue((self.home / rel).is_file())
+        guard = self.home / '.agents' / 'hooks' / 'intelligence-guard.py'
+        self.assertEqual(guard.read_text(encoding='utf-8'), GUARD)
+        self.assertEqual(guard.stat().st_mode & 0o777, 0o755)
+        self.assertEqual(self.text('.claude/agents/worker.md'), AGENT['claude'])
+        self.assertEqual(self.text('.codex/agents/worker.toml'), AGENT['codex'])
+        self.assertTrue((self.home / '.claude/skills/building-skills' / install.SKILL_MARK).is_file())
+        self.assertEqual(self.text('.claude/skills/building-skills/references/notes.md'), 'Notes.\n')
+
+    def test_knowledge_sits_beside_the_rules_in_every_copy(self) -> None:
+        self.personal('.codex/AGENTS.md', b'# My Codex notes\n')
+        self.install_kit()
+        region, facts = render.region(BLOCK), kit.knowledge_region(FACTS)
+        self.assertEqual(self.text('.codex/AGENTS.md'), f'# My Codex notes\n\n{region}\n{facts}')
+        self.assertEqual(self.text('.claude/rules/intelligence-knowledge.md'), facts)
+        self.assertEqual(self.text('.copilot/instructions/intelligence-knowledge.instructions.md'),
+                         install.COPILOT_PREFIX + facts)
+
+    def test_the_guard_is_registered_for_every_app(self) -> None:
+        self.install_kit()
+        claude = self.json('.claude/settings.json')['hooks']['PreToolUse'][-1]
+        self.assertEqual(claude['matcher'], install.CLAUDE_MATCHER)
+        self.assertEqual(claude['hooks'][0]['onFailure'], 'block')
+        self.assertTrue(claude['hooks'][0]['command'].endswith('intelligence-guard.py --app claude'))
+        codex = self.json('.codex/hooks.json')['hooks']['PreToolUse'][-1]
+        self.assertEqual(codex['matcher'], install.CODEX_MATCHER)
+        copilot = self.json('.copilot/hooks/intelligence.json')
+        self.assertEqual(copilot['version'], 1)
+        self.assertIn('--app copilot', copilot['hooks']['PreToolUse'][0]['hooks'][0]['command'])
+        antigravity = self.json('.gemini/config/hooks.json')['intelligence']
+        self.assertIn('--app antigravity', antigravity['PreToolUse'][0]['hooks'][0]['command'])
+
+    def test_the_registered_command_runs_the_guard(self) -> None:
+        self.install_kit()
+        command = self.json('.claude/settings.json')['hooks']['PreToolUse'][-1]['hooks'][0]['command']
+        # Through a shell, exactly as Claude Code runs a hook command.
+        done = subprocess.run(command, shell=True, input='{}', capture_output=True, text=True,  # noqa: S602
+                              check=False)
+        self.assertEqual(done.returncode, 2, done.stderr)
+        self.assertIn('blocked', done.stderr)
+
+    def test_your_own_hooks_keep_their_place(self) -> None:
+        mine = {'matcher': 'Bash', 'hooks': [{'type': 'command', 'command': 'my-check'}]}
+        self.personal('.claude/settings.json', json.dumps({'hooks': {'PreToolUse': [mine]}}).encode())
+        self.personal('.codex/hooks.json', json.dumps({'hooks': {'PreToolUse': [mine], 'Stop': [mine]}}).encode())
+        self.install_kit()
+        self.install_kit()
+        for rel in ('.claude/settings.json', '.codex/hooks.json'):
+            with self.subTest(rel=rel):
+                groups = self.json(rel)['hooks']['PreToolUse']
+                self.assertEqual(len(groups), 2, 'installed twice, registered once')
+                self.assertEqual(groups[0], mine, 'appended after yours')
+        self.assertEqual(self.json('.codex/hooks.json')['hooks']['Stop'], [mine])
+
+    def test_a_changed_registration_is_replaced_where_it_stands(self) -> None:
+        mine = {'matcher': 'Bash', 'hooks': [{'type': 'command', 'command': 'my-check'}]}
+        self.install_kit()
+        data = self.json('.codex/hooks.json')
+        data['hooks']['PreToolUse'][0]['hooks'][0]['command'] = '/old/python3 /x/intelligence-guard.py --app codex'
+        data['hooks']['PreToolUse'].append(mine)
+        self.personal('.codex/hooks.json', json.dumps(data).encode())
+        self.install_kit()
+        groups = self.json('.codex/hooks.json')['hooks']['PreToolUse']
+        self.assertEqual(len(groups), 2)
+        self.assertNotIn('/old/', groups[0]['hooks'][0]['command'], 'Codex trusts a hook by its position')
+        self.assertEqual(groups[1], mine)
+
+    def test_a_second_install_changes_nothing(self) -> None:
+        self.install_kit()
+        before = self.snapshot()
+        code, out = self.install_kit()
+        self.assertEqual(code, 0, out)
+        self.assertEqual(self.snapshot(), before)
+        self.assertNotIn('wrote', out)
+
+    def test_a_new_release_replaces_what_it_changed(self) -> None:
+        self.install_kit()
+        self.kit_file = self.make_kit(NEWER_FACTS, 'newer.json', skills={'building-skills': {'SKILL.md': SKILL}})
+        self.install_kit()
+        self.assertEqual(self.text('.claude/rules/intelligence-knowledge.md'), kit.knowledge_region(NEWER_FACTS))
+        self.assertFalse((self.home / '.claude/skills/building-skills/references').exists(),
+                         'a file the release dropped goes')
+
+    def test_a_dry_run_changes_nothing(self) -> None:
+        before = self.snapshot()
+        code, out = self.install_kit('--dry-run')
+        self.assertEqual(code, 0, out)
+        self.assertIn('would write', out)
+        self.assertEqual(self.snapshot(), before)
+
+    def test_a_cloud_session_gets_only_claude_codes_share(self) -> None:
+        code, out = self.install_kit('--cloud')
+        self.assertEqual(code, 0, out)
+        self.assertEqual(self.text('.claude/CLAUDE.md'), render.region(BLOCK) + '\n' + kit.knowledge_region(FACTS))
+        files = sorted(rel for rel, data in self.snapshot().items() if data is not None)
+        self.assertEqual(files, ['.agents/hooks/intelligence-guard.py', '.claude/CLAUDE.md',
+                                 '.claude/agents/worker.md', '.claude/settings.json',
+                                 '.claude/skills/building-skills/.intelligence-kit',
+                                 '.claude/skills/building-skills/SKILL.md',
+                                 '.claude/skills/building-skills/references/notes.md'])
+        self.assertNotIn('pluginConfigs', self.json('.claude/settings.json'))
+        code, out = self.check_kit('--cloud')
+        self.assertEqual(code, 0, out)
+
+
+class TestKitRefusals(KitHome):
+    """What is not the kit's stays exactly as it is."""
+
+    def test_folders_files_and_hooks_of_your_own_are_never_overwritten(self) -> None:
+        skill = self.personal('.claude/skills/building-skills/SKILL.md', b'my own skill\n')
+        agent = self.personal('.claude/agents/worker.md', b'my own worker\n')
+        named = self.personal('.gemini/config/hooks.json', json.dumps({'intelligence': {'Stop': []}}).encode())
+        jsonc = self.personal('.codex/hooks.json', b'{ // my hooks\n}')
+        code, out = self.install_kit()
+        self.assertEqual(code, 1, out)
+        self.assertEqual(out.count('refused'), 4, out)
+        self.assertEqual(skill.read_bytes(), b'my own skill\n')
+        self.assertEqual(agent.read_bytes(), b'my own worker\n')
+        self.assertEqual(json.loads(named.read_text(encoding='utf-8')), {'intelligence': {'Stop': []}})
+        self.assertEqual(jsonc.read_bytes(), b'{ // my hooks\n}')
+        self.assertTrue((self.home / '.agents/skills/building-skills/SKILL.md').is_file(), 'the rest installs')
+
+    def test_a_kit_that_reaches_outside_its_folders_is_refused(self) -> None:
+        for change in ({'skills': {'x': {'../../.bashrc': 'evil'}}},
+                       {'subagents': {'../worker': AGENT}},
+                       {'guard': 'print("no mark")\n'},
+                       {'format': 2}):
+            with self.subTest(change=list(change)):
+                self.kit_file = self.make_kit(FACTS, 'bad.json', **change)
+                with self.assertRaises(SystemExit):
+                    self.install_kit()
+                self.assertEqual(self.snapshot(), {})
+
+    def test_a_knowledge_block_edited_in_the_kit_is_refused(self) -> None:
+        region = kit.knowledge_region(FACTS).replace('one maintainer', 'two maintainers')
+        self.kit_file = self.make_kit(FACTS, 'edited.json', knowledge=region)
+        with self.assertRaises(SystemExit):
+            self.install_kit()
+
+
+class TestKitUninstall(KitHome):
+    """Everything the kit added goes, and everything that was yours comes back to the byte."""
+
+    def test_a_clean_home_is_clean_again(self) -> None:
+        self.install_kit()
+        code, out = self.run_kit('uninstall')
+        self.assertEqual(code, 0, out)
+        self.assertEqual(self.snapshot(), {})
+
+    def test_your_own_files_settings_and_hooks_come_back_exactly(self) -> None:
+        mine = {'matcher': 'Bash', 'hooks': [{'type': 'command', 'command': 'my-check'}]}
+        originals = {
+            '.codex/AGENTS.md': b'# Mine\r\nNo final newline',
+            '.claude/settings.json': json.dumps({'theme': 'dark', 'hooks': {'PreToolUse': [mine]}}).encode(),
+            '.codex/hooks.json': json.dumps({'hooks': {'Stop': [mine]}}).encode(),
+            '.gemini/config/hooks.json': json.dumps({'mine': {'Stop': [mine]}}).encode(),
+            '.claude/agents/helper.md': b'---\nname: helper\n---\nMine.\n',
+            '.claude/skills/my-skill/SKILL.md': b'---\nname: my-skill\n---\n',
+        }
+        for rel, data in originals.items():
+            self.personal(rel, data)
+        self.install_kit()
+        self.kit_file = self.make_kit(NEWER_FACTS, 'newer.json')
+        self.install_kit()
+        code, out = self.run_kit('uninstall')
+        self.assertEqual(code, 0, out)
+        for rel, data in originals.items():
+            with self.subTest(rel=rel):
+                if rel.endswith('.json'):
+                    self.assertEqual(json.loads((self.home / rel).read_bytes()), json.loads(data))
+                else:
+                    self.assertEqual((self.home / rel).read_bytes(), data)
+        left = sorted(rel for rel, data in self.snapshot().items() if data is not None)
+        self.assertEqual(left, sorted(originals))
+
+    def test_without_a_record_only_what_carries_the_kits_mark_goes(self) -> None:
+        self.personal('.claude/agents/helper.md', b'mine\n')
+        self.install_kit()
+        (self.home / '.local' / 'state' / 'intelligence' / 'install.json').unlink()
+        code, out = self.run_kit('uninstall')
+        self.assertEqual(code, 0, out)
+        left = sorted(rel for rel, data in self.snapshot().items() if data is not None)
+        # With no record of what existed before, shared hook files keep everything but the guard.
+        self.assertEqual(left, ['.claude/agents/helper.md', '.claude/settings.json', '.codex/hooks.json',
+                                '.gemini/config/hooks.json'])
+        for rel in left[1:]:
+            with self.subTest(rel=rel):
+                self.assertNotIn(install.GUARD_NAME, self.text(rel))
+
+    def test_a_dry_run_uninstall_changes_nothing(self) -> None:
+        self.install_kit()
+        before = self.snapshot()
+        code, out = self.run_kit('uninstall', '--dry-run')
+        self.assertEqual(code, 0, out)
+        self.assertEqual(self.snapshot(), before)
+
+
+class TestKitCheck(KitHome):
+    """`check` reports each piece of the kit against the release."""
+
+    def test_a_fresh_install_checks_clean(self) -> None:
+        self.install_kit()
+        code, out = self.check_kit()
+        self.assertEqual(code, 0, out)
+
+    def test_hand_edits_and_lost_registrations_are_reported(self) -> None:
+        self.install_kit()
+        skill = self.home / '.agents/skills/building-skills/SKILL.md'
+        skill.write_text(SKILL + 'extra\n', encoding='utf-8')
+        (self.home / '.gemini/config/hooks.json').write_text('{}\n', encoding='utf-8')
+        (self.home / '.claude/agents/worker.md').unlink()
+        code, out = self.check_kit()
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, r'edited +the shared skills folder skill building-skills')
+        self.assertRegex(out, r'missing +Antigravity CLI guard hook')
+        self.assertRegex(out, r'missing +Claude Code subagent worker')
+
+    def test_a_registration_whose_python_is_gone_is_broken(self) -> None:
+        self.install_kit()
+        data = self.json('.claude/settings.json')
+        data['hooks']['PreToolUse'][-1]['hooks'][0]['command'] = (
+            '/nowhere/python3 ' + str(self.home / install.GUARD) + ' --app claude')
+        self.personal('.claude/settings.json', json.dumps(data).encode())
+        code, out = self.check_kit()
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, r'broken +Claude Code guard hook')
+
+    def test_an_older_knowledge_block_is_stale(self) -> None:
+        self.install_kit()
+        self.kit_file = self.make_kit(NEWER_FACTS, 'newer.json')
+        code, out = self.check_kit()
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, r'stale +Codex knowledge')
 
 
 if __name__ == '__main__':
