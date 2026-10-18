@@ -1,6 +1,6 @@
 <!--
 title: '🔧 HUB SCRIPTS'
-description: 'The scripts that render the law, install it on a machine, and deliver it to every repository, with the tests that guard them.'
+description: 'The scripts that render the law and the kit, install them on a machine, guard every tool call, and deliver the rules to every repository, with their tests.'
 tags: [scripts, render, home-kit, sync]
 category: docs
 -->
@@ -11,7 +11,7 @@ category: docs
 
 <a name="top"></a>
 
-**Render the law, install it at home, deliver it to every repository: three scripts and their tests.**
+**Render the law and the kit, install them at home, guard every tool call, deliver the rules everywhere: five scripts and their tests.**
 
 _Standard library only, from a Mac's Python 3.9 up._
 
@@ -21,15 +21,18 @@ _Standard library only, from a Mac's Python 3.9 up._
 
 ## 💡 What This Folder Is For
 
-| Script                     | What it does                                                                                     | Run by                                  |
-| :------------------------- | :----------------------------------------------------------------------------------------------- | :-------------------------------------- |
-| [`render.py`](render.py)   | Checks the law and renders every copy of the block: `AGENTS.md`, the home file and its hashes    | `make render`, `make lint`, CI          |
-| [`install.py`](install.py) | Installs the home file into each app's folder, checks it, and uninstalls it to the byte          | dotfiles' `make agents`, cloud setup    |
-| [`sync.py`](sync.py)       | Audits every repository, opens one sync pull request each, and merges the green, block-only ones | `make audit`, `make sync`, `make merge` |
+| Script                     | What it does                                                                                       | Run by                                              |
+| :------------------------- | :------------------------------------------------------------------------------------------------- | :-------------------------------------------------- |
+| [`render.py`](render.py)   | Checks the law and renders every copy of the block, the kit and the hashes                         | `make render`, `make lint`, CI                      |
+| [`kit.py`](kit.py)         | Checks the guard, skills, subagents and knowledge facts, and bundles them into `home/kit.json`     | `render.py`                                         |
+| [`install.py`](install.py) | Installs the home file and the kit into each app's folder, checks them, and uninstalls to the byte | dotfiles' `make agents`, cloud setup                |
+| [`guard.py`](guard.py)     | Denies the tool calls the Invariants forbid outright, before they run, in every app                | each app's pre-tool hook, once installed            |
+| [`sync.py`](sync.py)       | Audits every repository, opens one sync pull request each, and merges the green, block-only ones   | `make audit`, `make sync`, `make merge`, `sync.yml` |
 
-`install.py` runs on its own after a machine downloads it from a release, so
-it imports nothing from the hub. `sync.py` reaches GitHub only through the
-owner's `gh` login.
+`install.py` and `guard.py` run on their own on a machine, after a release
+delivers them, so they import nothing from the hub. `sync.py` reaches GitHub
+only through `gh`: the owner's login by hand, or the intelligence App's
+token, one repository at a time, in `sync.yml`.
 
 ---
 
@@ -43,6 +46,7 @@ make audit                     # what every repository carries now
 make sync ARGS=--dry-run       # what a sync would change
 make sync                      # open or update one pull request per repository
 make merge                     # merge the green ones whose diff is only the block
+python3 scripts/guard.py --command 'git push --force'   # try the guard on a command
 python3 -m unittest discover -s scripts -p 'test_*.py'
 ```
 
@@ -61,11 +65,15 @@ on purpose, pass `ARGS='--ref HEAD'`.
 
 | Entry                                | Purpose                                                                                     |
 | :----------------------------------- | :------------------------------------------------------------------------------------------ |
+| [`guard.py`](guard.py)               | Block the few tool calls the universal rules forbid outright, before they run.              |
 | [`install.py`](install.py)           | Install the universal rules into every AI app's home folder, check them, and take them out. |
+| [`kit.py`](kit.py)                   | Render everything the home kit installs besides the rules into one bundle, `home/kit.json`. |
 | [`README.md`](README.md)             | This file.                                                                                  |
 | [`render.py`](render.py)             | Render the universal rules from the law into every copy this hub publishes.                 |
 | [`sync.py`](sync.py)                 | Deliver the universal rules to every repository the owner owns, and keep them there.        |
+| [`test_guard.py`](test_guard.py)     | Tests for the guard hook.                                                                   |
 | [`test_install.py`](test_install.py) | Tests for the home kit installer.                                                           |
+| [`test_kit.py`](test_kit.py)         | Tests for the kit renderer.                                                                 |
 | [`test_render.py`](test_render.py)   | Tests for the law renderer.                                                                 |
 | [`test_sync.py`](test_sync.py)       | Tests for repository sync, audit and merge.                                                 |
 
@@ -75,7 +83,7 @@ on purpose, pass `ARGS='--ref HEAD'`.
 
 <div align="center">
 
-**The law, rendered, installed and delivered, every step under test.**
+**The law and its kit, rendered, installed, guarded and delivered, every step under test.**
 
 [↑ Back to Top](#top)
 

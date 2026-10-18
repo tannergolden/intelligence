@@ -47,10 +47,10 @@ collaborators get the same rules with nothing installed.
 
 ## 🏠 Piece 1: Home
 
-`make agents`, in your dotfiles, downloads the pinned release's home file and
-[`scripts/install.py`](scripts/README.md), checks each against its SHA-256,
-and runs the installer, which writes byte-identical copies, one per app, in
-the shape each app reads:
+`make agents`, in your dotfiles, downloads the pinned release's home file,
+kit and [`scripts/install.py`](scripts/README.md), checks each against its
+SHA-256, and runs the installer, which writes byte-identical copies, one per
+app, in the shape each app reads:
 
 | Folder        | Universal rules                                                              | Setting                                                                            |
 | :------------ | :--------------------------------------------------------------------------- | :--------------------------------------------------------------------------------- |
@@ -68,6 +68,20 @@ compares every copy with the release, and `make agents-uninstall` puts back
 what was there before. In a Claude cloud session, the
 [setup script](setup/README.md) does the same from a pinned release, and can
 never stop the session from starting.
+
+**The kit** rides beside the rules in the same release, as one pinned file,
+[`home/kit.json`](home/README.md), and the installer puts each piece where
+its app reads it:
+
+| Module                                     | What it is                                                                                         | Where it lands                                                                                                                                     |
+| :----------------------------------------- | :------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Guard hook](scripts/guard.py)             | Denies force-pushes, merges, `--no-verify`, AI sign-offs and irreversible commands before they run | `~/.agents/hooks/`, registered in Claude Code's settings (read by Grok and Cursor), Codex's and Antigravity's `hooks.json`, and Copilot's `hooks/` |
+| [`building-skills`](skills/README.md)      | The one skill: how to build, test and ship every other skill                                       | `~/.agents/skills/`, `~/.claude/skills/` and Antigravity's skills folder                                                                           |
+| [Worker and Reviewer](subagents/README.md) | Subagents that make one change, and check one without editing                                      | `~/.claude/agents/`, `~/.copilot/agents/` and `~/.codex/agents/`                                                                                   |
+| [Knowledge facts](knowledge/README.md)     | Public facts about how this setup works                                                            | Beside every home copy of the rules, between their own markers                                                                                     |
+
+Everything the kit writes carries its mark, so it replaces only its own
+files and `make agents-uninstall` takes back exactly what it added.
 
 ---
 
@@ -148,8 +162,18 @@ release, never unreleased work.
 | **v0.4. Backstops**       | Rulesets through 🎯 Apply Standards, and the [risks that remain](docs/Backstops-&-Residual-Risk.md)            | A direct push and a force-push to `Development` are both refused                                                  | Written up; the rulesets need your `ADMIN_TOKEN`       |
 | **v1.0. Freeze**          | Rule IDs, the marker format and file paths, frozen once two releases pass v0.2 to v0.4                         | One release ships with one review, one `make sync`, one `make merge` and a green probe                            | After two releases                                     |
 
-After 1.0, each of these returns as a module with its own passing test: skills,
-the guard hooks, unattended sync, knowledge, the agent hierarchy, and evals.
+The modules the plan held back until after 1.0 are built, each with its own
+passing tests and a record in [`docs/adrs/`](docs/adrs/README.md):
+
+| Module                    | Delivers                                                                                 | Status                                                   |
+| :------------------------ | :--------------------------------------------------------------------------------------- | :------------------------------------------------------- |
+| **Guard hooks**           | [`scripts/guard.py`](scripts/README.md), registered for every app by the installer       | Built; first loads with the release that carries the kit |
+| **Skills**                | One skill, [`building-skills`](skills/README.md), and the probe's duplicate-skill canary | Built; run `make probe ARGS=--skills` on your machine    |
+| **The hierarchy**         | The [Worker and Reviewer](subagents/README.md) subagents                                 | Built                                                    |
+| **Knowledge**             | The [public facts](knowledge/README.md), beside every home copy of the rules             | Built; the private tier waits                            |
+| **Evals**                 | [Scenarios for every rule](evals/README.md), run with the block and without it           | Built; real runs are yours, `make evals`                 |
+| **Unattended sync**       | [`sync.yml`](.github/workflows/sync.yml), through a GitHub App, one token per repository | Built; inert until you create the App                    |
+| **Machined-region check** | The standards' check that a block's hash matches its text, in every repository's CI      | Built in tannergolden/standards                          |
 
 ---
 
@@ -162,12 +186,15 @@ lists them all.
 2. Run 🏷️ Cut Release with the next version, such as `v0.1.0`. It runs
    `make check` again, and refuses a release whose rendered files have
    drifted from the law.
-3. `make pins VERSION=v0.1.0` prints the hashes to pin. Put them in dotfiles'
-   `agents/intelligence.pin`, then run `make agents` on each machine.
+3. `make pins VERSION=v0.1.0` prints the hashes to pin: the home file, the
+   installer and the kit. Put them in dotfiles' `agents/intelligence.pin`,
+   then run `make agents` on each machine.
 4. `make cloud-setup VERSION=v0.1.0` prints the Claude cloud setup script,
    pinned. Paste it into the cloud environment's setup script.
 5. `make audit`, then `make sync ARGS=--dry-run`, then `make sync`: one pull
-   request per repository.
+   request per repository. Once the intelligence App is set up, as
+   [`sync.yml`](.github/workflows/sync.yml) describes, Cut Release does this
+   step by itself.
 6. Review each first sync by hand. After that, `make merge` lands every sync
    whose diff is only the block and whose checks passed.
 
@@ -208,6 +235,13 @@ with the options it was weighed against:
 - [ADR-0009](docs/adrs/ADR-0009-Agents-Follow-The-Standards.md): every agent follows the engineering standards in every repository you own
 - [ADR-0010](docs/adrs/ADR-0010-Releases-Serve-Rendered-Files.md): a release tag serves the rendered home file and installer, checked against pins
 - [ADR-0011](docs/adrs/ADR-0011-The-Universal-Rule-Set.md): the nineteen rules, and the evidence for each addition and cut
+- [ADR-0012](docs/adrs/ADR-0012-One-Pinned-Kit-For-Every-Module.md): every module ships in one pinned kit beside the rules
+- [ADR-0013](docs/adrs/ADR-0013-The-Guard-Denies-Never-Allows.md): one guard behind every app's hook, which only ever denies
+- [ADR-0014](docs/adrs/ADR-0014-One-Skill-That-Builds-Skills.md): one skill for now, the one that builds skills
+- [ADR-0015](docs/adrs/ADR-0015-A-Worker-And-A-Reviewer.md): the hierarchy starts with a Worker and a Reviewer
+- [ADR-0016](docs/adrs/ADR-0016-Knowledge-Starts-As-Public-Facts.md): knowledge starts as public facts beside the rules
+- [ADR-0017](docs/adrs/ADR-0017-Unattended-Sync-Through-An-App.md): a GitHub App opens the sync pull requests, and you still merge
+- [ADR-0018](docs/adrs/ADR-0018-Evals-Measure-The-Block.md): evals measure each rule with the block and without it
 
 ---
 
@@ -226,27 +260,31 @@ and other people's repositories follow their own rules.
 
 <!-- AUTO-INDEX:BEGIN dir=. style=log -->
 
-| Entry                                       | Purpose                                                                                                                                        |
-| :------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`.devcontainer/`](.devcontainer/README.md) | The language-neutral development container this repository ships, and how to give it the toolchain your project needs.                         |
-| [`.github/`](.github/)                      | CODEOWNERS, Dependabot, release notes config, Template Sync's list, scripts and workflows - logged below                                       |
-| [`.vscode/`](.vscode/README.md)             | The VS Code settings and extension recommendations this repository shares, and why every other file in this folder stays out of git.           |
-| [`assets/`](assets/README.md)               | Where this project keeps what presents it: four folders to start, a name ready for every other kind, and the rules every file follows.         |
-| [`docs/`](docs/README.md)                   | Where this project keeps its own documents, and where the engineering standards it follows actually live.                                      |
-| [`home/`](home/README.md)                   | The rendered home file the home kit installs, and the hashes a consumer pins, served from every release tag.                                   |
-| [`law/`](law/README.md)                     | The source of every universal rule: one file per rule ID, and the order, precedence text and budget of the block every agent reads.            |
-| [`probe/`](probe/README.md)                 | Proves, on the machine that runs it, which instruction files each AI coding app actually loads.                                                |
-| [`scripts/`](scripts/README.md)             | The scripts that render the law, install it on a machine, and deliver it to every repository, with the tests that guard them.                  |
-| [`setup/`](setup/README.md)                 | The setup script that installs the universal rules into every Claude Code cloud session, pinned to one release and unable to fail the session. |
-| [`.editorconfig`](.editorconfig)            | Editor defaults every editor honours: UTF-8, LF, a final newline, and indentation per language                                                 |
-| [`.env.example`](.env.example)              | Environment variable template for this project.                                                                                                |
-| [`.gitattributes`](.gitattributes)          | Git attributes - line endings, diffs, and what counts as binary                                                                                |
-| [`.gitignore`](.gitignore)                  | &#x1F5C4;&#xFE0F; Universal Ignore Patterns                                                                                                    |
-| [`.markdownlint.json`](.markdownlint.json)  | Repository-wide markdownlint rules. Discovered by mechanism, which is why this lives at the root.                                              |
-| [`AGENTS.md`](AGENTS.md)                    | How AI coding agents work in the intelligence hub: the universal rules it publishes, then its own commands, conventions and limits.            |
-| [`LICENSE`](LICENSE)                        | MIT License                                                                                                                                    |
-| [`Makefile`](Makefile)                      | The hub's commands. Each one is plain Python from the standard library, so the same targets run on a Mac, in CI and in a cloud session.        |
-| [`README.md`](README.md)                    | This file.                                                                                                                                     |
+| Entry                                       | Purpose                                                                                                                                                     |
+| :------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`.devcontainer/`](.devcontainer/README.md) | The language-neutral development container this repository ships, and how to give it the toolchain your project needs.                                      |
+| [`.github/`](.github/)                      | CODEOWNERS, Dependabot, release notes config, Template Sync's list, scripts and workflows - logged below                                                    |
+| [`.vscode/`](.vscode/README.md)             | The VS Code settings and extension recommendations this repository shares, and why every other file in this folder stays out of git.                        |
+| [`assets/`](assets/README.md)               | Where this project keeps what presents it: four folders to start, a name ready for every other kind, and the rules every file follows.                      |
+| [`docs/`](docs/README.md)                   | Where this project keeps its own documents, and where the engineering standards it follows actually live.                                                   |
+| [`evals/`](evals/README.md)                 | Scenarios that tempt an agent to break each universal rule, run against real apps with the block and without it, and checked by code.                       |
+| [`home/`](home/README.md)                   | The rendered home file and kit the home kit installs, and the hashes a consumer pins, served from every release tag.                                        |
+| [`knowledge/`](knowledge/README.md)         | The public facts about tannergolden's setup that the home kit installs beside the rules: facts, never rules, and never personal context.                    |
+| [`law/`](law/README.md)                     | The source of every universal rule: one file per rule ID, and the order, precedence text and budget of the block every agent reads.                         |
+| [`probe/`](probe/README.md)                 | Proves, on the machine that runs it, which instruction files each AI coding app actually loads.                                                             |
+| [`scripts/`](scripts/README.md)             | The scripts that render the law and the kit, install them on a machine, guard every tool call, and deliver the rules to every repository, with their tests. |
+| [`setup/`](setup/README.md)                 | The setup script that installs the universal rules and the kit into every Claude Code cloud session, pinned to one release and unable to fail the session.  |
+| [`skills/`](skills/README.md)               | The skills the home kit installs into every AI coding app, each a folder in the open Agent Skills format.                                                   |
+| [`subagents/`](subagents/README.md)         | The Worker and Reviewer subagents the home kit installs, each one source rendered for Claude Code, Copilot and Codex.                                       |
+| [`.editorconfig`](.editorconfig)            | Editor defaults every editor honours: UTF-8, LF, a final newline, and indentation per language                                                              |
+| [`.env.example`](.env.example)              | Environment variable template for this project.                                                                                                             |
+| [`.gitattributes`](.gitattributes)          | Git attributes - line endings, diffs, and what counts as binary                                                                                             |
+| [`.gitignore`](.gitignore)                  | &#x1F5C4;&#xFE0F; Universal Ignore Patterns                                                                                                                 |
+| [`.markdownlint.json`](.markdownlint.json)  | Repository-wide markdownlint rules. Discovered by mechanism, which is why this lives at the root.                                                           |
+| [`AGENTS.md`](AGENTS.md)                    | How AI coding agents work in the intelligence hub: the universal rules it publishes, then its own commands, conventions and limits.                         |
+| [`LICENSE`](LICENSE)                        | MIT License                                                                                                                                                 |
+| [`Makefile`](Makefile)                      | The hub's commands. Each one is plain Python from the standard library, so the same targets run on a Mac, in CI and in a cloud session.                     |
+| [`README.md`](README.md)                    | This file.                                                                                                                                                  |
 
 <!-- AUTO-INDEX:END -->
 
@@ -291,6 +329,7 @@ tables after every push:
 | `auto-index.yml`           | Redraws every folder log after a push                                 |
 | `template-sync.yml`        | Proposes the template's later fixes as one pull request, when run     |
 | `cut-release.yml`          | Cuts the hub's releases, and refuses one whose rendered files drifted |
+| `sync.yml`                 | Opens each release's sync pull requests through the intelligence App  |
 
 **Do not rename the job ids** `ci` and `secrets` (in `checks.yml`) or `pr` (in
 `governance.yml`): branch protection names them. **Sign your commits off** with

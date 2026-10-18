@@ -61,44 +61,54 @@ _The universal rules first, then this repository's own._
 
 ## Commands
 
-- `make check`: everything CI checks, which are the repository validator, `scripts/render.py --check` and every test.
-- `make test`: the tests alone, under `.github/scripts/`, `scripts/` and `probe/`.
-- `make render`: rewrite the block above, `home/intelligence.md` and `home/SHA256SUMS` from `law/`.
+- `make check`: everything CI checks, which are the repository validator, `scripts/render.py --check`, `evals/run.py --check` and every test.
+- `make test`: the tests alone, under `.github/scripts/`, `scripts/`, `probe/`, `setup/` and `evals/`.
+- `make render`: rewrite the block above, `home/intelligence.md`, `home/kit.json` and `home/SHA256SUMS` from their sources.
 - `make probe`: prove which instruction files each installed app loads. It makes one model call per check.
+- `make evals`: measure each rule with the block and without it. Real runs make model calls; `ARGS=--dry-run` makes none.
+- `python3 scripts/guard.py --command '<command>'`: see what the guard hook would say about one command.
 - `make audit`, `make sync` and `make merge`: reach every repository the owner owns, through the owner's `gh` login.
 
 ## Definition of done
 
 - `make check` passes, and its output is in your report.
-- A change to `law/` or to `scripts/install.py` is followed by `make render`, and the rendered files are committed with it.
-- Every new script has tests beside it, and every folder's `README.md` logs its files.
+- A change to `law/`, `scripts/install.py`, `scripts/guard.py`, `skills/`, `subagents/` or `knowledge/` is followed by `make render`, and the rendered files are committed with it.
+- A new rule gets a scenario in `evals/scenarios/`, and a new skill a trigger test in `evals/skills/`.
+- Every new script has tests beside it, and every folder's `README.md` logs its files, except inside a skill's folder.
 
 ## Conventions
 
 - Python uses the standard library only, with `from __future__ import annotations` and single quotes. Tests use `unittest`, are named `test_*.py`, and load the script they test with `importlib`.
-- `scripts/install.py` and `probe/loader-probe.py` run on the Python 3.9 that macOS ships, so neither uses `match` or a runtime `X | Y`.
+- `scripts/install.py`, `scripts/guard.py` and `probe/loader-probe.py` run on the Python 3.9 that macOS ships, so none of them uses `match` or a runtime `X | Y`.
+- Skill and subagent files open with the `---` frontmatter their loaders need, with no Document Styling header or footer.
 - A rule is one ASCII sentence in `law/rules/<ID>.json`. IDs are `DOMAIN-NNN` and are never reused: `law/block.json` lists the retired ones.
 
 ## Where things live
 
-| Path         | What                                                                  |
-| :----------- | :-------------------------------------------------------------------- |
-| `law/`       | The source of every rule, and the order and budget of the block       |
-| `scripts/`   | `render.py`, `install.py` and `sync.py`, with their tests             |
-| `home/`      | The rendered home file and its hashes, which every release tag serves |
-| `probe/`     | The loader probe                                                      |
-| `setup/`     | The Claude cloud setup script                                         |
-| `docs/adrs/` | Every decision behind the plan                                        |
+| Path         | What                                                                            |
+| :----------- | :------------------------------------------------------------------------------ |
+| `law/`       | The source of every rule, and the order and budget of the block                 |
+| `scripts/`   | `render.py`, `kit.py`, `install.py`, `guard.py` and `sync.py`, with their tests |
+| `home/`      | The rendered home file, kit and hashes, which every release tag serves          |
+| `skills/`    | The one skill, `building-skills`                                                |
+| `subagents/` | The Worker and Reviewer subagents                                               |
+| `knowledge/` | The public facts installed beside the rules                                     |
+| `evals/`     | Scenarios for every rule, the skill trigger tests, and their runner             |
+| `probe/`     | The loader probe and the duplicate-skill canary                                 |
+| `setup/`     | The Claude cloud setup script                                                   |
+| `docs/adrs/` | Every decision behind the plan                                                  |
 
 ## Gotchas
 
-- Never edit between the `INTELLIGENCE` markers or inside `home/`. Both are rendered from `law/`, and `make check` fails on a hand edit.
+- Never edit between the `INTELLIGENCE` markers or inside `home/`. Both are rendered, and `make check` fails on a hand edit. Where the guard hook is installed, it blocks the edit outright.
+- The guard hook denies a commit git would author as an AI. In a cloud session, pass `--author` and `--trailer 'Signed-off-by: ...'` with your user's identity, never `-s`.
 - Editing this file's block changes nothing elsewhere: other repositories receive the rules only through a release and `make sync`.
 - Never add a `CLAUDE.md` here. Claude Code skips `AGENTS.md` beside one unless its settings say otherwise.
 
 ## Ask first
 
-- Cutting a release, or running `make sync` or `make merge` against real repositories.
+- Cutting a release, running `make sync` or `make merge` against real repositories, or dispatching 🔁 Sync Intelligence.
+- Adding a skill: the owner keeps one for now, `building-skills`.
 - Changing a rule's wording, its kind or its ID.
 
 ## Overrides
