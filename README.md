@@ -37,17 +37,20 @@ scratch folders. The repository copy travels with the code, so cloud agents and
 collaborators get the same rules with nothing installed.
 
 > [!IMPORTANT]
-> **Status: phase 0.** Nothing is delivered yet. This phase proves, on real
-> machines, which file each app actually loads, because every later piece rests
-> on those facts. See [🧪 The Loader Probe](#-phase-0-the-loader-probe).
+> **Status: built, not yet released.** The law, the renderer, the home kit,
+> repository sync and the backstop notes are all here: phases v0.1 to v0.4.
+> Nothing reaches a machine or another repository until the first release is
+> cut, and phase 0 still needs the probe run on your own machine. See
+> [🚀 Releasing](#-releasing).
 
 ---
 
 ## 🏠 Piece 1: Home
 
-`make agents`, in your dotfiles, downloads the pinned release's home file,
-checks its SHA-256, and writes byte-identical copies, one per app, in the shape
-each app reads:
+`make agents`, in your dotfiles, downloads the pinned release's home file and
+[`scripts/install.py`](scripts/README.md), checks each against its SHA-256,
+and runs the installer, which writes byte-identical copies, one per app, in
+the shape each app reads:
 
 | Folder        | Universal rules                                                              | Setting                                                                            |
 | :------------ | :--------------------------------------------------------------------------- | :--------------------------------------------------------------------------------- |
@@ -62,7 +65,9 @@ each app reads:
 Copies, not links: links fail silently in Claude's desktop sessions and Grok's
 sandbox, and would take over files you keep notes in. `make agents-check`
 compares every copy with the release, and `make agents-uninstall` puts back
-what was there before.
+what was there before. In a Claude cloud session, the
+[setup script](setup/README.md) does the same from a pinned release, and can
+never stop the session from starting.
 
 ---
 
@@ -111,7 +116,8 @@ knows which rule wins:
 A repository changes a Default only through an Overrides entry naming its rule
 ID, and `make audit` rejects one that names an Invariant.
 
-**How a release reaches the repositories**, from v0.3:
+**How a release reaches the repositories**, through
+[`scripts/sync.py`](scripts/README.md):
 
 - You review each release once, here.
 - `make sync` opens or updates one pull request per repository on
@@ -125,23 +131,45 @@ ID, and `make audit` rejects one that names an Invariant.
   next `make sync` repairs it.
 
 Every repository you own takes part, except templates, forks and archived
-ones. A `no-intelligence` topic opts one out.
+ones, and this hub, which renders its own copy from the law. A
+`no-intelligence` topic opts one out. Sync always delivers the latest
+release, never unreleased work.
 
 ---
 
 ## 🗺️ Roadmap
 
-| Phase                     | Delivers                                                                               | Done when                                                                                                         |
-| :------------------------ | :------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
-| **0. Prove the loaders**  | The [loader probe](probe/README.md)                                                    | Every app you use reads its home copy and a repository's AGENTS.md, headless and by hand, and every control holds |
-| **v0.1. The law**         | The rules, one file per ID; `render.py`; golden tests; release assets                  | Two renders are byte-identical, and the block stays under 4,000 characters                                        |
-| **v0.2. The home kit**    | `install.py`; `make agents` and `make agents-check`; the cloud setup script            | The probe passes on macOS, Linux, a Codespace and a Claude cloud session, and uninstalling restores every file    |
-| **v0.3. Repository sync** | `make sync`, `make audit` and `make merge`                                             | One release reaches every repository as one pull request each, merged by one command                              |
-| **v0.4. Backstops**       | Rulesets through 🎯 Apply Standards                                                    | A direct push and a force-push to `Development` are both refused                                                  |
-| **v1.0. Freeze**          | Rule IDs, the marker format and file paths, frozen once two releases pass v0.2 to v0.4 | One release ships with one review, one `make sync`, one `make merge` and a green probe                            |
+| Phase                     | Delivers                                                                                                       | Done when                                                                                                         | Status                                                 |
+| :------------------------ | :------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------- |
+| **0. Prove the loaders**  | The [loader probe](probe/README.md)                                                                            | Every app you use reads its home copy and a repository's AGENTS.md, headless and by hand, and every control holds | Claude Code passes; the other apps run on your machine |
+| **v0.1. The law**         | The rules, one file per ID, in [`law/`](law/README.md); `render.py`; its tests                                 | Two renders are byte-identical, and the block stays under 4,000 characters                                        | Built                                                  |
+| **v0.2. The home kit**    | `install.py`; dotfiles' `make agents`, `make agents-check` and `make agents-uninstall`; the cloud setup script | The probe passes on macOS, Linux, a Codespace and a Claude cloud session, and uninstalling restores every file    | Built; proven on a machine after the first release     |
+| **v0.3. Repository sync** | `make audit`, `make sync` and `make merge`; this hub's own `AGENTS.md`                                         | One release reaches every repository as one pull request each, merged by one command                              | Built; the first sync is yours to run                  |
+| **v0.4. Backstops**       | Rulesets through 🎯 Apply Standards, and the [risks that remain](docs/Backstops-&-Residual-Risk.md)            | A direct push and a force-push to `Development` are both refused                                                  | Written up; the rulesets need your `ADMIN_TOKEN`       |
+| **v1.0. Freeze**          | Rule IDs, the marker format and file paths, frozen once two releases pass v0.2 to v0.4                         | One release ships with one review, one `make sync`, one `make merge` and a green probe                            | After two releases                                     |
 
 After 1.0, each of these returns as a module with its own passing test: skills,
 the guard hooks, unattended sync, knowledge, the agent hierarchy, and evals.
+
+---
+
+## 🚀 Releasing
+
+Each release is a tag, and every step after it is one command. `make help`
+lists them all.
+
+1. On `Development`, `make check` passes.
+2. Run 🏷️ Cut Release with the next version, such as `v0.1.0`. It runs
+   `make check` again, and refuses a release whose rendered files have
+   drifted from the law.
+3. `make pins VERSION=v0.1.0` prints the hashes to pin. Put them in dotfiles'
+   `agents/intelligence.pin`, then run `make agents` on each machine.
+4. `make cloud-setup VERSION=v0.1.0` prints the Claude cloud setup script,
+   pinned. Paste it into the cloud environment's setup script.
+5. `make audit`, then `make sync ARGS=--dry-run`, then `make sync`: one pull
+   request per repository.
+6. Review each first sync by hand. After that, `make merge` lands every sync
+   whose diff is only the block and whose checks passed.
 
 ---
 
@@ -178,6 +206,8 @@ with the options it was weighed against:
 - [ADR-0007](docs/adrs/ADR-0007-Public-MIT-Hub.md): this hub is public and MIT-licensed
 - [ADR-0008](docs/adrs/ADR-0008-Names-Without-Prefixes.md): rule IDs are `DOMAIN-NNN`, and nothing carries an owner prefix
 - [ADR-0009](docs/adrs/ADR-0009-Agents-Follow-The-Standards.md): every agent follows the engineering standards in every repository you own
+- [ADR-0010](docs/adrs/ADR-0010-Releases-Serve-Rendered-Files.md): a release tag serves the rendered home file and installer, checked against pins
+- [ADR-0011](docs/adrs/ADR-0011-The-Universal-Rule-Set.md): the nineteen rules, and the evidence for each addition and cut
 
 ---
 
@@ -196,21 +226,27 @@ and other people's repositories follow their own rules.
 
 <!-- AUTO-INDEX:BEGIN dir=. style=log -->
 
-| Entry                                       | Purpose                                                                                                                                |
-| :------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------- |
-| [`.devcontainer/`](.devcontainer/README.md) | The language-neutral development container this repository ships, and how to give it the toolchain your project needs.                 |
-| [`.github/`](.github/)                      | CODEOWNERS, Dependabot, release notes config, Template Sync's list, scripts and workflows - logged below                               |
-| [`.vscode/`](.vscode/README.md)             | The VS Code settings and extension recommendations this repository shares, and why every other file in this folder stays out of git.   |
-| [`assets/`](assets/README.md)               | Where this project keeps what presents it: four folders to start, a name ready for every other kind, and the rules every file follows. |
-| [`docs/`](docs/README.md)                   | Where this project keeps its own documents, and where the engineering standards it follows actually live.                              |
-| [`probe/`](probe/README.md)                 | Proves, on the machine that runs it, which instruction files each AI coding app actually loads.                                        |
-| [`.editorconfig`](.editorconfig)            | Editor defaults every editor honours: UTF-8, LF, a final newline, and indentation per language                                         |
-| [`.env.example`](.env.example)              | Environment variable template for this project.                                                                                        |
-| [`.gitattributes`](.gitattributes)          | Git attributes - line endings, diffs, and what counts as binary                                                                        |
-| [`.gitignore`](.gitignore)                  | &#x1F5C4;&#xFE0F; Universal Ignore Patterns                                                                                            |
-| [`.markdownlint.json`](.markdownlint.json)  | Repository-wide markdownlint rules. Discovered by mechanism, which is why this lives at the root.                                      |
-| [`LICENSE`](LICENSE)                        | MIT License                                                                                                                            |
-| [`README.md`](README.md)                    | This file.                                                                                                                             |
+| Entry                                       | Purpose                                                                                                                                        |
+| :------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`.devcontainer/`](.devcontainer/README.md) | The language-neutral development container this repository ships, and how to give it the toolchain your project needs.                         |
+| [`.github/`](.github/)                      | CODEOWNERS, Dependabot, release notes config, Template Sync's list, scripts and workflows - logged below                                       |
+| [`.vscode/`](.vscode/README.md)             | The VS Code settings and extension recommendations this repository shares, and why every other file in this folder stays out of git.           |
+| [`assets/`](assets/README.md)               | Where this project keeps what presents it: four folders to start, a name ready for every other kind, and the rules every file follows.         |
+| [`docs/`](docs/README.md)                   | Where this project keeps its own documents, and where the engineering standards it follows actually live.                                      |
+| [`home/`](home/README.md)                   | The rendered home file the home kit installs, and the hashes a consumer pins, served from every release tag.                                   |
+| [`law/`](law/README.md)                     | The source of every universal rule: one file per rule ID, and the order, precedence text and budget of the block every agent reads.            |
+| [`probe/`](probe/README.md)                 | Proves, on the machine that runs it, which instruction files each AI coding app actually loads.                                                |
+| [`scripts/`](scripts/README.md)             | The scripts that render the law, install it on a machine, and deliver it to every repository, with the tests that guard them.                  |
+| [`setup/`](setup/README.md)                 | The setup script that installs the universal rules into every Claude Code cloud session, pinned to one release and unable to fail the session. |
+| [`.editorconfig`](.editorconfig)            | Editor defaults every editor honours: UTF-8, LF, a final newline, and indentation per language                                                 |
+| [`.env.example`](.env.example)              | Environment variable template for this project.                                                                                                |
+| [`.gitattributes`](.gitattributes)          | Git attributes - line endings, diffs, and what counts as binary                                                                                |
+| [`.gitignore`](.gitignore)                  | &#x1F5C4;&#xFE0F; Universal Ignore Patterns                                                                                                    |
+| [`.markdownlint.json`](.markdownlint.json)  | Repository-wide markdownlint rules. Discovered by mechanism, which is why this lives at the root.                                              |
+| [`AGENTS.md`](AGENTS.md)                    | How AI coding agents work in the intelligence hub: the universal rules it publishes, then its own commands, conventions and limits.            |
+| [`LICENSE`](LICENSE)                        | MIT License                                                                                                                                    |
+| [`Makefile`](Makefile)                      | The hub's commands. Each one is plain Python from the standard library, so the same targets run on a Mac, in CI and in a cloud session.        |
+| [`README.md`](README.md)                    | This file.                                                                                                                                     |
 
 <!-- AUTO-INDEX:END -->
 
@@ -238,23 +274,23 @@ tables after every push:
 
 ## 🌿 The Workflows
 
-| Workflow                   | Gives you                                                          |
-| :------------------------- | :----------------------------------------------------------------- |
-| `checks.yml`               | Lint, test and build; secret scan; CodeQL; workflow lint           |
-| `governance.yml`           | Pull request title and DCO checks, triage, stale sweep, commands   |
-| `release.yml`              | Draft notes, publish assets, prune superseded releases             |
-| `maintenance.yml`          | Prunes stale deployments and draft releases                        |
-| `lifecycle.yml`            | Claims this repository once; flags a new major                     |
-| `dependabot-automerge.yml` | Approves and queues patch and minor updates                        |
-| `ci-failure-alert.yml`     | Opens an issue when a watched workflow fails                       |
-| `apply-standards.yml`      | Dispatch-only: the label taxonomy, settings and rulesets           |
-| `auto-format.yml`          | Formats what a push touched                                        |
-| `preview-deploy.yml`       | Deploys pushes to a preview target, once configured                |
-| `prune-runs.yml`           | Deletes old workflow runs, with their logs and artifacts           |
-| `verify-stubs.yml`         | Proves every stub's permission ceiling matches its called workflow |
-| `auto-index.yml`           | Redraws every folder log after a push                              |
-| `template-sync.yml`        | Proposes the template's later fixes as one pull request, when run  |
-| `cut-release.yml`          | Cuts releases. Inert until v0.1 adopts it for the hub's own tags   |
+| Workflow                   | Gives you                                                             |
+| :------------------------- | :-------------------------------------------------------------------- |
+| `checks.yml`               | Lint, test and build; secret scan; CodeQL; workflow lint              |
+| `governance.yml`           | Pull request title and DCO checks, triage, stale sweep, commands      |
+| `release.yml`              | Draft notes, publish assets, prune superseded releases                |
+| `maintenance.yml`          | Prunes stale deployments and draft releases                           |
+| `lifecycle.yml`            | Claims this repository once; flags a new major                        |
+| `dependabot-automerge.yml` | Approves and queues patch and minor updates                           |
+| `ci-failure-alert.yml`     | Opens an issue when a watched workflow fails                          |
+| `apply-standards.yml`      | Dispatch-only: the label taxonomy, settings and rulesets              |
+| `auto-format.yml`          | Formats what a push touched                                           |
+| `preview-deploy.yml`       | Deploys pushes to a preview target, once configured                   |
+| `prune-runs.yml`           | Deletes old workflow runs, with their logs and artifacts              |
+| `verify-stubs.yml`         | Proves every stub's permission ceiling matches its called workflow    |
+| `auto-index.yml`           | Redraws every folder log after a push                                 |
+| `template-sync.yml`        | Proposes the template's later fixes as one pull request, when run     |
+| `cut-release.yml`          | Cuts the hub's releases, and refuses one whose rendered files drifted |
 
 **Do not rename the job ids** `ci` and `secrets` (in `checks.yml`) or `pr` (in
 `governance.yml`): branch protection names them. **Sign your commits off** with
