@@ -439,10 +439,9 @@ def matrix(results: Sequence[dict[str, object]]) -> str:
         if row['status'] in ('skipped', 'timeout', 'error'):
             lines.append(f"| {row['check']} | - | - | - | {row['status']} |")
             continue
-        expect = row['expected']
-        seen = row['observed']
-        assert isinstance(expect, dict) and isinstance(seen, dict)
-        cells = ' | '.join(cell(expect[name], seen[name]) for name in NAMES)
+        expect = row['expected'] if isinstance(row['expected'], dict) else {}
+        seen = row['observed'] if isinstance(row['observed'], dict) else {}
+        cells = ' | '.join(cell(expect.get(name), bool(seen.get(name))) for name in NAMES)
         lines.append(f"| {row['check']} | {cells} | {row['status']} |")
     return '\n'.join(lines)
 
