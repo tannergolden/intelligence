@@ -114,10 +114,15 @@ jobs:
     # Event-driven on purpose: pruning is triggered by the thing that makes
     # an old release old. The release event applies the plan; a dispatch
     # defaults to a dry run.
+    #
+    # THE HUB NEVER PRUNES: every run is a dry run. Dotfiles and cloud
+    # sessions pin a full version and download from its tag, and `make audit`
+    # names an old block by the release that shipped it, so every release
+    # stays. Kept through Template Sync by a `# keep mine` note.
     if: ${{ !github.event.repository.is_template && (github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.task == 'prune')) }}
     permissions:
       contents: write # deleting releases requires write
     uses: tannergolden/standards/.github/workflows/prune-releases.yml@v1
     with:
       keep: 1
-      dry-run: ${{ inputs.dry-run || false }}
+      dry-run: true

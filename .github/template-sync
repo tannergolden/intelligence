@@ -113,3 +113,4 @@
 
 # --- Your rules ---------------------------------------------------------------
 # keep mine: /.github/workflows/checks.yml
+# keep mine: /.github/workflows/release.yml
