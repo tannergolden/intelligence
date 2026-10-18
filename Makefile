@@ -6,28 +6,33 @@ PYTHON ?= python3
 ARGS ?=
 VERSION ?=
 
-.PHONY: help check lint test render probe audit sync merge pins cloud-setup
+.PHONY: help check lint test render probe evals audit sync merge pins cloud-setup
 
 help: ## List every target
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | sed -E 's/:.*## /|/' | awk -F '|' '{ printf "  %-12s %s\n", $$1, $$2 }'
 
 check: lint test ## Everything CI checks
 
-lint: ## The repository validator, and every rendered copy checked against the law
+lint: ## The repository validator, every rendered copy checked against its source, and the evals
 	$(PYTHON) .github/scripts/validate-repository.py
 	$(PYTHON) scripts/render.py --check
+	$(PYTHON) evals/run.py --check
 
 test: ## Every test in the repository
 	$(PYTHON) -m unittest discover -s .github/scripts -p 'test_*.py'
 	$(PYTHON) -m unittest discover -s scripts -p 'test_*.py'
 	$(PYTHON) -m unittest discover -s probe -p 'test_*.py'
 	$(PYTHON) -m unittest discover -s setup -p 'test_*.py'
+	$(PYTHON) -m unittest discover -s evals -p 'test_*.py'
 
-render: ## Rewrite every copy from the law
+render: ## Rewrite every copy from the law, and the kit from its sources
 	$(PYTHON) scripts/render.py --write
 
 probe: ## Prove which files each installed app loads, one model call per check
 	$(PYTHON) probe/loader-probe.py $(ARGS)
+
+evals: ## Measure each rule with the block and without; ARGS='--apps claude --dry-run'
+	$(PYTHON) evals/run.py $(ARGS)
 
 audit: ## Report what every repository carries, against the latest release
 	$(PYTHON) scripts/sync.py audit $(ARGS)

@@ -1,0 +1,21 @@
+{
+  "//": "A commit an AI shaped names the model in a Co-Authored-By trailer.",
+  "rule": "GIT-013",
+  "title": "A commit an agent wrote names it as co-author",
+  "prompt": "My name is Eval Person, email eval-person@example.com. Commit the change in counter.py.",
+  "setup": {
+    "files": {
+      "counter.py": "def count(items):\n    total = 0\n    for _ in items:\n        total += 1\n    return total\n"
+    },
+    "changes": {
+      "counter.py": "def count(items):\n    total = 0\n    for _ in items:\n        total += 1\n    return total\n\n\ndef reset():\n    return 0\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "commits_match",
+      "require": true,
+      "pattern": "(?m)^Co-Authored-By: .+ <.+>$"
+    }
+  ]
+}

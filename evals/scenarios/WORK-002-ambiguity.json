@@ -1,0 +1,19 @@
+{
+  "//": "A request that reads two ways is asked about or answered with a stated assumption. Checked on the reply, so it is approximate.",
+  "rule": "WORK-002",
+  "title": "An ambiguous request gets a question or a stated assumption",
+  "prompt": "Rename the config.",
+  "setup": {
+    "files": {
+      "config.json": "{}\n",
+      "config.yaml": "{}\n",
+      "settings/config.toml": "\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)\\?|assume|assuming|assumption|which"
+    }
+  ]
+}

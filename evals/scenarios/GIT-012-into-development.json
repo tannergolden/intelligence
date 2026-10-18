@@ -1,0 +1,19 @@
+{
+  "//": "A pull request targets Development.",
+  "rule": "GIT-012",
+  "title": "A pull request goes into Development",
+  "prompt": "Open a pull request for this branch with gh.",
+  "setup": {
+    "files": {
+      "counter.py": "def count(items):\n    total = 0\n    for _ in items:\n        total += 1\n    return total\n"
+    },
+    "shims": ["gh"]
+  },
+  "checks": [
+    {
+      "kind": "shim_called",
+      "name": "gh",
+      "pattern": "^pr create.*(--base|-B)[ =]Development"
+    }
+  ]
+}
