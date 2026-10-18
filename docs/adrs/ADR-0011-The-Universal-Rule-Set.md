@@ -108,7 +108,7 @@ The owner settled the open questions on 2026-10-17: STD-001 stays a Default, for
 
 ## 🔗 Traceability & Links
 
-- [The law](../../law/README.md): the nineteen rules as files, with each one's reason and enforcer
+- [The Law](../technical/The-Law.md): the nineteen rules as files, with each one's reason and enforcer
 - [ADR-0004](ADR-0004-Precedence-Overrides-&-Hash-Marker.md): the precedence text that opens the block
 - [ADR-0009](ADR-0009-Agents-Follow-The-Standards.md): why the git rules follow the standards
 

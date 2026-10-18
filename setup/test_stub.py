@@ -29,7 +29,7 @@ STUB = ROOT / 'setup' / 'intelligence-sync.yml'
 WORKFLOW = ROOT / '.github' / 'workflows' / 'sync.yml'
 ACTION = ROOT / 'actions' / 'sync' / 'action.yml'
 RELEASE = ROOT / '.github' / 'workflows' / 'cut-release.yml'
-README = ROOT / 'README.md'
+GUIDE = ROOT / 'docs' / 'technical' / 'Repository-Sync.md'
 
 _spec = importlib.util.spec_from_file_location('sync', ROOT / 'scripts' / 'sync.py')
 sync = importlib.util.module_from_spec(_spec)
@@ -106,10 +106,10 @@ class TestTheStub(unittest.TestCase):
 
     def test_the_stub_lives_where_audit_looks_for_it(self) -> None:
         self.assertEqual(sync.STUB, '.github/workflows/intelligence-sync.yml')
-        self.assertIn(f'`{sync.STUB}`', text(README))
+        self.assertIn(f'`{sync.STUB}`', text(GUIDE))
 
-    def test_the_readme_carries_the_stub_as_it_is(self) -> None:
-        self.assertIn(f'```yaml\n{text(STUB)}```', text(README))
+    def test_the_guide_carries_the_stub_as_it_is(self) -> None:
+        self.assertIn(f'```yaml\n{text(STUB)}```', text(GUIDE))
 
     def test_the_action_runs_the_script_beside_it_on_the_sync_branch(self) -> None:
         action = text(ACTION)

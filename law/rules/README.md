@@ -19,22 +19,10 @@ _One sentence each. Every one with a reason._
 
 ---
 
-## 💡 What Each File Holds
+## 💡 What This Folder Is For
 
-| Field         | What it is                                                                                     |
-| :------------ | :--------------------------------------------------------------------------------------------- |
-| `//`          | The line the file log below shows, as `ID: kind for reach.`; `render.py --check` keeps it true |
-| `id`          | `DOMAIN-NNN`, the same as the file's name                                                      |
-| `kind`        | `invariant`, which nothing waives, or `default`, which a repository may override by ID         |
-| `reach`       | `every` repository, or `owner` for the owner's repositories only                               |
-| `text`        | The one sentence agents read, exactly as it appears in the block                               |
-| `why`         | What the rule prevents, and the evidence for it                                                |
-| `enforced_by` | What enforces it today, outside the prompt                                                     |
-| `to_add`      | The enforcement still to build                                                                 |
-
-An Invariant without any enforcement listed is refused, because prose alone
-cannot make an agent stop. `law/block.json` decides the order the rules
-appear in; the files themselves are listed below alphabetically.
+One JSON file per universal rule, named for its ID. What each field holds, and
+how to add, change or retire a rule: [The Law](../../docs/technical/The-Law.md).
 
 ---
 

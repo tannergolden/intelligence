@@ -21,16 +21,10 @@ _Called, never copied._
 
 ## 💡 What This Folder Is For
 
-A workflow step runs only code its repository already has. A repository's
-🔁 Intelligence Sync stub needs the hub's code, so the reusable workflow
-[`sync.yml`](../.github/workflows/sync.yml) calls the action here, and GitHub
-downloads the hub at its moving major tag. The action runs
-`scripts/sync.py` from that download against the repository's own checkout,
-so the code that writes the block is always a released one, the same that
-`make sync` runs.
-
-Nothing here is meant to be called directly. A repository calls the
-workflow, through the stub in [`setup/`](../setup/README.md).
+The composite action a repository's 🔁 Intelligence Sync stub runs, through
+the reusable workflow [`sync.yml`](../.github/workflows/sync.yml). Nothing
+here is called directly. How it fits: [Repository
+Sync](../docs/technical/Repository-Sync.md).
 
 ---
 

@@ -100,7 +100,7 @@ Rules say what to do; agents also lack facts about this setup that make the rule
 
 ## 🔗 Traceability & Links
 
-- [`knowledge/`](../../knowledge/README.md)
+- [`knowledge/`](../../knowledge/README.md), explained in [Knowledge](../technical/Knowledge.md)
 - [ADR-0005](ADR-0005-Home-Copies-Not-Links.md): home copies, checked against the release
 
 ### 🔗 See also

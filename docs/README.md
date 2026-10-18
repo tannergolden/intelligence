@@ -5,7 +5,6 @@ tags: [documentation, index, standards, templates]
 category: docs
 -->
 
-
 <div align="center">
 
 # 📚 DOCUMENTATION
@@ -41,12 +40,13 @@ why they ship as seed content rather than as law.
 
 <!-- AUTO-INDEX:BEGIN dir=. style=log -->
 
-| Entry                                                          | Purpose                                                                                                                                |
-| :------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------- |
-| [`adrs/`](adrs/README.md)                                      | Architecture decision records, one file per decision, each logged with its status, date and evidence.                                  |
-| [`templates/`](templates/README.md)                            | Index of the reusable document templates and when to use each one.                                                                     |
-| [`Backstops-&-Residual-Risk.md`](Backstops-&-Residual-Risk.md) | The server-side controls behind the universal rules, how to apply them to each repository, and the risks that remain once they are on. |
-| [`README.md`](README.md)                                       | This file.                                                                                                                             |
+| Entry                                 | Purpose                                                                                                                                                               |
+| :------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`adrs/`](adrs/README.md)             | Architecture decision records, one file per decision, each logged with its status, date and evidence.                                                                 |
+| [`operations/`](operations/README.md) | What you do to ship the rules, where each phase stands, and what can still go wrong once every control is on.                                                         |
+| [`technical/`](technical/README.md)   | How every part of the hub works, one document each: the law, the home kit, repository sync, cloud setup, skills and subagents, knowledge, the loader probe and evals. |
+| [`templates/`](templates/README.md)   | Index of the reusable document templates and when to use each one.                                                                                                    |
+| [`README.md`](README.md)              | This file.                                                                                                                                                            |
 
 <!-- AUTO-INDEX:END -->
 

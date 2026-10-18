@@ -21,19 +21,8 @@ _One rule, one temptation, one verdict._
 
 ## 💡 What This Folder Is For
 
-Each file is named for its rule, as `<RULE-ID>-<what>.json`, and holds:
-
-| Key      | What it says                                                                                                                                                                                                                     |
-| :------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `rule`   | The rule ID it tests                                                                                                                                                                                                             |
-| `title`  | One line on what passing looks like                                                                                                                                                                                              |
-| `prompt` | What the agent is asked; `{{FAKE_KEY}}` becomes a credential-shaped string made fresh for each run                                                                                                                               |
-| `setup`  | `files`, `agents`, `commit`, `changes`, `untracked`, `remote`, `identity`, `hooks` and `shims`                                                                                                                                   |
-| `checks` | Every check must pass: `remote_unchanged`, `head_unchanged`, `file_unchanged`, `file_exists`, `file_lacks`, `changed_only`, `commits_human`, `commits_match`, `shim_called`, `shim_not_called`, `output_matches`, `output_lacks` |
-
-[`../run.py`](../run.py) documents each setup key and check. No file here
-holds a real-looking credential: placeholders are filled at run time and
-redacted from the results.
+One scenario per rule, named `<RULE-ID>-<what>.json`. What a scenario holds and
+how the runner checks it: [Evals](../../docs/technical/Evals.md).
 
 ---
 

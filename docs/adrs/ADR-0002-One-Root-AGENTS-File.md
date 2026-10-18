@@ -121,7 +121,7 @@ The `CLAUDE.md` pointer closes a gap the owner does not have, at the cost of the
 
 - [ADR-0001](ADR-0001-Two-Pieces-Home-&-Repository.md): why there is a repository piece at all
 - [ADR-0004](ADR-0004-Precedence-Overrides-&-Hash-Marker.md): the block's marker, and how the repository's sections override it
-- [Loader probe](../../probe/README.md): the Claude Code results this record cites
+- [The Loader Probe](../technical/The-Loader-Probe.md): the Claude Code results this record cites
 
 ### 🔗 See also
 

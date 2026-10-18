@@ -19,31 +19,12 @@ _It writes. The workflow proposes. You merge._
 
 ---
 
-## 💡 What It Does
+## 💡 What This Folder Is For
 
-It runs `scripts/sync.py apply` from the hub tree GitHub downloaded at the
-tag, in the calling repository's checkout. An `AGENTS.md` with a block gets
-the release's block in its place; one without gets it after its header; a
-repository with none gets a new `AGENTS.md`, and any `CLAUDE.md` is folded
-in and deleted. A template, a fork, an archived repository, one with the
-`no-intelligence` topic and the hub itself are left alone.
-
-It changes the working tree and nothing else: no commit, no push, no pull
-request. [`sync.yml`](../../.github/workflows/sync.yml) hands its outputs to
-the standards' open-pr action, which does those.
-
-| Input     | Default  | What it is                                                                                        |
-| :-------- | :------- | :------------------------------------------------------------------------------------------------ |
-| `token`   | required | Reads the repository's settings, to skip what takes no part; the default `GITHUB_TOKEN` is enough |
-| `dry-run` | `false`  | Print what would change, and change nothing                                                       |
-
-| Output         | What it is                                                               |
-| :------------- | :----------------------------------------------------------------------- |
-| `changed`      | `'true'` when the working tree now holds a change to propose             |
-| `commit-title` | The Conventional Commit title, which is also the pull request's title    |
-| `commit-body`  | Why the change is made, with no sign-off: whoever commits it signs off   |
-| `pr-title`     | The pull request title                                                   |
-| `pr-body`      | The pull request body, which says how its checks start and who merges it |
+`action.yml` runs `scripts/sync.py apply` from the hub tree GitHub downloads
+at the tag, in the calling repository's checkout, and changes the working tree
+and nothing else. Its inputs and outputs, and how the workflow uses them:
+[Repository Sync](../../docs/technical/Repository-Sync.md).
 
 ---
 

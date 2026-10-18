@@ -75,6 +75,7 @@ _The universal rules first, then this repository's own._
 - A change to `law/`, `scripts/install.py`, `scripts/guard.py`, `skills/`, `subagents/` or `knowledge/` is followed by `make render`, and the rendered files are committed with it.
 - A new rule gets a scenario in `evals/scenarios/`, and a new skill a trigger test in `evals/skills/`.
 - Every new script has tests beside it, and every folder's `README.md` logs its files, except inside a skill's folder.
+- A change to how something works updates its document in `docs/technical/` or `docs/operations/` in the same commit.
 
 ## Conventions
 
@@ -82,22 +83,25 @@ _The universal rules first, then this repository's own._
 - `scripts/install.py`, `scripts/guard.py` and `probe/loader-probe.py` run on the Python 3.9 that macOS ships, so none of them uses `match` or a runtime `X | Y`.
 - Skill and subagent files open with the `---` frontmatter their loaders need, with no Document Styling header or footer.
 - A rule is one ASCII sentence in `law/rules/<ID>.json`. IDs are `DOMAIN-NNN` and are never reused: `law/block.json` lists the retired ones.
+- Every explanation lives in `docs/`. A folder's `README.md` says what the folder holds in a sentence or two, links the document that explains it, and logs its files.
 
 ## Where things live
 
-| Path         | What                                                                            |
-| :----------- | :------------------------------------------------------------------------------ |
-| `law/`       | The source of every rule, and the order and budget of the block                 |
-| `scripts/`   | `render.py`, `kit.py`, `install.py`, `guard.py` and `sync.py`, with their tests |
-| `home/`      | The rendered home file, kit and hashes, which every release tag serves          |
-| `skills/`    | The one skill, `building-skills`                                                |
-| `subagents/` | The Worker and Reviewer subagents                                               |
-| `knowledge/` | The public facts installed beside the rules                                     |
-| `evals/`     | Scenarios for every rule, the skill trigger tests, and their runner             |
-| `probe/`     | The loader probe and the duplicate-skill canary                                 |
-| `setup/`     | The Claude cloud setup script, and the stub a repository carries                |
-| `actions/`   | The action a repository's stub runs, through `.github/workflows/sync.yml`       |
-| `docs/adrs/` | Every decision behind the plan                                                  |
+| Path               | What                                                                                |
+| :----------------- | :---------------------------------------------------------------------------------- |
+| `law/`             | The source of every rule, and the order and budget of the block                     |
+| `scripts/`         | `render.py`, `kit.py`, `install.py`, `guard.py` and `sync.py`, with their tests     |
+| `home/`            | The rendered home file, kit and hashes, which every release tag serves              |
+| `skills/`          | The one skill, `building-skills`                                                    |
+| `subagents/`       | The Worker and Reviewer subagents                                                   |
+| `knowledge/`       | The public facts installed beside the rules                                         |
+| `evals/`           | Scenarios for every rule, the skill trigger tests, and their runner                 |
+| `probe/`           | The loader probe and the duplicate-skill canary                                     |
+| `setup/`           | The Claude cloud setup script, and the stub a repository carries                    |
+| `actions/`         | The action a repository's stub runs, through `.github/workflows/sync.yml`           |
+| `docs/technical/`  | How every part of the hub works, one document each, starting with `How-It-Works.md` |
+| `docs/operations/` | Releasing, the roadmap, and the controls and risks behind the rules                 |
+| `docs/adrs/`       | Every decision behind the plan                                                      |
 
 ## Gotchas
 

@@ -110,7 +110,7 @@ The installer registers it in Claude Code's settings (which Grok Build and Curso
 ## 🔗 Traceability & Links
 
 - [ADR-0011](ADR-0011-The-Universal-Rule-Set.md): the Invariants it enforces
-- [Backstops & residual risk](../Backstops-&-Residual-Risk.md): what still gets past it
+- [Backstops & residual risk](../operations/Backstops-&-Residual-Risk.md): what still gets past it
 - [`scripts/guard.py`](../../scripts/guard.py)
 
 ### 🔗 See also

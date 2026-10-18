@@ -101,7 +101,7 @@ After 1.0 the plan brings back the modules it deferred: the guard hook, skills, 
 ## 🔗 Traceability & Links
 
 - [ADR-0010](ADR-0010-Releases-Serve-Rendered-Files.md): releases serve rendered files, checked against pins
-- [`scripts/kit.py`](../../scripts/kit.py) and [`home/`](../../home/README.md)
+- [`scripts/kit.py`](../../scripts/kit.py) and [`home/`](../../home/README.md), explained in [The Home Kit](../technical/The-Home-Kit.md)
 
 ### 🔗 See also
 

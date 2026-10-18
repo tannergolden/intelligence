@@ -113,7 +113,7 @@ The trust anchor is the pin: dotfiles' pin file and the cloud setup script each 
 
 - [ADR-0005](ADR-0005-Home-Copies-Not-Links.md): what the home kit does with the home file
 - [ADR-0003](ADR-0003-Push-Sync-&-Owner-Merge.md): sync delivers the latest tag's block
-- [Home file](../../home/README.md) and [cloud setup](../../setup/README.md)
+- [The Home Kit](../technical/The-Home-Kit.md) and [Cloud Setup](../technical/Cloud-Setup.md)
 
 ### 🔗 See also
 

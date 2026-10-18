@@ -21,15 +21,10 @@ _Rendered, never written. Pinned, never trusted blind._
 
 ## 💡 What This Folder Is For
 
-`intelligence.md` is the universal block between its `INTELLIGENCE`
-markers, exactly as `scripts/render.py` renders it from `law/`. The home kit
-copies it into each app's home folder, and the Claude cloud setup script
-writes it into a fresh session.
-
-`kit.json` carries every module around the rules, rendered by
-`scripts/kit.py`: the guard hook, the skills, the subagents for each app,
-and the knowledge facts between their own markers. The installer writes each
-piece where its app reads it.
+What every release serves, rendered from the law. **Never edit anything here
+by hand:** `make render` rewrites it, and `make check` fails CI when it has
+drifted. How a machine gets these files and checks them: [The Home
+Kit](../docs/technical/The-Home-Kit.md).
 
 | File              | What it is                                                                   |
 | :---------------- | :--------------------------------------------------------------------------- |
@@ -37,28 +32,8 @@ piece where its app reads it.
 | `kit.json`        | The kit: the guard, the skills, the subagents and the knowledge facts        |
 | `SHA256SUMS`      | The SHA-256 of the home file, the kit and `scripts/install.py`, for a reader |
 
-All three change with every render, so the file log below leaves them out
-and this table describes them instead. **Never edit anything here by hand.**
-`make render` rewrites this folder, and `make check` fails CI when it has
-drifted from the law.
-
----
-
-## 📦 How A Machine Gets It
-
-A release is a tag, and each tag serves this folder and the installer as
-they were at that commit:
-
-```text
-https://raw.githubusercontent.com/tannergolden/intelligence/<version>/home/intelligence.md
-https://raw.githubusercontent.com/tannergolden/intelligence/<version>/home/kit.json
-https://raw.githubusercontent.com/tannergolden/intelligence/<version>/scripts/install.py
-```
-
-The consumer checks each file against a SHA-256 it pinned beforehand, and
-never against a hash from the same download. `make pins VERSION=vX.Y.Z`
-prints those pins for a release, and `SHA256SUMS` here lists the same
-hashes for a reader.
+All three change with every render, so the file log below leaves them out and
+this table describes them instead.
 
 ---
 

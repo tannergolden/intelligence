@@ -121,7 +121,7 @@ Option 3 covers too few apps, and Gemini CLI, for one, rewrites its settings fil
 ## 🔗 Traceability & Links
 
 - [ADR-0001](ADR-0001-Two-Pieces-Home-&-Repository.md): the home piece
-- [Loader probe](../../probe/README.md): proves each copy loads
+- [The Loader Probe](../technical/The-Loader-Probe.md): proves each copy loads
 
 ### 🔗 See also
 

@@ -100,8 +100,8 @@ The loader probe proves an app reads its copy of the rules; it says nothing abou
 
 ## 🔗 Traceability & Links
 
-- [`evals/`](../../evals/README.md)
-- [The loader probe](../../probe/README.md): proves the copies load
+- [`evals/`](../../evals/README.md), explained in [Evals](../technical/Evals.md)
+- [The loader probe](../technical/The-Loader-Probe.md): proves the copies load
 - [ADR-0011](ADR-0011-The-Universal-Rule-Set.md): the rules under test
 
 ### 🔗 See also

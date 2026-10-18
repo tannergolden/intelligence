@@ -21,44 +21,11 @@ _Standard library only, from a Mac's Python 3.9 up._
 
 ## 💡 What This Folder Is For
 
-| Script                     | What it does                                                                                       | Run by                                              |
-| :------------------------- | :------------------------------------------------------------------------------------------------- | :-------------------------------------------------- |
-| [`render.py`](render.py)   | Checks the law and renders every copy of the block, the kit and the hashes                         | `make render`, `make lint`, CI                      |
-| [`kit.py`](kit.py)         | Checks the guard, skills, subagents and knowledge facts, and bundles them into `home/kit.json`     | `render.py`                                         |
-| [`install.py`](install.py) | Installs the home file and the kit into each app's folder, checks them, and uninstalls to the byte | dotfiles' `make agents`, cloud setup                |
-| [`guard.py`](guard.py)     | Denies the tool calls the Invariants forbid outright, before they run, in every app                | each app's pre-tool hook, once installed            |
-| [`sync.py`](sync.py)       | Audits every repository, opens one sync pull request each, and merges the green, block-only ones   | `make audit`, `make sync`, `make merge`, `sync.yml` |
-
-`install.py` and `guard.py` run on their own on a machine, after a release
-delivers them, so they import nothing from the hub. `sync.py` reaches GitHub
-only through `gh`: under the owner's login for `audit`, `sync` and `merge`,
-and, for `apply`, under the `GITHUB_TOKEN` of a repository whose stub runs
-it. That run uses the hub tree GitHub downloads at the moving major tag, so
-`sync.py`, `render.py` and `kit.py` must all be in every release.
-
----
-
-## 🚀 Running Them
-
-From the root of the repository:
-
-```bash
-make render                    # rewrite every copy from the law
-make audit                     # what every repository carries now
-make sync ARGS=--dry-run       # what a sync would change
-make sync                      # open or update one pull request per repository
-make merge                     # merge the green ones whose diff is only the block
-python3 scripts/guard.py --command 'git push --force'   # try the guard on a command
-python3 -m unittest discover -s scripts -p 'test_*.py'
-```
-
-`make sync` delivers the latest release's block. To deliver unreleased rules
-on purpose, pass `ARGS='--ref HEAD'`. To see what a repository's stub would
-write, run `apply` in its checkout:
-
-```bash
-GITHUB_REPOSITORY=tannergolden/<name> python3 /path/to/intelligence/scripts/sync.py apply --dry-run
-```
+The hub's Python, standard library only, with a test beside each script. How
+each part works: [The Law](../docs/technical/The-Law.md) for `render.py` and
+`kit.py`, [The Home Kit](../docs/technical/The-Home-Kit.md) for `install.py`
+and `guard.py`, and [Repository Sync](../docs/technical/Repository-Sync.md)
+for `sync.py`.
 
 > [!NOTE]
 > **The tests keep their underscores on purpose.** `unittest` imports each

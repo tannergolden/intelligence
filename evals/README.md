@@ -21,52 +21,9 @@ _Tempt, run, check, compare._
 
 ## 💡 What This Folder Is For
 
-The [loader probe](../probe/README.md) proves an app reads the rules. Evals
-measure whether the agent then follows them. Each scenario sets up a scratch
-git repository that tempts an agent to break one rule, gives a real app the
-prompt headless, and checks the outcome with code:
-
-- the repository and its files, and a local bare remote standing in for
-  GitHub;
-- what `gh` and `curl` were asked to do, through stand-ins that log their
-  arguments and reach nothing;
-- for the few rules only a reply can show, the agent's reply, which those
-  scenarios mark as approximate.
-
-Every scenario runs **with** the INTELLIGENCE block in the repository's
-`AGENTS.md` and **without** it, and the summary prints both pass rates and
-the difference.
-
----
-
-## 🚀 Running Them
-
-```bash
-make evals ARGS='--check'                                   # validate, no model calls
-make evals ARGS='--apps claude --dry-run'                   # the plan
-make evals ARGS='--apps claude --rules OPS-001 --runs 3'    # one rule, three runs each way
-make evals ARGS='--apps claude --skill building-skills'     # a skill's trigger test
-```
-
-Claude Code, Codex and Copilot CLI have commands built in; give any other
-app one with `--command 'APP=argv with {prompt}'`.
-
-> [!WARNING]
-> **Agents run with the permissions their command gives them.** Scenarios
-> stay inside their scratch folder, but run evals on a machine where the
-> home kit's guard hook is installed, and read a scenario before you run it.
-
-Each scenario's own `//` line says what it tests, and `--keep` leaves its
-scratch folder in place to inspect afterwards.
-
-> [!NOTE]
-> **The without runs remove the block from the repository only.** Home
-> copies installed by the kit still load. For a true baseline, run
-> `make agents-uninstall` in dotfiles first; the runner warns when it finds
-> them.
-
-`make lint` runs `--check`, which fails while any rule has no scenario or
-any skill has no trigger test.
+The evals runner, a scenario for every rule in [`scenarios/`](scenarios/README.md),
+and a trigger test for every skill in [`skills/`](skills/README.md). What
+evals measure and how to run them: [Evals](../docs/technical/Evals.md).
 
 ---
 

@@ -100,7 +100,7 @@ The Workforce design put agents in tiers with an App for each, and the plan defe
 
 ## 🔗 Traceability & Links
 
-- [`subagents/`](../../subagents/README.md)
+- [`subagents/`](../../subagents/README.md), explained in [Skills & Subagents](../technical/Skills-&-Subagents.md)
 - [ADR-0012](ADR-0012-One-Pinned-Kit-For-Every-Module.md): how they ship
 
 ### 🔗 See also

@@ -21,31 +21,9 @@ _Do the work. Then doubt it._
 
 ## 💡 What This Folder Is For
 
-The agent hierarchy starts here, with two subagents a session can hand work
-to:
-
-| Subagent                     | What it does                                                                                         | Tools                       |
-| :--------------------------- | :--------------------------------------------------------------------------------------------------- | :-------------------------- |
-| [`worker.md`](worker.md)     | Makes one well-defined change, runs the checks that cover it, never pushes, and reports the evidence | read, search, edit, execute |
-| [`reviewer.md`](reviewer.md) | Reviews a change before it ships, runs the checks itself, and reports verified findings by severity  | read, search, execute       |
-
-Each source holds a `name`, a `description` and a list of abstract tools.
-`scripts/kit.py` renders it three ways, and the home kit installs each:
-
-| App                   | Where                | Form                                         |
-| :-------------------- | :------------------- | :------------------------------------------- |
-| Claude Code           | `~/.claude/agents/`  | Markdown, tools as Claude Code names them    |
-| Copilot               | `~/.copilot/agents/` | `.agent.md`, tools as Copilot's aliases      |
-| Codex                 | `~/.codex/agents/`   | TOML, the prompt as `developer_instructions` |
-| Grok Build and Cursor | Claude Code's folder | read from there, so no copy of their own     |
-
-> [!NOTE]
-> **These files are exempt from Document Styling.** Each app reads them as a
-> prompt with `---` frontmatter, so they carry no hidden comment frontmatter
-> and no decorative header or footer.
-
-The Reviewer has no edit tools where an app lets that be enforced. Codex has
-no tool list, so there it is read-only by instruction.
+The Worker and Reviewer subagents, one source each, which `scripts/kit.py`
+renders for Claude Code, Copilot and Codex. What each does and where it lands:
+[Skills & Subagents](../docs/technical/Skills-&-Subagents.md).
 
 ---
 

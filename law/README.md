@@ -21,50 +21,10 @@ _Write a rule once. Render it everywhere._
 
 ## 💡 What This Folder Is For
 
-Every rule an agent follows, in every repository and on every machine, starts
-here. Nothing downstream is written by hand: `scripts/render.py` turns this
-folder into the block between the `INTELLIGENCE` markers, the home file the
-home kit installs, and the hashes a consumer pins.
-
-| File                        | What it decides                                                                                     |
-| :-------------------------- | :-------------------------------------------------------------------------------------------------- |
-| [`block.json`](block.json)  | The heading, the precedence text, which rules sit in which section, the budget, and the retired IDs |
-| [`rules/`](rules/README.md) | One JSON file per rule: its text, its kind and reach, and what enforces it                          |
-
----
-
-## 📐 The Rules For Rules
-
-`render.py --check` holds the law to these, and CI fails when one breaks:
-
-- **An ID is `DOMAIN-NNN`**, such as `SEC-001`, and a retired ID is never
-  reused. `retired` in `block.json` lists each one and where its rule went.
-- **A rule is one sentence of printable ASCII, ending in a period**, at most
-  300 characters. No hidden, bidirectional or look-alike characters can
-  reach an agent through the law.
-- **An Invariant reaches every repository and names its enforcer**, one
-  that exists today or one to add. A Default reaches every repository or
-  only the owner's.
-- **Every rule sits in exactly one section** whose kind and reach match its
-  own, and every section lists only rules that exist.
-- **The block fits its cap**: 4,000 characters, against a target of 3,200.
-  `--check` reports the size on every run.
-
----
-
-## 🌿 Changing A Rule
-
-1. Edit the rule's file in [`rules/`](rules/README.md), or add one and list
-   its ID in `block.json`.
-2. Run `make render`, which rewrites this repository's `AGENTS.md`,
-   `home/intelligence.md` and `home/SHA256SUMS`.
-3. Run `make check`, and commit the law and the rendered copies together.
-4. Nothing leaves the hub until a release: cut one with 🏷️ Cut Release.
-   Every repository's stub picks it up on Monday, and `make sync` delivers
-   it to every repository now.
-
-To retire a rule, delete its file, take its ID out of `block.json`, and add
-the ID to `retired` with a note on where its intent went.
+The source of every universal rule: [`block.json`](block.json) decides the
+order, precedence text and budget of the block, and [`rules/`](rules/README.md)
+holds one file per rule. How the law works, the rules it follows and how to
+change a rule: [The Law](../docs/technical/The-Law.md).
 
 ---
 

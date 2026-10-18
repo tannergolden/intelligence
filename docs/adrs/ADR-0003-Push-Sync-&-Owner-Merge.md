@@ -120,7 +120,7 @@ Option 4 returns after 1.0 as the first module, without auto-merge: one App key 
 
 - [ADR-0004](ADR-0004-Precedence-Overrides-&-Hash-Marker.md): the hash marker that keeps an unchanged release quiet
 - [ADR-0006](ADR-0006-Build-The-Law-Adopt-The-Plumbing.md): why sync is built on `gh`
-- [README](../../README.md): how a release reaches the repositories
+- [Repository Sync](../technical/Repository-Sync.md): how a release reaches the repositories
 
 ### 🔗 See also
 

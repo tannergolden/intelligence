@@ -23,76 +23,10 @@ _Set up once. Current after every release._
 
 Two files you copy out of the hub, each to its own place:
 
-| File                                             | Where it goes                                  | What it does                                                    |
-| :----------------------------------------------- | :--------------------------------------------- | :-------------------------------------------------------------- |
-| [`claude-cloud-setup.sh`](claude-cloud-setup.sh) | A Claude Code cloud environment's setup script | Installs the home copy and the kit into every cloud session     |
-| [`intelligence-sync.yml`](intelligence-sync.yml) | A repository's `.github/workflows/`            | Proposes each release's block as one pull request, every Monday |
-
----
-
-## ☁️ The Cloud Setup Script
-
-A Claude Code cloud session starts in a fresh container, so nothing the home
-kit installed on your machines is there. Each repository's own `AGENTS.md`
-still carries the rules; this script adds the home copy, so a session in a
-repository with no block of its own gets them too.
-
-It downloads the home file, the kit and the installer from one release,
-checks each against its pin, and installs Claude Code's share:
-
-- `~/.claude/CLAUDE.md`, with the rules and the knowledge facts, each between
-  their own markers;
-- the guard hook, registered in `~/.claude/settings.json`;
-- the skills in `~/.claude/skills/` and the subagents in `~/.claude/agents/`.
-
-A kit that cannot be downloaded or misses its pin is left out, and the rules
-still install; an empty kit pin, from a release before the kit, installs the
-rules alone. **It always exits 0**: a setup script that fails stops the
-session from starting, so every failure prints a notice instead.
-
-### 🚀 Installing It
-
-1. Cut a release, then print the script with that release's pins:
-
-   ```bash
-   make cloud-setup VERSION=v0.1.0
-   ```
-
-2. Paste the output into the cloud environment's settings: open the
-   environment menu in a session's title bar, choose Edit, and put it under
-   Setup script. New sessions run it.
-3. After each new release, print it again and replace the old one.
-
-The copy in this folder keeps placeholders where the pins go, and refuses to
-install anything until they are filled.
-
----
-
-## 🔁 The Intelligence Sync Stub
-
-A repository that carries the stub keeps its rules current by itself. Every
-Monday, and whenever you run it, it calls this hub's
-[`sync.yml`](../.github/workflows/sync.yml) at `@v0`, which writes the latest
-release's block into the repository's checkout and opens or updates one pull
-request on `chore/intelligence`. It runs on the repository's own
-`GITHUB_TOKEN`, and hands over one optional secret, `BOT_ACCESS_TOKEN`, never
-every secret the repository holds.
-
-### 🚀 Adding It To A Repository
-
-1. Copy `intelligence-sync.yml` into the repository as
-   `.github/workflows/intelligence-sync.yml`.
-2. Let GitHub Actions create pull requests there, under Settings, Actions,
-   General. 🎯 Apply Standards turns that on with the rest of the standard
-   settings.
-3. Run it once from the Actions tab, or wait for Monday.
-
-GitHub holds the checks of a pull request the default token opened until
-someone with write access approves them. `make merge` in the hub approves
-them for a change that is only the block, and merges it on its next run. A
-first sync waits for your review, where **Approve workflows to run** starts
-its checks. `test_stub.py` keeps the stub, the workflow it calls and the
-release that serves them in step.
+| File                                             | Where it goes                                                   | Read more                                               |
+| :----------------------------------------------- | :-------------------------------------------------------------- | :------------------------------------------------------ |
+| [`claude-cloud-setup.sh`](claude-cloud-setup.sh) | A Claude Code cloud environment's setup script                  | [Cloud Setup](../docs/technical/Cloud-Setup.md)         |
+| [`intelligence-sync.yml`](intelligence-sync.yml) | A repository's `.github/workflows/`, as `intelligence-sync.yml` | [Repository Sync](../docs/technical/Repository-Sync.md) |
 
 ---
 
