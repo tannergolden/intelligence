@@ -1,15 +1,22 @@
 # The hub's commands. Each one is plain Python from the standard library, so
-# the same targets run on a Mac, in CI and in a cloud session. `make help`
-# lists them.
+# the same targets run on a Mac, in CI and in a cloud session. The one
+# exception is PyYAML, which the repository validator in `make lint` needs and
+# `make setup` installs. `make help` lists them.
 
 PYTHON ?= python3
+PYYAML_VERSION ?= 6.0.3
 ARGS ?=
 VERSION ?=
 
-.PHONY: help check lint test render probe evals audit sync merge pins cloud-setup
+# Every target is phony. For setup it matters: make would otherwise take the
+# setup/ folder beside this file for that target, already built, and skip it.
+.PHONY: help setup check lint test render probe evals audit sync merge pins cloud-setup
 
 help: ## List every target
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | sed -E 's/:.*## /|/' | awk -F '|' '{ printf "  %-12s %s\n", $$1, $$2 }'
+
+setup: ## Install PyYAML, which the repository validator needs; CI runs this first
+	$(PYTHON) -m pip install --quiet "pyyaml==$(PYYAML_VERSION)"
 
 check: lint test ## Everything CI checks
 

@@ -61,6 +61,7 @@ _The universal rules first, then this repository's own._
 
 ## Commands
 
+- `make setup`: install PyYAML, which the repository validator in `make lint` needs. CI runs it before the checks.
 - `make check`: everything CI checks, which are the repository validator, `scripts/render.py --check`, `evals/run.py --check` and every test.
 - `make test`: the tests alone, under `.github/scripts/`, `scripts/`, `probe/`, `setup/` and `evals/`.
 - `make render`: rewrite the block above, `home/intelligence.md`, `home/kit.json` and `home/SHA256SUMS` from their sources.
