@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
-"""Tests for repository sync, audit and merge.
+"""Tests for repository sync, audit, merge and apply.
 
 WHY THIS EXISTS. `sync.py` writes to every repository the owner owns, under
-the owner's own login, and `merge` lands changes on their default branches.
-So it has to stop wherever it should:
+the owner's own login, `merge` lands changes on their default branches, and
+`apply` runs inside each repository that carries the stub, with that
+repository's token. So it has to stop wherever it should:
 
 - leave alone what each repository wrote for itself;
 - skip what must be skipped;
 - merge only a pull request whose diff is the block alone and whose checks
-  have passed.
+  have passed, and let a bot's pull request run workflows only then.
 
-These run every command against an in-memory stand-in for GitHub and a
-throwaway hub with two release tags, and check the pure functions directly.
+These run every command against an in-memory stand-in for GitHub, a
+throwaway hub with two release tags and a throwaway checkout, and check the
+pure functions directly.
 
 Nothing here calls GitHub or touches the repository it ships in.
 
@@ -25,6 +27,8 @@ from __future__ import annotations
 import contextlib
 import importlib.util
 import io
+import json
+import os
 import pathlib
 import re
 import shutil
@@ -32,6 +36,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 HERE = pathlib.Path(__file__).resolve().parent
 _spec = importlib.util.spec_from_file_location('sync', HERE / 'sync.py')
@@ -82,6 +87,11 @@ class FakeGitHub(sync.GitHub):
         self.messages: dict[str, str] = {}
         self.writes: list[str] = []
         self.merged: list[tuple[str, str]] = []
+        self.settings: dict[str, dict] = {}
+        self.waiting: dict[str, list[dict]] = {}
+        self.approved: list[int] = []
+        self.reopened: list[str] = []
+        self.approval_fails = False
 
     @staticmethod
     def refuse(argv, stdin):  # pragma: no cover - a test that reaches gh is a broken test
@@ -96,6 +106,9 @@ class FakeGitHub(sync.GitHub):
 
     def repos(self) -> list[dict]:
         return self.listed
+
+    def repo(self, full: str) -> dict:
+        return self.settings.get(full, {'name': full.split('/', 1)[1]})
 
     def tree(self, repo: str, ref: str) -> dict[str, str]:
         return self.trees[(repo, sync.BRANCH)] if ref == f'{repo}-head' else self.trees[(repo, ref)]
@@ -127,7 +140,8 @@ class FakeGitHub(sync.GitHub):
     def open_pr(self, repo, base, title, body):
         self.writes.append(f'{repo}: open pr')
         self.prs[repo] = {'number': 7, 'title': title, 'body': body, 'state': 'open', 'mergeable': True,
-                          'mergeable_state': 'clean', 'head': {'sha': f'{repo}-head'}}
+                          'mergeable_state': 'clean', 'head': {'sha': f'{repo}-head'},
+                          'user': {'login': 'tannergolden', 'type': 'User'}}
         return self.prs[repo]
 
     def edit_pr(self, repo, number, title, body):
@@ -159,6 +173,17 @@ class FakeGitHub(sync.GitHub):
         self.merged.append((repo, message))
         self.prs[repo]['state'] = 'closed'
         self.trees[(repo, 'Development')] = dict(self.trees[(repo, sync.BRANCH)])
+
+    def waiting_runs(self, repo, sha):
+        return list(self.waiting.get(repo, []))
+
+    def approve_run(self, repo, run_id):
+        if self.approval_fails:
+            raise sync.GitHubError(f'POST approve {run_id}: HTTP 403')
+        self.approved.append(run_id)
+
+    def reopen(self, repo, number):
+        self.reopened.append(repo)
 
 
 class SyncTestCase(unittest.TestCase):
@@ -327,6 +352,15 @@ class TestAudit(SyncTestCase):
         code, out = self.audit({'AGENTS.md': CURRENT + '\n## Overrides\n\n- STD-001: this repo is the standards\n'})
         self.assertEqual(code, 0, out)
 
+    def test_a_missing_stub_is_noted_and_is_not_a_failure(self) -> None:
+        code, out = self.audit({'AGENTS.md': '# A\n\n' + CURRENT})
+        self.assertEqual(code, 0, out)
+        self.assertIn('alpha: current (no stub, so only make sync updates it)', out)
+
+    def test_a_repository_with_the_stub_gets_no_note(self) -> None:
+        _code, out = self.audit({'AGENTS.md': '# A\n\n' + CURRENT, sync.STUB: 'name: x\n'})
+        self.assertIn('alpha: current\n', out)
+
 
 class TestMerge(SyncTestCase):
     """`merge` lands only a green pull request whose diff is the block alone."""
@@ -386,6 +420,62 @@ class TestMerge(SyncTestCase):
         _code, out = self.run_sync('merge', '--dry-run')
         self.assertIn('would merge #7', out)
         self.assertEqual(self.gh.merged, [])
+
+
+class TestMergeAfterTheStub(SyncTestCase):
+    """A pull request the stub opened with the default token: its checks wait until merge starts them."""
+
+    NOTHING = ([], {'state': 'pending', 'statuses': []})
+
+    def stub_opened(self, waiting: tuple[int, ...] = (), first: bool = False) -> None:
+        self.gh.add('alpha', {'README.md': '# Alpha\n'} if first else {'AGENTS.md': '# Alpha\n\n' + OLD})
+        self.run_sync('sync')
+        self.gh.prs['alpha']['user'] = {'login': 'github-actions[bot]', 'type': 'Bot'}
+        self.gh.check_results['alpha'] = self.NOTHING
+        self.gh.waiting['alpha'] = [{'id': run} for run in waiting]
+
+    def test_waiting_runs_are_approved_and_the_next_merge_lands_it(self) -> None:
+        self.stub_opened(waiting=(11, 12))
+        code, out = self.run_sync('merge')
+        self.assertEqual(code, 0, out)
+        self.assertIn('approved its 2 waiting workflow run(s)', out)
+        self.assertEqual((self.gh.approved, self.gh.reopened, self.gh.merged), ([11, 12], [], []))
+        self.gh.waiting['alpha'] = []
+        self.gh.check_results['alpha'] = GREEN
+        _code, out = self.run_sync('merge')
+        self.assertIn('alpha: merged #7', out)
+
+    def test_with_no_run_at_all_it_is_reopened(self) -> None:
+        self.stub_opened()
+        _code, out = self.run_sync('merge')
+        self.assertIn('reopened it, which starts its checks', out)
+        self.assertEqual(self.gh.reopened, ['alpha'])
+
+    def test_a_refused_approval_falls_back_to_reopening(self) -> None:
+        self.stub_opened(waiting=(11,))
+        self.gh.approval_fails = True
+        _code, out = self.run_sync('merge')
+        self.assertIn('reopened it', out)
+        self.assertEqual(self.gh.reopened, ['alpha'])
+
+    def test_a_dry_run_starts_nothing(self) -> None:
+        self.stub_opened(waiting=(11,))
+        _code, out = self.run_sync('merge', '--dry-run')
+        self.assertIn('would start the checks of #7', out)
+        self.assertEqual((self.gh.approved, self.gh.reopened), ([], []))
+
+    def test_a_bigger_change_never_gets_to_run_workflows(self) -> None:
+        self.stub_opened(waiting=(11,), first=True)
+        _code, out = self.run_sync('merge')
+        self.assertIn('review it by hand', out)
+        self.assertEqual((self.gh.approved, self.gh.reopened, self.gh.merged), ([], [], []))
+
+    def test_a_pull_request_the_owner_opened_is_never_reopened(self) -> None:
+        self.stub_opened()
+        self.gh.prs['alpha']['user'] = {'login': 'tannergolden', 'type': 'User'}
+        _code, out = self.run_sync('merge')
+        self.assertIn(sync.NOTHING_RAN, out)
+        self.assertEqual(self.gh.reopened, [])
 
 
 class TestTextHandling(unittest.TestCase):
@@ -449,60 +539,156 @@ class TestGhCalls(unittest.TestCase):
         with self.assertRaises(sync.GitHubError):
             sync.GitHub(owner='o', run=broken).file('r', 'AGENTS.md', 'main')
 
-
-class TestApp(SyncTestCase):
-    """Unattended, under a GitHub App: it opens pull requests and never merges one."""
-
-    def setUp(self) -> None:
-        super().setUp()
-        self.gh.app = True
-
-    def test_the_apps_commits_carry_no_sign_off_and_its_pull_requests_say_who_merges(self) -> None:
-        self.gh.add('alpha')
-        code, out = self.run_sync('sync', '--app', '--owner', 'tannergolden')
-        self.assertEqual(code, 0, out)
-        self.assertNotIn('Signed-off-by', self.gh.messages['alpha'])
-        self.assertIn("merging it stays the owner's", self.gh.prs['alpha']['body'])
-
-    def test_merge_refuses_to_run_under_the_app(self) -> None:
-        self.gh.add('alpha')
-        self.run_sync('sync', '--app', '--owner', 'tannergolden')
-        code, out = self.run_sync('merge', '--app', '--owner', 'tannergolden')
-        self.assertEqual(code, 2, out)
-        self.assertIn("merging stays the owner's", out)
-        self.assertEqual(self.gh.merged, [])
-
-    def test_targets_lists_what_takes_part_for_the_workflow(self) -> None:
-        self.gh.add('alpha')
-        self.gh.add('beta', archived=True)
-        self.gh.add('intelligence')
-        code, out = self.run_sync('targets', '--app', '--owner', 'tannergolden', '--json')
-        self.assertEqual(code, 0, out)
-        self.assertEqual(out.splitlines()[0], '["alpha"]')
-        self.assertIn('beta: skipped, archived', out)
-
-    def test_the_app_needs_an_owner(self) -> None:
-        with self.assertRaises(SystemExit):
-            with contextlib.redirect_stderr(io.StringIO()):
-                sync.main(['targets', '--app'], gh=self.gh, root=self.hub)
-
-
-class TestAppListing(unittest.TestCase):
-    """An installation token lists repositories its own way."""
-
-    def test_installation_pages_are_joined_and_other_owners_dropped(self) -> None:
-        pages = ('{"total_count": 3, "repositories": [{"name": "a", "owner": {"login": "o"}}, '
-                 '{"name": "x", "owner": {"login": "someone-else"}}]}'
-                 '{"total_count": 3, "repositories": [{"name": "b", "owner": {"login": "o"}}]}')
+    def test_starting_checks_approves_runs_or_closes_and_reopens(self) -> None:
         seen = []
 
         def run(argv, stdin):
-            seen.append(argv)
-            return subprocess.CompletedProcess(argv, 0, pages, '')
+            seen.append((argv[3:5], stdin))
+            return subprocess.CompletedProcess(argv, 0, '{"workflow_runs": [{"id": 5}]}', '')
 
-        gh = sync.GitHub(owner='o', run=run, app=True)
-        self.assertEqual([repo['name'] for repo in gh.repos()], ['a', 'b'])
-        self.assertIn('installation/repositories?per_page=100', seen[0])
+        gh = sync.GitHub(owner='o', run=run)
+        self.assertEqual(gh.waiting_runs('r', 'abc'), [{'id': 5}])
+        gh.approve_run('r', 5)
+        gh.reopen('r', 9)
+        self.assertEqual(seen[0][0], ['GET', 'repos/o/r/actions/runs?head_sha=abc&status=action_required&per_page=100'])
+        self.assertEqual(seen[1], (['POST', 'repos/o/r/actions/runs/5/approve'], None))
+        self.assertEqual([json.loads(stdin)['state'] for _path, stdin in seen[2:]], ['closed', 'open'])
+
+
+class TestApply(unittest.TestCase):
+    """`apply`, as a repository's stub runs it: one checkout, written in place, nothing pushed."""
+
+    def setUp(self) -> None:
+        self.hub = make_hub()
+        self.gh = FakeGitHub()
+        self.checkout = pathlib.Path(tempfile.mkdtemp(prefix='sync-checkout-'))
+        self.outputs = pathlib.Path(tempfile.mkdtemp(prefix='sync-outputs-')) / 'outputs'
+        for folder in (self.hub, self.checkout, self.outputs.parent):
+            self.addCleanup(shutil.rmtree, folder, True)
+
+    def run_apply(self, *args: str, repo: str = 'tannergolden/alpha', actions: str = '') -> tuple[int, str]:
+        out = io.StringIO()
+        env = {'GITHUB_REPOSITORY': repo, 'GITHUB_OUTPUT': str(self.outputs), 'GITHUB_ACTIONS': actions}
+        with mock.patch.dict(os.environ, env), contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
+            code = sync.main(['apply', '--path', str(self.checkout), '--release', 'v0.1.0', *args],
+                             gh=self.gh, root=self.hub)
+        return code, out.getvalue()
+
+    def written(self) -> dict[str, str]:
+        """What `apply` handed the workflow, read the way Actions reads $GITHUB_OUTPUT."""
+        text = self.outputs.read_text(encoding='utf-8') if self.outputs.exists() else ''
+        pattern = r'^(?P<key>[\w-]+)<<(?P<end>\S+)\n(?P<value>.*?)\n(?P=end)\n'
+        return {m.group('key'): m.group('value') for m in re.finditer(pattern, text, flags=re.M | re.S)}
+
+    def agents(self) -> str:
+        return (self.checkout / 'AGENTS.md').read_text(encoding='utf-8')
+
+    def test_a_checkout_with_no_agents_file_gets_one_and_the_workflow_its_text(self) -> None:
+        (self.checkout / 'README.md').write_text('# Alpha\n', encoding='utf-8')
+        code, out = self.run_apply()
+        self.assertEqual(code, 0, out)
+        self.assertIn(CURRENT, self.agents())
+        values = self.written()
+        self.assertEqual(values['changed'], 'true')
+        self.assertRegex(values['commit-title'], r'^chore\(agents\): 🤖 sync the universal rules to [0-9a-f]{12}$')
+        self.assertEqual(values['pr-title'], values['commit-title'])
+        self.assertNotIn('Signed-off-by', values['commit-body'], 'the open-pr action signs off as the owner')
+        self.assertIn('Approve workflows to run', values['pr-body'])
+        self.assertIn('first sync', values['pr-body'])
+
+    def test_an_update_replaces_only_the_block_and_keeps_line_endings(self) -> None:
+        mine = '# Alpha\r\n\r\n' + OLD + '\r\n## Commands\r\n\r\n- make test\r\n'
+        (self.checkout / 'AGENTS.md').write_bytes(mine.encode('utf-8'))
+        code, out = self.run_apply()
+        self.assertEqual(code, 0, out)
+        self.assertEqual((self.checkout / 'AGENTS.md').read_bytes().decode('utf-8'), mine.replace(OLD, CURRENT))
+        self.assertIn('alpha: updates the block, to', out)
+        body = self.written()['pr-body']
+        self.assertIn('make merge', body)
+        self.assertIn('release v0.1.0', body)
+
+    def test_a_current_checkout_is_left_alone(self) -> None:
+        (self.checkout / 'AGENTS.md').write_text('# Alpha\n\n' + CURRENT, encoding='utf-8')
+        code, out = self.run_apply()
+        self.assertEqual(code, 0, out)
+        self.assertIn('alpha: current', out)
+        self.assertEqual(self.written(), {'changed': 'false'})
+
+    def test_claude_md_is_folded_in_and_deleted(self) -> None:
+        (self.checkout / 'CLAUDE.md').write_text('# Notes\n\n## Keep this\n\nIt matters.\n', encoding='utf-8')
+        self.run_apply()
+        self.assertFalse((self.checkout / 'CLAUDE.md').exists())
+        self.assertIn('## Folded from CLAUDE.md\n\n### Keep this', self.agents())
+
+    def test_a_linked_claude_md_is_refused_and_nothing_is_written(self) -> None:
+        (self.checkout / 'AGENTS.md').write_text('# Alpha\n\n' + OLD, encoding='utf-8')
+        (self.checkout / 'CLAUDE.md').symlink_to('AGENTS.md')
+        code, out = self.run_apply(actions='true')
+        self.assertEqual(code, 1, out)
+        self.assertIn('::error title=Intelligence Sync::alpha: CLAUDE.md is a link or a folder', out)
+        self.assertIn(OLD, self.agents())
+        self.assertEqual(self.written(), {})
+
+    def test_two_blocks_are_refused(self) -> None:
+        (self.checkout / 'AGENTS.md').write_text(OLD + '\n' + OLD, encoding='utf-8')
+        code, out = self.run_apply()
+        self.assertEqual(code, 1, out)
+        self.assertIn('more than one INTELLIGENCE block', out)
+
+    def test_the_hub_and_every_repository_left_out_are_skipped(self) -> None:
+        (self.checkout / 'law').mkdir()
+        (self.checkout / 'law' / 'block.json').write_text('{}', encoding='utf-8')
+        (self.checkout / 'scripts').mkdir()
+        (self.checkout / 'scripts' / 'render.py').write_text('', encoding='utf-8')
+        _code, out = self.run_apply(repo='tannergolden/intelligence')
+        self.assertIn('intelligence: skipped, the hub', out)
+        shutil.rmtree(self.checkout / 'law')
+        for flags, expected in (({'is_template': True}, 'a template'), ({'fork': True}, 'a fork'),
+                                ({'archived': True}, 'archived'), ({'topics': ['no-intelligence']}, 'opted out')):
+            with self.subTest(expected=expected):
+                self.gh.settings['tannergolden/alpha'] = flags
+                code, out = self.run_apply()
+                self.assertEqual(code, 0, out)
+                self.assertIn(f'alpha: skipped, {expected}', out)
+        self.assertFalse((self.checkout / 'AGENTS.md').exists())
+
+    def test_a_dry_run_writes_nothing(self) -> None:
+        code, out = self.run_apply('--dry-run')
+        self.assertEqual(code, 0, out)
+        self.assertIn('alpha: would adopt', out)
+        self.assertFalse((self.checkout / 'AGENTS.md').exists())
+        self.assertEqual(self.written(), {'changed': 'false'})
+
+    def test_it_runs_only_where_actions_names_the_repository(self) -> None:
+        with mock.patch.dict(os.environ, {'GITHUB_REPOSITORY': ''}), contextlib.redirect_stderr(io.StringIO()):
+            with self.assertRaises(SystemExit) as caught:
+                sync.main(['apply'], gh=self.gh, root=self.hub)
+        self.assertEqual(caught.exception.code, 2)
+
+
+class TestReleaseLabel(unittest.TestCase):
+    """A pull request names the release a moving tag points at."""
+
+    @staticmethod
+    def with_tags(tags: list[dict], ok: bool = True) -> sync.GitHub:
+        def run(argv, stdin):
+            if not ok:
+                return subprocess.CompletedProcess(argv, 1, '', 'gh: Forbidden (HTTP 403)')
+            return subprocess.CompletedProcess(argv, 0, json.dumps(tags), '')
+
+        return sync.GitHub(owner='o', run=run)
+
+    def test_a_moving_tag_names_the_newest_release_at_its_commit(self) -> None:
+        tags = [{'name': 'v0', 'commit': {'sha': 'b'}}, {'name': 'v0.1.0', 'commit': {'sha': 'a'}},
+                {'name': 'v0.2.0', 'commit': {'sha': 'b'}}, {'name': 'v0.10.0', 'commit': {'sha': 'c'}},
+                {'name': 'v0.1.1', 'commit': {'sha': 'b'}}]
+        self.assertEqual(sync.release_label(self.with_tags(tags), 'o/hub', 'v0'), 'v0.2.0')
+
+    def test_anything_else_stays_as_given(self) -> None:
+        self.assertEqual(sync.release_label(self.with_tags([]), 'o/hub', 'v0.3.1'), 'v0.3.1')
+        self.assertEqual(sync.release_label(self.with_tags([]), 'o/hub', ''), 'the latest release')
+        self.assertEqual(sync.release_label(self.with_tags([]), 'o/hub', 'v0'), 'v0')
+        self.assertEqual(sync.release_label(self.with_tags([], ok=False), 'o/hub', 'v0'), 'v0')
 
 
 if __name__ == '__main__':

@@ -1,0 +1,76 @@
+# --- Composite Action ---
+#
+# 🔁 Intelligence Sync
+#
+# Purpose: writes the universal rules of the release this action is called
+# at into the calling repository's checkout: the INTELLIGENCE block in its
+# root AGENTS.md, and on a first sync the file itself. It changes the
+# working tree and nothing else, and hands the commit and pull request text
+# to the workflow, which proposes the change.
+#
+# An action rather than a workflow step, because it ships the hub's own
+# code: the script runs from `$GITHUB_ACTION_PATH`, so the block a
+# repository receives is the one in the hub's latest release, placed by the
+# same code as that release's `make sync`.
+#
+# Used by .github/workflows/sync.yml, beside it in this hub:
+#
+#   - uses: tannergolden/intelligence/actions/sync@v0
+#     id: block
+#     with:
+#       token: ${{ secrets.GITHUB_TOKEN }}
+#
+# ---
+
+name: '🔁 Intelligence Sync'
+description: "Writes the universal rules of this action's release into the calling repository's AGENTS.md."
+
+inputs:
+  token:
+    description: >-
+      A token that can read this repository's settings, so that a template,
+      a fork, an archived repository or one with the no-intelligence topic
+      is skipped. The default GITHUB_TOKEN is enough.
+    required: true
+  dry-run:
+    description: 'Print what would change, and change nothing.'
+    required: false
+    default: 'false'
+
+outputs:
+  changed:
+    description: "'true' when the working tree now holds a change to propose."
+    value: ${{ steps.apply.outputs.changed }}
+  commit-title:
+    description: 'The Conventional Commit title for the change.'
+    value: ${{ steps.apply.outputs.commit-title }}
+  commit-body:
+    description: 'Why the change is made, wrapped at 72, with no sign-off: whoever commits it signs off.'
+    value: ${{ steps.apply.outputs.commit-body }}
+  pr-title:
+    description: 'The pull request title.'
+    value: ${{ steps.apply.outputs.pr-title }}
+  pr-body:
+    description: 'The pull request body.'
+    value: ${{ steps.apply.outputs.pr-body }}
+
+runs:
+  using: composite
+  steps:
+    - name: "🔁 Write the release's block"
+      id: apply
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        DRY_RUN: ${{ inputs.dry-run }}
+        # GitHub fills these for a composite action only through env, and
+        # never in `run:`: the release and the hub this action came from.
+        RELEASE: ${{ github.action_ref }}
+        HUB: ${{ github.action_repository }}
+      run: |
+        set -euo pipefail
+        args=(apply --path "$GITHUB_WORKSPACE" --release "${RELEASE:-}" --hub "${HUB:-tannergolden/intelligence}")
+        if [ "$DRY_RUN" = 'true' ]; then
+          args+=(--dry-run)
+        fi
+        python3 "${GITHUB_ACTION_PATH}/../../scripts/sync.py" "${args[@]}"

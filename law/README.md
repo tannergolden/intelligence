@@ -59,8 +59,9 @@ home kit installs, and the hashes a consumer pins.
 2. Run `make render`, which rewrites this repository's `AGENTS.md`,
    `home/intelligence.md` and `home/SHA256SUMS`.
 3. Run `make check`, and commit the law and the rendered copies together.
-4. Nothing leaves the hub until a release: cut one with 🏷️ Cut Release,
-   then run `make sync` to deliver it.
+4. Nothing leaves the hub until a release: cut one with 🏷️ Cut Release.
+   Every repository's stub picks it up on Monday, and `make sync` delivers
+   it to every repository now.
 
 To retire a rule, delete its file, take its ID out of `block.json`, and add
 the ID to `retired` with a note on where its intent went.

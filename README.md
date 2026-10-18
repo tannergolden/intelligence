@@ -27,10 +27,10 @@ works for [@tannergolden](https://github.com/tannergolden)**: Claude Code,
 Codex, Antigravity CLI, Copilot (the CLI and VS Code), Cursor and Grok Build.
 The rules are written once, as one block, and reach the agents in two pieces:
 
-| Piece               | Where the rules land                           | How they get there                             |
-| :------------------ | :--------------------------------------------- | :--------------------------------------------- |
-| **🏠 Home**         | Each app's own home folder, on every machine   | Your dotfiles run `make agents`                |
-| **🗂️ Repositories** | One `AGENTS.md` at the root of each repository | A pull request from `make sync`, merged by you |
+| Piece               | Where the rules land                           | How they get there                                         |
+| :------------------ | :--------------------------------------------- | :--------------------------------------------------------- |
+| **🏠 Home**         | Each app's own home folder, on every machine   | Your dotfiles run `make agents`                            |
+| **🗂️ Repositories** | One `AGENTS.md` at the root of each repository | A pull request from its stub or `make sync`, merged by you |
 
 The home copy reaches every session, including other people's repositories and
 scratch folders. The repository copy travels with the code, so cloud agents and
@@ -134,20 +134,87 @@ ID, and `make audit` rejects one that names an Invariant.
 [`scripts/sync.py`](scripts/README.md):
 
 - You review each release once, here.
-- `make sync` opens or updates one pull request per repository on
-  `chore/intelligence`, under your own `gh` login: no new credential, no
-  schedule, no secret in any repository.
+- A repository that carries the stub pulls it by itself. Every Monday, and
+  whenever you run it, its 🔁 Intelligence Sync opens or updates one pull
+  request on `chore/intelligence`, on that repository's own `GITHUB_TOKEN`:
+  no App, no key, no secret.
+- `make sync` opens the same pull request in every repository at once, under
+  your own `gh` login, with or without the stub.
 - `make merge` merges every sync pull request whose diff is exactly the block
-  and whose checks pass. No bot merges anything.
+  and whose checks pass. GitHub holds the checks of a pull request the stub's
+  token opened until someone approves them, so `make merge` approves them
+  first, once it has proven the diff is the block alone. No bot merges
+  anything.
 - The marker carries a hash of the block, so a release that leaves the block
   unchanged opens no pull requests at all.
-- `make audit` reports any repository whose block was edited by hand, and the
-  next `make sync` repairs it.
+- `make audit` reports any repository whose block was edited by hand, and
+  whether it carries the stub; the next sync repairs the block.
 
 Every repository you own takes part, except templates, forks and archived
 ones, and this hub, which renders its own copy from the law. A
-`no-intelligence` topic opts one out. Sync always delivers the latest
-release, never unreleased work.
+`no-intelligence` topic opts one out. Both routes deliver a release, never
+unreleased work.
+
+**To add the stub to a repository**, copy
+[`setup/intelligence-sync.yml`](setup/intelligence-sync.yml) into it as
+`.github/workflows/intelligence-sync.yml`, and let GitHub Actions create pull
+requests there, under Settings, Actions, General; 🎯 Apply Standards turns
+that on with the rest of the standard settings. It pins `@v0`, so each
+release reaches it on the Monday after:
+
+```yaml
+# Installed from tannergolden/intelligence. Edit freely: this file is YOURS.
+#
+# Keeps the universal rules for AI coding agents current in this
+# repository's root AGENTS.md: the block between the INTELLIGENCE markers,
+# which tannergolden/intelligence renders and releases. Every Monday, and
+# whenever you run it, it proposes the latest release's block as one pull
+# request on `chore/intelligence`, and leaves every section this repository
+# owns as it was. A first sync creates AGENTS.md. Merging stays yours.
+#
+# It runs on this repository's own GITHUB_TOKEN, with no App and no key, so
+# two settings matter: Settings > Actions > General must allow GitHub
+# Actions to create pull requests, and GitHub holds the checks of a pull
+# request that token opens until you approve them. `make merge` in the hub
+# approves them for a change that is only the block. A BOT_ACCESS_TOKEN
+# secret, if this repository has one, opens it as you instead.
+#
+# `@v0` follows the hub's latest release. To stop, delete this file; the
+# `no-intelligence` topic also keeps `make sync` away.
+
+name: '🔁 Intelligence Sync'
+
+on:
+  schedule:
+    - cron: '23 6 * * 1' # Mondays: picks up a new release, and repairs a block edited by hand
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Print what would change, and change nothing'
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+# ⚠️ THE `permissions:` BELOW IS A CEILING, NOT A GRANT. The called workflow
+# asks for exactly these two; grant less and it fails before any job starts.
+permissions: {}
+
+jobs:
+  sync:
+    permissions:
+      contents: write # push the sync branch (PR-only flow)
+      pull-requests: write # open or update the sync pull request
+    uses: tannergolden/intelligence/.github/workflows/sync.yml@v0
+    with:
+      dry-run: ${{ inputs.dry-run || false }}
+    # Only this one secret, never `secrets: inherit`: the hub's code needs
+    # nothing else this repository holds.
+    secrets:
+      BOT_ACCESS_TOKEN: ${{ secrets.BOT_ACCESS_TOKEN }}
+```
 
 ---
 
@@ -172,7 +239,7 @@ passing tests and a record in [`docs/adrs/`](docs/adrs/README.md):
 | **The hierarchy**         | The [Worker and Reviewer](subagents/README.md) subagents                                 | Built                                                    |
 | **Knowledge**             | The [public facts](knowledge/README.md), beside every home copy of the rules             | Built; the private tier waits                            |
 | **Evals**                 | [Scenarios for every rule](evals/README.md), run with the block and without it           | Built; real runs are yours, `make evals`                 |
-| **Unattended sync**       | [`sync.yml`](.github/workflows/sync.yml), through a GitHub App, one token per repository | Built; inert until you create the App                    |
+| **Unattended sync**       | A stub in each repository, on its own token: [`setup/`](setup/README.md)                 | Built; copy the stub in after the first release          |
 | **Machined-region check** | The standards' check that a block's hash matches its text, in every repository's CI      | Built in tannergolden/standards                          |
 
 ---
@@ -192,9 +259,9 @@ lists them all.
 4. `make cloud-setup VERSION=v0.1.0` prints the Claude cloud setup script,
    pinned. Paste it into the cloud environment's setup script.
 5. `make audit`, then `make sync ARGS=--dry-run`, then `make sync`: one pull
-   request per repository. Once the intelligence App is set up, as
-   [`sync.yml`](.github/workflows/sync.yml) describes, Cut Release does this
-   step by itself.
+   request per repository. A repository that carries the stub picks the
+   release up by itself on Monday, so this step is for the rest, or for now
+   rather than Monday.
 6. Review each first sync by hand. After that, `make merge` lands every sync
    whose diff is only the block and whose checks passed.
 
@@ -265,6 +332,7 @@ and other people's repositories follow their own rules.
 | [`.devcontainer/`](.devcontainer/README.md) | The language-neutral development container this repository ships, and how to give it the toolchain your project needs.                                      |
 | [`.github/`](.github/)                      | CODEOWNERS, Dependabot, release notes config, Template Sync's list, scripts and workflows - logged below                                                    |
 | [`.vscode/`](.vscode/README.md)             | The VS Code settings and extension recommendations this repository shares, and why every other file in this folder stays out of git.                        |
+| [`actions/`](actions/README.md)             | The composite action that carries the hub's own code into every repository whose stub asks for it, at the hub's latest release.                             |
 | [`assets/`](assets/README.md)               | Where this project keeps what presents it: four folders to start, a name ready for every other kind, and the rules every file follows.                      |
 | [`docs/`](docs/README.md)                   | Where this project keeps its own documents, and where the engineering standards it follows actually live.                                                   |
 | [`evals/`](evals/README.md)                 | Scenarios that tempt an agent to break each universal rule, run against real apps with the block and without it, and checked by code.                       |
@@ -273,7 +341,7 @@ and other people's repositories follow their own rules.
 | [`law/`](law/README.md)                     | The source of every universal rule: one file per rule ID, and the order, precedence text and budget of the block every agent reads.                         |
 | [`probe/`](probe/README.md)                 | Proves, on the machine that runs it, which instruction files each AI coding app actually loads.                                                             |
 | [`scripts/`](scripts/README.md)             | The scripts that render the law and the kit, install them on a machine, guard every tool call, and deliver the rules to every repository, with their tests. |
-| [`setup/`](setup/README.md)                 | The setup script that installs the universal rules and the kit into every Claude Code cloud session, pinned to one release and unable to fail the session.  |
+| [`setup/`](setup/README.md)                 | What you copy out of the hub once: the setup script for every Claude Code cloud session, and the stub that keeps a repository's rules current.              |
 | [`skills/`](skills/README.md)               | The skills the home kit installs into every AI coding app, each a folder in the open Agent Skills format.                                                   |
 | [`subagents/`](subagents/README.md)         | The Worker and Reviewer subagents the home kit installs, each one source rendered for Claude Code, Copilot and Codex.                                       |
 | [`.editorconfig`](.editorconfig)            | Editor defaults every editor honours: UTF-8, LF, a final newline, and indentation per language                                                              |
@@ -329,7 +397,7 @@ tables after every push:
 | `auto-index.yml`           | Redraws every folder log after a push                                 |
 | `template-sync.yml`        | Proposes the template's later fixes as one pull request, when run     |
 | `cut-release.yml`          | Cuts the hub's releases, and refuses one whose rendered files drifted |
-| `sync.yml`                 | Opens each release's sync pull requests through the intelligence App  |
+| `sync.yml`                 | Called by each repository's stub to sync it; never runs here          |
 
 **Do not rename the job ids** `ci` and `secrets` (in `checks.yml`) or `pr` (in
 `governance.yml`): branch protection names them. **Sign your commits off** with
@@ -338,8 +406,10 @@ on.
 
 > [!NOTE]
 > **GitHub disables scheduled workflows in a public repository after 60 days
-> without activity.** Nothing in the plan depends on a schedule here: syncs run
-> when you run them.
+> without activity.** The one schedule the plan leans on is each stub's Monday
+> run, in the repository that carries it. A public repository that goes quiet
+> stops pulling until you run its sync or `make sync`, and `make audit` names
+> its older block meanwhile.
 
 ---
 

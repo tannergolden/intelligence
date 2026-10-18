@@ -67,7 +67,7 @@ _The universal rules first, then this repository's own._
 - `make probe`: prove which instruction files each installed app loads. It makes one model call per check.
 - `make evals`: measure each rule with the block and without it. Real runs make model calls; `ARGS=--dry-run` makes none.
 - `python3 scripts/guard.py --command '<command>'`: see what the guard hook would say about one command.
-- `make audit`, `make sync` and `make merge`: reach every repository the owner owns, through the owner's `gh` login.
+- `make audit`, `make sync` and `make merge`: reach every repository the owner owns, through the owner's `gh` login. `make merge` also starts the checks a stub's pull request waits on.
 
 ## Definition of done
 
@@ -95,19 +95,21 @@ _The universal rules first, then this repository's own._
 | `knowledge/` | The public facts installed beside the rules                                     |
 | `evals/`     | Scenarios for every rule, the skill trigger tests, and their runner             |
 | `probe/`     | The loader probe and the duplicate-skill canary                                 |
-| `setup/`     | The Claude cloud setup script                                                   |
+| `setup/`     | The Claude cloud setup script, and the stub a repository carries                |
+| `actions/`   | The action a repository's stub runs, through `.github/workflows/sync.yml`       |
 | `docs/adrs/` | Every decision behind the plan                                                  |
 
 ## Gotchas
 
 - Never edit between the `INTELLIGENCE` markers or inside `home/`. Both are rendered, and `make check` fails on a hand edit. Where the guard hook is installed, it blocks the edit outright.
 - The guard hook denies a commit git would author as an AI. In a cloud session, pass `--author` and `--trailer 'Signed-off-by: ...'` with your user's identity, never `-s`.
-- Editing this file's block changes nothing elsewhere: other repositories receive the rules only through a release and `make sync`.
+- Editing this file's block changes nothing elsewhere: other repositories receive the rules only through a release, which their stub or `make sync` delivers.
+- `scripts/sync.py`, `scripts/render.py` and `scripts/kit.py` also run inside every repository that carries the stub, at the hub's latest release. Cut Release refuses a tag without them, and `setup/test_stub.py` keeps that list whole.
 - Never add a `CLAUDE.md` here. Claude Code skips `AGENTS.md` beside one unless its settings say otherwise.
 
 ## Ask first
 
-- Cutting a release, running `make sync` or `make merge` against real repositories, or dispatching 🔁 Sync Intelligence.
+- Cutting a release, running `make sync` or `make merge` against real repositories, or running a repository's 🔁 Intelligence Sync.
 - Adding a skill: the owner keeps one for now, `building-skills`.
 - Changing a rule's wording, its kind or its ID.
 

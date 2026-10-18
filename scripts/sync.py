@@ -2,33 +2,41 @@
 """Deliver the universal rules to every repository the owner owns, and keep them there.
 
 WHY THIS EXISTS. Every repository carries the rules in one root `AGENTS.md`,
-between `INTELLIGENCE` markers, beside sections the repository owns. Nothing
-in those repositories fetches anything: the hub pushes. This script is that
-push, run by the owner under their own `gh` login, so no repository holds a
-key and no bot merges:
+between `INTELLIGENCE` markers, beside sections the repository owns. Each
+release reaches a repository as one pull request on `chore/intelligence`, by
+either of two routes, and merging always stays the owner's:
+
+- THE STUB. A repository that carries `setup/intelligence-sync.yml` as
+  `.github/workflows/intelligence-sync.yml` pulls the hub's latest release,
+  every Monday, on its own `GITHUB_TOKEN`. The stub calls
+  `.github/workflows/sync.yml`, which runs `apply` in that repository's
+  checkout through `actions/sync`, and the standards' open-pr action
+  proposes the result. No App, no key, nothing in the hub that reaches
+  another repository.
+- THE PUSH. The owner runs `sync` here under their own `gh` login, for every
+  repository at once, with or without the stub.
+
+The commands:
 
 - `audit` reports what every repository carries now: no `AGENTS.md`, no
   block, a block edited by hand, a stale or unknown block, a `CLAUDE.md`
   that makes Claude Code skip `AGENTS.md`, an Overrides entry that names an
-  Invariant.
-- `sync` opens or updates one pull request per repository on
-  `chore/intelligence`. A first sync creates `AGENTS.md`, or inserts the
-  block into one that has none, and folds any `CLAUDE.md` into it.
+  Invariant, and whether the stub is there.
+- `sync` opens or updates one pull request per repository. A first sync
+  creates `AGENTS.md`, or inserts the block into one that has none, and
+  folds any `CLAUDE.md` into it.
 - `merge` merges each sync pull request whose diff is exactly the block and
   whose checks passed. Anything bigger, such as a first sync, waits for the
-  owner to review it by hand.
-- `targets` lists the repositories that take part, for the unattended
-  workflow to fan out over.
+  owner to review it by hand. A pull request the default token opened has
+  checks that wait for approval: once the diff is proven to be the block
+  alone, `merge` starts them, and merges on a later run.
+- `apply` writes the block into the repository checked out where it runs,
+  and hands the commit and pull request text to the stub's workflow.
 
-It delivers the block of the latest release tag, never unreleased work.
-Every repository the owner owns takes part, except templates, forks,
-archived ones, and any with the `no-intelligence` topic.
-
-UNATTENDED, with `--app`. `.github/workflows/sync.yml` runs `sync` under a
-GitHub App's installation token, one token per repository, instead of the
-owner's login. The App's commits carry no sign-off, because a bot certifies
-nothing and the DCO check exempts bots, and `merge` refuses to run at all:
-merging stays the owner's, under their own login.
+`sync` delivers the block of the latest release tag, never unreleased work;
+`apply` delivers the one in the hub tree it runs from, which is the latest
+release at the hub's moving major tag. Every repository the owner owns takes part, except
+templates, forks, archived ones, and any with the `no-intelligence` topic.
 
 Run it, from the hub's root:
 
@@ -37,7 +45,10 @@ Run it, from the hub's root:
     python3 scripts/sync.py sync
     python3 scripts/sync.py merge --dry-run
     python3 scripts/sync.py merge
-    python3 scripts/sync.py targets --app --owner tannergolden --json   # in sync.yml
+
+and, as the stub's workflow does, in a repository's checkout:
+
+    GITHUB_REPOSITORY=owner/name python3 /path/to/hub/scripts/sync.py apply --dry-run
 """
 
 from __future__ import annotations
@@ -49,6 +60,7 @@ import json
 import os
 import pathlib
 import re
+import secrets
 import subprocess
 import sys
 import textwrap
@@ -64,13 +76,19 @@ BRANCH = 'chore/intelligence'
 OPT_OUT = 'no-intelligence'
 AGENTS = 'AGENTS.md'
 CLAUDE = 'CLAUDE.md'
+STUB = '.github/workflows/intelligence-sync.yml'  # where a repository keeps setup/intelligence-sync.yml
 OK_CONCLUSIONS = ('success', 'neutral', 'skipped')
+NOTHING_RAN = 'no checks ran, so there is nothing to trust'
 OVERRIDE = re.compile(r'^\s*[-*]\s+`?(?P<id>[A-Z]{2,5}-\d{3})`?\s*:?\s*(?P<reason>.*)$')
 POINTER = re.compile(r'^\s*@\.?/?AGENTS\.md\s*$')
 
 
 class GitHubError(Exception):
     """A GitHub call that failed, with what GitHub said."""
+
+
+class ApplyError(Exception):
+    """A repository's checkout that `apply` will not write into, and why."""
 
 
 def decode_pages(text: str) -> object:
@@ -101,12 +119,11 @@ def run_gh(argv: Sequence[str], stdin: str | None) -> subprocess.CompletedProces
 
 
 class GitHub:
-    """The GitHub calls this script makes, through `gh`: the owner's login, or an App's token."""
+    """The GitHub calls this script makes, through `gh`: the owner's login, or a workflow's token."""
 
-    def __init__(self, owner: str | None = None, run: Runner = run_gh, app: bool = False) -> None:
+    def __init__(self, owner: str | None = None, run: Runner = run_gh) -> None:
         self.run = run
         self._owner = owner
-        self.app = app
 
     def api(self, path: str, method: str = 'GET', body: dict | None = None,
             paginate: bool = False, missing_ok: bool = False) -> object:
@@ -133,13 +150,11 @@ class GitHub:
         return self._owner
 
     def repos(self) -> list[dict]:
-        if not self.app:
-            return list(self.api('user/repos?affiliation=owner&per_page=100', paginate=True) or [])
-        # An installation token lists what the App was given, page by page.
-        pages = self.api('installation/repositories?per_page=100', paginate=True) or []
-        found = [repo for page in (pages if isinstance(pages, list) else [pages])
-                 for repo in (page.get('repositories', []) if isinstance(page, dict) else [page])]
-        return [repo for repo in found if (repo.get('owner') or {}).get('login') == self.owner]
+        return list(self.api('user/repos?affiliation=owner&per_page=100', paginate=True) or [])
+
+    def repo(self, full: str) -> dict:
+        """One repository's settings, by `owner/name`."""
+        return self.api(f'repos/{full}')
 
     def file(self, repo: str, path: str, ref: str) -> tuple[str, str] | None:
         """A file's text and blob SHA at `ref`, or None when it is not there."""
@@ -202,6 +217,20 @@ class GitHub:
     def merge(self, repo: str, number: int, sha: str, title: str, message: str) -> None:
         self.api(f'repos/{self.owner}/{repo}/pulls/{number}/merge', 'PUT',
                  {'merge_method': 'squash', 'sha': sha, 'commit_title': title, 'commit_message': message})
+
+    def waiting_runs(self, repo: str, sha: str) -> list[dict]:
+        """The workflow runs on `sha` that wait for someone with write access to approve them."""
+        data = self.api(f'repos/{self.owner}/{repo}/actions/runs?head_sha={sha}&status=action_required'
+                        '&per_page=100') or {}
+        return list(data.get('workflow_runs', []))
+
+    def approve_run(self, repo: str, run_id: int) -> None:
+        self.api(f'repos/{self.owner}/{repo}/actions/runs/{run_id}/approve', 'POST')
+
+    def reopen(self, repo: str, number: int) -> None:
+        """Close and reopen a pull request: done as the owner, that starts its checks."""
+        for state in ('closed', 'open'):
+            self.api(f'repos/{self.owner}/{repo}/pulls/{number}', 'PATCH', {'state': state})
 
 
 # --- What a repository's AGENTS.md should become ------------------------------------------
@@ -474,6 +503,13 @@ def hub_name(root: pathlib.Path) -> str:
     return match.group(1) if match else 'intelligence'
 
 
+def left_out(repo: dict) -> str | None:
+    """Why a repository takes no part, from its settings; None when it does."""
+    return ('archived' if repo.get('archived') else 'a fork' if repo.get('fork')
+            else 'a template' if repo.get('is_template')
+            else f'opted out with {OPT_OUT}' if OPT_OUT in (repo.get('topics') or []) else None)
+
+
 def targets(gh: GitHub, only: Sequence[str], hub: str) -> tuple[list[dict], list[str]]:
     """The repositories that take part, and a line for each one left out."""
     chosen, skipped = [], []
@@ -481,10 +517,7 @@ def targets(gh: GitHub, only: Sequence[str], hub: str) -> tuple[list[dict], list
         name = repo['name']
         if only and name not in only:
             continue
-        reason = ('the hub, which renders its own copy from the law' if name == hub
-                  else 'archived' if repo.get('archived') else 'a fork' if repo.get('fork')
-                  else 'a template' if repo.get('is_template')
-                  else f'opted out with {OPT_OUT}' if OPT_OUT in (repo.get('topics') or []) else None)
+        reason = 'the hub, which renders its own copy from the law' if name == hub else left_out(repo)
         if reason:
             skipped.append(f'{name}: skipped, {reason}')
         else:
@@ -502,8 +535,9 @@ def messages(block_hash: str, ref: str, change: Change,
              signer: tuple[str, str] | None) -> tuple[str, str, str]:
     """The commit title, the commit body with its sign-off, and the pull request body.
 
-    With no signer, the App opened it: the body has no sign-off, because a
-    bot certifies nothing, and the pull request says who merges it.
+    With no signer, a repository's stub opened it: the body has no sign-off,
+    because the standards' open-pr action commits as the owner and signs off
+    itself, and the pull request says how its checks start.
     """
     title = f'chore(agents): 🤖 sync the universal rules to {block_hash[:12]}'
     why = (f'The intelligence hub renders the universal rules from its law. This replaces the copy '
@@ -516,7 +550,10 @@ def messages(block_hash: str, ref: str, change: Change,
     first = ' This is a first sync, so review it by hand: `make merge` leaves it alone.'
     impact = f'Agents read the rules of release {ref} in this repository.' + (first if change.adoption else '')
     if signer is None:
-        impact += ' The intelligence App opened this; merging it stays the owner\'s.'
+        impact += " This repository's 🔁 Intelligence Sync opened it; merging it stays the owner's."
+        impact += (' If its checks wait for approval, select **Approve workflows to run** here.' if change.adoption
+                   else ' If its checks wait for approval, `make merge` in the hub approves them once it has '
+                        'checked that the diff is the block alone.')
     pr_body = (f'## Impact\n\n{impact}\n\n'
                f"## Validation\n\nThe block's marker carries `sha256:{block_hash}`, the hash of its text, "
                'so `make audit` in the hub can prove it is unedited.\n\n'
@@ -593,8 +630,26 @@ def checks_green(gh: GitHub, repo: str, sha: str) -> tuple[bool, str]:
     if statuses and status.get('state') != 'success':
         return False, f'commit status is {status.get("state")}'
     if not runs and not statuses:
-        return False, 'no checks ran, so there is nothing to trust'
+        return False, NOTHING_RAN
     return True, ''
+
+
+def start_checks(gh: GitHub, repo: str, number: int, waiting: list[dict]) -> str:
+    """Start the checks of a pull request the default token opened, and say how.
+
+    GitHub holds such a pull request's runs until someone with write access
+    approves them. Approving is what it asks for; where that fails, or no run
+    was held, closing and reopening as the owner starts them anyway.
+    """
+    try:
+        for run in waiting:
+            gh.approve_run(repo, run['id'])
+    except GitHubError:
+        waiting = []
+    if waiting:
+        return f'approved its {len(waiting)} waiting workflow run(s)'
+    gh.reopen(repo, number)
+    return 'reopened it, which starts its checks'
 
 
 def merge_one(gh: GitHub, repo: dict, current: str, dry_run: bool) -> str:
@@ -612,53 +667,152 @@ def merge_one(gh: GitHub, repo: dict, current: str, dry_run: bool) -> str:
     if not old or not new or not only_block_changed(old[0], new[0]):
         return f'{name}: #{number} changes more than the block; review it by hand'
     if render.find(new[0]).marker != current:
-        return f'{name}: #{number} carries an older block; run make sync first'
+        return f'{name}: #{number} carries an older block; run its 🔁 Intelligence Sync, or make sync, first'
     if pr.get('mergeable') is not True:
         return f'{name}: #{number} is not mergeable yet ({pr.get("mergeable_state")})'
-    green, why = checks_green(gh, name, pr['head']['sha'])
+    # Only now, with the diff proven to be the block alone, is it safe to let
+    # a pull request a bot opened run this repository's workflows.
+    sha = pr['head']['sha']
+    bot = (pr.get('user') or {}).get('type') == 'Bot'
+    waiting = gh.waiting_runs(name, sha) if bot else []
+    green, why = checks_green(gh, name, sha)
+    if waiting or (bot and why == NOTHING_RAN):
+        if dry_run:
+            return f'{name}: would start the checks of #{number}'
+        how = start_checks(gh, name, number, waiting)
+        return f'{name}: #{number} waited on its checks, so make merge {how}; run it again once they pass'
     if not green:
         return f'{name}: #{number} waits: {why}'
     if dry_run:
         return f'{name}: would merge #{number}'
     # The squash keeps the sync commit's body, sign-off included, so history
     # still says who certified the change.
-    message = gh.commit_message(name, pr['head']['sha']).split('\n\n', 1)
-    gh.merge(name, number, pr['head']['sha'], pr['title'], message[1] if len(message) > 1 else '')
+    message = gh.commit_message(name, sha).split('\n\n', 1)
+    gh.merge(name, number, sha, pr['title'], message[1] if len(message) > 1 else '')
     return f'{name}: merged #{number}'
+
+
+# --- The stub's side: one repository, in its own workflow ------------------------------------
+
+
+def write_outputs(values: dict[str, str]) -> None:
+    """Hand values to the calling workflow through $GITHUB_OUTPUT; nothing happens outside Actions."""
+    path = os.environ.get('GITHUB_OUTPUT')
+    if not path:
+        return
+    with open(path, 'a', encoding='utf-8') as handle:
+        for key, value in values.items():
+            # A delimiter no text can contain by accident: the bodies are
+            # multi-line, and the text of a release is not ours to trust blindly.
+            delimiter = f'INTELLIGENCE_{secrets.token_hex(8)}'
+            handle.write(f'{key}<<{delimiter}\n{value}\n{delimiter}\n')
+
+
+def fail(message: str) -> int:
+    """Report a problem, as an annotation when Actions runs this."""
+    print(('::error title=Intelligence Sync::' if os.environ.get('GITHUB_ACTIONS') == 'true' else '') + message)
+    return 1
+
+
+def release_label(gh: GitHub, hub: str, ref: str) -> str:
+    """The version a moving tag such as `v0` points at, so the pull request names the release."""
+    if not re.fullmatch(r'v\d+', ref):
+        return ref or 'the latest release'
+    try:
+        tags = gh.api(f'repos/{hub}/tags?per_page=100', paginate=True) or []
+    except GitHubError:
+        return ref
+    at = {tag['name']: tag['commit']['sha'] for tag in tags if isinstance(tag, dict)}
+    full = [name for name, sha in at.items()
+            if sha == at.get(ref) and re.fullmatch(rf'{re.escape(ref)}\.\d+\.\d+', name)]
+    return max(full, key=lambda name: [int(part) for part in name[1:].split('.')], default=ref)
+
+
+def shipped(root: pathlib.Path) -> str:
+    """The region in the home file of the hub tree this runs from: what its release ships."""
+    text = (root / render.HOME_FILE).read_text(encoding='utf-8')
+    found = render.find(text)
+    if found is None or found.edited:
+        raise SystemExit(f'{render.HOME_FILE} is not a sound home file')
+    return text[found.start:found.end]
+
+
+def is_hub(checkout: pathlib.Path) -> bool:
+    """True in a checkout of the hub, which renders its own copy and takes none."""
+    return (checkout / 'law' / 'block.json').is_file() and (checkout / 'scripts' / 'render.py').is_file()
+
+
+def local_file(checkout: pathlib.Path, name: str) -> str | None:
+    """A file's text in the checkout, line endings as they are, or None when it is not there."""
+    path = checkout / name
+    if path.is_symlink() or (path.exists() and not path.is_file()):
+        raise ApplyError(f'{name} is a link or a folder, not a file; review it by hand')
+    if not path.exists():
+        return None
+    with open(path, encoding='utf-8', newline='') as handle:
+        return handle.read()
+
+
+def apply(gh: GitHub, full: str, checkout: pathlib.Path, region: str, ref: str, dry_run: bool) -> int:
+    """Write the release's block into one repository's checkout, for the stub's workflow."""
+    name = full.split('/', 1)[1]
+    unchanged = {'changed': 'false'}
+    if is_hub(checkout):
+        print(f'{name}: skipped, the hub, which renders its own copy from the law')
+        write_outputs(unchanged)
+        return 0
+    try:
+        reason = left_out(gh.repo(full))
+        if reason:
+            print(f'{name}: skipped, {reason}')
+            write_outputs(unchanged)
+            return 0
+        agents, claude = local_file(checkout, AGENTS), local_file(checkout, CLAUDE)
+        change = adopt(name, agents, claude, region)
+    except (GitHubError, ApplyError, ValueError) as error:
+        return fail(f'{name}: {error}')
+    if agents is not None and change.agents == agents and not change.delete_claude:
+        print(f'{name}: current')
+        write_outputs(unchanged)
+        return 0
+    block_hash = render.find(region).marker
+    title, body, pr_body = messages(block_hash, ref, change, None)
+    what = '; '.join(change.adoption) or f'the block, to {block_hash[:12]} from {ref}'
+    if dry_run:
+        print(f'{name}: would {"adopt" if change.adoption else "update"} ({what})')
+        write_outputs(unchanged)
+        return 0
+    with open(checkout / AGENTS, 'w', encoding='utf-8', newline='') as handle:
+        handle.write(change.agents)
+    if change.delete_claude:
+        (checkout / CLAUDE).unlink()
+    print(f'{name}: {"first sync, which " if change.adoption else "updates "}{what}')
+    write_outputs({'changed': 'true', 'commit-title': title, 'commit-body': body,
+                   'pr-title': title, 'pr-body': pr_body})
+    return 0
 
 
 def main(argv: Sequence[str] | None = None, gh: GitHub | None = None, root: pathlib.Path = ROOT) -> int:
     parser = argparse.ArgumentParser(description=(__doc__ or '').split('\n', 1)[0])
-    parser.add_argument('command', choices=('audit', 'sync', 'merge', 'targets'))
+    parser.add_argument('command', choices=('audit', 'sync', 'merge', 'apply'))
     parser.add_argument('--repo', action='append', default=[], metavar='NAME',
                         help='only this repository; repeat for more')
     parser.add_argument('--ref', help='deliver the block from this hub ref instead of the latest release')
     parser.add_argument('--dry-run', action='store_true', help='print what would change, change nothing')
-    parser.add_argument('--app', action='store_true',
-                        help="run under a GitHub App's installation token, as sync.yml does")
-    parser.add_argument('--owner', help='whose repositories, when an App token cannot say (default: '
-                                        '$GITHUB_REPOSITORY_OWNER)')
-    parser.add_argument('--json', action='store_true', help='targets: print the names as one JSON list')
+    parser.add_argument('--path', default='.', help='apply: the checkout to write into (default: here)')
+    parser.add_argument('--release', default='',
+                        help="apply: the hub ref this tree came from, such as v0, for the pull request's text")
+    parser.add_argument('--hub', default='tannergolden/intelligence',
+                        help='apply: the hub repository, to name the version a moving tag points at')
     args = parser.parse_args(argv)
-    if args.app and args.command == 'merge':
-        print("merge refuses to run under the App: merging stays the owner's, with make merge under "
-              'their own login', file=sys.stderr)
-        return 2
-    owner = args.owner or (os.environ.get('GITHUB_REPOSITORY_OWNER') if args.app else None)
-    if args.app and not owner:
-        parser.error('--app needs --owner, or GITHUB_REPOSITORY_OWNER as Actions sets it')
-    gh = gh or GitHub(owner, app=args.app)
-    if args.command == 'targets':
-        try:
-            chosen, skipped = targets(gh, args.repo, hub_name(root))
-        except GitHubError as error:
-            print(f'cannot list the repositories: {error}', file=sys.stderr)
-            return 1
-        names = [repo['name'] for repo in chosen]
-        print(json.dumps(names) if args.json else '\n'.join(names))
-        for line in skipped:
-            print(line, file=sys.stderr)
-        return 0
+    if args.command == 'apply':
+        full = os.environ.get('GITHUB_REPOSITORY', '')
+        if not re.fullmatch(r'[^/\s]+/[^/\s]+', full):
+            parser.error("apply runs in a repository's workflow, which sets GITHUB_REPOSITORY to owner/name")
+        gh = gh or GitHub(full.split('/', 1)[0])
+        return apply(gh, full, pathlib.Path(args.path), shipped(root),
+                     release_label(gh, args.hub, args.release), args.dry_run)
+    gh = gh or GitHub()
     region, ref = delivered(root, args.ref)
     current = render.find(region).marker
     try:
@@ -677,12 +831,16 @@ def main(argv: Sequence[str] | None = None, gh: GitHub | None = None, root: path
         for repo in chosen:
             try:
                 found = audit_one(gh, repo, current, known, invariants)
+                stub = gh.file(repo['name'], STUB, repo['default_branch']) is not None
             except GitHubError as error:
-                found = [str(error)]
+                found, stub = [str(error)], True
             failures += bool(found)
-            print(f'{repo["name"]}: ' + ('; '.join(found) if found else 'current'))
+            # The stub is a choice, not a defect: without it the block is still
+            # whole, and only make sync keeps it current.
+            print(f'{repo["name"]}: ' + ('; '.join(found) if found else 'current')
+                  + ('' if stub else ' (no stub, so only make sync updates it)'))
         return 1 if failures else 0
-    signer = identity(gh) if args.command == 'sync' and not args.dry_run and not args.app else None
+    signer = identity(gh) if args.command == 'sync' and not args.dry_run else None
     for repo in chosen:
         try:
             if args.command == 'sync':

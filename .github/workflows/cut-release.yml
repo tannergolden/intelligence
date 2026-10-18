@@ -4,8 +4,10 @@
 # `vX` beside it. A release is what everything downstream pins: dotfiles'
 # `make agents` and the Claude cloud setup script download
 # `home/intelligence.md`, `home/kit.json` and `scripts/install.py` from the
-# tag, and check each against its SHA-256, and `make sync` delivers the block
-# of the latest tag.
+# tag, and check each against its SHA-256; every repository's
+# 🔁 Intelligence Sync stub runs `sync.yml` and `actions/sync` at the moving
+# `vX`, so moving it is what delivers the block to them; and `make sync`
+# delivers the block of the latest tag.
 # A merge to the default branch reaches none of them until a release is cut.
 #
 # ADOPTED FROM THE TEMPLATE, as its note said to for a repository consumed by
@@ -18,11 +20,9 @@
 # pin to a full version must keep resolving and `make audit` names old blocks
 # by the release that shipped them.
 #
-# THE SYNC JOB delivers the new release to every repository through
-# sync.yml, as soon as the tag exists. It runs here rather than on the
-# release event, because a release published with GITHUB_TOKEN never starts
-# another workflow. It is skipped until the intelligence App is set up; see
-# sync.yml.
+# NOTHING FANS OUT FROM HERE. This hub holds no credential that reaches
+# another repository: each stub picks the release up on its next Monday run,
+# or when its owner runs it, and `make sync` reaches every repository at once.
 
 name: '🏷️ Cut Release'
 
@@ -54,12 +54,10 @@ jobs:
       version: ${{ inputs.version }}
       move-major: ${{ inputs.move-major }}
       # A release a consumer could not install from is refused here, rather
-      # than discovered by the first machine that tries.
-      required-files: 'AGENTS.md home/intelligence.md home/kit.json home/SHA256SUMS scripts/install.py setup/claude-cloud-setup.sh'
+      # than discovered by the first machine, or the first stub, that tries.
+      # The second line is what a stub resolves at the tag, and
+      # setup/test_stub.py keeps it whole.
+      required-files: >-
+        AGENTS.md home/intelligence.md home/kit.json home/SHA256SUMS scripts/install.py setup/claude-cloud-setup.sh
+        .github/workflows/sync.yml actions/sync/action.yml setup/intelligence-sync.yml scripts/sync.py scripts/render.py scripts/kit.py
       check-command: 'make check'
-
-  sync:
-    needs: release
-    permissions:
-      contents: read # check out the hub and its new tag
-    uses: ./.github/workflows/sync.yml

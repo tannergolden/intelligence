@@ -31,8 +31,10 @@ _Standard library only, from a Mac's Python 3.9 up._
 
 `install.py` and `guard.py` run on their own on a machine, after a release
 delivers them, so they import nothing from the hub. `sync.py` reaches GitHub
-only through `gh`: the owner's login by hand, or the intelligence App's
-token, one repository at a time, in `sync.yml`.
+only through `gh`: under the owner's login for `audit`, `sync` and `merge`,
+and, for `apply`, under the `GITHUB_TOKEN` of a repository whose stub runs
+it. That run uses the hub tree GitHub downloads at the moving major tag, so
+`sync.py`, `render.py` and `kit.py` must all be in every release.
 
 ---
 
@@ -51,7 +53,12 @@ python3 -m unittest discover -s scripts -p 'test_*.py'
 ```
 
 `make sync` delivers the latest release's block. To deliver unreleased rules
-on purpose, pass `ARGS='--ref HEAD'`.
+on purpose, pass `ARGS='--ref HEAD'`. To see what a repository's stub would
+write, run `apply` in its checkout:
+
+```bash
+GITHUB_REPOSITORY=tannergolden/<name> python3 /path/to/intelligence/scripts/sync.py apply --dry-run
+```
 
 > [!NOTE]
 > **The tests keep their underscores on purpose.** `unittest` imports each
@@ -75,7 +82,7 @@ on purpose, pass `ARGS='--ref HEAD'`.
 | [`test_install.py`](test_install.py) | Tests for the home kit installer.                                                           |
 | [`test_kit.py`](test_kit.py)         | Tests for the kit renderer.                                                                 |
 | [`test_render.py`](test_render.py)   | Tests for the law renderer.                                                                 |
-| [`test_sync.py`](test_sync.py)       | Tests for repository sync, audit and merge.                                                 |
+| [`test_sync.py`](test_sync.py)       | Tests for repository sync, audit, merge and apply.                                          |
 
 <!-- AUTO-INDEX:END -->
 

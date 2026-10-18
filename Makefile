@@ -40,7 +40,7 @@ audit: ## Report what every repository carries, against the latest release
 sync: ## Open or update one pull request per repository; ARGS=--dry-run previews
 	$(PYTHON) scripts/sync.py sync $(ARGS)
 
-merge: ## Merge every green sync pull request whose diff is only the block
+merge: ## Merge every green sync pull request whose diff is only the block, starting checks that wait
 	$(PYTHON) scripts/sync.py merge $(ARGS)
 
 pins: ## The hashes to pin for VERSION, or for this checkout

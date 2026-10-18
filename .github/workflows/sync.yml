@@ -1,139 +1,103 @@
-# Delivers each release's universal rules to every repository the owner
-# owns, unattended: one pull request per repository on `chore/intelligence`,
-# exactly what `make sync` opens by hand. It runs after 🏷️ Cut Release
-# publishes a tag, every Monday to repair drift, and on demand.
+# --- Reusable Workflow ---
 #
-# This hub's own workflow, not a stub: nothing in tannergolden/standards
-# does this, so the logic stays here, in scripts/sync.py.
+# 🔁 Intelligence Sync
 #
-# MERGING STAYS YOURS. The App it runs as can write contents and pull
-# requests, and nothing else: no workflows, administration, checks or
-# statuses. `sync.py merge --app` refuses to run. Land the green ones with
-# `make merge` under your own login.
+# Purpose: keeps the universal rules current in the repository that calls
+# it. It writes the INTELLIGENCE block of the hub's latest release into
+# that repository's root AGENTS.md, and proposes the change as one pull
+# request on `chore/intelligence`, the same one `make sync` opens by hand.
 #
-# ONE TOKEN PER REPOSITORY. The plan job lists the repositories with a token
-# that can only read metadata; each matrix job then mints a token for its one
-# repository, so a leaked token reaches one repository for an hour.
+# THE REPOSITORY PULLS; NOTHING PUSHES IN. A repository that wants the rules
+# carries the stub, setup/intelligence-sync.yml in this hub, as
+# .github/workflows/intelligence-sync.yml, and this runs on that
+# repository's own GITHUB_TOKEN. No App, no key, and no credential in the
+# hub that reaches another repository. A repository without the stub still
+# gets the block from `make sync`.
 #
-# INERT UNTIL SET UP. Every job is skipped until the repository variable
-# INTELLIGENCE_APP_CLIENT_ID exists. To set it up:
+# MERGING STAYS YOURS. Nothing here merges. GitHub holds the checks of a
+# pull request the default GITHUB_TOKEN opened until someone with write
+# access approves them; `make merge` in the hub approves them once it has
+# proven the diff is the block alone, and merges it on its next run. Where a
+# repository has a BOT_ACCESS_TOKEN secret, the pull request is opened as
+# that token's owner and its checks start at once.
 #
-#   1. Create a GitHub App owned by you, with Contents and Pull requests set
-#      to read and write, Metadata read, no webhook, and nothing else. Install
-#      it on the repositories that should receive the rules.
-#   2. Add the repository variable INTELLIGENCE_APP_CLIENT_ID: the App's
-#      client ID, which is not a secret.
-#   3. Create the environment `intelligence-sync`, limited to the default
-#      branch and `v*` tags, and add its secret INTELLIGENCE_APP_PRIVATE_KEY:
-#      a private key generated for the App.
+# Skipped in a template, a fork, an archived repository, one with the
+# `no-intelligence` topic, and the hub itself, which renders its own copy.
+#
+# ⚠️ `@v0` IS WRITTEN OUT BELOW, AND MOVES WITH THE STUB'S. A reusable
+# workflow cannot name the ref it was called at, so the action is called at
+# the hub's moving major, as every stub calls this workflow. Moving `v0`
+# delivers a release to both at once, and the code that writes into a
+# repository is always a released one. A stub pinned to a full version
+# still runs the action at the moving major: a release is the unit of trust.
+#
+# ---
 
-name: '🔁 Sync Intelligence'
+name: '🔁 Intelligence Sync'
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
-      repos:
-        description: 'Only these repositories, comma-separated (default: every one the App can reach)'
+      base:
+        description: "The branch the pull request targets. Empty uses the repository's default branch."
         required: false
         type: string
+        default: ''
       dry-run:
         description: 'Print what would change, and change nothing'
         required: false
         type: boolean
         default: false
-  workflow_call:
-    inputs:
-      dry-run:
+    secrets:
+      BOT_ACCESS_TOKEN:
+        description: >-
+          Optional. A PAT with repo scope opens the pull request as its owner,
+          so its checks start at once. Without it, the default GITHUB_TOKEN
+          opens it and its checks wait for approval.
         required: false
-        type: boolean
-        default: false
-  schedule:
-    - cron: '23 6 * * 1' # Mondays, to repair a block someone edited by hand
-
-concurrency:
-  group: ${{ github.workflow }}
-  cancel-in-progress: false
 
 permissions: {}
 
 jobs:
-  plan:
-    name: '🗂️ List the repositories'
-    if: ${{ vars.INTELLIGENCE_APP_CLIENT_ID != '' }}
-    runs-on: ubuntu-latest
-    environment: intelligence-sync
-    permissions:
-      contents: read # check out the hub and its release tags
-    outputs:
-      repos: ${{ steps.list.outputs.repos }}
-    steps:
-      - name: Check out the hub, with every release tag
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - name: Mint a token that can only list
-        id: token
-        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
-        with:
-          client-id: ${{ vars.INTELLIGENCE_APP_CLIENT_ID }}
-          private-key: ${{ secrets.INTELLIGENCE_APP_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-          permission-metadata: read
-      - name: List the repositories that take part
-        id: list
-        env:
-          GH_TOKEN: ${{ steps.token.outputs.token }}
-          ONLY: ${{ inputs.repos }}
-        run: |
-          set -euo pipefail
-          args=()
-          IFS=',' read -ra wanted <<< "${ONLY:-}"
-          for name in "${wanted[@]}"; do
-            name="$(echo "$name" | xargs)"
-            [ -n "$name" ] && args+=(--repo "$name")
-          done
-          repos="$(python3 scripts/sync.py targets --app --json "${args[@]}")"
-          echo "repos=$repos" >> "$GITHUB_OUTPUT"
-          echo "Taking part: $repos"
-
   sync:
-    name: '🔁 Sync ${{ matrix.repo }}'
-    needs: plan
-    if: ${{ needs.plan.outputs.repos != '' && needs.plan.outputs.repos != '[]' }}
+    name: '🔁 Sync The Universal Rules'
     runs-on: ubuntu-latest
-    environment: intelligence-sync
+    timeout-minutes: 10
     permissions:
-      contents: read # check out the hub and its release tags
-    strategy:
-      fail-fast: false
-      max-parallel: 4
-      matrix:
-        repo: ${{ fromJSON(needs.plan.outputs.repos) }}
+      contents: write # push the sync branch (PR-only flow)
+      pull-requests: write # open or update the sync pull request
     steps:
-      - name: Check out the hub, with every release tag
+      - name: '🛡️ Harden Runner'
+        uses: tannergolden/standards/actions/harden@v1
+        with:
+          egress-policy: audit
+          notice: "🔁 Intelligence Sync: bringing this repository's AGENTS.md up to the latest release."
+
+      - name: '📂 Checkout Calling Repository'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0
+          # The base, never the branch a dispatch ran from, so the pull
+          # request carries the block and nothing else. A scheduled run
+          # carries no repository in its event and checks out the default
+          # branch anyway.
+          ref: ${{ inputs.base || github.event.repository.default_branch }}
           persist-credentials: false
-      - name: Mint a token for this one repository
-        id: token
-        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+
+      - name: "🔁 Write The Release's Block"
+        id: block
+        uses: tannergolden/intelligence/actions/sync@v0
         with:
-          client-id: ${{ vars.INTELLIGENCE_APP_CLIENT_ID }}
-          private-key: ${{ secrets.INTELLIGENCE_APP_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-          repositories: ${{ matrix.repo }}
-          permission-contents: write
-          permission-pull-requests: write
-          permission-metadata: read
-      - name: Open or update its sync pull request
-        env:
-          GH_TOKEN: ${{ steps.token.outputs.token }}
-          REPO: ${{ matrix.repo }}
-          DRY_RUN: ${{ inputs.dry-run && '--dry-run' || '' }}
-        run: |
-          set -euo pipefail
-          # DRY_RUN is empty or one flag, so it is left unquoted on purpose.
-          # shellcheck disable=SC2086
-          python3 scripts/sync.py sync --app --repo "$REPO" $DRY_RUN
+          token: ${{ secrets.GITHUB_TOKEN }}
+          dry-run: ${{ inputs.dry-run }}
+
+      - name: '🚀 Open Or Update The Pull Request'
+        if: ${{ steps.block.outputs.changed == 'true' }}
+        uses: tannergolden/standards/actions/open-pr@v1
+        with:
+          token: ${{ secrets.BOT_ACCESS_TOKEN || secrets.GITHUB_TOKEN }}
+          branch: chore/intelligence
+          commit-title: ${{ steps.block.outputs.commit-title }}
+          commit-body: ${{ steps.block.outputs.commit-body }}
+          pr-title: ${{ steps.block.outputs.pr-title }}
+          pr-body: ${{ steps.block.outputs.pr-body }}
+          base: ${{ inputs.base }}
