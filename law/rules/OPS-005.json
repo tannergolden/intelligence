@@ -1,0 +1,15 @@
+{
+  "//": "OPS-005: an Invariant for every repository.",
+  "id": "OPS-005",
+  "kind": "invariant",
+  "reach": "every",
+  "text": "Push, open PRs, comment or publish only when your user asked for that specific action.",
+  "why": "Being asked to start a task is not standing authorization to publish anything.",
+  "enforced_by": [
+    "Copilot's cloud agent, which can push only to its own branch"
+  ],
+  "to_add": [
+    "Claude Code permissions.ask entries for git push, gh pr create, gh issue, gh release and GitHub MCP write tools",
+    "Codex approval prompts for the same commands"
+  ]
+}

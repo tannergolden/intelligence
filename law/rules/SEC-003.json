@@ -1,0 +1,13 @@
+{
+  "//": "SEC-003: an Invariant for every repository.",
+  "id": "SEC-003",
+  "kind": "invariant",
+  "reach": "every",
+  "text": "Never put your user's personal context in a repository, or a private repository's name or contents anywhere public; check the diff first.",
+  "why": "No harness knows what is private, and a malicious issue once led an agent to copy private data into a public pull request.",
+  "enforced_by": [],
+  "to_add": [
+    "tokens that cannot read private repositories in sessions on public ones",
+    "a scan for private repository names at pre-commit, in CI, and in a hook on gh and GitHub MCP writes"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "//": "COM-002: an Invariant for every repository.",
+  "id": "COM-002",
+  "kind": "invariant",
+  "reach": "every",
+  "text": "Report what you ran with its result, what failed and what you skipped; claim done or passing only on a tool result from this session.",
+  "why": "A grounding instruction nearly eliminated fabricated status reports.",
+  "enforced_by": [
+    "required CI checks, which contradict a false claim after a push"
+  ],
+  "to_add": [
+    "CI validation of the pull request report section",
+    "an opt-in Stop hook"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "//": "GIT-010: a Default for the owner's repositories.",
+  "id": "GIT-010",
+  "kind": "default",
+  "reach": "owner",
+  "text": "Name branches `<type>/<topic>`, title commits and PRs `type(scope): subject`, and give each commit a body saying why and your user's `Signed-off-by:` last.",
+  "why": "Scoped Conventional Commits with a body, and branches named by intent, are what the standards' gates expect.",
+  "enforced_by": [
+    "semantic-pr.yml, for the pull request title, branch name and sign-off",
+    "commit-check.py, for scope, body and dashes"
+  ],
+  "to_add": []
+}

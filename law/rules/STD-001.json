@@ -1,0 +1,14 @@
+{
+  "//": "STD-001: a Default for the owner's repositories.",
+  "id": "STD-001",
+  "kind": "default",
+  "reach": "owner",
+  "text": "Follow github.com/tannergolden/standards, which differ from your defaults and win over this block: before you commit, branch, open a PR, write docs or tests, or add a dependency, read the matching file in its `docs/`, or say you could not.",
+  "why": "A pointer tied to specific moments raised doc reading from 11% to 75%, where a bare link is rarely followed.",
+  "enforced_by": [
+    "the standards' reusable workflows, in repositories that call them"
+  ],
+  "to_add": [
+    "gates in the core repositories that follow the standards by link"
+  ]
+}

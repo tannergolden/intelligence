@@ -1,0 +1,17 @@
+{
+  "//": "OPS-003: an Invariant for every repository.",
+  "id": "OPS-003",
+  "kind": "invariant",
+  "reach": "every",
+  "text": "Before anything git here cannot undo (deleting untracked files or data, dropping uncommitted work, changing databases, cloud resources or repository settings), show the command and get approval for it; after damage, stop and report.",
+  "why": "Stash-and-reset sequences, rollbacks and git clean have destroyed work that git could not bring back.",
+  "enforced_by": [
+    "Codex workspace sandbox, with .git read-only",
+    "Claude Code sandbox and auto mode classifier"
+  ],
+  "to_add": [
+    "sandboxes turned on everywhere, since Grok Build's is off by default",
+    "deletion protection the session cannot purge",
+    "a hook on destructive commands that also catches their alternate spellings"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "//": "OPS-001: an Invariant for every repository.",
+  "id": "OPS-001",
+  "kind": "invariant",
+  "reach": "every",
+  "text": "Never push to a default or protected branch, force-push except `--force-with-lease` on a branch you created, delete branches or tags, or merge your own PR.",
+  "why": "The standards end feature work with --force-with-lease on the author's own branch, and an agent once pushed to main on an old approval.",
+  "enforced_by": [
+    "rulesets that require a pull request and block force-pushes and deletion",
+    "the Claude cloud git proxy, which rejects branch deletions and tag pushes",
+    "Copilot's cloud agent, which cannot merge"
+  ],
+  "to_add": [
+    "no admin bypass for agent identities, or a non-admin App identity for unattended agents",
+    "a hook that blocks plain --force, push --delete, tag pushes and gh pr merge"
+  ]
+}

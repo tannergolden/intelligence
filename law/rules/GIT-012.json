@@ -1,0 +1,14 @@
+{
+  "//": "GIT-012: a Default for the owner's repositories.",
+  "id": "GIT-012",
+  "kind": "default",
+  "reach": "owner",
+  "text": "Keep each PR to one intent, under 300 changed lines and at most 10 files, into `Development`.",
+  "why": "The standards cap a pull request at one intent, under 300 changed lines and at most 10 files, into Development.",
+  "enforced_by": [
+    "size labels in governance.yml, which label but do not block"
+  ],
+  "to_add": [
+    "a size check that fails above 300 lines or 10 files"
+  ]
+}
