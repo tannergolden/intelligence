@@ -114,3 +114,4 @@
 # --- Your rules ---------------------------------------------------------------
 # keep mine: /.github/workflows/checks.yml
 # keep mine: /.github/workflows/release.yml
+# keep mine: /.github/workflows/ci-failure-alert.yml

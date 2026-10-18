@@ -450,5 +450,60 @@ class TestGhCalls(unittest.TestCase):
             sync.GitHub(owner='o', run=broken).file('r', 'AGENTS.md', 'main')
 
 
+class TestApp(SyncTestCase):
+    """Unattended, under a GitHub App: it opens pull requests and never merges one."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.gh.app = True
+
+    def test_the_apps_commits_carry_no_sign_off_and_its_pull_requests_say_who_merges(self) -> None:
+        self.gh.add('alpha')
+        code, out = self.run_sync('sync', '--app', '--owner', 'tannergolden')
+        self.assertEqual(code, 0, out)
+        self.assertNotIn('Signed-off-by', self.gh.messages['alpha'])
+        self.assertIn("merging it stays the owner's", self.gh.prs['alpha']['body'])
+
+    def test_merge_refuses_to_run_under_the_app(self) -> None:
+        self.gh.add('alpha')
+        self.run_sync('sync', '--app', '--owner', 'tannergolden')
+        code, out = self.run_sync('merge', '--app', '--owner', 'tannergolden')
+        self.assertEqual(code, 2, out)
+        self.assertIn("merging stays the owner's", out)
+        self.assertEqual(self.gh.merged, [])
+
+    def test_targets_lists_what_takes_part_for_the_workflow(self) -> None:
+        self.gh.add('alpha')
+        self.gh.add('beta', archived=True)
+        self.gh.add('intelligence')
+        code, out = self.run_sync('targets', '--app', '--owner', 'tannergolden', '--json')
+        self.assertEqual(code, 0, out)
+        self.assertEqual(out.splitlines()[0], '["alpha"]')
+        self.assertIn('beta: skipped, archived', out)
+
+    def test_the_app_needs_an_owner(self) -> None:
+        with self.assertRaises(SystemExit):
+            with contextlib.redirect_stderr(io.StringIO()):
+                sync.main(['targets', '--app'], gh=self.gh, root=self.hub)
+
+
+class TestAppListing(unittest.TestCase):
+    """An installation token lists repositories its own way."""
+
+    def test_installation_pages_are_joined_and_other_owners_dropped(self) -> None:
+        pages = ('{"total_count": 3, "repositories": [{"name": "a", "owner": {"login": "o"}}, '
+                 '{"name": "x", "owner": {"login": "someone-else"}}]}'
+                 '{"total_count": 3, "repositories": [{"name": "b", "owner": {"login": "o"}}]}')
+        seen = []
+
+        def run(argv, stdin):
+            seen.append(argv)
+            return subprocess.CompletedProcess(argv, 0, pages, '')
+
+        gh = sync.GitHub(owner='o', run=run, app=True)
+        self.assertEqual([repo['name'] for repo in gh.repos()], ['a', 'b'])
+        self.assertIn('installation/repositories?per_page=100', seen[0])
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

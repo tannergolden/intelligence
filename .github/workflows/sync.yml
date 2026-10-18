@@ -1,0 +1,139 @@
+# Delivers each release's universal rules to every repository the owner
+# owns, unattended: one pull request per repository on `chore/intelligence`,
+# exactly what `make sync` opens by hand. It runs after 🏷️ Cut Release
+# publishes a tag, every Monday to repair drift, and on demand.
+#
+# This hub's own workflow, not a stub: nothing in tannergolden/standards
+# does this, so the logic stays here, in scripts/sync.py.
+#
+# MERGING STAYS YOURS. The App it runs as can write contents and pull
+# requests, and nothing else: no workflows, administration, checks or
+# statuses. `sync.py merge --app` refuses to run. Land the green ones with
+# `make merge` under your own login.
+#
+# ONE TOKEN PER REPOSITORY. The plan job lists the repositories with a token
+# that can only read metadata; each matrix job then mints a token for its one
+# repository, so a leaked token reaches one repository for an hour.
+#
+# INERT UNTIL SET UP. Every job is skipped until the repository variable
+# INTELLIGENCE_APP_CLIENT_ID exists. To set it up:
+#
+#   1. Create a GitHub App owned by you, with Contents and Pull requests set
+#      to read and write, Metadata read, no webhook, and nothing else. Install
+#      it on the repositories that should receive the rules.
+#   2. Add the repository variable INTELLIGENCE_APP_CLIENT_ID: the App's
+#      client ID, which is not a secret.
+#   3. Create the environment `intelligence-sync`, limited to the default
+#      branch and `v*` tags, and add its secret INTELLIGENCE_APP_PRIVATE_KEY:
+#      a private key generated for the App.
+
+name: '🔁 Sync Intelligence'
+
+on:
+  workflow_dispatch:
+    inputs:
+      repos:
+        description: 'Only these repositories, comma-separated (default: every one the App can reach)'
+        required: false
+        type: string
+      dry-run:
+        description: 'Print what would change, and change nothing'
+        required: false
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      dry-run:
+        required: false
+        type: boolean
+        default: false
+  schedule:
+    - cron: '23 6 * * 1' # Mondays, to repair a block someone edited by hand
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  plan:
+    name: '🗂️ List the repositories'
+    if: ${{ vars.INTELLIGENCE_APP_CLIENT_ID != '' }}
+    runs-on: ubuntu-latest
+    environment: intelligence-sync
+    permissions:
+      contents: read # check out the hub and its release tags
+    outputs:
+      repos: ${{ steps.list.outputs.repos }}
+    steps:
+      - name: Check out the hub, with every release tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Mint a token that can only list
+        id: token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.INTELLIGENCE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.INTELLIGENCE_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          permission-metadata: read
+      - name: List the repositories that take part
+        id: list
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          ONLY: ${{ inputs.repos }}
+        run: |
+          set -euo pipefail
+          args=()
+          IFS=',' read -ra wanted <<< "${ONLY:-}"
+          for name in "${wanted[@]}"; do
+            name="$(echo "$name" | xargs)"
+            [ -n "$name" ] && args+=(--repo "$name")
+          done
+          repos="$(python3 scripts/sync.py targets --app --json "${args[@]}")"
+          echo "repos=$repos" >> "$GITHUB_OUTPUT"
+          echo "Taking part: $repos"
+
+  sync:
+    name: '🔁 Sync ${{ matrix.repo }}'
+    needs: plan
+    if: ${{ needs.plan.outputs.repos != '' && needs.plan.outputs.repos != '[]' }}
+    runs-on: ubuntu-latest
+    environment: intelligence-sync
+    permissions:
+      contents: read # check out the hub and its release tags
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        repo: ${{ fromJSON(needs.plan.outputs.repos) }}
+    steps:
+      - name: Check out the hub, with every release tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Mint a token for this one repository
+        id: token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.INTELLIGENCE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.INTELLIGENCE_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ matrix.repo }}
+          permission-contents: write
+          permission-pull-requests: write
+          permission-metadata: read
+      - name: Open or update its sync pull request
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          REPO: ${{ matrix.repo }}
+          DRY_RUN: ${{ inputs.dry-run && '--dry-run' || '' }}
+        run: |
+          set -euo pipefail
+          # DRY_RUN is empty or one flag, so it is left unquoted on purpose.
+          # shellcheck disable=SC2086
+          python3 scripts/sync.py sync --app --repo "$REPO" $DRY_RUN

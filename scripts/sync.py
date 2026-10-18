@@ -17,10 +17,18 @@ key and no bot merges:
 - `merge` merges each sync pull request whose diff is exactly the block and
   whose checks passed. Anything bigger, such as a first sync, waits for the
   owner to review it by hand.
+- `targets` lists the repositories that take part, for the unattended
+  workflow to fan out over.
 
 It delivers the block of the latest release tag, never unreleased work.
 Every repository the owner owns takes part, except templates, forks,
 archived ones, and any with the `no-intelligence` topic.
+
+UNATTENDED, with `--app`. `.github/workflows/sync.yml` runs `sync` under a
+GitHub App's installation token, one token per repository, instead of the
+owner's login. The App's commits carry no sign-off, because a bot certifies
+nothing and the DCO check exempts bots, and `merge` refuses to run at all:
+merging stays the owner's, under their own login.
 
 Run it, from the hub's root:
 
@@ -29,6 +37,7 @@ Run it, from the hub's root:
     python3 scripts/sync.py sync
     python3 scripts/sync.py merge --dry-run
     python3 scripts/sync.py merge
+    python3 scripts/sync.py targets --app --owner tannergolden --json   # in sync.yml
 """
 
 from __future__ import annotations
@@ -37,6 +46,7 @@ import argparse
 import base64
 import dataclasses
 import json
+import os
 import pathlib
 import re
 import subprocess
@@ -91,11 +101,12 @@ def run_gh(argv: Sequence[str], stdin: str | None) -> subprocess.CompletedProces
 
 
 class GitHub:
-    """The GitHub calls this script makes, through the owner's `gh` login."""
+    """The GitHub calls this script makes, through `gh`: the owner's login, or an App's token."""
 
-    def __init__(self, owner: str | None = None, run: Runner = run_gh) -> None:
+    def __init__(self, owner: str | None = None, run: Runner = run_gh, app: bool = False) -> None:
         self.run = run
         self._owner = owner
+        self.app = app
 
     def api(self, path: str, method: str = 'GET', body: dict | None = None,
             paginate: bool = False, missing_ok: bool = False) -> object:
@@ -122,7 +133,13 @@ class GitHub:
         return self._owner
 
     def repos(self) -> list[dict]:
-        return list(self.api('user/repos?affiliation=owner&per_page=100', paginate=True) or [])
+        if not self.app:
+            return list(self.api('user/repos?affiliation=owner&per_page=100', paginate=True) or [])
+        # An installation token lists what the App was given, page by page.
+        pages = self.api('installation/repositories?per_page=100', paginate=True) or []
+        found = [repo for page in (pages if isinstance(pages, list) else [pages])
+                 for repo in (page.get('repositories', []) if isinstance(page, dict) else [page])]
+        return [repo for repo in found if (repo.get('owner') or {}).get('login') == self.owner]
 
     def file(self, repo: str, path: str, ref: str) -> tuple[str, str] | None:
         """A file's text and blob SHA at `ref`, or None when it is not there."""
@@ -481,8 +498,13 @@ def identity(gh: GitHub) -> tuple[str, str]:
     return user.get('name') or user['login'], f'{user["id"]}+{user["login"]}@users.noreply.github.com'
 
 
-def messages(block_hash: str, ref: str, change: Change, signer: tuple[str, str]) -> tuple[str, str, str]:
-    """The commit title, the commit body with its sign-off, and the pull request body."""
+def messages(block_hash: str, ref: str, change: Change,
+             signer: tuple[str, str] | None) -> tuple[str, str, str]:
+    """The commit title, the commit body with its sign-off, and the pull request body.
+
+    With no signer, the App opened it: the body has no sign-off, because a
+    bot certifies nothing, and the pull request says who merges it.
+    """
     title = f'chore(agents): 🤖 sync the universal rules to {block_hash[:12]}'
     why = (f'The intelligence hub renders the universal rules from its law. This replaces the copy '
            f'between the INTELLIGENCE markers in AGENTS.md with the one from release {ref}, and '
@@ -490,9 +512,11 @@ def messages(block_hash: str, ref: str, change: Change, signer: tuple[str, str])
     if change.adoption:
         why = ('The intelligence hub delivers the universal rules to every repository its owner '
                'owns, in one root AGENTS.md. This first sync ' + '; it '.join(change.adoption) + '.')
-    body = f'{textwrap.fill(why, 72)}\n\nSigned-off-by: {signer[0]} <{signer[1]}>'
+    body = textwrap.fill(why, 72) + (f'\n\nSigned-off-by: {signer[0]} <{signer[1]}>' if signer else '')
     first = ' This is a first sync, so review it by hand: `make merge` leaves it alone.'
     impact = f'Agents read the rules of release {ref} in this repository.' + (first if change.adoption else '')
+    if signer is None:
+        impact += ' The intelligence App opened this; merging it stays the owner\'s.'
     pr_body = (f'## Impact\n\n{impact}\n\n'
                f"## Validation\n\nThe block's marker carries `sha256:{block_hash}`, the hash of its text, "
                'so `make audit` in the hub can prove it is unedited.\n\n'
@@ -500,7 +524,8 @@ def messages(block_hash: str, ref: str, change: Change, signer: tuple[str, str])
     return title, body, pr_body
 
 
-def sync_one(gh: GitHub, repo: dict, region: str, ref: str, signer: tuple[str, str], dry_run: bool) -> str:
+def sync_one(gh: GitHub, repo: dict, region: str, ref: str, signer: tuple[str, str] | None,
+             dry_run: bool) -> str:
     name, base = repo['name'], repo['default_branch']
     agents = gh.file(name, AGENTS, base)
     claude = gh.file(name, CLAUDE, base)
@@ -604,13 +629,36 @@ def merge_one(gh: GitHub, repo: dict, current: str, dry_run: bool) -> str:
 
 def main(argv: Sequence[str] | None = None, gh: GitHub | None = None, root: pathlib.Path = ROOT) -> int:
     parser = argparse.ArgumentParser(description=(__doc__ or '').split('\n', 1)[0])
-    parser.add_argument('command', choices=('audit', 'sync', 'merge'))
+    parser.add_argument('command', choices=('audit', 'sync', 'merge', 'targets'))
     parser.add_argument('--repo', action='append', default=[], metavar='NAME',
                         help='only this repository; repeat for more')
     parser.add_argument('--ref', help='deliver the block from this hub ref instead of the latest release')
     parser.add_argument('--dry-run', action='store_true', help='print what would change, change nothing')
+    parser.add_argument('--app', action='store_true',
+                        help="run under a GitHub App's installation token, as sync.yml does")
+    parser.add_argument('--owner', help='whose repositories, when an App token cannot say (default: '
+                                        '$GITHUB_REPOSITORY_OWNER)')
+    parser.add_argument('--json', action='store_true', help='targets: print the names as one JSON list')
     args = parser.parse_args(argv)
-    gh = gh or GitHub()
+    if args.app and args.command == 'merge':
+        print("merge refuses to run under the App: merging stays the owner's, with make merge under "
+              'their own login', file=sys.stderr)
+        return 2
+    owner = args.owner or (os.environ.get('GITHUB_REPOSITORY_OWNER') if args.app else None)
+    if args.app and not owner:
+        parser.error('--app needs --owner, or GITHUB_REPOSITORY_OWNER as Actions sets it')
+    gh = gh or GitHub(owner, app=args.app)
+    if args.command == 'targets':
+        try:
+            chosen, skipped = targets(gh, args.repo, hub_name(root))
+        except GitHubError as error:
+            print(f'cannot list the repositories: {error}', file=sys.stderr)
+            return 1
+        names = [repo['name'] for repo in chosen]
+        print(json.dumps(names) if args.json else '\n'.join(names))
+        for line in skipped:
+            print(line, file=sys.stderr)
+        return 0
     region, ref = delivered(root, args.ref)
     current = render.find(region).marker
     try:
@@ -634,7 +682,7 @@ def main(argv: Sequence[str] | None = None, gh: GitHub | None = None, root: path
             failures += bool(found)
             print(f'{repo["name"]}: ' + ('; '.join(found) if found else 'current'))
         return 1 if failures else 0
-    signer = identity(gh) if args.command == 'sync' and not args.dry_run else ('', '')
+    signer = identity(gh) if args.command == 'sync' and not args.dry_run and not args.app else None
     for repo in chosen:
         try:
             if args.command == 'sync':

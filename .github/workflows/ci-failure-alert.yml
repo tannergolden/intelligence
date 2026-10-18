@@ -39,6 +39,9 @@ on:
       - '🔬 Verify Stub Ceilings'
       - '🧹 Prune Run History'
       - '🚀 Preview Deploy'
+      # This hub's own: a weekly sync that fails leaves every repository on
+      # an older block with nothing to say so.
+      - '🔁 Sync Intelligence'
       # Add any workflow whose silent failure would cost something.
       #
       # ⚠️ NEVER ADD THIS WORKFLOW TO ITS OWN LIST. It cannot escalate its

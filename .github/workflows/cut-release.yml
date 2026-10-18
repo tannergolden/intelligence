@@ -3,8 +3,9 @@
 # Publishes the hub's releases: `vX.Y.Z` for the version, and the moving
 # `vX` beside it. A release is what everything downstream pins: dotfiles'
 # `make agents` and the Claude cloud setup script download
-# `home/intelligence.md` and `scripts/install.py` from the tag, and check each
-# against its SHA-256, and `make sync` delivers the block of the latest tag.
+# `home/intelligence.md`, `home/kit.json` and `scripts/install.py` from the
+# tag, and check each against its SHA-256, and `make sync` delivers the block
+# of the latest tag.
 # A merge to the default branch reaches none of them until a release is cut.
 #
 # ADOPTED FROM THE TEMPLATE, as its note said to for a repository consumed by
@@ -16,6 +17,12 @@
 # Every version stays: releases are never pruned (see release.yml), because a
 # pin to a full version must keep resolving and `make audit` names old blocks
 # by the release that shipped them.
+#
+# THE SYNC JOB delivers the new release to every repository through
+# sync.yml, as soon as the tag exists. It runs here rather than on the
+# release event, because a release published with GITHUB_TOKEN never starts
+# another workflow. It is skipped until the intelligence App is set up; see
+# sync.yml.
 
 name: '🏷️ Cut Release'
 
@@ -48,5 +55,11 @@ jobs:
       move-major: ${{ inputs.move-major }}
       # A release a consumer could not install from is refused here, rather
       # than discovered by the first machine that tries.
-      required-files: 'AGENTS.md home/intelligence.md home/SHA256SUMS scripts/install.py setup/claude-cloud-setup.sh'
+      required-files: 'AGENTS.md home/intelligence.md home/kit.json home/SHA256SUMS scripts/install.py setup/claude-cloud-setup.sh'
       check-command: 'make check'
+
+  sync:
+    needs: release
+    permissions:
+      contents: read # check out the hub and its new tag
+    uses: ./.github/workflows/sync.yml
