@@ -5,8 +5,6 @@
   "reach": "every",
   "text": "Before calling work done, run the documented checks that cover your change and show the output.",
   "why": "Verification belongs to the checks a repository documents, not to extra rounds the model invents.",
-  "enforced_by": [
-    "ci / Lint, Test & Build"
-  ],
+  "enforced_by": ["ci / Lint, Test & Build"],
   "to_add": []
 }

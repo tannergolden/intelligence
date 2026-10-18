@@ -8,7 +8,5 @@
   "enforced_by": [
     "the commitlint rule no-banned-dashes, for commit messages only"
   ],
-  "to_add": [
-    "a U+2014 check on changed files, and a check after each write"
-  ]
+  "to_add": ["a U+2014 check on changed files, and a check after each write"]
 }

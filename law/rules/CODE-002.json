@@ -5,9 +5,7 @@
   "reach": "every",
   "text": "Never pass a check by weakening it (deleting, skipping or loosening tests, suppressing errors, special-casing inputs); if a test or the task seems wrong, stop and say so.",
   "why": "Agents game impossible tests, and an explicit way to stop nearly eliminates it.",
-  "enforced_by": [
-    "required CI checks"
-  ],
+  "enforced_by": ["required CI checks"],
   "to_add": [
     "a CI check that flags deleted or skipped tests, lowered thresholds and edited snapshots",
     "counting executed tests from JUnit output instead of trusting the exit status"

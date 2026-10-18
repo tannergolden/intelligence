@@ -8,7 +8,5 @@
   "enforced_by": [
     "the standards' reusable workflows, in repositories that call them"
   ],
-  "to_add": [
-    "gates in the core repositories that follow the standards by link"
-  ]
+  "to_add": ["gates in the core repositories that follow the standards by link"]
 }

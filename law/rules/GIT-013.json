@@ -5,9 +5,7 @@
   "reach": "owner",
   "text": "Add `Co-Authored-By: <model> <vendor no-reply address>` above the sign-off on each commit an AI shaped.",
   "why": "The standards credit an AI in a Co-Authored-By trailer above the sign-off, only on commits it shaped.",
-  "enforced_by": [
-    "Claude Code's attribution setting"
-  ],
+  "enforced_by": ["Claude Code's attribution setting"],
   "to_add": [
     "a commit-check rule that requires the trailer when an agent made the commit"
   ]
