@@ -307,8 +307,9 @@ with the options it was weighed against:
 - [ADR-0014](docs/adrs/ADR-0014-One-Skill-That-Builds-Skills.md): one skill for now, the one that builds skills
 - [ADR-0015](docs/adrs/ADR-0015-A-Worker-And-A-Reviewer.md): the hierarchy starts with a Worker and a Reviewer
 - [ADR-0016](docs/adrs/ADR-0016-Knowledge-Starts-As-Public-Facts.md): knowledge starts as public facts beside the rules
-- [ADR-0017](docs/adrs/ADR-0017-Unattended-Sync-Through-An-App.md): a GitHub App opens the sync pull requests, and you still merge
+- [ADR-0017](docs/adrs/ADR-0017-Unattended-Sync-Through-An-App.md): a GitHub App opens the sync pull requests, and you still merge; superseded by ADR-0019
 - [ADR-0018](docs/adrs/ADR-0018-Evals-Measure-The-Block.md): evals measure each rule with the block and without it
+- [ADR-0019](docs/adrs/ADR-0019-Each-Repository-Pulls-With-A-Stub.md): each repository pulls the rules with a stub, on its own token, and no App
 
 ---
 

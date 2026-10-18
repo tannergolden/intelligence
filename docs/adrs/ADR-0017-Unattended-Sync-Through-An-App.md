@@ -3,7 +3,7 @@ title: '📄 ADR-0017: UNATTENDED SYNC THROUGH AN APP'
 description: 'A GitHub App, with one token per repository and a key kept in a protected environment, opens each release''s sync pull requests unattended, while merging stays the owner''s, under the owner''s own login.'
 tags: [adr, sync, github-app, automation]
 category: docs
-status: 'Proposed'
+status: 'Superseded'
 date: '2026-10-18'
 evidence: 'N/A'
 -->
@@ -20,6 +20,11 @@ evidence: 'N/A'
 _Opened by a bot. Merged by you._
 
 </div>
+
+> [!IMPORTANT]
+> **Superseded by [ADR-0019](ADR-0019-Each-Repository-Pulls-With-A-Stub.md).**
+> Each repository now pulls the rules with a stub, on its own token, and the
+> App this record describes was never created.
 
 ---
 
@@ -101,6 +106,7 @@ Version 1 runs `make sync` under the owner's own `gh` login after each release (
 ## 🔗 Traceability & Links
 
 - [ADR-0003](ADR-0003-Push-Sync-&-Owner-Merge.md): the hub pushes, the owner merges
+- [ADR-0019](ADR-0019-Each-Repository-Pulls-With-A-Stub.md): the stub that supersedes this record
 - [`.github/workflows/sync.yml`](../../.github/workflows/sync.yml) and [`scripts/sync.py`](../../scripts/sync.py)
 
 ### 🔗 See also
