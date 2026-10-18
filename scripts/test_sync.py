@@ -1,0 +1,454 @@
+#!/usr/bin/env python3
+"""Tests for repository sync, audit and merge.
+
+WHY THIS EXISTS. `sync.py` writes to every repository the owner owns, under
+the owner's own login, and `merge` lands changes on their default branches.
+So it has to stop wherever it should:
+
+- leave alone what each repository wrote for itself;
+- skip what must be skipped;
+- merge only a pull request whose diff is the block alone and whose checks
+  have passed.
+
+These run every command against an in-memory stand-in for GitHub and a
+throwaway hub with two release tags, and check the pure functions directly.
+
+Nothing here calls GitHub or touches the repository it ships in.
+
+Run it:
+
+    python3 scripts/test_sync.py
+"""
+
+from __future__ import annotations
+
+import contextlib
+import importlib.util
+import io
+import pathlib
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+import unittest
+
+HERE = pathlib.Path(__file__).resolve().parent
+_spec = importlib.util.spec_from_file_location('sync', HERE / 'sync.py')
+sync = importlib.util.module_from_spec(_spec)
+# Dataclasses look their own module up by name while the class is built.
+sys.modules[_spec.name] = sync
+_spec.loader.exec_module(sync)
+render = sync.render
+
+OLD_BLOCK = '## Working rules\n\n- SEC-001: An older wording.\n'
+CURRENT_BLOCK = render.render_block(render.load_law(HERE.parent))
+OLD = render.region(OLD_BLOCK)
+CURRENT = render.region(CURRENT_BLOCK)
+GREEN = ([{'name': 'ci', 'status': 'completed', 'conclusion': 'success'}], {'state': 'pending', 'statuses': []})
+
+
+def make_hub(tags: bool = True) -> pathlib.Path:
+    """A throwaway hub: the real law, and two releases of the home file."""
+    root = pathlib.Path(tempfile.mkdtemp(prefix='sync-test-'))
+    shutil.copytree(HERE.parent / 'law', root / 'law')
+    (root / 'home').mkdir()
+    git = ['git', '-c', 'user.name=Test', '-c', 'user.email=test@example.com', '-c', 'commit.gpgsign=false',
+           '-c', 'tag.gpgsign=false']
+
+    def run(*args: str) -> None:
+        subprocess.run(git + list(args), cwd=root, check=True, capture_output=True)
+
+    run('init', '-q')
+    run('remote', 'add', 'origin', 'https://github.com/tannergolden/intelligence.git')
+    for block, tag in ((OLD_BLOCK, 'v0.0.1'), (CURRENT_BLOCK, 'v0.1.0')):
+        (root / 'home' / 'intelligence.md').write_text(render.region(block), encoding='utf-8')
+        run('add', '-A')
+        run('commit', '-q', '-m', tag)
+        if tags:
+            run('tag', tag)
+    return root
+
+
+class FakeGitHub(sync.GitHub):
+    """Repositories, branches, files and pull requests, in memory."""
+
+    def __init__(self) -> None:
+        super().__init__(owner='tannergolden', run=self.refuse)
+        self.listed: list[dict] = []
+        self.trees: dict[tuple[str, str], dict[str, str]] = {}
+        self.prs: dict[str, dict] = {}
+        self.check_results: dict[str, tuple[list[dict], dict]] = {}
+        self.messages: dict[str, str] = {}
+        self.writes: list[str] = []
+        self.merged: list[tuple[str, str]] = []
+
+    @staticmethod
+    def refuse(argv, stdin):  # pragma: no cover - a test that reaches gh is a broken test
+        raise AssertionError(f'the fake must never call gh: {argv}')
+
+    def add(self, name: str, files: dict[str, str] | None = None, **flags: object) -> None:
+        self.listed.append({'name': name, 'default_branch': 'Development', **flags})
+        self.trees[(name, 'Development')] = dict(files or {})
+
+    def user(self) -> dict:
+        return {'login': 'tannergolden', 'id': 24684994, 'name': 'Tanner Golden'}
+
+    def repos(self) -> list[dict]:
+        return self.listed
+
+    def tree(self, repo: str, ref: str) -> dict[str, str]:
+        return self.trees[(repo, sync.BRANCH)] if ref == f'{repo}-head' else self.trees[(repo, ref)]
+
+    def file(self, repo, path, ref):
+        text = self.tree(repo, ref).get(path)
+        return None if text is None else (text, f'sha-{len(text)}')
+
+    def head(self, repo, branch):
+        return f'{repo}-{branch}' if (repo, branch) in self.trees else None
+
+    def point_branch(self, repo, branch, sha):
+        self.writes.append(f'{repo}: point {branch}')
+        self.trees[(repo, branch)] = dict(self.trees[(repo, 'Development')])
+
+    def put(self, repo, path, text, message, branch, sha):
+        self.writes.append(f'{repo}: put {path}')
+        self.trees[(repo, branch)][path] = text
+        self.messages[repo] = message
+
+    def delete(self, repo, path, message, branch, sha):
+        self.writes.append(f'{repo}: delete {path}')
+        del self.trees[(repo, branch)][path]
+
+    def sync_pr(self, repo):
+        pr = self.prs.get(repo)
+        return pr if pr and pr['state'] == 'open' else None
+
+    def open_pr(self, repo, base, title, body):
+        self.writes.append(f'{repo}: open pr')
+        self.prs[repo] = {'number': 7, 'title': title, 'body': body, 'state': 'open', 'mergeable': True,
+                          'mergeable_state': 'clean', 'head': {'sha': f'{repo}-head'}}
+        return self.prs[repo]
+
+    def edit_pr(self, repo, number, title, body):
+        self.writes.append(f'{repo}: edit pr')
+        self.prs[repo].update(title=title, body=body)
+
+    def pr(self, repo, number):
+        return self.prs[repo]
+
+    def pr_files(self, repo, number):
+        base, head = self.trees[(repo, 'Development')], self.trees[(repo, sync.BRANCH)]
+        files = []
+        for path in sorted(set(base) | set(head)):
+            if path not in base:
+                files.append({'filename': path, 'status': 'added'})
+            elif path not in head:
+                files.append({'filename': path, 'status': 'removed'})
+            elif base[path] != head[path]:
+                files.append({'filename': path, 'status': 'modified'})
+        return files
+
+    def checks(self, repo, sha):
+        return self.check_results.get(repo, GREEN)
+
+    def commit_message(self, repo, sha):
+        return self.messages[repo]
+
+    def merge(self, repo, number, sha, title, message):
+        self.merged.append((repo, message))
+        self.prs[repo]['state'] = 'closed'
+        self.trees[(repo, 'Development')] = dict(self.trees[(repo, sync.BRANCH)])
+
+
+class SyncTestCase(unittest.TestCase):
+    def setUp(self) -> None:
+        self.hub = make_hub()
+        self.gh = FakeGitHub()
+
+    def tearDown(self) -> None:
+        shutil.rmtree(self.hub, ignore_errors=True)
+
+    def run_sync(self, *args: str) -> tuple[int, str]:
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
+            code = sync.main(list(args), gh=self.gh, root=self.hub)
+        return code, out.getvalue()
+
+    def branch(self, repo: str) -> dict[str, str]:
+        return self.gh.trees[(repo, sync.BRANCH)]
+
+
+class TestSync(SyncTestCase):
+    """`sync` opens one pull request per repository, and touches only what it must."""
+
+    def test_a_repository_with_no_agents_file_gets_one(self) -> None:
+        self.gh.add('alpha', {'README.md': '# Alpha\n'})
+        code, out = self.run_sync('sync')
+        self.assertEqual(code, 0, out)
+        self.assertIn('alpha: opened pull request #7', out)
+        agents = self.branch('alpha')['AGENTS.md']
+        self.assertIn(CURRENT, agents)
+        self.assertEqual(render.find(agents).marker, render.digest(CURRENT_BLOCK))
+        self.assertIn('## Overrides', agents)
+        self.assertIn("work in alpha: the universal rules first, then this repository''s own", agents)
+
+    def test_the_commit_follows_the_standards(self) -> None:
+        self.gh.add('alpha')
+        self.run_sync('sync')
+        title, body = self.gh.messages['alpha'].split('\n\n', 1)
+        self.assertRegex(title, r'^chore\(agents\): 🤖 sync the universal rules to [0-9a-f]{12}$')
+        self.assertTrue(body.rstrip().endswith(
+            'Signed-off-by: Tanner Golden <24684994+tannergolden@users.noreply.github.com>'))
+        prose = [line for line in body.splitlines() if not line.startswith('Signed-off-by:')]
+        self.assertTrue(all(len(line) <= 72 for line in prose), 'the body wraps at 72; trailers are exempt')
+        self.assertIsNone(re.search('[\u2013-\u2015]', self.gh.messages['alpha']))
+
+    def test_a_current_repository_is_left_alone(self) -> None:
+        self.gh.add('alpha', {'AGENTS.md': '# Alpha\n\n' + CURRENT + '\n## Commands\n'})
+        code, out = self.run_sync('sync')
+        self.assertEqual(code, 0, out)
+        self.assertIn('alpha: current', out)
+        self.assertEqual(self.gh.writes, [])
+
+    def test_an_update_replaces_only_the_block(self) -> None:
+        mine = '# Alpha\n\n' + OLD + '\n## Commands\n\n- make test\n'
+        self.gh.add('alpha', {'AGENTS.md': mine})
+        self.run_sync('sync')
+        self.assertEqual(self.branch('alpha')['AGENTS.md'], '# Alpha\n\n' + CURRENT + '\n## Commands\n\n- make test\n')
+        self.assertIn('leaves every section this repository owns', self.gh.messages['alpha'].replace('\n', ' '))
+
+    def test_a_block_goes_after_an_existing_header(self) -> None:
+        agents = ('<!--\ntitle: x\n-->\n\n<!-- markdownlint-disable MD041 -->\n<div align="center">\n\n# Alpha\n\n'
+                  '</div>\n\n---\n\n## Commands\n\n- make test\n')
+        self.gh.add('alpha', {'AGENTS.md': agents})
+        self.run_sync('sync')
+        new = self.branch('alpha')['AGENTS.md']
+        self.assertIn('</div>\n\n---\n\n' + CURRENT + '\n## Commands\n\n- make test\n', new)
+
+    def test_claude_md_is_folded_in_and_deleted(self) -> None:
+        self.gh.add('alpha', {'CLAUDE.md': '# Notes for Claude\n\n## Never name private repositories\n\nNot here.\n'})
+        self.run_sync('sync')
+        tree = self.branch('alpha')
+        self.assertNotIn('CLAUDE.md', tree)
+        self.assertIn('## Folded from CLAUDE.md\n\n### Never name private repositories\n\nNot here.', tree['AGENTS.md'])
+        self.assertLess(tree['AGENTS.md'].index('Folded from'), tree['AGENTS.md'].index('Back to Top'))
+        self.assertIn('first sync', self.gh.prs['alpha']['body'])
+
+    def test_a_claude_md_that_only_points_at_agents_md_is_just_deleted(self) -> None:
+        self.gh.add('alpha', {'AGENTS.md': '# Alpha\n\n' + CURRENT, 'CLAUDE.md': '@AGENTS.md\n'})
+        self.run_sync('sync')
+        tree = self.branch('alpha')
+        self.assertNotIn('CLAUDE.md', tree)
+        self.assertNotIn('Folded', tree['AGENTS.md'])
+
+    def test_templates_forks_archives_opt_outs_and_the_hub_are_skipped(self) -> None:
+        self.gh.add('tpl', is_template=True)
+        self.gh.add('forked', fork=True)
+        self.gh.add('old', archived=True)
+        self.gh.add('quiet', topics=['no-intelligence'])
+        self.gh.add('intelligence')
+        code, out = self.run_sync('sync')
+        self.assertEqual(code, 0, out)
+        for line in ('tpl: skipped, a template', 'forked: skipped, a fork', 'old: skipped, archived',
+                     'quiet: skipped, opted out', 'intelligence: skipped, the hub'):
+            self.assertIn(line, out)
+        self.assertEqual(self.gh.writes, [])
+
+    def test_a_dry_run_changes_nothing(self) -> None:
+        self.gh.add('alpha', {'CLAUDE.md': 'Some notes.\n'})
+        code, out = self.run_sync('sync', '--dry-run')
+        self.assertEqual(code, 0, out)
+        self.assertIn('alpha: would adopt', out)
+        self.assertEqual(self.gh.writes, [])
+
+    def test_a_second_sync_updates_the_open_pull_request(self) -> None:
+        self.gh.add('alpha', {'AGENTS.md': '# Alpha\n\n' + OLD})
+        self.run_sync('sync')
+        _code, out = self.run_sync('sync')
+        self.assertIn('alpha: updated pull request #7', out)
+        self.assertEqual(self.gh.writes.count('alpha: open pr'), 1)
+
+    def test_one_repository_can_be_chosen(self) -> None:
+        self.gh.add('alpha')
+        self.gh.add('beta')
+        self.run_sync('sync', '--repo', 'beta')
+        self.assertIn(('beta', sync.BRANCH), self.gh.trees)
+        self.assertNotIn(('alpha', sync.BRANCH), self.gh.trees)
+
+    def test_without_a_release_nothing_is_delivered(self) -> None:
+        shutil.rmtree(self.hub)
+        self.hub = make_hub(tags=False)
+        self.gh.add('alpha')
+        with self.assertRaises(SystemExit) as caught:
+            self.run_sync('sync')
+        self.assertIn('no release yet', str(caught.exception))
+
+    def test_an_unreleased_block_needs_an_explicit_ref(self) -> None:
+        shutil.rmtree(self.hub)
+        self.hub = make_hub(tags=False)
+        self.gh.add('alpha')
+        code, out = self.run_sync('sync', '--ref', 'HEAD')
+        self.assertEqual(code, 0, out)
+        self.assertIn(CURRENT, self.branch('alpha')['AGENTS.md'])
+
+
+class TestAudit(SyncTestCase):
+    """`audit` names everything that is not as the latest release left it."""
+
+    def audit(self, files: dict[str, str]) -> tuple[int, str]:
+        self.gh.add('alpha', files)
+        return self.run_sync('audit')
+
+    def test_a_current_repository_passes(self) -> None:
+        code, out = self.audit({'AGENTS.md': '# A\n\n' + CURRENT})
+        self.assertEqual(code, 0, out)
+        self.assertIn('alpha: current', out)
+
+    def test_each_problem_is_named(self) -> None:
+        cases = {
+            'no AGENTS.md': {},
+            'AGENTS.md has no block': {'AGENTS.md': '# A\n'},
+            'edited by hand': {'AGENTS.md': CURRENT.replace('Never put', 'Rarely put')},
+            'the block is from v0.0.1': {'AGENTS.md': OLD},
+            'not one the hub ever released': {'AGENTS.md': render.region('## Working rules\n\n- X: Mine.\n')},
+            'Claude Code may skip AGENTS.md': {'AGENTS.md': CURRENT, 'CLAUDE.md': '# Notes\n'},
+            'SEC-001, an Invariant': {'AGENTS.md': CURRENT + '\n## Overrides\n\n- SEC-001: we need to\n'},
+            'STD-001 without a reason': {'AGENTS.md': CURRENT + '\n## Overrides\n\n- STD-001\n'},
+        }
+        for expected, files in cases.items():
+            with self.subTest(expected=expected):
+                self.gh = FakeGitHub()
+                code, out = self.audit(files)
+                self.assertEqual(code, 1, out)
+                self.assertIn(expected, out)
+
+    def test_an_override_of_a_default_with_a_reason_is_fine(self) -> None:
+        code, out = self.audit({'AGENTS.md': CURRENT + '\n## Overrides\n\n- STD-001: this repo is the standards\n'})
+        self.assertEqual(code, 0, out)
+
+
+class TestMerge(SyncTestCase):
+    """`merge` lands only a green pull request whose diff is the block alone."""
+
+    def routine(self, **checks: object) -> None:
+        self.gh.add('alpha', {'AGENTS.md': '# Alpha\n\n' + OLD + '\n## Commands\n'})
+        self.run_sync('sync')
+        if checks:
+            self.gh.check_results['alpha'] = checks['results']
+
+    def test_a_green_block_only_change_is_merged_with_its_sign_off(self) -> None:
+        self.routine()
+        code, out = self.run_sync('merge')
+        self.assertEqual(code, 0, out)
+        self.assertIn('alpha: merged #7', out)
+        _repo, message = self.gh.merged[0]
+        self.assertIn('Signed-off-by: Tanner Golden', message)
+        self.assertIn(CURRENT, self.gh.trees[('alpha', 'Development')]['AGENTS.md'])
+
+    def test_a_first_sync_waits_for_review_by_hand(self) -> None:
+        self.gh.add('alpha', {'README.md': '# Alpha\n'})
+        self.run_sync('sync')
+        _code, out = self.run_sync('merge')
+        self.assertIn('review it by hand', out)
+        self.assertEqual(self.gh.merged, [])
+
+    def test_red_pending_and_missing_checks_all_wait(self) -> None:
+        cases = {
+            'checks failed': ([{'name': 'ci', 'status': 'completed', 'conclusion': 'failure'}], {}),
+            'still running': ([{'name': 'ci', 'status': 'in_progress'}], {}),
+            'no checks ran': ([], {'state': 'pending', 'statuses': []}),
+            'commit status is failure': ([], {'state': 'failure', 'statuses': [{'state': 'failure'}]}),
+        }
+        for expected, results in cases.items():
+            with self.subTest(expected=expected):
+                self.gh = FakeGitHub()
+                self.routine(results=results)
+                _code, out = self.run_sync('merge')
+                self.assertIn(expected, out)
+                self.assertEqual(self.gh.merged, [])
+
+    def test_a_pull_request_carrying_an_older_block_waits(self) -> None:
+        self.routine()
+        other = render.region('## Working rules\n\n- X: Y.\n')
+        self.branch('alpha')['AGENTS.md'] = '# Alpha\n\n' + other + '\n## Commands\n'
+        _code, out = self.run_sync('merge')
+        self.assertIn('older block', out)
+
+    def test_a_pull_request_that_is_not_mergeable_waits(self) -> None:
+        self.routine()
+        self.gh.prs['alpha'].update(mergeable=False, mergeable_state='dirty')
+        _code, out = self.run_sync('merge')
+        self.assertIn('not mergeable yet (dirty)', out)
+
+    def test_a_dry_run_merges_nothing(self) -> None:
+        self.routine()
+        _code, out = self.run_sync('merge', '--dry-run')
+        self.assertIn('would merge #7', out)
+        self.assertEqual(self.gh.merged, [])
+
+
+class TestTextHandling(unittest.TestCase):
+    """The pure functions that place, fold and read text."""
+
+    def test_the_block_goes_after_a_plain_title(self) -> None:
+        text = '# Alpha\n\nIntro.\n'
+        self.assertEqual(text[:sync.insert_point(text)], '# Alpha\n')
+
+    def test_the_block_goes_at_the_top_of_a_file_with_no_header(self) -> None:
+        self.assertEqual(sync.insert_point('Just notes.\n'), 0)
+
+    def test_headings_inside_code_fences_are_not_demoted(self) -> None:
+        self.assertEqual(sync.demote('## A\n```\n# not a heading\n```\n'), '### A\n```\n# not a heading\n```\n')
+
+    def test_pointers_are_recognised(self) -> None:
+        for text in ('@AGENTS.md\n', '# Claude\n\n@./AGENTS.md\n', '<!-- x -->\n@AGENTS.md'):
+            self.assertTrue(sync.is_pointer(text), text)
+        self.assertFalse(sync.is_pointer('@AGENTS.md\nAlso this.\n'))
+
+    def test_overrides_are_read_with_their_reasons(self) -> None:
+        text = '## Overrides\n\n<!-- a note -->\n- `WORK-002`: we ask more\n- STD-001\n\n## Next\n\n- SEC-001: no\n'
+        self.assertEqual(sync.overrides(text), [('WORK-002', 'we ask more'), ('STD-001', '')])
+
+    def test_only_a_change_between_the_markers_counts_as_block_only(self) -> None:
+        old = '# A\n\n' + OLD + '\nmine\n'
+        self.assertTrue(sync.only_block_changed(old, old.replace(OLD, CURRENT)))
+        self.assertFalse(sync.only_block_changed(old, old.replace('mine', 'yours')))
+        self.assertFalse(sync.only_block_changed('# A\n', '# A\n'))
+
+    def test_paginated_pages_are_joined(self) -> None:
+        self.assertEqual(sync.decode_pages('[1, 2]\n[3]\n'), [1, 2, 3])
+        self.assertEqual(sync.decode_pages('{"a": 1}'), {'a': 1})
+
+
+class TestGhCalls(unittest.TestCase):
+    """The real client's calls to `gh`, with a stand-in for the process."""
+
+    def test_a_body_goes_on_standard_input(self) -> None:
+        seen = []
+
+        def run(argv, stdin):
+            seen.append((argv, stdin))
+            return subprocess.CompletedProcess(argv, 0, '{"number": 3}', '')
+
+        gh = sync.GitHub(owner='o', run=run)
+        self.assertEqual(gh.open_pr('r', 'main', 't', 'b'), {'number': 3})
+        argv, stdin = seen[0]
+        self.assertEqual(argv[:5], ['gh', 'api', '-X', 'POST', 'repos/o/r/pulls'])
+        self.assertIn('--input', argv)
+        self.assertIn('"head": "chore/intelligence"', stdin)
+
+    def test_a_missing_file_is_none_and_other_errors_raise(self) -> None:
+        def missing(argv, stdin):
+            return subprocess.CompletedProcess(argv, 1, '', 'gh: Not Found (HTTP 404)')
+
+        def broken(argv, stdin):
+            return subprocess.CompletedProcess(argv, 1, '', 'gh: Bad credentials (HTTP 401)')
+
+        self.assertIsNone(sync.GitHub(owner='o', run=missing).file('r', 'AGENTS.md', 'main'))
+        with self.assertRaises(sync.GitHubError):
+            sync.GitHub(owner='o', run=broken).file('r', 'AGENTS.md', 'main')
+
+
+if __name__ == '__main__':
+    unittest.main(verbosity=2)
