@@ -7,12 +7,12 @@
   "why": "Agents leak secrets into commits, and hunt for other credentials after an auth error.",
   "enforced_by": [
     "gitleaks in the required secrets check, where the standards' gates run",
-    "push protection on public repositories"
+    "push protection on public repositories",
+    "the guard hook, which denies a command or a file write that carries a token"
   ],
   "to_add": [
     "gitleaks before each commit, because CI sees a secret only after it is pushed",
     "sandbox read-deny on .env, ~/.ssh and cloud credentials",
-    "no production credentials in agent sessions",
-    "a guard hook that scans tool input for tokens"
+    "no production credentials in agent sessions"
   ]
 }

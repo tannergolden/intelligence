@@ -7,11 +7,11 @@
   "why": "Stash-and-reset sequences, rollbacks and git clean have destroyed work that git could not bring back.",
   "enforced_by": [
     "Codex workspace sandbox, with .git read-only",
-    "Claude Code sandbox and auto mode classifier"
+    "Claude Code sandbox and auto mode classifier",
+    "the guard hook, which denies destructive commands, in their alternate spellings too, when there is something to lose"
   ],
   "to_add": [
     "sandboxes turned on everywhere, since Grok Build's is off by default",
-    "deletion protection the session cannot purge",
-    "a hook on destructive commands that also catches their alternate spellings"
+    "deletion protection the session cannot purge"
   ]
 }

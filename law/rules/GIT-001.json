@@ -6,10 +6,11 @@
   "text": "Author and sign off commits only as your user's git identity, never an AI's; if `git config user.email` is unset or an AI's, ask whose to use rather than guess.",
   "why": "The standards make the human contributor the author and the signer of every commit; an AI is only ever a co-author.",
   "enforced_by": [
-    "the DCO check, which requires a Signed-off-by line but only counts such lines"
+    "the DCO check, which requires a Signed-off-by line but only counts such lines",
+    "the guard hook, which denies a commit git would author or sign off as an AI"
   ],
   "to_add": [
-    "a commit-check rule that rejects AI authors, and sign-offs that differ from the author",
+    "a release of the standards carrying the commit-check rule that rejects AI authors and sign-offs that are not the author's",
     "a cloud setup step that supplies the owner's identity"
   ]
 }

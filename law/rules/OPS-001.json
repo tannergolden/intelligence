@@ -8,10 +8,10 @@
   "enforced_by": [
     "rulesets that require a pull request and block force-pushes and deletion",
     "the Claude cloud git proxy, which rejects branch deletions and tag pushes",
-    "Copilot's cloud agent, which cannot merge"
+    "Copilot's cloud agent, which cannot merge",
+    "the guard hook, which denies plain --force, pushes to a protected branch, remote deletions, tag pushes, and merging a pull request by gh, the REST API or a GitHub MCP tool"
   ],
   "to_add": [
-    "no admin bypass for agent identities, or a non-admin App identity for unattended agents",
-    "a hook that blocks plain --force, push --delete, tag pushes and gh pr merge"
+    "no admin bypass for agent identities, or a non-admin App identity for unattended agents"
   ]
 }

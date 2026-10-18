@@ -7,10 +7,11 @@
   "why": "Blocked agents retry with skip flags, another shell, another credential or an edited setting.",
   "enforced_by": [
     "Claude Code auto mode, which stops a session after repeated denials",
-    "required checks, which run on the server and cannot be skipped"
+    "required checks, which run on the server and cannot be skipped",
+    "the guard hook, which denies --no-verify, hooks switched off for one command, and edits that would remove it or its registrations"
   ],
   "to_add": [
-    "hooks that block on failure",
+    "hooks that block on failure in Codex and Antigravity, where a guard that cannot start lets the call through",
     "a ConfigChange hook",
     "agent configuration paths the agent cannot write"
   ]
