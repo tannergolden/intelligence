@@ -1,6 +1,6 @@
 <!--
 title: '🏠 HOME FILE'
-description: 'The rendered home file the home kit installs, and the hashes a consumer pins, served from every release tag.'
+description: 'The rendered home file and kit the home kit installs, and the hashes a consumer pins, served from every release tag.'
 tags: [home-kit, release, checksums, dotfiles]
 category: docs
 -->
@@ -11,7 +11,7 @@ category: docs
 
 <a name="top"></a>
 
-**What every machine downloads from a release: the rules between their markers, and the hashes to check them against.**
+**What every machine downloads from a release: the rules between their markers, the kit around them, and the hashes to check both against.**
 
 _Rendered, never written. Pinned, never trusted blind._
 
@@ -26,13 +26,19 @@ markers, exactly as `scripts/render.py` renders it from `law/`. The home kit
 copies it into each app's home folder, and the Claude cloud setup script
 writes it into a fresh session.
 
-| File              | What it is                                                             |
-| :---------------- | :--------------------------------------------------------------------- |
-| `intelligence.md` | The home file: the universal block between its `INTELLIGENCE` markers  |
-| `SHA256SUMS`      | The SHA-256 of the home file and of `scripts/install.py`, for a reader |
+`kit.json` carries every module around the rules, rendered by
+`scripts/kit.py`: the guard hook, the skills, the subagents for each app,
+and the knowledge facts between their own markers. The installer writes each
+piece where its app reads it.
 
-Both change with every render, so the file log below leaves them out and
-this table describes them instead. **Never edit anything here by hand.**
+| File              | What it is                                                                   |
+| :---------------- | :--------------------------------------------------------------------------- |
+| `intelligence.md` | The home file: the universal block between its `INTELLIGENCE` markers        |
+| `kit.json`        | The kit: the guard, the skills, the subagents and the knowledge facts        |
+| `SHA256SUMS`      | The SHA-256 of the home file, the kit and `scripts/install.py`, for a reader |
+
+All three change with every render, so the file log below leaves them out
+and this table describes them instead. **Never edit anything here by hand.**
 `make render` rewrites this folder, and `make check` fails CI when it has
 drifted from the law.
 
@@ -45,6 +51,7 @@ they were at that commit:
 
 ```text
 https://raw.githubusercontent.com/tannergolden/intelligence/<version>/home/intelligence.md
+https://raw.githubusercontent.com/tannergolden/intelligence/<version>/home/kit.json
 https://raw.githubusercontent.com/tannergolden/intelligence/<version>/scripts/install.py
 ```
 
@@ -57,7 +64,7 @@ hashes for a reader.
 
 ## 📝 File Log
 
-<!-- AUTO-INDEX:BEGIN dir=. style=log exclude=intelligence.md,SHA256SUMS -->
+<!-- AUTO-INDEX:BEGIN dir=. style=log exclude=intelligence.md,kit.json,SHA256SUMS -->
 
 | Entry                    | Purpose    |
 | :----------------------- | :--------- |
@@ -69,7 +76,7 @@ hashes for a reader.
 
 <div align="center">
 
-**One file, one hash, the same on every machine.**
+**Two files, three hashes, the same on every machine.**
 
 [↑ Back to Top](#top)
 

@@ -89,6 +89,14 @@ class Hub:
             '# Agents\n\n' + render.BEGIN.format('0' * 64) + '\n\n' + render.END + '\n\n## Commands\n',
             encoding='utf-8')
 
+    def ship_kit(self, facts: list[str] | None = None) -> None:
+        """Give this hub the guard and the facts, so it renders the kit too."""
+        (self.root / 'scripts' / 'guard.py').write_text(f'# {render.kit.OWNED}\n', encoding='utf-8')
+        (self.root / 'knowledge').mkdir(exist_ok=True)
+        (self.root / 'knowledge' / 'public.json').write_text(json.dumps({
+            'heading': 'Facts', 'intro': 'Facts, not rules.', 'budget': {'target': 400, 'cap': 800},
+            'facts': facts or ['Every repository has one maintainer.']}), encoding='utf-8')
+
     def write_block(self, block: dict) -> None:
         (self.root / 'law' / 'block.json').write_text(json.dumps(block), encoding='utf-8')
 
@@ -292,6 +300,34 @@ class TestCommandLine(HubTestCase):
         sums = (self.hub.root / 'home' / 'SHA256SUMS').read_text(encoding='utf-8').splitlines()
         self.assertEqual([line.split('  ')[1] for line in sums], ['home/intelligence.md', 'scripts/install.py'])
 
+    def test_a_hub_with_the_modules_ships_and_pins_the_kit(self) -> None:
+        self.hub.ship_kit()
+        code, out = self.hub.run('--write')
+        self.assertEqual(code, 0, out)
+        kit_text = (self.hub.root / 'home' / 'kit.json').read_text(encoding='utf-8')
+        sums = (self.hub.root / 'home' / 'SHA256SUMS').read_text(encoding='utf-8').splitlines()
+        self.assertEqual([line.split('  ')[1] for line in sums],
+                         ['home/intelligence.md', 'home/kit.json', 'scripts/install.py'])
+        self.assertIn(f'{render.digest(kit_text)}  home/kit.json', sums)
+        code, out = self.hub.run('--pins')
+        self.assertIn(f'kit_sha256={render.digest(kit_text)}', out)
+        code, out = self.hub.run('--check')
+        self.assertEqual(code, 0, out)
+        self.assertIn('kit: 0 skills, 0 subagents, 1 fact', out)
+
+    def test_a_hub_without_the_modules_pins_no_kit(self) -> None:
+        self.hub.run('--write')
+        self.assertFalse((self.hub.root / 'home' / 'kit.json').exists())
+        code, out = self.hub.run('--pins')
+        self.assertEqual(code, 0, out)
+        self.assertIn('kit_sha256=\n', out)
+
+    def test_a_broken_module_stops_the_render(self) -> None:
+        self.hub.ship_kit(facts=['No period'])
+        code, out = self.hub.run('--write')
+        self.assertEqual(code, 1, out)
+        self.assertIn('ending in a period', out)
+
     def test_changing_the_installer_makes_the_sums_stale(self) -> None:
         self.hub.run('--write')
         (self.hub.root / 'scripts' / 'install.py').write_text('# changed\n', encoding='utf-8')
@@ -346,6 +382,7 @@ class TestCloudSetup(HubTestCase):
     """`--setup` fills the cloud setup script with the pins of a release tag."""
 
     template = "VERSION='@VERSION@'\nHOME_SHA256='@HOME_SHA256@'\nINSTALL_SHA256='@INSTALL_SHA256@'\n"
+    kit_template = template + "KIT_SHA256='@KIT_SHA256@'\n"
 
     def tag(self) -> None:
         git = ['git', '-c', 'user.name=Test', '-c', 'user.email=test@example.com', '-c', 'commit.gpgsign=false',
@@ -364,6 +401,17 @@ class TestCloudSetup(HubTestCase):
         self.assertIn(f"HOME_SHA256='{render.digest(render.region(EXPECTED))}'", out)
         self.assertNotIn('@', out)
 
+    def test_the_kit_pin_comes_from_the_tag_too(self) -> None:
+        (self.hub.root / 'setup').mkdir()
+        (self.hub.root / 'setup' / 'claude-cloud-setup.sh').write_text(self.kit_template, encoding='utf-8')
+        self.hub.ship_kit()
+        self.hub.run('--write')
+        self.tag()
+        code, out = self.hub.run('--setup', 'v0.1.0')
+        self.assertEqual(code, 0, out)
+        kit_text = (self.hub.root / 'home' / 'kit.json').read_text(encoding='utf-8')
+        self.assertIn(f"KIT_SHA256='{render.digest(kit_text)}'", out)
+
     def test_a_template_without_its_placeholders_is_refused(self) -> None:
         (self.hub.root / 'setup').mkdir()
         (self.hub.root / 'setup' / 'claude-cloud-setup.sh').write_text("VERSION='v0.0.1'\n", encoding='utf-8')
@@ -374,7 +422,7 @@ class TestCloudSetup(HubTestCase):
 
     def test_the_real_template_has_every_placeholder(self) -> None:
         text = (SCRIPT.parents[1] / render.SETUP_FILE).read_text(encoding='utf-8')
-        for name in ('VERSION', 'HOME_SHA256', 'INSTALL_SHA256'):
+        for name in ('VERSION', 'HOME_SHA256', 'INSTALL_SHA256', 'KIT_SHA256'):
             self.assertIn(f"{name}='@{name}@'", text)
 
 
@@ -390,6 +438,10 @@ class TestTheRealLaw(unittest.TestCase):
 
     def test_every_copy_is_current(self) -> None:
         self.assertEqual(render.stale(self.root, render.load_law(self.root)), [])
+
+    def test_it_ships_the_kit(self) -> None:
+        self.assertTrue(render.has_kit(self.root))
+        self.assertIn(render.KIT_FILE, render.renderings(self.root, render.load_law(self.root)))
 
 
 if __name__ == '__main__':
