@@ -24,7 +24,7 @@ _It writes. The workflow proposes. You merge._
 `action.yml` runs `scripts/sync.py apply` from the hub tree GitHub downloads
 at the tag, in the calling repository's checkout, and changes the working tree
 and nothing else. Its inputs and outputs, and how the workflow uses them:
-[Repository Sync](../../docs/technical/Repository-Sync.md).
+[Repository Sync](../../../docs/technical/Repository-Sync.md).
 
 ---
 

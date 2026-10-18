@@ -131,12 +131,12 @@ jobs:
 The stub calls the hub's reusable workflow,
 [`sync.yml`](../../.github/workflows/sync.yml), at the moving major. That
 workflow checks out the repository's default branch, runs the action in
-[`actions/sync/`](../../actions/sync/README.md), which runs `sync.py apply`
-from the hub tree at the same major, and hands the result to the standards'
-open-pr action. That commits as the owner, signs off as the owner, and opens or
-updates the pull request. The stub grants exactly the two permissions the
-workflow asks for, and passes one optional secret, `BOT_ACCESS_TOKEN`, never
-every secret the repository holds.
+[`.github/actions/sync/`](../../.github/actions/sync/README.md), which runs
+`sync.py apply` from the hub tree at the same major, and hands the result to
+the standards' open-pr action. That commits as the owner, signs off as the
+owner, and opens or updates the pull request. The stub grants exactly the two
+permissions the workflow asks for, and passes one optional secret,
+`BOT_ACCESS_TOKEN`, never every secret the repository holds.
 
 The action changes the working tree and nothing else:
 

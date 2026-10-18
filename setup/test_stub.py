@@ -18,16 +18,18 @@ Run it:
 from __future__ import annotations
 
 import importlib.util
+import io
 import pathlib
 import re
 import subprocess
 import sys
+import tarfile
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 STUB = ROOT / 'setup' / 'intelligence-sync.yml'
 WORKFLOW = ROOT / '.github' / 'workflows' / 'sync.yml'
-ACTION = ROOT / 'actions' / 'sync' / 'action.yml'
+ACTION = ROOT / '.github' / 'actions' / 'sync' / 'action.yml'
 RELEASE = ROOT / '.github' / 'workflows' / 'cut-release.yml'
 GUIDE = ROOT / 'docs' / 'technical' / 'Repository-Sync.md'
 
@@ -77,12 +79,28 @@ def imported_from_hub() -> set[str]:
     return set(done.stdout.split())
 
 
+def archived() -> set[str]:
+    """Every file in the archive GitHub would serve for this tree, as it serves a remote action.
+
+    `git archive` leaves out every path `.gitattributes` marks export-ignore, and
+    `git check-attr` cannot show it: a pattern on a folder excludes the files in
+    it without matching them. So this archives the index, the tree the next
+    commit holds.
+    """
+    tree = subprocess.run(['git', 'write-tree'], cwd=ROOT, capture_output=True, text=True,
+                          check=True).stdout.strip()
+    tar = subprocess.run(['git', 'archive', '--worktree-attributes', tree], cwd=ROOT,
+                         capture_output=True, check=True).stdout
+    with tarfile.open(fileobj=io.BytesIO(tar)) as archive:
+        return {member.name for member in archive.getmembers() if member.isfile()}
+
+
 class TestTheStub(unittest.TestCase):
     """The stub, the workflow it calls and the action that calls, agreeing."""
 
     def test_the_stub_and_the_workflow_name_the_same_major(self) -> None:
         calls = r'^    uses: tannergolden/intelligence/\.github/workflows/sync\.yml@(v\d+)$'
-        runs = r'^        uses: tannergolden/intelligence/actions/sync@(v\d+)$'
+        runs = r'^        uses: tannergolden/intelligence/\.github/actions/sync@(v\d+)$'
         stub = re.search(calls, text(STUB), flags=re.M)
         action = re.search(runs, text(WORKFLOW), flags=re.M)
         self.assertIsNotNone(stub, 'the stub calls the hub workflow at a moving major')
@@ -113,18 +131,26 @@ class TestTheStub(unittest.TestCase):
 
     def test_the_action_runs_the_script_beside_it_on_the_sync_branch(self) -> None:
         action = text(ACTION)
-        self.assertIn('"${GITHUB_ACTION_PATH}/../../scripts/sync.py" "${args[@]}"', action)
+        self.assertIn('"${GITHUB_ACTION_PATH}/../../../scripts/sync.py" "${args[@]}"', action)
         self.assertIn('args=(apply ', action)
-        self.assertEqual((ACTION.parent / '..' / '..' / 'scripts' / 'sync.py').resolve(),
+        self.assertEqual((ACTION.parent / '..' / '..' / '..' / 'scripts' / 'sync.py').resolve(),
                          ROOT / 'scripts' / 'sync.py')
         self.assertIn(f'branch: {sync.BRANCH}', text(WORKFLOW))
 
     def test_a_release_carries_every_file_a_stub_resolves(self) -> None:
-        needed = {'.github/workflows/sync.yml', 'actions/sync/action.yml',
+        needed = {'.github/workflows/sync.yml', '.github/actions/sync/action.yml',
                   'setup/intelligence-sync.yml', 'home/intelligence.md', *imported_from_hub()}
         self.assertIn('scripts/kit.py', needed, 'render.py imports kit.py; the action needs both')
         self.assertLessEqual(needed, required_files())
         self.assertIn('setup/claude-cloud-setup.sh', required_files(), 'the first line counts too')
+
+    def test_the_archive_a_stub_downloads_carries_the_action_and_its_code(self) -> None:
+        # GitHub hands a calling repository the action from this hub's archive at
+        # the tag, so a file export-ignore leaves out fails every stub at once. The
+        # reusable workflow is read from the tag itself and may stay out.
+        downloaded = {ACTION.relative_to(ROOT).as_posix(), 'home/intelligence.md',
+                      *imported_from_hub()}
+        self.assertEqual(downloaded - archived(), set(), 'export-ignore leaves these out')
 
 
 if __name__ == '__main__':

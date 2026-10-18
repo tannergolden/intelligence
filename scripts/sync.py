@@ -10,8 +10,8 @@ either of two routes, and merging always stays the owner's:
   `.github/workflows/intelligence-sync.yml` pulls the hub's latest release,
   every Monday, on its own `GITHUB_TOKEN`. The stub calls
   `.github/workflows/sync.yml`, which runs `apply` in that repository's
-  checkout through `actions/sync`, and the standards' open-pr action
-  proposes the result. No App, no key, nothing in the hub that reaches
+  checkout through `.github/actions/sync`, and the standards' open-pr
+  action proposes the result. No App, no key, nothing in the hub that reaches
   another repository.
 - THE PUSH. The owner runs `sync` here under their own `gh` login, for every
   repository at once, with or without the stub.

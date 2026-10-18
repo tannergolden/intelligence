@@ -99,7 +99,7 @@ _The universal rules first, then this repository's own._
 | `evals/`           | Scenarios for every rule, the skill trigger tests, and their runner                 |
 | `probe/`           | The loader probe and the duplicate-skill canary                                     |
 | `setup/`           | The Claude cloud setup script, and the stub a repository carries                    |
-| `actions/`         | The action a repository's stub runs, through `.github/workflows/sync.yml`           |
+| `.github/actions/` | The action a repository's stub runs, through `.github/workflows/sync.yml`           |
 | `docs/technical/`  | How every part of the hub works, one document each, starting with `How-It-Works.md` |
 | `docs/operations/` | Releasing, the roadmap, and the controls and risks behind the rules                 |
 | `docs/adrs/`       | Every decision behind the plan                                                      |

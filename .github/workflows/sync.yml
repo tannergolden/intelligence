@@ -85,7 +85,7 @@ jobs:
 
       - name: "🔁 Write The Release's Block"
         id: block
-        uses: tannergolden/intelligence/actions/sync@v0
+        uses: tannergolden/intelligence/.github/actions/sync@v0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           dry-run: ${{ inputs.dry-run }}

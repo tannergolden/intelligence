@@ -5,9 +5,9 @@
 # `make agents` and the Claude cloud setup script download
 # `home/intelligence.md`, `home/kit.json` and `scripts/install.py` from the
 # tag, and check each against its SHA-256; every repository's
-# 🔁 Intelligence Sync stub runs `sync.yml` and `actions/sync` at the moving
-# `vX`, so moving it is what delivers the block to them; and `make sync`
-# delivers the block of the latest tag.
+# 🔁 Intelligence Sync stub runs `sync.yml` and `.github/actions/sync` at
+# the moving `vX`, so moving it is what delivers the block to them; and
+# `make sync` delivers the block of the latest tag.
 # A merge to the default branch reaches none of them until a release is cut.
 #
 # ADOPTED FROM THE TEMPLATE, as its note said to for a repository consumed by
@@ -59,5 +59,5 @@ jobs:
       # setup/test_stub.py keeps it whole.
       required-files: >-
         AGENTS.md home/intelligence.md home/kit.json home/SHA256SUMS scripts/install.py setup/claude-cloud-setup.sh
-        .github/workflows/sync.yml actions/sync/action.yml setup/intelligence-sync.yml scripts/sync.py scripts/render.py scripts/kit.py
+        .github/workflows/sync.yml .github/actions/sync/action.yml setup/intelligence-sync.yml scripts/sync.py scripts/render.py scripts/kit.py
       check-command: 'make check'

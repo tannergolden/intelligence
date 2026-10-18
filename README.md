@@ -86,9 +86,8 @@ and other people's repositories follow their own rules.
 | Entry                                       | Purpose                                                                                                                                                     |
 | :------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`.devcontainer/`](.devcontainer/README.md) | The language-neutral development container this repository ships, and how to give it the toolchain your project needs.                                      |
-| [`.github/`](.github/)                      | CODEOWNERS, Dependabot, release notes config, Template Sync's list, scripts and workflows - logged below                                                    |
+| [`.github/`](.github/)                      | CODEOWNERS, Dependabot, release notes config, Template Sync's list, actions, scripts and workflows - logged below                                           |
 | [`.vscode/`](.vscode/README.md)             | The VS Code settings and extension recommendations this repository shares, and why every other file in this folder stays out of git.                        |
-| [`actions/`](actions/README.md)             | The composite action that carries the hub's own code into every repository whose stub asks for it, at the hub's latest release.                             |
 | [`assets/`](assets/README.md)               | Where this project keeps what presents it: four folders to start, a name ready for every other kind, and the rules every file follows.                      |
 | [`docs/`](docs/README.md)                   | Where this project keeps its own documents, and where the engineering standards it follows actually live.                                                   |
 | [`evals/`](evals/README.md)                 | Scenarios that tempt an agent to break each universal rule, run against real apps with the block and without it, and checked by code.                       |
@@ -121,6 +120,7 @@ tables after every push:
 
 | Entry                                              | Purpose                                                                                                                             |
 | :------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------- |
+| [`actions/`](.github/actions/README.md)            | The composite action that carries the hub's own code into every repository whose stub asks for it, at the hub's latest release.     |
 | [`scripts/`](.github/scripts/README.md)            | The checks this repository runs on its own configuration, and the tests that guard them.                                            |
 | [`workflows/`](.github/workflows/README.md)        | Every workflow in this repository: the name it shows in the Actions tab, what triggers it, and what it does.                        |
 | [`CODEOWNERS`](.github/CODEOWNERS)                 | CODEOWNERS - review ownership                                                                                                       |

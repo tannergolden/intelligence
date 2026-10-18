@@ -112,7 +112,7 @@ ADR-0003's two costs are met directly:
 
 - [ADR-0003](ADR-0003-Push-Sync-&-Owner-Merge.md): the hub pushes, the owner merges, and its Option 2
 - [ADR-0017](ADR-0017-Unattended-Sync-Through-An-App.md): the App this replaces
-- [`setup/intelligence-sync.yml`](../../setup/intelligence-sync.yml), [`.github/workflows/sync.yml`](../../.github/workflows/sync.yml), [`actions/sync/`](../../actions/sync/README.md) and [`scripts/sync.py`](../../scripts/sync.py), explained in [Repository Sync](../technical/Repository-Sync.md)
+- [`setup/intelligence-sync.yml`](../../setup/intelligence-sync.yml), [`.github/workflows/sync.yml`](../../.github/workflows/sync.yml), [`.github/actions/sync/`](../../.github/actions/sync/README.md) and [`scripts/sync.py`](../../scripts/sync.py), explained in [Repository Sync](../technical/Repository-Sync.md)
 
 ### 🔗 See also
 

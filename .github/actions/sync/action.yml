@@ -15,7 +15,7 @@
 #
 # Used by .github/workflows/sync.yml, beside it in this hub:
 #
-#   - uses: tannergolden/intelligence/actions/sync@v0
+#   - uses: tannergolden/intelligence/.github/actions/sync@v0
 #     id: block
 #     with:
 #       token: ${{ secrets.GITHUB_TOKEN }}
@@ -73,4 +73,4 @@ runs:
         if [ "$DRY_RUN" = 'true' ]; then
           args+=(--dry-run)
         fi
-        python3 "${GITHUB_ACTION_PATH}/../../scripts/sync.py" "${args[@]}"
+        python3 "${GITHUB_ACTION_PATH}/../../../scripts/sync.py" "${args[@]}"

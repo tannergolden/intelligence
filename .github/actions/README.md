@@ -22,9 +22,9 @@ _Called, never copied._
 ## 💡 What This Folder Is For
 
 The composite action a repository's 🔁 Intelligence Sync stub runs, through
-the reusable workflow [`sync.yml`](../.github/workflows/sync.yml). Nothing
+the reusable workflow [`sync.yml`](../workflows/sync.yml). Nothing
 here is called directly. How it fits: [Repository
-Sync](../docs/technical/Repository-Sync.md).
+Sync](../../docs/technical/Repository-Sync.md).
 
 ---
 
