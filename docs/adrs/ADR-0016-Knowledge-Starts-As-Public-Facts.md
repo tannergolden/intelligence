@@ -1,8 +1,8 @@
 <!--
 title: '📄 ADR-0016: KNOWLEDGE STARTS AS PUBLIC FACTS'
 description: 'Knowledge begins as a short, public list of facts about how the owner''s setup works, rendered as its own marked block beside every home copy of the rules and in the cloud setup, and never personal context.'
-tags: [adr, knowledge, home-kit, privacy]
-category: docs
+type: record
+keywords: [home-kit, privacy]
 status: 'Proposed'
 date: '2026-10-18'
 evidence: 'N/A'

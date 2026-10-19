@@ -1,8 +1,8 @@
 <!--
 title: '⚖️ CONSTITUTION'
 description: 'The universal rules every AI agent follows in every repository and on every machine: written once here, rendered into the block every AGENTS.md carries.'
-tags: [constitution, rules, invariants, defaults, agents-md]
-category: docs
+type: standard
+keywords: [rules, invariants, defaults, agents-md]
 -->
 
 <div align="center">

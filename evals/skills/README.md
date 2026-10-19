@@ -1,8 +1,8 @@
 <!--
 title: '🎯 SKILL TRIGGER TESTS'
 description: 'One trigger test per skill: prompts that should load it, near misses that should not, and the tasks that judge its output.'
-tags: [evals, skills, triggers, descriptions]
-category: docs
+type: index
+keywords: [evals, skills, triggers, descriptions]
 -->
 
 <div align="center">

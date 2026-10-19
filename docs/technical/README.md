@@ -1,8 +1,8 @@
 <!--
 title: '🔧 TECHNICAL'
 description: 'How every part of the hub works, one document each: the home kit, repository sync, cloud setup, skills and subagents, knowledge, the loader probe and evals.'
-tags: [docs, technical, architecture]
-category: docs
+type: index
+keywords: [docs, architecture]
 -->
 
 <div align="center">

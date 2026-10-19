@@ -64,6 +64,11 @@ go.sum             linguist-generated=true -diff
 .github/template-sync.lock  linguist-generated=true
 .github/template-parity.lock  linguist-generated=true
 
+# The home file is rendered from CONSTITUTION.md by `make render`, and
+# `make lint` checks it against its source: it is the renderer's, never a
+# document written by hand.
+home/intelligence.md  linguist-generated=true
+
 # Vendored dependencies are somebody else's code.
 vendor/**       linguist-vendored=true
 third_party/**  linguist-vendored=true

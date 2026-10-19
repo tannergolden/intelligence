@@ -1,8 +1,8 @@
 <!--
 title: '📄 ADR-0014: ONE SKILL, THE ONE THAT BUILDS SKILLS'
 description: 'The hub ships exactly one skill for now, building-skills, which teaches an agent to decide whether a need is a skill at all and to build, test and ship one in the format every app accepts.'
-tags: [adr, skills, agent-skills, procedures]
-category: docs
+type: record
+keywords: [agent-skills, procedures]
 status: 'Superseded'
 date: '2026-10-18'
 evidence: 'N/A'

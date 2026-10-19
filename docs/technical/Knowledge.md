@@ -1,8 +1,8 @@
 <!--
 title: '📚 KNOWLEDGE'
 description: 'The public facts about tannergolden''s setup that the home kit installs beside the rules, where they land, and what may go in: facts, never rules, and never personal context.'
-tags: [knowledge, facts, home-kit, privacy]
-category: docs
+type: guide
+keywords: [facts, home-kit, privacy]
 -->
 
 <div align="center">

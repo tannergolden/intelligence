@@ -1,8 +1,8 @@
 <!--
 title: '🧰 SKILLS'
 description: 'The skills the home kit installs into every AI coding app, each a folder in the open Agent Skills format.'
-tags: [skills, agent-skills, home-kit, procedures]
-category: docs
+type: index
+keywords: [agent-skills, home-kit, procedures]
 -->
 
 <div align="center">

@@ -1,8 +1,8 @@
 <!--
 title: '🚀 RELEASING'
 description: 'Every step from a green Development to the rules on every machine and in every repository: cutting the tag, pinning it, the cloud setup script, and the sync.'
-tags: [release, versioning, pins, sync]
-category: docs
+type: guide
+keywords: [release, versioning, pins, sync]
 -->
 
 <div align="center">

@@ -242,8 +242,8 @@ def skeleton(repo: str, region: str) -> str:
     return f"""<!--
 title: '🤖 Agent Instructions'
 description: 'How AI coding agents work in {name}: the universal rules first, then this repository''s own.'
-tags: [agents-md, ai-agents, instructions, standards]
-category: docs
+type: standard
+keywords: [agents-md, ai-agents]
 -->
 
 <!-- markdownlint-disable MD041 -->

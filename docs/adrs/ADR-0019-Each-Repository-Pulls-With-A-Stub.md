@@ -1,8 +1,8 @@
 <!--
 title: '📄 ADR-0019: EACH REPOSITORY PULLS WITH A STUB'
 description: 'A repository that wants the rules carries a small workflow stub that pulls each release on its own GITHUB_TOKEN and proposes it as one pull request; no GitHub App, no key, and merging stays the owner''s.'
-tags: [adr, sync, github-actions, workflow-stub]
-category: docs
+type: record
+keywords: [sync, github-actions, workflow-stub]
 status: 'Proposed'
 date: '2026-10-18'
 evidence: 'N/A'

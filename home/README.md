@@ -1,8 +1,8 @@
 <!--
 title: '🏠 HOME FILE'
 description: 'The rendered home file and kit the home kit installs, and the hashes a consumer pins, served from every release tag.'
-tags: [home-kit, release, checksums, dotfiles]
-category: docs
+type: index
+keywords: [home-kit, release, checksums, dotfiles]
 -->
 
 <div align="center">

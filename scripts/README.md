@@ -1,8 +1,8 @@
 <!--
 title: '🔧 HUB SCRIPTS'
 description: 'The scripts that render the Constitution and the kit, install them on a machine, guard every tool call, and deliver the rules to every repository, with their tests.'
-tags: [scripts, render, home-kit, sync]
-category: docs
+type: index
+keywords: [render, home-kit, sync]
 -->
 
 <div align="center">

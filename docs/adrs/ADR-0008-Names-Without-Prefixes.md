@@ -1,8 +1,8 @@
 <!--
 title: '📄 ADR-0008: NAMES WITHOUT PREFIXES'
 description: 'Rule IDs take the form DOMAIN-NNN and every file and skill is named for what it does, with no owner prefix on either.'
-tags: [adr, naming, rule-ids, conventions]
-category: docs
+type: record
+keywords: [naming, rule-ids, conventions]
 status: 'Proposed'
 date: '2026-10-17'
 evidence: 'N/A'

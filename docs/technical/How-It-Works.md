@@ -1,8 +1,8 @@
 <!--
 title: '🧠 HOW IT WORKS'
 description: 'How one set of rules reaches every AI coding agent: the two pieces, the block every copy carries, which copy wins, and where each module fits.'
-tags: [ai-agents, agents-md, architecture, precedence]
-category: docs
+type: guide
+keywords: [ai-agents, agents-md, architecture, precedence]
 -->
 
 <div align="center">

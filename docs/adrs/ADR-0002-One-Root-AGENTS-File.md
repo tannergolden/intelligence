@@ -1,8 +1,8 @@
 <!--
 title: '📄 ADR-0002: ONE ROOT AGENTS FILE PER REPOSITORY'
 description: 'Each repository carries exactly one AGENTS.md, at its root, holding the managed block and the sections the repository owns, with no CLAUDE.md or per-tool files.'
-tags: [adr, agents-md, repository, instructions]
-category: docs
+type: record
+keywords: [agents-md, instructions]
 status: 'Proposed'
 date: '2026-10-17'
 evidence: 'N/A'

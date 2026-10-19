@@ -1,8 +1,8 @@
 <!--
 title: '📏 EVALS'
 description: 'How each universal rule is measured: scenarios that tempt an agent to break it, run against real apps with the block and without it, and checked by code.'
-tags: [evals, rules, scenarios, skills]
-category: docs
+type: guide
+keywords: [rules, scenarios, skills]
 -->
 
 <div align="center">

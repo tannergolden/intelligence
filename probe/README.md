@@ -1,8 +1,8 @@
 <!--
 title: '🧪 LOADER PROBE'
 description: 'Proves, on the machine that runs it, which instruction files each AI coding app actually loads.'
-tags: [ai-agents, agents-md, probe, testing]
-category: docs
+type: index
+keywords: [ai-agents, agents-md, testing]
 -->
 
 <!-- markdownlint-disable MD041 -->

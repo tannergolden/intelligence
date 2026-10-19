@@ -1,8 +1,8 @@
 <!--
 title: '📄 ADR-0020: ONE CONSTITUTION, AND NO COPY IN THE HUB'
 description: 'The universal rules live in one Markdown file, CONSTITUTION.md at the hub''s root, which the renderer reads into the block every AGENTS.md carries; the hub keeps no AGENTS.md of its own, and the rule set takes in the universal rules of the knowledge vault.'
-tags: [adr, constitution, rules, agents-md]
-category: docs
+type: record
+keywords: [rules, agents-md]
 status: 'Proposed'
 date: '2026-10-19'
 evidence: 'N/A'

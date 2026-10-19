@@ -1,8 +1,8 @@
 <!--
 title: '🧪 EVALS'
 description: 'Scenarios that tempt an agent to break each universal rule, run against real apps with the block and without it, and checked by code.'
-tags: [evals, rules, measurement, scenarios]
-category: docs
+type: index
+keywords: [rules, measurement, scenarios]
 -->
 
 <div align="center">

@@ -1,8 +1,8 @@
 <!--
 title: '🧰 SETUP'
 description: 'What you copy out of the hub once: the setup script for every Claude Code cloud session, and the stub that keeps a repository''s rules current.'
-tags: [claude-code, cloud, setup-script, home-kit, github-actions, sync]
-category: docs
+type: index
+keywords: [claude-code, cloud, setup-script, home-kit, github-actions, sync]
 -->
 
 <div align="center">

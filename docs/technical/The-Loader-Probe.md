@@ -1,8 +1,8 @@
 <!--
 title: '🧪 THE LOADER PROBE'
 description: 'How the hub proves, on the machine that runs it, which instruction files each AI coding app actually loads, what it touches, and the results so far.'
-tags: [probe, loaders, agents-md, phase-0]
-category: docs
+type: guide
+keywords: [loaders, agents-md, phase-0]
 -->
 
 <div align="center">

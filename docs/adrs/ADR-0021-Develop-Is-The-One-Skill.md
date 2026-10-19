@@ -1,8 +1,8 @@
 <!--
 title: '📄 ADR-0021: DEVELOP IS THE ONE SKILL'
 description: 'The hub''s one universal skill is develop, the skill and agent factory from the knowledge vault, made to work in any repository with its Development team and its validator inside its own folder; it replaces building-skills and takes in its decision table and format rules.'
-tags: [adr, skills, develop, agent-skills]
-category: docs
+type: record
+keywords: [skills, agent-skills]
 status: 'Proposed'
 date: '2026-10-19'
 evidence: 'N/A'

@@ -1,8 +1,8 @@
 <!--
 title: '📄 ADR-0011: THE UNIVERSAL RULE SET'
 description: 'The block holds nineteen rules, eleven Invariants and three Defaults for every repository and five Defaults for the owner''s repositories, each one sentence with a reason and an enforcer.'
-tags: [adr, rules, invariants, defaults]
-category: docs
+type: record
+keywords: [rules, invariants, defaults]
 status: 'Proposed'
 date: '2026-10-17'
 evidence: 'N/A'

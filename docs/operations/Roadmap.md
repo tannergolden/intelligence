@@ -1,8 +1,8 @@
 <!--
 title: '🗺️ ROADMAP'
 description: 'Each phase of the plan and each module held back until after 1.0: what it delivers, what finishes it, and where it stands.'
-tags: [roadmap, phases, modules, status]
-category: docs
+type: record
+keywords: [phases, modules, status]
 -->
 
 <div align="center">

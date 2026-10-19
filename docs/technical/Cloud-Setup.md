@@ -1,8 +1,8 @@
 <!--
 title: '☁️ CLOUD SETUP'
 description: 'The setup script that installs the universal rules and the kit into every Claude Code cloud session, pinned to one release and unable to fail the session.'
-tags: [claude-code, cloud, setup-script, home-kit]
-category: docs
+type: guide
+keywords: [claude-code, setup-script, home-kit]
 -->
 
 <div align="center">

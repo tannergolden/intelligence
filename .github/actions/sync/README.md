@@ -1,8 +1,8 @@
 <!--
 title: '🔁 INTELLIGENCE SYNC ACTION'
 description: 'Writes the universal rules of the release it is called at into the calling repository''s AGENTS.md, for 🔁 Intelligence Sync to propose as a pull request.'
-tags: [github-actions, composite-action, sync, agents-md]
-category: docs
+type: index
+keywords: [github-actions, composite-action, agents-md]
 -->
 
 <div align="center">

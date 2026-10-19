@@ -1,8 +1,8 @@
 <!--
 title: '📄 ADR-0004: PRECEDENCE, OVERRIDES & HASH MARKER'
 description: 'Invariants from every copy of the rules apply and nothing waives one, Defaults yield to the user''s request and then to an Overrides entry by rule ID, and the managed block is marked with a hash of its content.'
-tags: [adr, precedence, instructions, versioning]
-category: docs
+type: record
+keywords: [instructions, versioning]
 status: 'Proposed'
 date: '2026-10-17'
 evidence: 'N/A'

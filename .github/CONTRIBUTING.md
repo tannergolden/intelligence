@@ -1,8 +1,8 @@
 <!--
 title: '🤝 CONTRIBUTING'
 description: 'How to work in the intelligence hub, for people and AI agents alike: its commands, what done means, its conventions, where things live and what to ask first.'
-tags: [contributing, agents, commands, conventions]
-category: docs
+type: guide
+keywords: [agents, commands, conventions]
 -->
 
 <div align="center">

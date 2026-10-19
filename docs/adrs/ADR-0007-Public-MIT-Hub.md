@@ -1,8 +1,8 @@
 <!--
 title: '📄 ADR-0007: PUBLIC MIT HUB'
 description: 'The hub is a public repository under the MIT License, with every seeded document footer to match, because consumers fetch its releases without credentials.'
-tags: [adr, licensing, visibility, open-source]
-category: docs
+type: record
+keywords: [licensing, visibility, open-source]
 status: 'Proposed'
 date: '2026-10-17'
 evidence: 'N/A'

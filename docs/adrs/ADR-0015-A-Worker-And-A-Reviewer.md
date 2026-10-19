@@ -1,8 +1,8 @@
 <!--
 title: '📄 ADR-0015: A WORKER AND A REVIEWER'
 description: 'The agent hierarchy begins with two subagents, a Worker that makes one change and proves it and a Reviewer that checks a change without editing it, rendered for Claude Code, Copilot and Codex.'
-tags: [adr, subagents, hierarchy, review]
-category: docs
+type: record
+keywords: [subagents, hierarchy, review]
 status: 'Proposed'
 date: '2026-10-18'
 evidence: 'N/A'

@@ -1,8 +1,8 @@
 <!--
 title: '🛠️ OPERATIONS'
 description: 'What you do to ship the rules, where each phase stands, and what can still go wrong once every control is on.'
-tags: [docs, operations, release, risk]
-category: docs
+type: index
+keywords: [docs, release, risk]
 -->
 
 <div align="center">
