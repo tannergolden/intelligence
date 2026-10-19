@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Tests for the law renderer.
+"""Tests for the Constitution renderer.
 
 WHY THIS EXISTS. `render.py` is the only writer of the block every agent
 reads, in every repository and on every machine. A rule it drops, reorders
 or mangles reaches all of them at the next release, and a hash it computes
 differently breaks every audit and every installed copy. These pin its
-exact output against a small law written here, and hold the real law in
-`law/` to the plan's rules.
+exact output against a small Constitution written here, and hold the real
+`CONSTITUTION.md` to its own Article VI.
 
 Nothing here writes to the repository it ships in.
 
@@ -35,26 +35,24 @@ render = importlib.util.module_from_spec(_spec)
 sys.modules[_spec.name] = render
 _spec.loader.exec_module(render)
 
-RULES = {
-    'SEC-001': ('invariant', 'every', 'Never put a credential in a file.', ['gitleaks'], []),
-    'OPS-001': ('invariant', 'every', 'Never force-push.', [], ['a guard hook']),
-    'WORK-001': ('default', 'every', 'Change only what the task needs.', [], []),
-    'GIT-010': ('default', 'owner', 'Name branches by intent.', ['semantic-pr.yml'], []),
-}
-
-BLOCK = {
-    'heading': 'Working rules',
+SPEC = {
+    'heading': 'Constitution',
+    'source': 'From CONSTITUTION.md, which gives the reasons.',
     'precedence': ['Invariants: follow every one.', 'Defaults: your user wins.'],
-    'sections': [
-        {'title': 'Invariants', 'kind': 'invariant', 'reach': 'every', 'rules': ['SEC-001', 'OPS-001']},
-        {'title': 'Defaults', 'kind': 'default', 'reach': 'every', 'rules': ['WORK-001']},
-        {'title': 'Owner-only Defaults', 'kind': 'default', 'reach': 'owner', 'rules': ['GIT-010']},
-    ],
-    'budget': {'target': 200, 'cap': 4000},
+    'sections': {
+        'Invariants': [('SEC-001', 'Never put a credential in a file.', ['gitleaks'], []),
+                       ('OPS-001', 'Never force-push.', [], ['a guard hook'])],
+        'Defaults': [('WORK-001', 'Change only what the task needs.', [], [])],
+        'Owner-only Defaults': [('GIT-010', 'Name branches by intent.', ['semantic-pr.yml'], [])],
+    },
+    'target': '200 characters',
+    'cap': '4000 characters',
     'retired': {'OPS-002': 'Left to CI.'},
 }
 
-EXPECTED = """## Working rules
+EXPECTED = """## Constitution
+
+From CONSTITUTION.md, which gives the reasons.
 
 - Invariants: follow every one.
 - Defaults: your user wins.
@@ -74,20 +72,43 @@ EXPECTED = """## Working rules
 """
 
 
-class Hub:
-    """A throwaway copy of the hub's layout with the small law above."""
+def copy(spec: dict) -> dict:
+    return json.loads(json.dumps(spec))
 
-    def __init__(self, block: dict | None = None, rules: dict | None = None) -> None:
+
+def markdown(spec: dict) -> str:
+    """A CONSTITUTION.md laid out as Article VI describes, from a small spec."""
+    lines = ['<!--', "title: 'Constitution'", '-->', '', '# Constitution', '', '## What This Is', '',
+             'Prose, ignored.', '', '---', '', '## Article I: Precedence', '', 'Quoted into the block:', '']
+    lines += [f'> - {line}' for line in spec['precedence']]
+    number = 1
+    for title, rules in spec['sections'].items():
+        number += 1
+        lines += ['', '---', '', f'## Article {render.NUMERALS[number - 1]}: {title}', '', 'Prose, ignored.']
+        for rid, text, today, add in rules:
+            lines += ['', f'### {rid}', '', f'> {text}', '', '**Why.** Because.']
+            for label, items in (('Enforced by:', today), ('To add:', add)):
+                if items:
+                    lines += ['', f'**{label}**', ''] + [f'- {item}' for item in items]
+    number += 1
+    lines += ['', '---', '', f'## Article {render.NUMERALS[number - 1]}: The Block', '',
+              f"- **Heading:** {spec['heading']}"]
+    if spec.get('source'):
+        lines.append(f"- **Source:** {spec['source']}")
+    lines += [f"- **Target:** {spec['target']}", f"- **Cap:** {spec['cap']}", '',
+              '---', '', '## Appendix: Retired Rules', '', '| ID | Where it went |', '| :- | :- |']
+    lines += [f'| {rid} | {where} |' for rid, where in spec['retired'].items()]
+    return '\n'.join(lines + ['', '---', '', 'Footer.', ''])
+
+
+class Hub:
+    """A throwaway copy of the hub's layout with the small Constitution above."""
+
+    def __init__(self, spec: dict | None = None) -> None:
         self.root = pathlib.Path(tempfile.mkdtemp(prefix='render-test-'))
-        (self.root / 'law' / 'rules').mkdir(parents=True)
         (self.root / 'scripts').mkdir()
         (self.root / 'scripts' / 'install.py').write_text('# installer\n', encoding='utf-8')
-        self.write_block(block or BLOCK)
-        for rid, (kind, reach, text, today, add) in (rules or RULES).items():
-            self.write_rule(rid, kind=kind, reach=reach, text=text, enforced_by=today, to_add=add)
-        (self.root / 'AGENTS.md').write_text(
-            '# Agents\n\n' + render.BEGIN.format('0' * 64) + '\n\n' + render.END + '\n\n## Commands\n',
-            encoding='utf-8')
+        self.write(spec or SPEC)
 
     def ship_kit(self, facts: list[str] | None = None) -> None:
         """Give this hub the guard and the facts, so it renders the kit too."""
@@ -97,19 +118,17 @@ class Hub:
             'heading': 'Facts', 'intro': 'Facts, not rules.', 'budget': {'target': 400, 'cap': 800},
             'facts': facts or ['Every repository has one maintainer.']}), encoding='utf-8')
 
-    def write_block(self, block: dict) -> None:
-        (self.root / 'law' / 'block.json').write_text(json.dumps(block), encoding='utf-8')
+    def write(self, spec: dict) -> None:
+        self.write_text(markdown(spec))
 
-    def write_rule(self, rid: str, name: str | None = None, **fields: object) -> None:
-        data = {'id': rid, 'kind': 'default', 'reach': 'every', 'text': 'Do it.', 'why': 'Because.',
-                'enforced_by': [], 'to_add': []}
-        data.update(fields)
-        rule = render.Rule(rid, data['kind'], data['reach'], '', '', (), ())
-        data.setdefault('//', rule.expected_note)
-        (self.root / 'law' / 'rules' / f'{name or rid}.json').write_text(json.dumps(data), encoding='utf-8')
+    def write_text(self, text: str) -> None:
+        (self.root / 'CONSTITUTION.md').write_text(text, encoding='utf-8')
 
-    def law(self):
-        return render.load_law(self.root)
+    def text(self) -> str:
+        return (self.root / 'CONSTITUTION.md').read_text(encoding='utf-8')
+
+    def constitution(self):
+        return render.load_constitution(self.root)
 
     def run(self, *args: str) -> tuple[int, str]:
         out = io.StringIO()
@@ -128,15 +147,24 @@ class HubTestCase(unittest.TestCase):
     def tearDown(self) -> None:
         self.hub.cleanup()
 
+    def with_rule(self, section: str, rule: tuple) -> None:
+        spec = copy(SPEC)
+        spec['sections'][section].append(list(rule))
+        self.hub.write(spec)
+
+    def assertProblem(self, fragment: str) -> None:
+        found = render.problems(self.hub.constitution())
+        self.assertTrue(any(fragment in line for line in found), found)
+
 
 class TestRendering(HubTestCase):
     """The exact bytes of the block."""
 
     def test_the_block_renders_exactly(self) -> None:
-        self.assertEqual(render.render_block(self.hub.law()), EXPECTED)
+        self.assertEqual(render.render_block(self.hub.constitution()), EXPECTED)
 
     def test_the_marker_carries_the_hash_of_the_block(self) -> None:
-        block = render.render_block(self.hub.law())
+        block = render.render_block(self.hub.constitution())
         region = render.region(block)
         self.assertTrue(region.startswith(render.BEGIN.format(render.digest(block)) + '\n\n'))
         self.assertTrue(region.endswith('\n' + render.END + '\n'))
@@ -147,89 +175,143 @@ class TestRendering(HubTestCase):
     def test_size_ignores_the_final_newline(self) -> None:
         self.assertEqual(render.size('abc\n'), 3)
 
+    def test_a_block_with_no_source_line_starts_at_the_precedence(self) -> None:
+        spec = copy(SPEC)
+        spec['source'] = ''
+        self.hub.write(spec)
+        self.assertEqual(render.render_block(self.hub.constitution()),
+                         EXPECTED.replace('From CONSTITUTION.md, which gives the reasons.\n\n', ''))
 
-class TestLawRules(HubTestCase):
-    """Every way a law can break the plan, each caught with a sentence."""
 
-    def assertProblem(self, fragment: str) -> None:
-        found = render.problems(self.hub.law())
-        self.assertTrue(any(fragment in line for line in found), found)
+class TestReading(HubTestCase):
+    """How the Markdown is read: what counts, and what is left out."""
 
-    def test_the_small_law_is_sound(self) -> None:
-        self.assertEqual(render.problems(self.hub.law()), [])
+    def test_every_part_is_read(self) -> None:
+        constitution = self.hub.constitution()
+        self.assertEqual(constitution.heading, 'Constitution')
+        self.assertEqual(constitution.precedence, ('Invariants: follow every one.', 'Defaults: your user wins.'))
+        self.assertEqual([s.title for s in constitution.sections], ['Invariants', 'Defaults', 'Owner-only Defaults'])
+        self.assertEqual((constitution.target, constitution.cap), (200, 4000))
+        self.assertEqual(constitution.retired, {'OPS-002': 'Left to CI.'})
+        rule = constitution.rules['SEC-001']
+        self.assertEqual((rule.kind, rule.reach, rule.why, rule.enforced_by), ('invariant', 'every', 'Because.',
+                                                                               ('gitleaks',)))
+        self.assertEqual(constitution.rules['GIT-010'].reach, 'owner')
+
+    def test_a_wrapped_quote_and_list_item_are_joined(self) -> None:
+        self.hub.write_text(self.hub.text().replace('> Never force-push.', '> Never\n> force-push.')
+                            .replace('- a guard hook', '- a guard\n  hook'))
+        rule = self.hub.constitution().rules['OPS-001']
+        self.assertEqual((rule.text, rule.to_add), ('Never force-push.', ('a guard hook',)))
+
+    def test_a_wrapped_why_is_joined(self) -> None:
+        self.hub.write_text(self.hub.text().replace('**Why.** Because.\n\n**Enforced by:**',
+                                                    '**Why.** Because\nit matters.\n\n**Enforced by:**', 1))
+        self.assertEqual(self.hub.constitution().rules['SEC-001'].why, 'Because it matters.')
+
+    def test_windows_line_endings_read_the_same(self) -> None:
+        self.hub.write_text(self.hub.text().replace('\n', '\r\n'))
+        self.assertEqual(render.render_block(self.hub.constitution()), EXPECTED)
+        self.assertEqual(render.problems(self.hub.constitution()), [])
+
+    def test_a_heading_inside_a_code_block_is_not_a_rule(self) -> None:
+        self.hub.write_text(self.hub.text().replace('Prose, ignored.\n\n### OPS-001',
+                                                    'Prose, ignored.\n\n```text\n### SEC-009\n> Not a rule.\n```'
+                                                    '\n\n### OPS-001'))
+        self.assertNotIn('SEC-009', self.hub.constitution().rules)
+        self.assertEqual(render.problems(self.hub.constitution()), [])
+
+    def test_a_budget_may_carry_thousands_separators(self) -> None:
+        spec = copy(SPEC)
+        spec['cap'] = '4,000 characters'
+        self.hub.write(spec)
+        self.assertEqual(self.hub.constitution().cap, 4000)
+
+    def test_a_missing_part_stops_the_read(self) -> None:
+        for old, new in (('## Article I: Precedence', '## Article I: Order'),
+                         ('## Article III: Defaults', '## Article III: Suggestions'),
+                         ('- **Cap:** 4000 characters', ''),
+                         ('- **Target:** 200 characters', '- **Target:** about two hundred')):
+            with self.subTest(old=old):
+                self.hub.write_text(markdown(SPEC).replace(old, new))
+                with self.assertRaises(render.ConstitutionError):
+                    self.hub.constitution()
+
+    def test_no_file_stops_the_read(self) -> None:
+        (self.hub.root / 'CONSTITUTION.md').unlink()
+        with self.assertRaises(render.ConstitutionError):
+            self.hub.constitution()
+
+
+class TestConstitutionRules(HubTestCase):
+    """Every way the file can break its own Article VI, each caught with a sentence."""
+
+    def test_the_small_constitution_is_sound(self) -> None:
+        self.assertEqual(render.problems(self.hub.constitution()), [])
 
     def test_a_bad_id(self) -> None:
-        self.hub.write_rule('sec-1', reach='every')
-        block = json.loads(json.dumps(BLOCK))
-        block['sections'][1]['rules'].append('sec-1')
-        self.hub.write_block(block)
+        self.with_rule('Defaults', ('sec-1', 'Do it.', [], []))
         self.assertProblem('not DOMAIN-NNN')
 
-    def test_a_rule_file_must_be_named_for_its_id(self) -> None:
-        self.hub.write_rule('SEC-009', name='SEC-008')
-        with self.assertRaises(render.LawError):
-            self.hub.law()
-
     def test_a_retired_id_is_never_reused(self) -> None:
-        self.hub.write_rule('OPS-002')
-        block = json.loads(json.dumps(BLOCK))
-        block['sections'][1]['rules'].append('OPS-002')
-        self.hub.write_block(block)
+        self.with_rule('Defaults', ('OPS-002', 'Do it.', [], []))
         self.assertProblem('retired')
 
-    def test_a_rule_no_section_lists(self) -> None:
-        self.hub.write_rule('WORK-009')
-        self.assertProblem('no section of law/block.json lists it')
+    def test_an_id_appears_once(self) -> None:
+        self.with_rule('Defaults', ('SEC-001', 'Do it.', [], []))
+        self.assertProblem('SEC-001 appears 2 times')
 
-    def test_a_listed_rule_with_no_file(self) -> None:
-        block = json.loads(json.dumps(BLOCK))
-        block['sections'][1]['rules'].append('WORK-404')
-        self.hub.write_block(block)
-        self.assertProblem('has no rule file')
+    def test_a_rule_outside_an_article_of_the_block(self) -> None:
+        self.hub.write_text(self.hub.text().replace('## Appendix: Retired Rules',
+                                                    '### WORK-009\n\n> Stray.\n\n## Appendix: Retired Rules'))
+        self.assertProblem('WORK-009 sits under')
 
-    def test_a_rule_listed_twice(self) -> None:
-        block = json.loads(json.dumps(BLOCK))
-        block['sections'][1]['rules'].append('WORK-001')
-        self.hub.write_block(block)
-        self.assertProblem('listed 2 times')
-
-    def test_a_rule_in_the_wrong_section(self) -> None:
-        block = json.loads(json.dumps(BLOCK))
-        block['sections'][0]['rules'].append('WORK-001')
-        block['sections'][1]['rules'].remove('WORK-001')
-        self.hub.write_block(block)
-        self.assertProblem('sits in "Invariants"')
-
-    def test_an_invariant_reaches_every_repository(self) -> None:
-        self.hub.write_rule('SEC-001', kind='invariant', reach='owner', enforced_by=['x'])
-        self.assertProblem('its reach is every')
+    def test_articles_are_numbered_in_order(self) -> None:
+        self.hub.write_text(self.hub.text().replace('## Article III: Defaults', '## Article VII: Defaults'))
+        self.assertProblem('should be numbered III')
 
     def test_an_invariant_names_an_enforcer(self) -> None:
-        self.hub.write_rule('SEC-001', kind='invariant', reach='every')
+        self.with_rule('Invariants', ('SEC-009', 'Never do it.', [], []))
         self.assertProblem('names its enforcer')
 
     def test_hidden_and_non_ascii_characters_are_refused(self) -> None:
-        for text in ('Never\u200b do it.', 'Never \u2014 do it.', 'Two\nlines.'):
+        for text in ('Never\u200b do it.', 'Never \u2014 do it.'):
             with self.subTest(text=repr(text)):
-                self.hub.write_rule('WORK-001', text=text)
+                self.with_rule('Defaults', ('WORK-009', text, [], []))
                 self.assertProblem('printable ASCII')
 
     def test_a_rule_is_a_sentence(self) -> None:
-        self.hub.write_rule('WORK-001', text='No period')
+        self.with_rule('Defaults', ('WORK-009', 'No period', [], []))
         self.assertProblem('ending in a period')
 
+    def test_a_rule_is_short(self) -> None:
+        self.with_rule('Defaults', ('WORK-009', 'A' * 300 + '.', [], []))
+        self.assertProblem('(limit 300)')
+
     def test_a_rule_says_why(self) -> None:
-        self.hub.write_rule('WORK-001', why=' ')
+        self.hub.write_text(self.hub.text().replace('**Why.** Because.\n\n**Enforced by:**', '**Enforced by:**', 1))
         self.assertProblem('say why')
 
-    def test_the_folder_log_line_matches_the_rule(self) -> None:
-        self.hub.write_rule('WORK-001', **{'//': 'WORK-001: an Invariant for every repository.'})
-        self.assertProblem('should read "WORK-001: a Default for every repository."')
+    def test_a_rule_needs_its_quote(self) -> None:
+        self.hub.write_text(self.hub.text().replace('> Never put a credential in a file.\n\n', '', 1))
+        self.assertProblem('is a > quote right under the heading')
+
+    def test_a_rule_quotes_once(self) -> None:
+        self.hub.write_text(self.hub.text().replace('**Why.** Because.', '**Why.** Because.\n\n> Again.', 1))
+        self.assertProblem('quotes more than once')
+
+    def test_an_unknown_field(self) -> None:
+        self.hub.write_text(self.hub.text().replace('**Why.** Because.', '**Why.** Because.\n\n**Owner:** me', 1))
+        self.assertProblem('which is not **Why.**')
+
+    def test_text_outside_the_fields(self) -> None:
+        self.hub.write_text(self.hub.text().replace('- gitleaks', '- gitleaks\n\nA stray paragraph.', 1))
+        self.assertProblem('text outside its quote and fields')
 
     def test_the_block_fits_its_cap(self) -> None:
-        block = json.loads(json.dumps(BLOCK))
-        block['budget']['cap'] = 100
-        self.hub.write_block(block)
+        spec = copy(SPEC)
+        spec['cap'] = '100 characters'
+        self.hub.write(spec)
         self.assertProblem('over its cap of 100')
 
 
@@ -278,17 +360,14 @@ class TestCommandLine(HubTestCase):
         self.assertIn('stale', out)
         code, out = self.hub.run('--write')
         self.assertEqual(code, 0, out)
-        self.assertIn('wrote AGENTS.md', out)
+        self.assertIn('wrote home/intelligence.md', out)
         code, out = self.hub.run('--check')
         self.assertEqual(code, 0, out)
         self.assertIn('over its target of 200', out)
 
-    def test_write_keeps_the_owner_sections(self) -> None:
+    def test_the_hub_keeps_no_agents_file(self) -> None:
         self.hub.run('--write')
-        agents = (self.hub.root / 'AGENTS.md').read_text(encoding='utf-8')
-        self.assertTrue(agents.startswith('# Agents\n\n'))
-        self.assertTrue(agents.endswith('\n## Commands\n'))
-        self.assertIn(EXPECTED, agents)
+        self.assertFalse((self.hub.root / 'AGENTS.md').exists())
 
     def test_the_home_file_is_exactly_the_marked_block(self) -> None:
         self.hub.run('--write')
@@ -335,23 +414,17 @@ class TestCommandLine(HubTestCase):
         self.assertEqual(code, 1, out)
         self.assertIn('home/SHA256SUMS: stale', out)
 
-    def test_a_hand_edit_to_the_block_fails_the_check(self) -> None:
+    def test_a_hand_edit_to_the_home_file_fails_the_check(self) -> None:
         self.hub.run('--write')
-        path = self.hub.root / 'AGENTS.md'
+        path = self.hub.root / 'home' / 'intelligence.md'
         path.write_text(path.read_text(encoding='utf-8').replace('Never force-push.', 'Rarely force-push.'),
                         encoding='utf-8')
         code, out = self.hub.run('--check')
         self.assertEqual(code, 1, out)
-        self.assertIn('AGENTS.md: stale', out)
+        self.assertIn('home/intelligence.md: stale', out)
 
-    def test_an_agents_file_without_a_block_fails_the_check(self) -> None:
-        (self.hub.root / 'AGENTS.md').write_text('# Agents\n', encoding='utf-8')
-        code, out = self.hub.run('--check')
-        self.assertEqual(code, 1, out)
-        self.assertIn('carries no INTELLIGENCE block', out)
-
-    def test_a_broken_law_stops_every_mode(self) -> None:
-        self.hub.write_rule('WORK-001', text='No period')
+    def test_a_broken_constitution_stops_every_mode(self) -> None:
+        self.hub.write_text(self.hub.text().replace('> Change only what the task needs.', '> No period'))
         for mode in ([], ['--write'], ['--check']):
             with self.subTest(mode=mode):
                 code, out = self.hub.run(*mode)
@@ -369,7 +442,7 @@ class TestCommandLine(HubTestCase):
     def test_pins_read_a_tag(self) -> None:
         self.hub.run('--write')
         git = ['git', '-c', 'user.name=Test', '-c', 'user.email=test@example.com', '-c', 'commit.gpgsign=false']
-        for command in (['init', '-q'], ['add', '-A'], ['commit', '-q', '-m', 'law'], ['tag', 'v0.1.0']):
+        for command in (['init', '-q'], ['add', '-A'], ['commit', '-q', '-m', 'rules'], ['tag', 'v0.1.0']):
             subprocess.run(git + command, cwd=self.hub.root, check=True, capture_output=True)
         (self.hub.root / 'home' / 'intelligence.md').write_text('changed since the tag\n', encoding='utf-8')
         code, out = self.hub.run('--pins', 'v0.1.0')
@@ -387,7 +460,7 @@ class TestCloudSetup(HubTestCase):
     def tag(self) -> None:
         git = ['git', '-c', 'user.name=Test', '-c', 'user.email=test@example.com', '-c', 'commit.gpgsign=false',
                '-c', 'tag.gpgsign=false']
-        for command in (['init', '-q'], ['add', '-A'], ['commit', '-q', '-m', 'law'], ['tag', 'v0.1.0']):
+        for command in (['init', '-q'], ['add', '-A'], ['commit', '-q', '-m', 'rules'], ['tag', 'v0.1.0']):
             subprocess.run(git + command, cwd=self.hub.root, check=True, capture_output=True)
 
     def test_the_pins_come_from_the_tag(self) -> None:
@@ -426,22 +499,26 @@ class TestCloudSetup(HubTestCase):
             self.assertIn(f"{name}='@{name}@'", text)
 
 
-class TestTheRealLaw(unittest.TestCase):
-    """The law in this repository, and the copies rendered from it."""
+class TestTheRealConstitution(unittest.TestCase):
+    """The Constitution in this repository, and the copies rendered from it."""
 
     root = SCRIPT.parents[1]
 
     def test_it_breaks_no_rule_and_fits_its_cap(self) -> None:
-        law = render.load_law(self.root)
-        self.assertEqual(render.problems(law), [])
-        self.assertLessEqual(render.size(render.render_block(law)), law.cap)
+        constitution = render.load_constitution(self.root)
+        self.assertEqual(render.problems(constitution), [])
+        self.assertLessEqual(render.size(render.render_block(constitution)), constitution.cap)
 
     def test_every_copy_is_current(self) -> None:
-        self.assertEqual(render.stale(self.root, render.load_law(self.root)), [])
+        self.assertEqual(render.stale(self.root, render.load_constitution(self.root)), [])
 
     def test_it_ships_the_kit(self) -> None:
         self.assertTrue(render.has_kit(self.root))
-        self.assertIn(render.KIT_FILE, render.renderings(self.root, render.load_law(self.root)))
+        self.assertIn(render.KIT_FILE, render.renderings(self.root, render.load_constitution(self.root)))
+
+    def test_the_hub_keeps_no_agents_file(self) -> None:
+        self.assertFalse((self.root / 'AGENTS.md').exists())
+        self.assertFalse((self.root / 'law').exists())
 
 
 if __name__ == '__main__':

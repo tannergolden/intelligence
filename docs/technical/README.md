@@ -1,6 +1,6 @@
 <!--
 title: '🔧 TECHNICAL'
-description: 'How every part of the hub works, one document each: the law, the home kit, repository sync, cloud setup, skills and subagents, knowledge, the loader probe and evals.'
+description: 'How every part of the hub works, one document each: the home kit, repository sync, cloud setup, skills and subagents, knowledge, the loader probe and evals.'
 tags: [docs, technical, architecture]
 category: docs
 -->
@@ -41,7 +41,6 @@ Works](How-It-Works.md), which shows how the pieces fit, and follow its links.
 | [`Repository-Sync.md`](Repository-Sync.md)       | How each release reaches every repository: the stub a repository carries, make sync from the hub, what a first sync does, and how make merge lands the result.                |
 | [`Skills-&-Subagents.md`](Skills-&-Subagents.md) | The one skill and the Worker and Reviewer subagents the home kit installs, the rules every skill here follows, and where each app reads them.                                 |
 | [`The-Home-Kit.md`](The-Home-Kit.md)             | What make agents installs into each AI app's home folder, the kit that rides beside the rules, the guard hook, and how a machine gets them from a release.                    |
-| [`The-Law.md`](The-Law.md)                       | Where every universal rule is written, what each rule file holds, the rules the rules themselves follow, and how to change, add or retire one.                                |
 | [`The-Loader-Probe.md`](The-Loader-Probe.md)     | How the hub proves, on the machine that runs it, which instruction files each AI coding app actually loads, what it touches, and the results so far.                          |
 
 <!-- AUTO-INDEX:END -->

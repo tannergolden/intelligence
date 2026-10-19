@@ -517,7 +517,7 @@ def targets(gh: GitHub, only: Sequence[str], hub: str) -> tuple[list[dict], list
         name = repo['name']
         if only and name not in only:
             continue
-        reason = 'the hub, which renders its own copy from the law' if name == hub else left_out(repo)
+        reason = 'the hub, which holds the Constitution and carries no copy of it' if name == hub else left_out(repo)
         if reason:
             skipped.append(f'{name}: skipped, {reason}')
         else:
@@ -540,7 +540,7 @@ def messages(block_hash: str, ref: str, change: Change,
     itself, and the pull request says how its checks start.
     """
     title = f'chore(agents): 🤖 sync the universal rules to {block_hash[:12]}'
-    why = (f'The intelligence hub renders the universal rules from its law. This replaces the copy '
+    why = (f'The intelligence hub renders the universal rules from its CONSTITUTION.md. This replaces the copy '
            f'between the INTELLIGENCE markers in AGENTS.md with the one from release {ref}, and '
            f'leaves every section this repository owns as it was.')
     if change.adoption:
@@ -738,8 +738,8 @@ def shipped(root: pathlib.Path) -> str:
 
 
 def is_hub(checkout: pathlib.Path) -> bool:
-    """True in a checkout of the hub, which renders its own copy and takes none."""
-    return (checkout / 'law' / 'block.json').is_file() and (checkout / 'scripts' / 'render.py').is_file()
+    """True in a checkout of the hub, which holds the Constitution and takes no copy of it."""
+    return (checkout / render.CONSTITUTION_FILE).is_file() and (checkout / 'scripts' / 'render.py').is_file()
 
 
 def local_file(checkout: pathlib.Path, name: str) -> str | None:
@@ -758,7 +758,7 @@ def apply(gh: GitHub, full: str, checkout: pathlib.Path, region: str, ref: str, 
     name = full.split('/', 1)[1]
     unchanged = {'changed': 'false'}
     if is_hub(checkout):
-        print(f'{name}: skipped, the hub, which renders its own copy from the law')
+        print(f'{name}: skipped, the hub, which holds the Constitution and carries no copy of it')
         write_outputs(unchanged)
         return 0
     try:
@@ -825,8 +825,8 @@ def main(argv: Sequence[str] | None = None, gh: GitHub | None = None, root: path
     failures = 0
     if args.command == 'audit':
         known = history(root)
-        law = render.load_law(root)
-        invariants = {rid for rid, rule in law.rules.items() if rule.kind == 'invariant'}
+        constitution = render.load_constitution(root)
+        invariants = {rid for rid, rule in constitution.rules.items() if rule.kind == 'invariant'}
         print(f'Auditing against {ref}, block sha256 {current[:12]}')
         for repo in chosen:
             try:

@@ -24,8 +24,8 @@ _Home for every session. A repository copy for every clone._
 **Intelligence is the source of the rules every AI coding agent follows when
 it works for [@tannergolden](https://github.com/tannergolden)**: Claude Code,
 Codex, Antigravity CLI, Copilot (the CLI and VS Code), Cursor and Grok Build.
-The rules are written once, as one block, in [the law](The-Law.md), and reach
-the agents in two pieces:
+The rules are written once, in [the Constitution](../../CONSTITUTION.md),
+rendered as one block, and reach the agents in two pieces:
 
 | Piece               | Where the rules land                           | How they get there                                         | Read more                             |
 | :------------------ | :--------------------------------------------- | :--------------------------------------------------------- | :------------------------------------ |
@@ -44,8 +44,9 @@ installs the home copy there.
 
 **Each repository holds one `AGENTS.md`, at its root, and nothing else for
 agents:** no `CLAUDE.md`, no per-tool files, nothing nested. Every app on the
-list reads `AGENTS.md`, Claude Code included. The file has a managed block and
-sections the repository owns:
+list reads `AGENTS.md`, Claude Code included. The hub is the one exception: it
+holds the source, `CONSTITUTION.md`, and keeps no copy. The file has a managed
+block and sections the repository owns:
 
 ```markdown
 # Repository Name

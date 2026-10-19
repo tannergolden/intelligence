@@ -47,16 +47,16 @@ _spec.loader.exec_module(sync)
 render = sync.render
 
 OLD_BLOCK = '## Working rules\n\n- SEC-001: An older wording.\n'
-CURRENT_BLOCK = render.render_block(render.load_law(HERE.parent))
+CURRENT_BLOCK = render.render_block(render.load_constitution(HERE.parent))
 OLD = render.region(OLD_BLOCK)
 CURRENT = render.region(CURRENT_BLOCK)
 GREEN = ([{'name': 'ci', 'status': 'completed', 'conclusion': 'success'}], {'state': 'pending', 'statuses': []})
 
 
 def make_hub(tags: bool = True) -> pathlib.Path:
-    """A throwaway hub: the real law, and two releases of the home file."""
+    """A throwaway hub: the real Constitution, and two releases of the home file."""
     root = pathlib.Path(tempfile.mkdtemp(prefix='sync-test-'))
-    shutil.copytree(HERE.parent / 'law', root / 'law')
+    shutil.copy(HERE.parent / render.CONSTITUTION_FILE, root / render.CONSTITUTION_FILE)
     (root / 'home').mkdir()
     git = ['git', '-c', 'user.name=Test', '-c', 'user.email=test@example.com', '-c', 'commit.gpgsign=false',
            '-c', 'tag.gpgsign=false']
@@ -636,13 +636,12 @@ class TestApply(unittest.TestCase):
         self.assertIn('more than one INTELLIGENCE block', out)
 
     def test_the_hub_and_every_repository_left_out_are_skipped(self) -> None:
-        (self.checkout / 'law').mkdir()
-        (self.checkout / 'law' / 'block.json').write_text('{}', encoding='utf-8')
+        (self.checkout / 'CONSTITUTION.md').write_text('# Constitution\n', encoding='utf-8')
         (self.checkout / 'scripts').mkdir()
         (self.checkout / 'scripts' / 'render.py').write_text('', encoding='utf-8')
         _code, out = self.run_apply(repo='tannergolden/intelligence')
         self.assertIn('intelligence: skipped, the hub', out)
-        shutil.rmtree(self.checkout / 'law')
+        (self.checkout / 'CONSTITUTION.md').unlink()
         for flags, expected in (({'is_template': True}, 'a template'), ({'fork': True}, 'a fork'),
                                 ({'archived': True}, 'archived'), ({'topics': ['no-intelligence']}, 'opted out')):
             with self.subTest(expected=expected):

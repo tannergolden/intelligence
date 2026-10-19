@@ -21,6 +21,11 @@ _AGENTS.md, once, at the top._
 
 </div>
 
+> [!IMPORTANT]
+> **Amended by [ADR-0020](ADR-0020-One-Constitution.md).** The hub itself keeps
+> no `AGENTS.md`: it holds the source of the rules, `CONSTITUTION.md`, and every
+> other repository still carries one root `AGENTS.md`.
+
 ---
 
 ## 📋 Meta Information

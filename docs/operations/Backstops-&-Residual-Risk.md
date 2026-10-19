@@ -23,8 +23,8 @@ _Prose asks. Rulesets refuse._
 
 The universal rules tell an agent what not to do, and the evidence is plain
 that prose cannot reliably make an agent stop. So every Invariant that can
-be enforced outside the prompt names its enforcer in its file under
-[`law/rules/`](../../law/rules/README.md), as [the law](../technical/The-Law.md) describes, and this page covers the ones that
+be enforced outside the prompt names its enforcer under its ID in
+[`CONSTITUTION.md`](../../CONSTITUTION.md), and this page covers the ones that
 live on GitHub's side. Phase v0.4 is done when, in a repository with these
 on:
 
@@ -80,7 +80,7 @@ interactively, and review what it pushes before you merge it.
 
 ## 🔗 See Also
 
-- [The Law](../technical/The-Law.md): every rule, with what enforces it today and what is still to add
+- [The Constitution](../../CONSTITUTION.md): every rule, with what enforces it today and what is still to add
 - [ADR-0011](../adrs/ADR-0011-The-Universal-Rule-Set.md): why the rule set looks the way it does
 - [Standards Index](https://github.com/tannergolden/standards/blob/Development/docs/README.md)
 

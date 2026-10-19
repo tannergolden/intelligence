@@ -13,8 +13,8 @@
 # ADOPTED FROM THE TEMPLATE, as its note said to for a repository consumed by
 # tag: the `if:` guard that kept it inert is gone, and `required-files` and
 # `check-command` name what this hub ships. `make check` fails a release whose
-# rendered copies have drifted from the law, so a tag can never serve a home
-# file the law did not produce.
+# rendered copies have drifted from CONSTITUTION.md, so a tag can never serve
+# a home file the Constitution did not produce.
 #
 # Every version stays: releases are never pruned (see release.yml), because a
 # pin to a full version must keep resolving and `make audit` names old blocks
@@ -58,6 +58,6 @@ jobs:
       # The second line is what a stub resolves at the tag, and
       # setup/test_stub.py keeps it whole.
       required-files: >-
-        AGENTS.md home/intelligence.md home/kit.json home/SHA256SUMS scripts/install.py setup/claude-cloud-setup.sh
+        CONSTITUTION.md home/intelligence.md home/kit.json home/SHA256SUMS scripts/install.py setup/claude-cloud-setup.sh
         .github/workflows/sync.yml .github/actions/sync/action.yml setup/intelligence-sync.yml scripts/sync.py scripts/render.py scripts/kit.py
       check-command: 'make check'

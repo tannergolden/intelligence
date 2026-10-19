@@ -11,13 +11,13 @@ every session goes somewhere that always loads.
 
 ## 1. Decide what it is
 
-| The need                                        | Where it goes                                                              |
-| :---------------------------------------------- | :------------------------------------------------------------------------- |
-| A multi-step procedure an agent runs on request | A skill                                                                    |
-| Behaviour that must hold in every session       | A rule: `law/` in tannergolden/intelligence, or a repository's `AGENTS.md` |
-| Something that must never happen                | A hook or a CI check; prose alone is not enough                            |
-| A deterministic transformation                  | A script, bundled in the skill that uses it                                |
-| A fact about the setup, not an instruction      | The knowledge facts in tannergolden/intelligence                           |
+| The need                                        | Where it goes                                                                         |
+| :---------------------------------------------- | :------------------------------------------------------------------------------------ |
+| A multi-step procedure an agent runs on request | A skill                                                                               |
+| Behaviour that must hold in every session       | A rule: `CONSTITUTION.md` in tannergolden/intelligence, or a repository's `AGENTS.md` |
+| Something that must never happen                | A hook or a CI check; prose alone is not enough                                       |
+| A deterministic transformation                  | A script, bundled in the skill that uses it                                           |
+| A fact about the setup, not an instruction      | The knowledge facts in tannergolden/intelligence                                      |
 
 In one published evaluation the skill was never invoked in 56% of cases, so
 never put an Invariant in a skill. If the user asked for a skill and the need

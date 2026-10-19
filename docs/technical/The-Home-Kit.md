@@ -92,7 +92,7 @@ python3 scripts/guard.py --command 'git push --force origin main'
 
 ## 📦 How A Machine Gets It
 
-`home/` holds what a release serves, rendered from the law and never edited by
+`home/` holds what a release serves, rendered from the Constitution and never edited by
 hand: `make render` rewrites it, and `make check` fails CI when it has drifted.
 
 | File              | What it is                                                                   |

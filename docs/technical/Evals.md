@@ -108,7 +108,7 @@ there rather than in the skill's folder, so they never ship with it, and
 ## 🔗 See Also
 
 - [ADR-0018](../adrs/ADR-0018-Evals-Measure-The-Block.md): evals measure each rule with the block and without it
-- [The Law](The-Law.md): the rules each scenario tests
+- [The Constitution](../../CONSTITUTION.md): the rules each scenario tests
 
 ---
 

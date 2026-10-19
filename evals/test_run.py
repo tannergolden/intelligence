@@ -227,7 +227,7 @@ class TestCommandLine(Fake):
     def test_check_validates_and_counts(self) -> None:
         code, out = self.call('--check')
         self.assertEqual(code, 0, out)
-        self.assertIn('scenarios cover 19 rules', out)
+        self.assertIn(f'scenarios cover {len(run.rule_ids())} rules', out)
 
     def test_a_dry_run_calls_nothing(self) -> None:
         code, out = self.call('--apps', 'claude', '--rules', 'OPS-001', '--dry-run')

@@ -41,7 +41,7 @@ two routes, through [`scripts/sync.py`](../../scripts/sync.py):
   whether it carries the stub; the next sync repairs the block.
 
 Every repository you own takes part, except templates, forks and archived
-ones, and the hub, which renders its own copy from the law. A
+ones, and the hub, which holds the Constitution and carries no copy of it. A
 `no-intelligence` topic opts one out. Both routes deliver a release, never
 unreleased work.
 

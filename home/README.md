@@ -21,7 +21,7 @@ _Rendered, never written. Pinned, never trusted blind._
 
 ## 💡 What This Folder Is For
 
-What every release serves, rendered from the law. **Never edit anything here
+What every release serves, rendered from [`CONSTITUTION.md`](../CONSTITUTION.md). **Never edit anything here
 by hand:** `make render` rewrites it, and `make check` fails CI when it has
 drifted. How a machine gets these files and checks them: [The Home
 Kit](../docs/technical/The-Home-Kit.md).

@@ -32,7 +32,7 @@ test: ## Every test in the repository
 	$(PYTHON) -m unittest discover -s setup -p 'test_*.py'
 	$(PYTHON) -m unittest discover -s evals -p 'test_*.py'
 
-render: ## Rewrite every copy from the law, and the kit from its sources
+render: ## Rewrite every copy from CONSTITUTION.md, and the kit from its sources
 	$(PYTHON) scripts/render.py --write
 
 probe: ## Prove which files each installed app loads, one model call per check

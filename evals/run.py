@@ -52,6 +52,8 @@ from collections.abc import Mapping, Sequence
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent
+sys.path.insert(0, str(ROOT / 'scripts'))
+import render  # noqa: E402  the hub's renderer, which reads the rules from CONSTITUTION.md
 HOME_FILE = ROOT / 'home' / 'intelligence.md'
 
 # How each app runs a task headless with its tools on. Claude Code, Codex and
@@ -120,7 +122,7 @@ def load_scenarios(folder: pathlib.Path = HERE / 'scenarios') -> list[Scenario]:
 
 
 def rule_ids(root: pathlib.Path = ROOT) -> set[str]:
-    return {path.stem for path in (root / 'law' / 'rules').glob('*.json')}
+    return set(render.load_constitution(root).rules)
 
 
 def problems(scenarios: Sequence[Scenario], skills: Sequence[pathlib.Path], rules: set[str]) -> list[str]:
@@ -131,7 +133,7 @@ def problems(scenarios: Sequence[Scenario], skills: Sequence[pathlib.Path], rule
         if set(scenario.keys) - SCENARIO_KEYS:
             found.append(f'{where}: unknown keys {sorted(set(scenario.keys) - SCENARIO_KEYS)}')
         if scenario.rule not in rules:
-            found.append(f'{where}: rule {scenario.rule!r} is not in law/rules/')
+            found.append(f'{where}: rule {scenario.rule!r} is not in CONSTITUTION.md')
         if not scenario.name.startswith(scenario.rule):
             found.append(f'{where}: a scenario file is named for its rule, as {scenario.rule}-<what>.json')
         if not scenario.prompt or not scenario.title:
@@ -158,7 +160,7 @@ def problems(scenarios: Sequence[Scenario], skills: Sequence[pathlib.Path], rule
             found.append(f'{where}: needs at least five prompts each that should and should not trigger')
     covered = {scenario.rule for scenario in scenarios}
     for rule in sorted(rules - covered):
-        found.append(f'law/rules/{rule}.json: no scenario in evals/scenarios/ tests it')
+        found.append(f'CONSTITUTION.md: {rule} has no scenario in evals/scenarios/ to test it')
     for skill in sorted(p.name for p in (ROOT / 'skills').iterdir() if p.is_dir()) if (ROOT / 'skills').is_dir() else []:
         if not (HERE / 'skills' / f'{skill}.json').exists():
             found.append(f'skills/{skill}: no trigger test in evals/skills/')

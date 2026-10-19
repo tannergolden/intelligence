@@ -36,7 +36,7 @@ every command below.
 1. On `Development`, `make check` passes.
 2. Run 🏷️ Cut Release with the next version, such as `v0.1.0`. It runs
    `make check` again, and refuses a release whose rendered files have
-   drifted from the law, or that is missing a file a consumer or a stub
+   drifted from the Constitution, or that is missing a file a consumer or a stub
    resolves at the tag.
 3. `make pins VERSION=v0.1.0` prints the hashes to pin: the home file, the
    installer and the kit. Put them in dotfiles' `agents/intelligence.pin`,

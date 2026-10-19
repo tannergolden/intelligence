@@ -21,6 +21,12 @@ _Short enough to obey. Specific enough to check._
 
 </div>
 
+> [!IMPORTANT]
+> **Amended by [ADR-0020](ADR-0020-One-Constitution.md).** The rules now live in
+> `CONSTITUTION.md` at the hub's root, and the set has grown to 22: SEC-003
+> allows a private vault, COM-002 covers earlier sessions, STD-001 yields to the
+> Invariants, and COM-004, DOC-003 and COM-005 are new.
+
 ---
 
 ## 📋 Meta Information
