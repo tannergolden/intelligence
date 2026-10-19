@@ -21,8 +21,9 @@
 # repository has a BOT_ACCESS_TOKEN secret, the pull request is opened as
 # that token's owner and its checks start at once.
 #
-# Skipped in a template, a fork, an archived repository, one with the
-# `no-intelligence` topic, and the hub itself, which renders its own copy.
+# Skipped in a golden path template, a fork, an archived repository, one
+# with the `no-intelligence` topic, and the hub itself, which renders its
+# own copy. A template of any other kind takes part (ADR-0022).
 #
 # ⚠️ `@v0` IS WRITTEN OUT BELOW, AND MOVES WITH THE STUB'S. A reusable
 # workflow cannot name the ref it was called at, so the action is called at

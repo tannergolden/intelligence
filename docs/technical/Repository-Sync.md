@@ -40,10 +40,12 @@ two routes, through [`scripts/sync.py`](../../scripts/sync.py):
 - `make audit` reports any repository whose block was edited by hand, and
   whether it carries the stub; the next sync repairs the block.
 
-Every repository you own takes part, except templates, forks and archived
-ones, and the hub, which holds the Constitution and carries no copy of it. A
-`no-intelligence` topic opts one out. Both routes deliver a release, never
-unreleased work.
+Every repository you own takes part, except the two golden path templates,
+`repo` and `path`, forks and archived ones, and the hub, which holds the
+Constitution and carries no copy of it. A template of any other kind, such
+as the vault template, takes part like the rest, since every repository
+generated from it inherits its `AGENTS.md`. A `no-intelligence` topic opts
+one out. Both routes deliver a release, never unreleased work.
 
 ---
 

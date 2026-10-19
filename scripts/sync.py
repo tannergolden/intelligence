@@ -36,7 +36,8 @@ The commands:
 `sync` delivers the block of the latest release tag, never unreleased work;
 `apply` delivers the one in the hub tree it runs from, which is the latest
 release at the hub's moving major tag. Every repository the owner owns takes part, except
-templates, forks, archived ones, and any with the `no-intelligence` topic.
+the two golden path templates, forks, archived ones, and any with the `no-intelligence`
+topic.
 
 Run it, from the hub's root:
 
@@ -74,6 +75,10 @@ import render  # noqa: E402
 ROOT = HERE.parent
 BRANCH = 'chore/intelligence'
 OPT_OUT = 'no-intelligence'
+# The golden path templates sit out, so they stay free of agent files and every repository
+# generated from them starts an AGENTS.md of its own. Any other template, such as the vault
+# template, takes part: what it generates inherits its AGENTS.md, block and all (ADR-0022).
+GOLDEN_PATH_TEMPLATES = ('repo', 'path')
 AGENTS = 'AGENTS.md'
 CLAUDE = 'CLAUDE.md'
 STUB = '.github/workflows/intelligence-sync.yml'  # where a repository keeps setup/intelligence-sync.yml
@@ -513,7 +518,7 @@ def hub_name(root: pathlib.Path) -> str:
 def left_out(repo: dict) -> str | None:
     """Why a repository takes no part, from its settings; None when it does."""
     return ('archived' if repo.get('archived') else 'a fork' if repo.get('fork')
-            else 'a template' if repo.get('is_template')
+            else 'a golden path template' if repo.get('is_template') and repo.get('name') in GOLDEN_PATH_TEMPLATES
             else f'opted out with {OPT_OUT}' if OPT_OUT in (repo.get('topics') or []) else None)
 
 

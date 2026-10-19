@@ -21,6 +21,11 @@ _The hub proposes. You merge._
 
 </div>
 
+> [!IMPORTANT]
+> **Amended by [ADR-0022](ADR-0022-Only-The-Golden-Path-Templates-Sit-Out.md).** Only the two
+> golden path templates sit out; a template of any other kind, such as the vault template, takes
+> part like the rest.
+
 ---
 
 ## 📋 Meta Information

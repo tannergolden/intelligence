@@ -28,9 +28,9 @@ description: "Writes the universal rules of this action's release into the calli
 inputs:
   token:
     description: >-
-      A token that can read this repository's settings, so that a template,
-      a fork, an archived repository or one with the no-intelligence topic
-      is skipped. The default GITHUB_TOKEN is enough.
+      A token that can read this repository's settings, so that a golden
+      path template, a fork, an archived repository or one with the
+      no-intelligence topic is skipped. The default GITHUB_TOKEN is enough.
     required: true
   dry-run:
     description: 'Print what would change, and change nothing.'
