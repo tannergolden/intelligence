@@ -435,7 +435,7 @@ def check_skill(folder: pathlib.Path, homes: list[pathlib.Path], report: Report,
     metadata = fields.get('metadata')
     version = ''
     if not isinstance(metadata, dict):
-        report.error(manifest, 'needs a metadata map with its version, such as metadata: {"version": "01.00.00"}')
+        report.error(manifest, 'needs a metadata map with its version, such as metadata: {"version": "1.0.0"}')
     else:
         version = str(metadata.get('version', ''))
         if not version:
@@ -466,7 +466,7 @@ def check_skill(folder: pathlib.Path, homes: list[pathlib.Path], report: Report,
     if changelog.is_file() and version:
         found = CURRENT_VERSION.search(text_of(changelog) or '')
         if found is None:
-            report.error(changelog, 'needs a "## Current Version" line with the version in bold code, as **`01.00.00`**')
+            report.error(changelog, 'needs a "## Current Version" line with the version in bold code, as **`1.0.0`**')
         elif found.group('version') != version:
             report.error(changelog, f'its Current Version, {found.group("version")}, differs from metadata.version, '
                                     f'{version}; one version, every site')

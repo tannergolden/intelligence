@@ -2,9 +2,9 @@
 
 ## Current Version
 
-**`01.00.00`**
+**`1.0.0`**
 
-Semantic versioning, `MAJOR.MINOR.PATCH`, two-digit zero-padded segments. This value matches `metadata.version` in `SKILL.md`, and the validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
+Semantic versioning, `MAJOR.MINOR.PATCH`, with no leading zeros, as [SemVer 2.0.0](https://semver.org) requires. This value matches `metadata.version` in `SKILL.md`, and the validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
 
 ---
 
@@ -20,7 +20,7 @@ Semantic versioning, `MAJOR.MINOR.PATCH`, two-digit zero-padded segments. This v
 
 > Breaking changes, restructured pipeline, incompatible output. Most recent 4 entries.
 
-### `01.00.00` - [YYYY-MM-DD]
+### `1.0.0` - [YYYY-MM-DD]
 
 Initial build of the [skill-name] skill.
 

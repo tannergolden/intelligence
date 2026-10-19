@@ -2,7 +2,7 @@
 name: '[skill-name]'
 description: "[What it does, in one sentence. Use when the user asks to ..., with 4 to 6 concrete trigger phrases in the user's own words, even if they never say the skill's name. This line decides whether the skill ever fires.]"
 license: "[the repository's licence, such as MIT]"
-metadata: { 'team': '[team-name]', 'version': '01.00.00' }
+metadata: { 'team': '[team-name]', 'version': '1.0.0' }
 ---
 
 # [emoji] [Skill Name]

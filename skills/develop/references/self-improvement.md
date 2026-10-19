@@ -23,4 +23,4 @@ One JSON object per line:
 {"id":"rc-0001","date":"YYYY-MM-DD","skill":"<name>","input":"<the triggering request>","expected":"<the correct behavior>","was":"<what it did wrong>","lesson":"<the one-line rule that prevents recurrence>"}
 ```
 
-Managed append-only. The file ships empty at `01.00.00` and grows one entry per real fix.
+Managed append-only. The file ships empty at `1.0.0` and grows one entry per real fix.

@@ -2,9 +2,9 @@
 
 ## Current Version
 
-**`04.00.00`**
+**`4.0.1`**
 
-Semantic versioning, `MAJOR.MINOR.PATCH`, two-digit zero-padded segments. This value matches `metadata.version` in `SKILL.md`, and the validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
+Semantic versioning, `MAJOR.MINOR.PATCH`, with no leading zeros, as [SemVer 2.0.0](https://semver.org) requires. This value matches `metadata.version` in `SKILL.md`, and the validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
 
 ---
 
@@ -20,7 +20,7 @@ Semantic versioning, `MAJOR.MINOR.PATCH`, two-digit zero-padded segments. This v
 
 > Breaking changes, restructured pipeline, incompatible output. Most recent 4 entries.
 
-### `04.00.00` - 2026-10-19
+### `4.0.0` - 2026-10-19
 
 Develop became the one universal skill. tannergolden/intelligence ships it in `skills/develop/`, and the home kit installs it into every coding app in place of building-skills, whose decision table, placement rules and cross-app format it now carries. It works in any repository: the same modes, the same Create pipeline, the same Development team and the same two gates, with nothing it needs outside its own folder.
 
@@ -31,7 +31,7 @@ Develop became the one universal skill. tannergolden/intelligence ships it in `s
 - The frontmatter keeps one line per key, `metadata` as a one-line map; the description says when to use it with "Use when"; the skill templates sit one level down; `allowed-tools` pre-approves read-only tools at most.
 - The licence is MIT.
 
-Earlier versions, `01.00.00` to `03.06.02`, were built inside the knowledge vault, and their history is in that repository's git log.
+Earlier versions, `1.0.0` to `3.6.2` (written `01.00.00` to `03.06.02` then), were built inside the knowledge vault, and their history is in that repository's git log.
 
 ## Minor Updates
 
@@ -43,4 +43,7 @@ _None yet._
 
 > Fixes and clarifications. Most recent 4 entries.
 
-_None yet._
+### `4.0.1` - 2026-10-19
+
+- Versions are plain SemVer, with no leading zeros, as SemVer 2.0.0 requires: develop's own `04.00.00` is now `4.0.0`, and a new skill starts at `1.0.0`.
+- The skill templates, the Changelog template's versioning line and the validator's examples follow.

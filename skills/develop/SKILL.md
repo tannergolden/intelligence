@@ -2,7 +2,7 @@
 name: develop
 description: Builds, updates and improves Agent Skills, and the agents and teams they dispatch, so a skill loads and works in every coding app. Decides first whether the need is a skill at all or belongs in a rule, a hook or a script; researches before writing; reuses an agent before creating one; gates every build with a deterministic validator and independent reviewers; and learns from a skill's mistakes. Use when the user asks to build, create, write, add, package, share, fix or improve a skill, an agent, a team of agents, a slash command or a reusable procedure, or says an agent keeps getting the same multi-step task wrong, even if they never say skill.
 license: MIT
-metadata: { 'team': 'Development', 'version': '04.00.00' }
+metadata: { 'team': 'Development', 'version': '4.0.1' }
 ---
 
 # 🏭 Develop - the skill and agent factory
@@ -67,7 +67,7 @@ Develop improves other skills and itself. The loop: capture the failure from the
 <skill>/
   SKILL.md          frontmatter (name, description, license, metadata) + body; from templates/t-SKILL.md
   License.txt       the licence text; the repository's licence by default
-  Changelog.md      version history from templates/skill-Changelog.md, starting at 01.00.00
+  Changelog.md      version history from templates/skill-Changelog.md, starting at 1.0.0
   assets/           static files the skill ships, including assets/trigger-evals.json
   references/       domain knowledge loaded on demand
   templates/        output scaffolds the skill fills in
