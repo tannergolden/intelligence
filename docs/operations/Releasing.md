@@ -53,9 +53,9 @@ every command below.
 6. Review each first sync by hand. After that, `make merge` lands every sync
    whose diff is only the block and whose checks passed.
 
-Every version stays: releases are never pruned, because a pin to a full
-version must keep resolving and `make audit` names old blocks by the release
-that shipped them.
+Every version stays: the stub passes `keep-versions: true`, so standards' Cut
+Release never prunes here, because a pin to a full version must keep
+resolving and `make audit` names old blocks by the release that shipped them.
 
 ---
 

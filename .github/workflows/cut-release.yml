@@ -16,9 +16,10 @@
 # rendered copies have drifted from CONSTITUTION.md, so a tag can never serve
 # a home file the Constitution did not produce.
 #
-# Every version stays: releases are never pruned (see release.yml), because a
-# pin to a full version must keep resolving and `make audit` names old blocks
-# by the release that shipped them.
+# Every version stays: `keep-versions` turns off the prune standards' Cut
+# Release runs for every other repository, because a pin to a full version
+# must keep resolving and `make audit` names old blocks by the release that
+# shipped them.
 #
 # NOTHING FANS OUT FROM HERE. This hub holds no credential that reaches
 # another repository: each stub picks the release up on its next Monday run,
@@ -61,3 +62,4 @@ jobs:
         CONSTITUTION.md home/intelligence.md home/kit.json home/SHA256SUMS scripts/install.py setup/claude-cloud-setup.sh
         .github/workflows/sync.yml .github/actions/sync/action.yml setup/intelligence-sync.yml scripts/sync.py scripts/render.py scripts/kit.py
       check-command: 'make check'
+      keep-versions: true
