@@ -21,6 +21,12 @@ _Facts beside the rules. Nothing personal anywhere._
 
 </div>
 
+> [!IMPORTANT]
+> **Amended by [ADR-0020](ADR-0020-One-Constitution.md).** A private tier now
+> exists outside the hub: each person's knowledge vault, a private repository
+> generated from the public knowledge template, holds that person's context,
+> and SEC-003 allows it there and nowhere else. The facts here stay public.
+
 ---
 
 ## 📋 Meta Information

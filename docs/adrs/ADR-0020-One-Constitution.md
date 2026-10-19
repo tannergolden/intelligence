@@ -28,12 +28,12 @@ _Written once, here. Copied everywhere else._
 > [!NOTE]
 > **Status**, **Date**, and **Evidence** live in the frontmatter above - they feed the generated [ADR index](README.md), so they are recorded once. This table records who was involved.
 
-| Attribute     | Specification                                                                                                                                |
-| :------------ | :------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Deciders**  | Tanner Golden ([@tannergolden](https://github.com/tannergolden)), owner                                                                      |
-| **Consulted** | Claude Code sessions: a review of the hub and of the knowledge vault, and drafting                                                           |
-| **Informed**  | Every agent and collaborator working in a repository that carries the block                                                                  |
-| **Amends**    | [ADR-0002](ADR-0002-One-Root-AGENTS-File.md), one root AGENTS.md, and [ADR-0011](ADR-0011-The-Universal-Rule-Set.md), the universal rule set |
+| Attribute     | Specification                                                                                                                                                                                                                                          |
+| :------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Deciders**  | Tanner Golden ([@tannergolden](https://github.com/tannergolden)), owner                                                                                                                                                                                |
+| **Consulted** | Claude Code sessions: a review of the hub and of the knowledge vault, and drafting                                                                                                                                                                     |
+| **Informed**  | Every agent and collaborator working in a repository that carries the block                                                                                                                                                                            |
+| **Amends**    | [ADR-0002](ADR-0002-One-Root-AGENTS-File.md), one root AGENTS.md; [ADR-0011](ADR-0011-The-Universal-Rule-Set.md), the universal rule set; and [ADR-0016](ADR-0016-Knowledge-Starts-As-Public-Facts.md), whose private tier becomes each person's vault |
 
 ---
 

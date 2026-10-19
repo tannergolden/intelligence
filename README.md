@@ -119,7 +119,7 @@ tables after every push:
 
 | Entry                                              | Purpose                                                                                                                                                       |
 | :------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`actions/`](.github/actions/README.md)            | The composite action that carries the hub's own code into every repository whose stub asks for it, at the hub's latest release.                               |
+| [`actions/`](.github/actions/README.md)            | The composite actions this repository keeps for its own workflows, and for any other repository that calls them.                                              |
 | [`scripts/`](.github/scripts/README.md)            | The checks this repository runs on its own configuration, and the tests that guard them.                                                                      |
 | [`workflows/`](.github/workflows/README.md)        | Every workflow in this repository: the name it shows in the Actions tab, what triggers it, and what it does.                                                  |
 | [`CODEOWNERS`](.github/CODEOWNERS)                 | CODEOWNERS - review ownership                                                                                                                                 |
