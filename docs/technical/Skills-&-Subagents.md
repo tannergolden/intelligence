@@ -23,11 +23,21 @@ _Loaded on demand. Rendered for every app._
 
 A skill is a folder an agent opens only when its description matches the
 task. The universal rules stay in the always-loaded block; a skill carries a
-procedure. For now there is exactly one, by the owner's decision:
+procedure. There is exactly one, by the owner's decision:
 
-| Skill                                                      | What it does                                                                                                                           |
-| :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------- |
-| [`building-skills`](../../skills/building-skills/SKILL.md) | Builds a new skill or repairs one that misfires: decides whether it should be a skill at all, writes `SKILL.md`, tests it and ships it |
+| Skill                                      | What it does                                                                                                                                                                                                                                                     |
+| :----------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`develop`](../../skills/develop/SKILL.md) | Builds, updates and improves skills and the agents and teams they dispatch: decides whether the need is a skill at all, researches, reuses before it creates, gates every build with its validator and independent reviewers, and learns from a skill's mistakes |
+
+`develop` carries everything it needs in its own folder, so it works in any
+repository: its Development team in `agents/`, five agents and their roster,
+and two standard-library scripts in `scripts/`. `validate.py` checks a skill,
+an agent, a team or a library against the format every app accepts, and
+`package.py` builds a `.skill` archive for the Claude app, with the team
+vendored and the same bytes on every rebuild. Their tests live in
+[`scripts/test_develop.py`](../../scripts/test_develop.py), outside the
+skill, so they never ship. A skill only one repository needs lives in that
+repository's `.agents/skills/` and `.claude/skills/`, never here.
 
 `scripts/kit.py` bundles every folder in [`skills/`](../../skills/README.md)
 into `home/kit.json`, and the home kit copies each one into

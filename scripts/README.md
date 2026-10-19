@@ -45,6 +45,7 @@ for `sync.py`.
 | [`README.md`](README.md)             | This file.                                                                                  |
 | [`render.py`](render.py)             | Render the universal rules from the Constitution into every copy this hub publishes.        |
 | [`sync.py`](sync.py)                 | Deliver the universal rules to every repository the owner owns, and keep them there.        |
+| [`test_develop.py`](test_develop.py) | Tests for the develop skill's validator and packager.                                       |
 | [`test_guard.py`](test_guard.py)     | Tests for the guard hook.                                                                   |
 | [`test_install.py`](test_install.py) | Tests for the home kit installer.                                                           |
 | [`test_kit.py`](test_kit.py)         | Tests for the kit renderer.                                                                 |

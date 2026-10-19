@@ -37,15 +37,15 @@ _Built is not proven. A release and a probe run prove it._
 The modules the plan held back until after 1.0 are built, each with its own
 passing tests and a record in [`docs/adrs/`](../adrs/README.md):
 
-| Module                    | Delivers                                                                                         | Status                                                   |
-| :------------------------ | :----------------------------------------------------------------------------------------------- | :------------------------------------------------------- |
-| **Guard hooks**           | The [guard](../technical/The-Home-Kit.md), registered for every app by the installer             | Built; first loads with the release that carries the kit |
-| **Skills**                | One skill, [`building-skills`](../technical/Skills-&-Subagents.md), and the probe's skill canary | Built; run `make probe ARGS=--skills` on your machine    |
-| **The hierarchy**         | The [Worker and Reviewer](../technical/Skills-&-Subagents.md) subagents                          | Built                                                    |
-| **Knowledge**             | The [public facts](../technical/Knowledge.md), beside every home copy of the rules               | Built; the private tier waits                            |
-| **Evals**                 | [Scenarios for every rule](../technical/Evals.md), run with the block and without it             | Built; real runs are yours, `make evals`                 |
-| **Unattended sync**       | A [stub](../technical/Repository-Sync.md) in each repository, on its own token                   | Built; copy the stub in after the first release          |
-| **Machined-region check** | The standards' check that a block's hash matches its text, in every repository's CI              | Built in tannergolden/standards                          |
+| Module                    | Delivers                                                                                 | Status                                                   |
+| :------------------------ | :--------------------------------------------------------------------------------------- | :------------------------------------------------------- |
+| **Guard hooks**           | The [guard](../technical/The-Home-Kit.md), registered for every app by the installer     | Built; first loads with the release that carries the kit |
+| **Skills**                | One skill, [`develop`](../technical/Skills-&-Subagents.md), and the probe's skill canary | Built; run `make probe ARGS=--skills` on your machine    |
+| **The hierarchy**         | The [Worker and Reviewer](../technical/Skills-&-Subagents.md) subagents                  | Built                                                    |
+| **Knowledge**             | The [public facts](../technical/Knowledge.md), beside every home copy of the rules       | Built; the private tier waits                            |
+| **Evals**                 | [Scenarios for every rule](../technical/Evals.md), run with the block and without it     | Built; real runs are yours, `make evals`                 |
+| **Unattended sync**       | A [stub](../technical/Repository-Sync.md) in each repository, on its own token           | Built; copy the stub in after the first release          |
+| **Machined-region check** | The standards' check that a block's hash matches its text, in every repository's CI      | Built in tannergolden/standards                          |
 
 ---
 

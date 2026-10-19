@@ -14,6 +14,6 @@
     "In a Claude cloud session git's own identity is Claude's, so `git commit -s` and `git rebase --signoff` there would sign off as an AI; `--author` and `--trailer 'Signed-off-by: ...'` with your user's identity do not depend on it.",
     "The home kit's guard hook denies force pushes, merges, `--no-verify`, AI sign-offs, destructive commands and edits inside INTELLIGENCE blocks, and each denial names the rule it enforces.",
     "Repositories here carry `AGENTS.md` and no `CLAUDE.md`; Claude Code reads both only because the home kit sets its `instructionFiles` option.",
-    "Skills are written in tannergolden/intelligence under `skills/` and installed by the home kit; the `building-skills` skill says how to add one."
+    "Skills are written in tannergolden/intelligence under `skills/` and installed by the home kit; the `develop` skill says how to add one, and builds it."
   ]
 }

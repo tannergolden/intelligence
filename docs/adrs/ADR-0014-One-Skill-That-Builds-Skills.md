@@ -3,7 +3,7 @@ title: '📄 ADR-0014: ONE SKILL, THE ONE THAT BUILDS SKILLS'
 description: 'The hub ships exactly one skill for now, building-skills, which teaches an agent to decide whether a need is a skill at all and to build, test and ship one in the format every app accepts.'
 tags: [adr, skills, agent-skills, procedures]
 category: docs
-status: 'Proposed'
+status: 'Superseded'
 date: '2026-10-18'
 evidence: 'N/A'
 -->
@@ -20,6 +20,11 @@ evidence: 'N/A'
 _One skill now. The right shape for every one after._
 
 </div>
+
+> [!IMPORTANT]
+> **Superseded by [ADR-0021](ADR-0021-Develop-Is-The-One-Skill.md).** The one
+> skill is now `develop`, made to work in any repository, with this record's
+> decision table and format rules folded into it.
 
 ---
 

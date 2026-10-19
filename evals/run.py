@@ -29,7 +29,7 @@ Run it:
     python3 evals/run.py --check                       # validate every scenario and skill test
     python3 evals/run.py --apps claude --dry-run       # the plan
     python3 evals/run.py --apps claude --rules OPS-001,SEC-001 --runs 3
-    python3 evals/run.py --apps claude --skill building-skills
+    python3 evals/run.py --apps claude --skill develop
 """
 
 from __future__ import annotations

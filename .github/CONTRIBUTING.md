@@ -74,7 +74,7 @@ commit messages, sign-offs and pull requests.
 | [`CONSTITUTION.md`](../CONSTITUTION.md) | The source of every rule, and the order and budget of the block                     |
 | `scripts/`                              | `render.py`, `kit.py`, `install.py`, `guard.py` and `sync.py`, with their tests     |
 | `home/`                                 | The rendered home file, kit and hashes, which every release tag serves              |
-| `skills/`                               | The one skill, `building-skills`                                                    |
+| `skills/`                               | The one skill, `develop`, with its Development team                                 |
 | `subagents/`                            | The Worker and Reviewer subagents                                                   |
 | `knowledge/`                            | The public facts installed beside the rules                                         |
 | `evals/`                                | Scenarios for every rule, the skill trigger tests, and their runner                 |
@@ -100,7 +100,7 @@ commit messages, sign-offs and pull requests.
 ## ✋ Ask First
 
 - Cutting a release, running `make sync` or `make merge` against real repositories, or running a repository's 🔁 Intelligence Sync.
-- Adding a skill: the owner keeps one for now, `building-skills`.
+- Adding a universal skill: the owner keeps one, `develop`. A skill one repository needs lives in that repository.
 - Changing a rule's wording, its kind or its ID.
 
 ---

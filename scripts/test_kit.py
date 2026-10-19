@@ -223,7 +223,7 @@ class TestTheRealKit(unittest.TestCase):
 
     def test_there_is_exactly_one_skill_the_one_that_builds_skills(self) -> None:
         bundle, _ = kit.bundle(self.root)
-        self.assertEqual(list(bundle['skills']), ['building-skills'])
+        self.assertEqual(list(bundle['skills']), ['develop'])
         self.assertEqual(sorted(bundle['subagents']), ['reviewer', 'worker'])
 
 

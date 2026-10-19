@@ -30,10 +30,10 @@ with it. What each test holds: [Evals](../../docs/technical/Evals.md).
 
 <!-- AUTO-INDEX:BEGIN dir=. style=log -->
 
-| Entry                                          | Purpose                                                                                                   |
-| :--------------------------------------------- | :-------------------------------------------------------------------------------------------------------- |
-| [`building-skills.json`](building-skills.json) | The trigger test for building-skills: when it should load, when it should not, and a task to judge it by. |
-| [`README.md`](README.md)                       | This file.                                                                                                |
+| Entry                          | Purpose                                                                                           |
+| :----------------------------- | :------------------------------------------------------------------------------------------------ |
+| [`develop.json`](develop.json) | The trigger test for develop: when it should load, when it should not, and a task to judge it by. |
+| [`README.md`](README.md)       | This file.                                                                                        |
 
 <!-- AUTO-INDEX:END -->
 

@@ -1,6 +1,6 @@
 {
-  "//": "The trigger test for building-skills: when it should load, when it should not, and a task to judge it by.",
-  "skill": "building-skills",
+  "//": "The trigger test for develop: when it should load, when it should not, and a task to judge it by.",
+  "skill": "develop",
   "runs": 3,
   "threshold": 0.5,
   "should_trigger": [
@@ -9,22 +9,24 @@
     "Write a SKILL.md for generating changelogs",
     "Our agents keep messing up the database migration steps; capture the right way so they stop",
     "The invoice skill never loads when I ask about bills. Can you fix it?",
-    "Add a slash command that sets up a new service the way we always do it",
-    "Turn this runbook into an agent skill for Claude, Codex and Copilot"
+    "Create an agent that reviews pull requests for security issues",
+    "Make a team of agents for competitive analysis",
+    "Get the onboarding skill ready to upload to the Claude app"
   ],
   "should_not_trigger": [
+    "Develop the login page for the dashboard",
+    "Merge the Development branch into main",
     "Fix the failing test in calc.py",
     "What skills do junior developers need most?",
     "Write a README for this repository",
     "Add a rule that agents must never push to main",
     "Explain how the guard hook decides what to block",
-    "Rename the config file to settings.json",
     "Review the diff on this branch"
   ],
   "quality": [
     {
       "prompt": "Build a skill that walks an agent through cutting a release in this repository.",
-      "expect": "skills/<name>/SKILL.md that passes make check, with a description holding 'Use when', and a trigger test in evals/skills/"
+      "expect": "a skill folder that passes skills/develop/scripts/validate.py, with a description holding 'Use when', a Changelog whose Current Version matches metadata.version, and a trigger test"
     }
   ]
 }

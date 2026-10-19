@@ -22,7 +22,7 @@ _One skill for now: the one that builds the rest._
 ## 💡 What This Folder Is For
 
 The skills the home kit installs, one folder each in the open Agent Skills
-format; for now, only [`building-skills/`](building-skills/SKILL.md). Where
+format; for now, only [`develop/`](develop/SKILL.md). Where
 they land and the rules every skill here follows: [Skills &
 Subagents](../docs/technical/Skills-&-Subagents.md).
 
@@ -32,10 +32,10 @@ Subagents](../docs/technical/Skills-&-Subagents.md).
 
 <!-- AUTO-INDEX:BEGIN dir=. style=log -->
 
-| Entry                                  | Purpose                                                       |
-| :------------------------------------- | :------------------------------------------------------------ |
-| [`building-skills/`](building-skills/) | The one skill: how to build, test and ship every other skill. |
-| [`README.md`](README.md)               | This file.                                                    |
+| Entry                    | Purpose                                                                                           |
+| :----------------------- | :------------------------------------------------------------------------------------------------ |
+| [`develop/`](develop/)   | The one skill: builds, tests and ships every other skill, and the agents and teams they dispatch. |
+| [`README.md`](README.md) | This file.                                                                                        |
 
 <!-- AUTO-INDEX:END -->
 

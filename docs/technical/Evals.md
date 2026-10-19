@@ -45,7 +45,7 @@ the difference.
 make evals ARGS='--check'                                   # validate, no model calls
 make evals ARGS='--apps claude --dry-run'                   # the plan
 make evals ARGS='--apps claude --rules OPS-001 --runs 3'    # one rule, three runs each way
-make evals ARGS='--apps claude --skill building-skills'     # a skill's trigger test
+make evals ARGS='--apps claude --skill develop'             # a skill's trigger test
 ```
 
 Claude Code, Codex and Copilot CLI have commands built in; give any other
