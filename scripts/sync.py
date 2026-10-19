@@ -317,6 +317,13 @@ def insert_point(text: str) -> int:
             i += 1
         return i
 
+    # YAML frontmatter, which an Obsidian note such as a knowledge vault's
+    # AGENTS.md opens with, only counts on the very first line, and it must
+    # stay there for its reader to see it: the block goes after it.
+    if lines and lines[0].rstrip('\r\n') == '---':
+        close = next((i for i in range(1, len(lines)) if lines[i].rstrip('\r\n') in ('---', '...')), None)
+        if close is not None:
+            index = close + 1
     index = skip_blank(index)
     if index < len(lines) and lines[index].lstrip().startswith('<!--'):
         while index < len(lines) and '-->' not in lines[index]:

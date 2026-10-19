@@ -488,6 +488,23 @@ class TestTextHandling(unittest.TestCase):
     def test_the_block_goes_at_the_top_of_a_file_with_no_header(self) -> None:
         self.assertEqual(sync.insert_point('Just notes.\n'), 0)
 
+    def test_the_block_goes_after_yaml_frontmatter_and_its_title(self) -> None:
+        front = '---\ntitle: "AGENTS.md"\nlayer: 0\n---\n'
+        text = front + '\n# Agents\n\nIntro.\n'
+        self.assertEqual(text[:sync.insert_point(text)], front + '\n# Agents\n')
+        self.assertEqual(sync.insert_point(front + 'Notes.\n'), len(front))
+
+    def test_a_rule_line_that_is_not_frontmatter_is_left_alone(self) -> None:
+        # Frontmatter opens on the first line and closes; anything else is a rule line.
+        self.assertEqual(sync.insert_point('\n---\ntitle: x\n---\nNotes.\n'), 1)
+        self.assertEqual(sync.insert_point('---\nNo end to it.\n'), 0)
+
+    def test_adopting_a_note_keeps_its_frontmatter_first(self) -> None:
+        agents = '---\ntitle: "AGENTS.md"\n---\n\n# Agents\n\nRead the folder notes.\n'
+        change = sync.adopt('vault', agents, None, CURRENT)
+        self.assertTrue(change.agents.startswith('---\ntitle: "AGENTS.md"\n---\n\n# Agents\n\n' + CURRENT))
+        self.assertTrue(change.agents.endswith('\nRead the folder notes.\n'))
+
     def test_headings_inside_code_fences_are_not_demoted(self) -> None:
         self.assertEqual(sync.demote('## A\n```\n# not a heading\n```\n'), '### A\n```\n# not a heading\n```\n')
 
