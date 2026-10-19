@@ -122,7 +122,7 @@ tables after every push:
 | [`actions/`](.github/actions/README.md)            | The composite actions this repository keeps for its own workflows, and for any other repository that calls them.                                              |
 | [`scripts/`](.github/scripts/README.md)            | The checks this repository runs on its own configuration, and the tests that guard them.                                                                      |
 | [`workflows/`](.github/workflows/README.md)        | Every workflow in this repository: the name it shows in the Actions tab, what triggers it, and what it does.                                                  |
-| [`CODEOWNERS`](.github/CODEOWNERS)                 | CODEOWNERS - review ownership                                                                                                                                 |
+| [`CODEOWNERS`](.github/CODEOWNERS)                 | Review ownership                                                                                                                                              |
 | [`CONTRIBUTING.md`](.github/CONTRIBUTING.md)       | How to work in the intelligence hub, for people and AI agents alike: its commands, what done means, its conventions, where things live and what to ask first. |
 | [`dependabot.yml`](.github/dependabot.yml)         | Dependabot - automated dependency updates                                                                                                                     |
 | [`release.yml`](.github/release.yml)               | GitHub auto-generated release notes configuration.                                                                                                            |

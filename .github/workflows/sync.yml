@@ -68,7 +68,7 @@ jobs:
       pull-requests: write # open or update the sync pull request
     steps:
       - name: '🛡️ Harden Runner'
-        uses: tannergolden/standards/actions/harden@v1
+        uses: tannergolden/standards/.github/actions/harden@v1
         with:
           egress-policy: audit
           notice: "🔁 Intelligence Sync: bringing this repository's AGENTS.md up to the latest release."
@@ -92,7 +92,7 @@ jobs:
 
       - name: '🚀 Open Or Update The Pull Request'
         if: ${{ steps.block.outputs.changed == 'true' }}
-        uses: tannergolden/standards/actions/open-pr@v1
+        uses: tannergolden/standards/.github/actions/open-pr@v1
         with:
           token: ${{ secrets.BOT_ACCESS_TOKEN || secrets.GITHUB_TOKEN }}
           branch: chore/intelligence
