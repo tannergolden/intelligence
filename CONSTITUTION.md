@@ -57,10 +57,10 @@ repository alone.
 
 Nothing waives an Invariant. Each one reaches every repository, and each names
 what enforces it outside the prompt, today or still to build, because prose
-alone cannot make an agent stop. On Claude Code the kit also restates the
-Invariants after a conversation is compacted, because Claude Code promises to
-re-read only a project-root CLAUDE.md after compaction, and a rule close to the
-action holds better than one far behind it.
+alone cannot make an agent stop. On a machine's own Claude Code install, the
+kit also restates the Invariants after a conversation is compacted, so they sit
+beside the work that follows, because a rule close to the action holds better
+than one far behind it.
 
 ### SEC-001
 
@@ -251,6 +251,8 @@ around it.
   app
 - a ConfigChange hook
 - agent configuration paths the agent cannot write
+- a guard registration a Claude cloud session is documented to read, since
+  its docs say it reads no user settings
 
 ### OPS-005
 

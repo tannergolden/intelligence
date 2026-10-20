@@ -31,7 +31,11 @@ the home file, the kit and the installer from one release, checks each against
 its pin, and installs Claude Code's share:
 
 - `~/.claude/CLAUDE.md`, with the rules between their markers;
-- the guard hook, registered in `~/.claude/settings.json`;
+- the guard hook, registered in `~/.claude/settings.json`, which Claude Code's
+  docs say a cloud session does not read; whether that covers a file written
+  inside the container is untested, as
+  [Backstops & Residual Risk](../operations/Backstops-&-Residual-Risk.md)
+  records;
 - the skills in `~/.claude/skills/` and the subagents in `~/.claude/agents/`.
 
 A kit that cannot be downloaded or misses its pin is left out, and the rules
