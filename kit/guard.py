@@ -1787,8 +1787,8 @@ def check_install(command: Simple) -> Verdict | None:
     elif program in ('pip', 'pipx', 'uv', 'uv pip', 'uv tool'):
         sub = next(iter(bare(args, {'--proxy', '--cache-dir', '--log', '--python', '-p', '-i', '--index-url',
                                     '--extra-index-url', '--index', '--default-index', '--pip-args', '--suffix'})), '')
-        if (program, sub) in (('pip', 'install'), ('pipx', 'install'), ('uv', 'add'), ('uv pip', 'install'),
-                              ('uv tool', 'install')):
+        if (program, sub) in (('pip', 'install'), ('pipx', 'install'), ('uv', 'add'), ('uv', 'sync'),
+                              ('uv', 'lock'), ('uv pip', 'install'), ('uv tool', 'install')):
             uv = program.startswith('uv')
             named = option_values(args, '--index-url', '--extra-index-url', *(
                 ('--index', '--default-index') if uv else ()))
