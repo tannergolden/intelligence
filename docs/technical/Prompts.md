@@ -85,18 +85,20 @@ what every repository can carry and to the shape its own practices describe.
   bullets, and every block of code fenced as `text` and closed, with no fence
   inside it. Each repository formats what a push touched, so a block a
   formatter would rewrite reads as edited there;
-- every universal prompt under its own `###` heading, with its **Use when**
-  and **Fill in** lines before one block of text that holds `<context>` and
-  then `<task>`, any `<constraints>`, and a `<done_when>` or an `<output>`,
-  every tag closed;
-- each detail that changes in a placeholder of capitals and underscores, and
-  at least one in every prompt;
+- every universal prompt under its own `###` heading, with a **Use when**
+  line, and a **Fill in** line exactly when it holds a placeholder, before one
+  block of text that holds `<context>` and then `<task>`, any `<constraints>`,
+  and a `<done_when>` or an `<output>`, every tag closed;
+- each detail only a person can give in a placeholder of capitals and
+  underscores, and no stray brace;
 - text an agent reads as it is meant: printable ASCII, no emphasis in
   capitals, no slot such as `$ARGUMENTS` that an app fills by itself, no
   character that hides or reorders text, and none of the wording the model
   makers now find useless or harmful, such as "think step by step" or a
   persona;
-- no prompt over 1,600 characters, and no two headings alike.
+- no prompt over 1,600 characters, and no two headings alike;
+- a "Find A Prompt" index that links every prompt once, by its name, and marks
+  with ✏️ each one that has details to fill in.
 
 Where Prettier is installed, `make test` also runs it over the source with the
 standards' configuration, and fails on any line it would change.

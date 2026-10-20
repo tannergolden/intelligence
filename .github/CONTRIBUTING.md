@@ -52,7 +52,7 @@ commit messages, sign-offs and pull requests.
 - `make check` passes, and its output is in your report.
 - A change to `CONSTITUTION.md`, anything in `kit/` or `.github/scripts/install.py` is followed by `make render`, and the rendered files are committed with it.
 - A new rule gets a scenario in `evals/scenarios/`, a new skill a trigger test in `evals/skills/`, and a new universal prompt a scenario in `evals/prompts/`, with a `proof` its checks pass and doing nothing fails.
-- A change to `setup/Prompts.md` stays as Prettier writes it, with the standards' configuration, and passes `prompts.py --check`; a reworded prompt brings its scenario in `evals/prompts/` along.
+- A change to `setup/Prompts.md` stays as Prettier writes it, with the standards' configuration, and passes `prompts.py --check`; a reworded prompt brings its scenario in `evals/prompts/` along, and a new one gets a link in the "Find A Prompt" index.
 - Every new script has tests beside it, and every folder's `README.md` logs its files, except inside a skill's folder.
 - A change to how something works updates its document in `docs/` in the same commit, in the folder for its kind: `docs/technical/` for how a part works, `docs/distribution/` for how a release ships, `docs/operations/` for the controls and risks.
 

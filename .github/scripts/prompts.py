@@ -28,20 +28,24 @@ with its line:
   Markdown would otherwise rewrite the block and break its hash, and the
   standards' Machined Block Check finds the markers by skipping fences;
 - no character that hides or reorders text, anywhere in the block;
-- every universal prompt under its own `###` heading, with its **Use when**
-  and **Fill in** lines before one block of text;
+- every universal prompt under its own `###` heading, with a **Use when**
+  line before one block of text, and a **Fill in** line exactly when the
+  prompt holds a placeholder: a prompt ready to run has nothing to fill in;
 - in that text, only the sections the practices name, each closed, at most
   once and in their order: <context> and <task> always, and a <done_when>
   or an <output> to say when the work is done. A tag in backticks is only
   named, and nested tags, such as one that holds a pasted error, are free;
 - each detail that changes in a {{PLACEHOLDER}} of capitals and
-  underscores, at least one in every prompt, and no stray brace;
+  underscores, and no stray brace;
 - text an agent reads as it is meant: printable ASCII, the way the rules
   are, no emphasis in capitals, which current models overreact to, and no
   slot such as $ARGUMENTS that an app fills by itself when a prompt is
   saved as its command, and none of the wording the model makers now
   find useless or harmful, such as "think step by step" or a persona;
-- no prompt longer than its cap, and no two headings alike.
+- no prompt longer than its cap, and no two headings alike;
+- a "## Find A Prompt" part that links every prompt once, by its name,
+  marks each prompt with details to fill in, and links nothing else, so a
+  reader finds any prompt among dozens and knows which ask for details.
 
 Run it:
 
@@ -84,6 +88,13 @@ ENDINGS = ('done_when', 'output')
 # The most one prompt's text may run to. A prompt is pasted whole, and each
 # line it adds is one more the agent weighs against the task.
 CAP = 1600
+
+# The part that links every prompt, so a reader finds one among dozens.
+INDEX_NAME = 'Find A Prompt'
+INDEX = re.compile(r'^## (?:\S+ )?' + re.escape(INDEX_NAME) + r'\s*$')
+# The mark the index puts after a prompt with details to fill in, so a reader knows before copying it.
+MARK = '\u270f\ufe0f'
+LINK = re.compile(r'\[(?P<text>[^\]]+)\]\(#(?P<anchor>[^)\s]+)\)(?P<mark> \u270f\ufe0f?)?')
 
 OPEN = '```text'
 CLOSE = '```'
@@ -192,6 +203,11 @@ class Prompt:
     text_line: int = 0  # the line that text starts on
     blocks: int = 0  # how many blocks of text it holds
 
+    @property
+    def ready(self) -> bool:
+        """Whether it runs as it is, with nothing to fill in: it has no **Fill in** line."""
+        return '**Fill in**' not in '\n'.join(self.lead)
+
 
 def parse(inner: str, first: int = 1) -> tuple[list[Prompt], list[tuple[int, str]]]:
     """The universal prompts in a block's text, and each line a formatter or a fence reader would take otherwise.
@@ -284,10 +300,8 @@ def parse(inner: str, first: int = 1) -> tuple[list[Prompt], list[tuple[int, str
 def check(prompt: Prompt) -> list[tuple[int, str]]:
     """Every way one universal prompt departs from the shape the practices describe."""
     found: list[tuple[int, str]] = []
-    lead = '\n'.join(prompt.lead)
-    if '**Use when**' not in lead or '**Fill in**' not in lead:
-        found.append((prompt.line, f'"{prompt.name}" says when to use it with **Use when**, and what to fill in '
-                                   'with **Fill in**, before its text'))
+    if '**Use when**' not in '\n'.join(prompt.lead):
+        found.append((prompt.line, f'"{prompt.name}" says when to use it with **Use when**, before its text'))
     if prompt.blocks != 1:
         found.append((prompt.line, f'"{prompt.name}" holds {prompt.blocks} blocks of text, where a prompt is one '
                                    'block, copied whole'))
@@ -372,15 +386,81 @@ def placeholders(prompt: Prompt) -> list[tuple[int, str]]:
     for single in SINGLE.finditer(text):
         found.append((line(single.start()), f'"{name}": {single.group(0)} takes double braces, as '
                                             f'{{{single.group(0)}}}'))
-    if not PLACEHOLDER.search(text):
-        found.append((prompt.line, f'"{name}" marks nothing to fill in; put each detail that changes from one use '
-                                   'to the next in a {{PLACEHOLDER}}'))
+    marked = PLACEHOLDER.search(text)
+    if prompt.ready and marked:
+        found.append((line(marked.start()), f'"{name}" holds {marked.group(0)} but no **Fill in** line; a prompt '
+                                            'ready to run has nothing to fill in, and one with a placeholder says '
+                                            'what to fill in'))
+    if not prompt.ready and not marked:
+        found.append((prompt.line, f'"{name}" says what to fill in but marks nothing; put each detail that changes '
+                                   'from one use to the next in a {{PLACEHOLDER}}, or drop the **Fill in** line'))
+    return found
+
+
+def anchor(name: str) -> str:
+    """The anchor GitHub gives a heading: lowercase, with punctuation and emoji dropped and spaces as hyphens."""
+    return re.sub(r'[^\w\- ]', '', name.lower()).replace(' ', '-')
+
+
+def index(inner: str, first: int, prompts: list[Prompt]) -> list[tuple[int, str]]:
+    """The index part: one link to every universal prompt, each named as its heading, and no link to nowhere.
+
+    A reader finds a prompt there among dozens, so a prompt the index leaves
+    out is a prompt nobody finds.
+    """
+    rows = inner.replace('\r\n', '\n').split('\n')
+    start = next((at for at, row in enumerate(rows) if INDEX.match(row)), None)
+    if start is None:
+        return [(first, f'the block has no "## {INDEX_NAME}" part, the index that links every prompt')]
+    found: list[tuple[int, str]] = []
+    targets: dict[str, Prompt] = {}
+    for prompt in prompts:
+        if anchor(prompt.name) in targets:
+            found.append((prompt.line, f'"{prompt.name}" and "{targets[anchor(prompt.name)].name}" share the anchor '
+                                       f'#{anchor(prompt.name)}'))
+        targets.setdefault(anchor(prompt.name), prompt)
+    linked: dict[str, int] = {}
+    for at in range(start + 1, len(rows)):
+        if re.match(r'^#{2,3} ', rows[at]):
+            break
+        for link in LINK.finditer(rows[at]):
+            number, target = first + at, targets.get(link.group('anchor'))
+            if target is None:
+                found.append((number, f'the index links #{link.group("anchor")}, which no prompt heading makes'))
+                continue
+            if link.group('text') != target.name:
+                found.append((number, f'the index calls "{target.name}" "{link.group("text")}"; name it as its '
+                                      'heading does'))
+            if target.name in linked:
+                found.append((number, f'the index links "{target.name}" again; the first link is on line '
+                                      f'{linked[target.name]}'))
+            elif target.ready and link.group('mark'):
+                found.append((number, f'the index marks "{target.name}" {MARK}, but it runs as it is, with '
+                                      'nothing to fill in'))
+            elif not target.ready and not link.group('mark'):
+                found.append((number, f'"{target.name}" has details to fill in; mark its link in the index '
+                                      f'with {MARK}'))
+            linked.setdefault(target.name, number)
+    for prompt in prompts:
+        if prompt.name not in linked:
+            found.append((prompt.line, f'"{prompt.name}" is missing from the "{INDEX_NAME}" index'))
     return found
 
 
 def listed(names: list[str]) -> str:
     """Names as prose: A; A and B; A, B and C."""
     return names[0] if len(names) == 1 else ', '.join(names[:-1]) + ' and ' + names[-1]
+
+
+# The most prompts a pull request names in one breath; past it, it counts them and names the first few.
+MOST_NAMED = 6
+
+
+def named(verb: str, names: list[str]) -> str:
+    """What a change does to some prompts: "adds Plan A Change", or "adds 9 prompts (A, B, C and 6 more)"."""
+    if len(names) <= MOST_NAMED:
+        return f'{verb} {listed(names)}'
+    return f'{verb} {len(names)} prompts ({", ".join(names[:3])} and {len(names) - 3} more)'
 
 
 def compare(old: str, new: str) -> str:
@@ -394,8 +474,8 @@ def compare(old: str, new: str) -> str:
     added = [name for name in after if name not in before]
     reworded = [name for name in after if name in before and after[name] != before[name]]
     dropped = [name for name in before if name not in after]
-    parts = ([f'adds {listed(added)}'] if added else []) + ([f'rewords {listed(reworded)}'] if reworded else []) + (
-        [f'drops {listed(dropped)}'] if dropped else [])
+    parts = [named(verb, names) for verb, names in (('adds', added), ('rewords', reworded), ('drops', dropped))
+             if names]
     return listed(parts) if parts else 'changes only the guide around the prompts'
 
 
@@ -410,6 +490,7 @@ def lint(source: str) -> list[str]:
         found.append((first, 'the block holds no universal prompt under a "### " heading'))
     for prompt in prompts:
         found += check(prompt)
+    found += index(match.group('inner'), first, prompts)
     return [f'{SOURCE}:{number}: {message}' for number, message in sorted(found)]
 
 
@@ -445,9 +526,11 @@ def main(argv: list[str] | None = None) -> int:
     release = load(args.root)
     if args.check:
         universal, _ = parse(find(release.seed).inner)
+        ready = sum(prompt.ready for prompt in universal)
         longest = max(universal, key=lambda prompt: len(prompt.text))
-        print(f'prompts: {len(universal)} universal prompts, the longest "{longest.name}" at '
-              f'{len(longest.text)} of {CAP} characters; sha256 {release.marker[:12]}')
+        print(f'prompts: {len(universal)} universal prompts, {ready} ready to run and {len(universal) - ready} '
+              f'to fill in; the longest "{longest.name}" at {len(longest.text)} of {CAP} characters; '
+              f'sha256 {release.marker[:12]}')
         return 0
     print(release.seed, end='')
     return 0

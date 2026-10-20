@@ -47,7 +47,9 @@ render = prompts.render
 PROMPT = ('### Fix A Bug\n\n**Use when** it breaks. **Fill in** what broke.\n\n```text\n<context>\n'
           '{{WHAT_BROKE}} is broken.\n</context>\n\n<task>\nFix it.\n</task>\n\n<done_when>\n'
           '- The checks pass.\n</done_when>\n```\n')
-INNER = f'## How\n\nCopy one.\n\n{PROMPT}'
+INNER = f'## How\n\nCopy one.\n\n## Find A Prompt\n\n- [Fix A Bug](#fix-a-bug) {prompts.MARK}\n\n{PROMPT}'
+READY = ('### Tour The Code\n\n**Use when** you are new here.\n\n```text\n<context>\nI am new to this '
+         'repository.\n</context>\n\n<task>\nShow me around it.\n</task>\n\n<output>\nA short tour.\n</output>\n```\n')
 SOURCE = ('<!--\ntitle: x\n-->\n\n# Prompts\n\n---\n\n<!-- INTELLIGENCE:PROMPTS:BEGIN -->\n\n' + INNER +
           '\n<!-- INTELLIGENCE:PROMPTS:END -->\n\n---\n\n## Prompts For This Repository\n\n_Yours._\n')
 
@@ -179,7 +181,7 @@ FORMATTER_CASES = {
     'a second blank line in a row': changed(('Copy one.\n', 'Copy one.\n\n')),
     'a bullet a formatter rewrites': changed(('Copy one.', '* Copy one.')),
     'a numbered item a formatter rewrites': changed(('Copy one.', '1) Copy one.')),
-    'no blank line before it': changed(('Copy one.\n\n###', 'Copy one.\n###')),
+    'no blank line before it': changed((f'{prompts.MARK}\n\n###', f'{prompts.MARK}\n###')),
     'no blank line after it': changed(('## How\n\n', '## How\n')),
     'a list with no blank line before it': changed(('Copy one.', 'Copy one.\n- Paste it.')),
     'a line run on from a list item': changed(('Copy one.', '- Copy one.\nPaste it.')),
@@ -247,7 +249,7 @@ class TestLint(unittest.TestCase):
             'is not a placeholder': changed(('{{WHAT_BROKE}}', '{{what broke}}')),
             'a stray {{': changed(('{{WHAT_BROKE}}', '{{WHAT_BROKE}')),
             'takes double braces, as {{WHAT_BROKE}}': changed(('{{WHAT_BROKE}}', '{WHAT_BROKE}')),
-            'marks nothing to fill in': changed(('{{WHAT_BROKE}}', 'The parser')),
+            'says what to fill in but marks nothing': changed(('{{WHAT_BROKE}}', 'The parser')),
         }
         for fragment, text in cases.items():
             with self.subTest(fragment=fragment):
@@ -284,6 +286,33 @@ class TestLint(unittest.TestCase):
             with self.subTest(fragment=fragment):
                 self.assertCaught(fragment, text)
 
+    def test_a_prompt_ready_to_run_has_nothing_to_fill_in(self) -> None:
+        ready = changed((prompts.MARK, f'{prompts.MARK}, [Tour The Code](#tour-the-code)'),
+                        (PROMPT, f'{PROMPT}\n{READY}'))
+        self.assertEqual(prompts.lint(ready), [])
+        self.assertCaught('holds {{WHERE}} but no **Fill in** line', ready.replace('Show me around it.',
+                                                                                    'Show me {{WHERE}}.'))
+        marked = ready.replace('(#tour-the-code)', f'(#tour-the-code) {prompts.MARK}')
+        self.assertCaught('marks "Tour The Code"', marked)
+
+    def test_the_index_links_every_prompt_once_by_its_name(self) -> None:
+        cases = {
+            'the block has no "## Find A Prompt" part': changed(('## Find A Prompt', '## Prompts')),
+            '"Fix A Bug" is missing from the "Find A Prompt" index': changed(('- [Fix A Bug](#fix-a-bug)', '- None.')),
+            'the index links #fix-it, which no prompt heading makes': changed(('(#fix-a-bug)', '(#fix-it)')),
+            'the index calls "Fix A Bug" "Bug Fixing"': changed(('[Fix A Bug]', '[Bug Fixing]')),
+            'the index links "Fix A Bug" again': changed(('- [Fix A Bug](#fix-a-bug)',
+                                                            '- [Fix A Bug](#fix-a-bug), [Fix A Bug](#fix-a-bug)')),
+            '"Fix A Bug" has details to fill in; mark its link': changed((f' {prompts.MARK}', '')),
+        }
+        for fragment, text in cases.items():
+            with self.subTest(fragment=fragment):
+                self.assertCaught(fragment, text)
+
+    def test_a_heading_anchors_as_github_makes_it(self) -> None:
+        self.assertEqual([prompts.anchor(name) for name in ('Fix A Bug', 'Clean Up & Simplify', "Owner's Guide")],
+                         ['fix-a-bug', 'clean-up--simplify', 'owners-guide'])
+
     def test_capitals_in_a_placeholder_are_no_emphasis(self) -> None:
         self.assertEqual(prompts.lint(changed(('{{WHAT_BROKE}}', '{{WHAT_MUST_WORK}}'))), [])
 
@@ -314,6 +343,11 @@ class TestCompare(unittest.TestCase):
     def test_names_read_as_prose(self) -> None:
         self.assertEqual([prompts.listed(names) for names in (['A'], ['A', 'B'], ['A', 'B', 'C'])],
                          ['A', 'A and B', 'A, B and C'])
+
+    def test_a_long_list_is_counted_with_its_first_names(self) -> None:
+        many = [f'Prompt {number}' for number in range(1, 10)]
+        self.assertEqual(prompts.named('adds', many[:6]), 'adds ' + prompts.listed(many[:6]))
+        self.assertEqual(prompts.named('adds', many), 'adds 9 prompts (Prompt 1, Prompt 2, Prompt 3 and 6 more)')
 
 
 @unittest.skipUnless(shutil.which('prettier'), 'Prettier is not installed')

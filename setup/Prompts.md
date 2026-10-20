@@ -30,6 +30,12 @@ _Copy one. Fill it in. Paste it._
 4. Paste it into your AI app. An agent working in this repository also reads its `AGENTS.md`; an app that cannot see the repository needs the files you paste with it.
 5. Start a new session for each task. If the agent goes wrong twice, start again with a better prompt rather than correcting it a third time.
 
+## 🗺️ Find A Prompt
+
+Each prompt marked ✏️ asks for your details.
+
+- **Universal prompts:** [Fix A Bug](#fix-a-bug) ✏️, [Add A Feature](#add-a-feature) ✏️, [Plan A Change](#plan-a-change) ✏️, [Review My Change](#review-my-change) ✏️, [Explain This Code](#explain-this-code) ✏️, [Write A New Prompt](#write-a-new-prompt) ✏️
+
 ## 🧰 Universal Prompts
 
 ### Fix A Bug
