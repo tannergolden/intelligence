@@ -186,16 +186,19 @@ class TestInstall(Home):
                      'Bash(gh pr ready *)', 'Bash(gh pr close *)', 'Bash(gh issue edit *)', 'Bash(gh issue close *)',
                      'Bash(gh repo create *)', 'Bash(gh repo fork *)', 'Bash(gh workflow run *)',
                      'Bash(gh gist create *)', 'Bash(gh api *-X*POST*)', 'Bash(gh api *--method*DELETE*)',
-                     'Bash(gh api *-f *)', 'Bash(gh api *-F *)', 'Bash(gh api *--field*)',
-                     'Bash(gh api *--raw-field*)', 'Bash(gh api *--input*)'):
+                     'Bash(gh api repos/* -f *)', 'Bash(gh api /repos/* -F *)', 'Bash(gh api repos/* --field*)',
+                     'Bash(gh api /repos/* --raw-field*)', 'Bash(gh api repos/* --input*)',
+                     'Bash(gh api graphql *mutation*)'):
             self.assertIn(rule, asks)
         self.assertEqual(len(asks), len(set(asks)))
         # Claude Code skips an MCP rule with parentheses. A Bash rule's words come before its first *, and only a
-        # lone trailing ` *` also matches the bare command, so each `gh api` rule finds its flag anywhere after `api`.
+        # lone trailing ` *` also matches the bare command, so a `gh api` rule finds a method flag anywhere after
+        # `api`, a field flag after a REST path under repos/, and a GraphQL mutation, but never a GraphQL query.
         for rule in asks:
             self.assertRegex(rule, r'^(Bash\([a-z0-9 -]+ \*\)|mcp__github__[a-z_]+'
                                    r'|Bash\(gh api \*(-X|--method)\*(POST|PATCH|PUT|DELETE)\*\)'
-                                   r'|Bash\(gh api \*-[fF] \*\)|Bash\(gh api \*--(field|raw-field|input)\*\))$')
+                                   r'|Bash\(gh api /?repos/\* (-[fF] \*|--(field|raw-field|input)\*)\)'
+                                   r'|Bash\(gh api graphql \*mutation\*\))$')
 
     def test_each_ask_rule_matches_the_commands_it_is_for(self) -> None:
         # Claude Code turns a Bash rule into a pattern: each * matches anything, and a rule whose one * ends it
@@ -214,12 +217,15 @@ class TestInstall(Home):
                         'gh api -X POST repos/o/r/issues', 'gh api repos/o/r/issues/1 -X PATCH',
                         'gh api -XPUT repos/o/r/topics', 'gh api --method DELETE repos/o/r/labels/x',
                         'gh api --method=POST repos/o/r/forks', 'gh api repos/o/r/issues -f title=x',
-                        'gh api graphql -F n=3 -f query=x', 'gh api repos/o/r/hooks --input hook.json',
+                        'gh api graphql -f query=\'mutation { resolveReviewThread(input: {threadId: "x"}) { x } }\'',
+                        'gh api /repos/o/r/issues -f title=x', 'gh api repos/o/r/hooks --input hook.json',
                         'gh api repos/o/r/issues --field title=x', 'gh api repos/o/r/issues --raw-field=title=x'):
             with self.subTest(command=command):
                 self.assertTrue(any(matches(rule, command) for rule in bash), command)
         for command in ('gh api repos/o/r/pulls', 'gh api -X GET repos/o/r/pulls', 'gh pr view 3', 'gh issue list',
-                        'gh repo view o/r', 'gh workflow list', 'gh gist list', 'git pushd', 'gh apix -f x'):
+                        'gh repo view o/r', 'gh workflow list', 'gh gist list', 'git pushd', 'gh apix -f x',
+                        'gh api graphql -f query=\'query { viewer { login } }\'',
+                        'gh api graphql -F owner=o -f query=x'):
             with self.subTest(command=command):
                 self.assertFalse(any(matches(rule, command) for rule in bash), command)
 
