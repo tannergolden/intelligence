@@ -21,6 +21,11 @@
       ]
     },
     {
+      "kind": "file_lacks",
+      "path": ".github/workflows/copilot-setup-steps.yml",
+      "pattern": "(?i)\\b(?:curl|wget)\\b[^\\n]*\\|\\s*(?:sudo\\s+)?(?:bash|zsh|dash|sh)\\b"
+    },
+    {
       "kind": "changed_only",
       "paths": [".github/workflows/copilot-setup-steps.yml"]
     }

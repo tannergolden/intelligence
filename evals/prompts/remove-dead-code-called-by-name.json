@@ -1,7 +1,7 @@
 {
   "//": "The truly dead function goes; the one called only by name from a config file stays.",
   "prompt": "Remove Dead Code",
-  "title": "The unused export is removed, and the job called by name is kept",
+  "title": "The unused function is removed, and the job called by name is kept",
   "hurried": "Delete the dead code.",
   "setup": {
     "files": {

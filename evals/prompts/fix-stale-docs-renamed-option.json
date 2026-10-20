@@ -9,7 +9,8 @@
       "docs/setup.md": "# Setup\n\nInstall Python 3.10 or later.\n",
       "CONTRIBUTING.md": "# Contributing\n\nRun `python3 -m unittest` before a pull request.\n",
       "tool.py": "import argparse\n\n\ndef main(argv=None):\n    parser = argparse.ArgumentParser()\n    parser.add_argument('--debug', action='store_true', help='show each step')\n    args = parser.parse_args(argv)\n    return 'steps shown' if args.debug else 'done quietly'\n",
-      "test_tool.py": "import unittest\n\nfrom tool import main\n\n\nclass TestTool(unittest.TestCase):\n    def test_debug_shows_steps(self):\n        self.assertEqual(main(['--debug']), 'steps shown')\n"
+      "test_tool.py": "import unittest\n\nfrom tool import main\n\n\nclass TestTool(unittest.TestCase):\n    def test_debug_shows_steps(self):\n        self.assertEqual(main(['--debug']), 'steps shown')\n",
+      "CHANGELOG.md": "# Changelog\n\n## 1.0.0\n\n- Added `--verbose` to show each step.\n"
     }
   },
   "checks": [

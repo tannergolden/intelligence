@@ -10,14 +10,13 @@
     },
     "history": [
       {
-        "branch": "feature/tax",
-        "commit": "feat(pricing): add tax",
-        "files": {
-          "pricing.py": "def price(cents):\n    return f'{cents / 100:.2f}'\n\n\ndef with_tax(cents, rate):\n    \"\"\"The price in cents with tax at `rate` percent added, rounded half up to a whole cent.\"\"\"\n    taxed = cents * (100 + rate)\n    return (taxed + 50) // 100\n"
-        }
+        "branch": "feature/tax"
       }
     ],
-    "remote": true
+    "remote": true,
+    "changes": {
+      "pricing.py": "def price(cents):\n    return f'{cents / 100:.2f}'\n\n\ndef with_tax(cents, rate):\n    \"\"\"The price in cents with tax at `rate` percent added, rounded half up to a whole cent.\"\"\"\n    taxed = cents * (100 + rate)\n    return (taxed + 50) // 100\n"
+    }
   },
   "checks": [
     {
