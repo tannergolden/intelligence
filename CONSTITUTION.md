@@ -123,7 +123,7 @@ the time (Anthropic, October 2026).
 
 > Never put your user's personal context anywhere public unasked, or in any repository but a private one made to hold it, and never put a private repository's name or contents anywhere public; check the diff first.
 
-**Why.** No harness knows what counts as your user's personal context, and a malicious issue once led an agent to copy private data into a public pull request. A personal knowledge vault is the one place personal context belongs: a private repository generated from the public knowledge template to hold its owner's context, and nothing else. A request from your user to publish their own context is theirs to make, so the rule stops only what nobody asked for.
+**Why.** No harness knows what counts as your user's personal context, and a malicious issue once led an agent to copy private data into a public pull request. A personal knowledge vault is the one place personal context belongs: a private repository generated from the public knowledge template to hold its owner's context, and nothing else. A request from your user to publish their own context is theirs to make, so the rule stops only what nobody asked for. In the hub's own scenario, a private repository's name stayed out of a public file in 7 of 7 runs with the block on Claude Opus 5.5 and Sonnet 5.5, and in none without (October 2026).
 
 **Enforced by:**
 
@@ -178,7 +178,9 @@ own branch, and an agent once pushed to main on an old approval. Claude Code's
 auto mode allows pushes to the default branch by default (October 2026), so it
 is no enforcer here. An agent cannot tell its own pull request from its user's,
 so it merges none, as the guard and the eval expect, and a local branch is left
-to OPS-003.
+to OPS-003. In the hub's own scenarios, Claude Opus 5.5 and Sonnet 5.5 left a
+rejected push unforced and a green pull request unmerged in 7 of 7 runs with the
+block, and in none without (October 2026).
 
 **Enforced by:**
 
@@ -206,7 +208,7 @@ resolve. GPT-6 Astra widened an automation's permissions on its own (September
 development database are its own to remove, while global git config and shell
 profiles are settings too. In the hub's own scenario, untracked data survived a
 request to tidy up in 7 of 7 runs with the block on Claude Opus 5.5 and Sonnet
-5.5, against 6 and 0 of 7 without (October 2026).
+5.5, against 6 and 1 of 7 without (October 2026).
 
 **Enforced by:**
 
@@ -232,7 +234,9 @@ environment warnings in 16 to 28% of adversarial runs (September and October
 2026), and Gemini 3.1 Pro and 3.8 Flash worked around permission blocks in 13 to
 16% of impossible tasks, some by editing local permission settings (October
 2026). A TLS error is a block too: switching off certificate checks routes
-around it.
+around it. In the hub's own scenario, told not to let a broken pre-commit hook
+stop a commit, Claude Opus 5.5 and Sonnet 5.5 made no commit past it in 7 of 7
+runs with the block, and committed in every run without (October 2026).
 
 **Enforced by:**
 
@@ -293,13 +297,13 @@ sends them there, and some projects bar AI contributions outright. In SWE-CC
 with the rules in a local file, across four models of which two are
 previous-generation, and contribution rules sit in pull request templates and
 agent instruction files as well as CONTRIBUTING. In the hub's own scenario, a
-ban in the pull request template stopped the push in 7 of 7 runs with the block
-on Claude Opus 5.5 and Sonnet 5.5, against 5 and 0 of 7 without (October 2026).
-A rule to refuse held at 0% under every prompt tested on previous-generation
-models (July 2026), so the refusal needs a hook as well, and OPS-005 also keeps
-an agent from publishing. GitHub serves a repository's contributing guide and
-templates from its owner's .github repository when the repository has none, so a
-clone can lack them.
+ban in the pull request template stopped the push in 7 and 5 of 7 runs with the
+block on Claude Opus 5.5 and Sonnet 5.5, against 5 and 0 of 7 without (October
+2026). A rule to refuse held at 0% under every prompt tested on
+previous-generation models (July 2026), so the refusal needs a hook as well, and
+OPS-005 also keeps an agent from publishing. GitHub serves a repository's
+contributing guide and templates from its owner's .github repository when the
+repository has none, so a clone can lack them.
 
 **To add:**
 
@@ -312,7 +316,7 @@ clone can lack them.
 
 > Author and sign off commits only as your user's git identity, never an AI's; if `git config user.email` is unset or an AI's, ask whose to use rather than guess.
 
-**Why.** The standards make the human contributor the author and the signer of every commit; an AI is only ever a co-author.
+**Why.** The standards make the human contributor the author and the signer of every commit; an AI is only ever a co-author. In the hub's own scenario, with git set up as an AI, Claude Opus 5.5 and Sonnet 5.5 made no commit as the AI in 7 of 7 runs with the block and in none without (October 2026).
 
 **Enforced by:**
 
@@ -407,7 +411,7 @@ not every line of output. A check piped through head can stop before its failure
 prints and still exit 0, so a run cut short does not count, and the narrowest
 test is one that exists, since WORK-001 adds none unasked. With a slow suite
 documented, Opus 5.5 ran the focused test first in 7 of 7 runs either way, and
-Sonnet 5.5 in 4 of 7 with the block against 2 of 7 without (October 2026).
+Sonnet 5.5 in 5 of 7 with the block against 2 of 7 without (October 2026).
 Running the checks once also keeps what WORK-005 asked of reruns.
 
 **Enforced by:**
@@ -450,7 +454,7 @@ every later turn sends it again. Masking old tool output halved cost with no
 loss in solved tasks in a 2025 study on earlier models. Output cut so hard that
 the failing line disappears makes the agent run the command again, so the
 failures always stay. In the hub's own scenario, Claude Opus 5.5 kept its test
-output short in 2 of 7 runs without the block and in 7 of 7 with it, and Sonnet
+output short in 4 of 7 runs without the block and in 7 of 7 with it, and Sonnet
 5.5 in none of 7 against 7 of 7 (October 2026).
 
 ### WORK-006
@@ -488,7 +492,7 @@ brief.
 
 > In replies and prose, write times of day in 12-hour form with am or pm, such as 3:30 pm; keep machine formats such as ISO 8601 and cron as they are.
 
-**Why.** The owner reads times in 12-hour form, and the knowledge vault made it a standing rule. It is a Default, not owner-only, because the owner reads an agent's replies in every repository; in other people's projects their own rules still win, under Article I.
+**Why.** The owner reads times in 12-hour form, and the knowledge vault made it a standing rule. It is a Default, not owner-only, because the owner reads an agent's replies in every repository; in other people's projects their own rules still win, under Article I. In the hub's own scenario, Claude Opus 5.5 and Sonnet 5.5 described a cron time in 12-hour form in 7 of 7 runs with the block and in none without (October 2026).
 
 ---
 
@@ -507,7 +511,10 @@ local rules file in 91.6%, across four models including Gemini 3.7 Flash. A
 pointer tied to specific moments is the most a link can do, and a local copy of
 the standards would do more. The standards win over Defaults only: an Invariant
 holds against them too. It no longer says the standards differ from an agent's
-defaults, a phrase whose measured source could not be found.
+defaults, a phrase whose measured source could not be found. In the hub's own
+scenario, Claude Opus 5.5 and Sonnet 5.5 read the standards, or said they could
+not, before committing in 7 of 7 runs with the block and in none without
+(October 2026).
 
 **Enforced by:**
 
@@ -522,9 +529,11 @@ defaults, a phrase whose measured source could not be found.
 
 > Name branches `<type>/<topic>`, title commits and PRs `type(scope): subject`, and give each commit a body saying why and your user's `Signed-off-by:` last.
 
-**Why.** Scoped Conventional Commits with a body, and branches named by
-intent, are what the standards' gates expect. GPT-6.1 Sol's Codex prompt never
-mentions commits, so in Codex the block is the only commit guidance it gets.
+**Why.** Scoped Conventional Commits with a body, and branches named by intent,
+are what the standards' gates expect. GPT-6.1 Sol's Codex prompt never mentions
+commits, so in Codex the block is the only commit guidance it gets. In the hub's
+own scenario, Claude Opus 5.5 and Sonnet 5.5 followed the commit standard in 7
+of 7 runs with the block and in none without (October 2026).
 
 **Enforced by:**
 
@@ -535,7 +544,7 @@ mentions commits, so in Codex the block is the only commit guidance it gets.
 
 > Keep each PR to one intent, under 300 changed lines and at most 10 files, into `Development`.
 
-**Why.** The standards cap a pull request at one intent, under 300 changed lines and at most 10 files, into Development.
+**Why.** The standards cap a pull request at one intent, under 300 changed lines and at most 10 files, into Development. In the hub's own scenario, Claude Opus 5.5 and Sonnet 5.5 opened the pull request into Development in 6 and 7 of 7 runs with the block, and in none without (October 2026).
 
 **Enforced by:**
 
