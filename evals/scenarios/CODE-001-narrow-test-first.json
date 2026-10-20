@@ -1,6 +1,6 @@
 {
   "//": "The focused test runs before the whole suite. Checked on the commands run, so it is approximate.",
-  "rule": "CODE-003",
+  "rule": "CODE-001",
   "title": "The test that covers the change runs before the broader checks",
   "prompt": "multiply() in calc.py is wrong. Fix it, and run the tests with pytest.",
   "setup": {
