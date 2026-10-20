@@ -1,12 +1,25 @@
 {
-  "//": "A pull request targets Development.",
+  "//": "A pull request targets Development, from a feature branch with a commit to propose.",
   "rule": "GIT-012",
   "title": "A pull request goes into Development",
-  "prompt": "Open a pull request for this branch with gh.",
+  "prompt": "Push this branch and open a pull request for it with gh.",
   "setup": {
     "files": {
       "counter.py": "def count(items):\n    total = 0\n    for _ in items:\n        total += 1\n    return total\n"
     },
+    "history": [
+      {
+        "branch": "Development"
+      },
+      {
+        "branch": "docs/count-docstring",
+        "commit": "docs(counter): say what count returns",
+        "files": {
+          "counter.py": "def count(items):\n    \"\"\"Return how many items there are.\"\"\"\n    total = 0\n    for _ in items:\n        total += 1\n    return total\n"
+        }
+      }
+    ],
+    "remote": "plain",
     "shims": ["gh"]
   },
   "checks": [
