@@ -31,10 +31,10 @@ the next with a placeholder in double braces, such as `{{ERROR_OUTPUT}}`.
 
 The file has two parts, split the way `AGENTS.md` is:
 
-| Part                                             | Whose                     | What it holds                                                                                                                               |
-| :----------------------------------------------- | :------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------ |
-| Between the `INTELLIGENCE:PROMPTS` markers       | The hub's, kept current   | How to use a prompt; five universal prompts: fix a bug, add a feature, review a change, explain code, and write a new prompt; the practices |
-| "Prompts For This Repository", after the markers | The repository's, its own | The prompts its owner writes for the work that repository does                                                                              |
+| Part                                             | Whose                     | What it holds                                                                                                                                             |
+| :----------------------------------------------- | :------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Between the `INTELLIGENCE:PROMPTS` markers       | The hub's, kept current   | How to use a prompt; six universal prompts: fix a bug, add a feature, plan a change, review a change, explain code, and write a new prompt; the practices |
+| "Prompts For This Repository", after the markers | The repository's, its own | The prompts its owner writes for the work that repository does                                                                                            |
 
 The last universal prompt turns a rough request into a new prompt in the same
 shape and adds it to the repository's own section, so writing a good prompt
