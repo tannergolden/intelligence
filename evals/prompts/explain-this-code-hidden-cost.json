@@ -29,5 +29,6 @@
       "kind": "output_matches",
       "pattern": "(?i)never (?:removed|deleted|evicted|dropped|cleared|cleaned)|grows? (?:without|forever|unbounded|indefinitely)|unbounded|leak"
     }
-  ]
+  ],
+  "proof": "cat <<'EVAL_EOF'\ncache.py:13 get() returns None once an entry expires, but never removes it, so the cache leaks.\nEVAL_EOF\n"
 }

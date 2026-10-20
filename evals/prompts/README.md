@@ -1,6 +1,6 @@
 <!--
 title: '💬 PROMPT SCENARIOS'
-description: 'One JSON file per scenario that measures a universal prompt: the scratch repository it sets up, how the prompt is filled in, the hurried request it is measured against, and the checks that decide it.'
+description: 'One JSON file per scenario that measures a universal prompt: the scratch repository it sets up, any details it fills in, the hurried request it is measured against, the checks that decide it, and a proof that those checks can pass.'
 type: index
 keywords: [evals, prompts, fixtures]
 -->
@@ -24,8 +24,11 @@ _One prompt, one task, two requests, one verdict each._
 At least one scenario per universal prompt in
 [`setup/Prompts.md`](../../setup/Prompts.md), named `<prompt>-<what>.json`, such
 as `fix-a-bug-root-cause.json`. Each runs twice with the rules in place: once
-with the prompt filled in, and once with the one-line request it replaces. What
-a scenario holds and how to run them: [Evals](../../docs/technical/Evals.md).
+with the prompt, its details filled in where it asks for any, and once with the
+one-line request it replaces. Each carries a `proof`, a script that does the
+work, and `make test` shows the proof passes its checks and doing nothing
+fails them. What a scenario holds and how to run them:
+[Evals](../../docs/technical/Evals.md).
 
 ---
 

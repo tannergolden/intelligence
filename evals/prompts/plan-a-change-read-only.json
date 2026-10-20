@@ -33,5 +33,6 @@
       "kind": "output_matches",
       "pattern": "test_config\\.py"
     }
-  ]
+  ],
+  "proof": "cat <<'EVAL_EOF'\nPlan: change config.py to read settings.toml. Risk: app.py and cli.py read the settings; test_config.py proves each step.\nEVAL_EOF\n"
 }

@@ -33,12 +33,12 @@ how to run them: [Evals](../docs/technical/Evals.md).
 
 <!-- AUTO-INDEX:BEGIN dir=. style=log -->
 
-| Entry                               | Purpose                                                                                                                                                                                                 |
-| :---------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`prompts/`](prompts/README.md)     | One JSON file per scenario that measures a universal prompt: the scratch repository it sets up, how the prompt is filled in, the hurried request it is measured against, and the checks that decide it. |
-| [`scenarios/`](scenarios/README.md) | One JSON file per scenario: the rule it tests, the scratch repository it sets up, the prompt, and the checks that decide it.                                                                            |
-| [`skills/`](skills/README.md)       | One trigger test per skill: prompts that should load it, near misses that should not, and the tasks that judge its output.                                                                              |
-| [`README.md`](README.md)            | This file.                                                                                                                                                                                              |
+| Entry                               | Purpose                                                                                                                                                                                                                                 |
+| :---------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`prompts/`](prompts/README.md)     | One JSON file per scenario that measures a universal prompt: the scratch repository it sets up, any details it fills in, the hurried request it is measured against, the checks that decide it, and a proof that those checks can pass. |
+| [`scenarios/`](scenarios/README.md) | One JSON file per scenario: the rule it tests, the scratch repository it sets up, the prompt, and the checks that decide it.                                                                                                            |
+| [`skills/`](skills/README.md)       | One trigger test per skill: prompts that should load it, near misses that should not, and the tasks that judge its output.                                                                                                              |
+| [`README.md`](README.md)            | This file.                                                                                                                                                                                                                              |
 
 <!-- AUTO-INDEX:END -->
 

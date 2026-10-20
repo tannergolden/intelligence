@@ -16,6 +16,7 @@ Run it:
 
 from __future__ import annotations
 
+import concurrent.futures
 import contextlib
 import dataclasses
 import importlib.util
@@ -25,6 +26,7 @@ import os
 import pathlib
 import shlex
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -38,19 +40,24 @@ sys.modules[_spec.name] = run
 _spec.loader.exec_module(run)
 
 # A stand-in for an AI app. EVAL_ACT is a shell snippet it runs in the
-# repository, with the prompt as $1. With EVAL_CAREFUL set, it reads AGENTS.md
-# first and refuses when the universal rules are there.
+# repository, with the prompt as $1; `--act FILE` reads the snippet from a
+# file instead, so runs side by side each act their own. With EVAL_CAREFUL
+# set, it reads AGENTS.md first and refuses when the universal rules are there.
 FAKE_APP = '''\
 import os
 import pathlib
 import subprocess
 import sys
 
-prompt = sys.argv[1]
+args = sys.argv[1:]
+act = os.environ.get('EVAL_ACT', 'true')
+if args[0] == '--act':
+    act, args = pathlib.Path(args[1]).read_text(), args[2:]
+prompt = args[0]
 if os.environ.get('EVAL_CAREFUL') and 'INTELLIGENCE:BEGIN' in pathlib.Path('AGENTS.md').read_text():
     print('I will not do that; the rules forbid it. Should I do something else?')
     sys.exit(0)
-done = subprocess.run(['sh', '-c', os.environ.get('EVAL_ACT', 'true'), 'fake', prompt])
+done = subprocess.run(['sh', '-c', act, 'fake', prompt])
 print('done')
 sys.exit(done.returncode)
 '''
@@ -111,6 +118,14 @@ class TestTheScenarios(unittest.TestCase):
             'unknown check': run.Scenario(good.name, good.rule, 't', 'p', {}, [{'kind': 'vibes'}]),
             'unknown setup': run.Scenario(good.name, good.rule, 't', 'p', {'magic': 1}, [{'kind': 'head_unchanged'}]),
             'at least one check': run.Scenario(good.name, good.rule, 't', 'p', {}, []),
+            'history step 1 takes only': run.Scenario(good.name, good.rule, 't', 'p', {'history': [{'push': 'main'}]},
+                                                      good.checks),
+            'writes files but makes no commit': run.Scenario(
+                good.name, good.rule, 't', 'p', {'history': [{'files': {'a.txt': 'a\n'}}]}, good.checks),
+            'runs the "git" arguments it names': run.Scenario(
+                good.name, good.rule, 't', 'p', {'history': [{'git': 'reset --hard'}]}, good.checks),
+            'replies for gh, which is not one of its shims': run.Scenario(
+                good.name, good.rule, 't', 'p', {'replies': {'gh': 'issues'}}, good.checks),
         }
         for fragment, bad in cases.items():
             with self.subTest(fragment=fragment):
@@ -144,6 +159,7 @@ class TestThePromptScenarios(unittest.TestCase):
             'names the "paths" it carries back': dataclasses.replace(
                 good, checks=[{'kind': 'fails_before', 'argv': ['true']}]),
             'unknown keys': dataclasses.replace(good, keys=(*good.keys, 'vibes')),
+            'needs a proof': dataclasses.replace(good, proof=''),
         }
         for fragment, bad in cases.items():
             with self.subTest(fragment=fragment):
@@ -189,6 +205,31 @@ class TestSetUp(Fake):
         shutil.rmtree(self.root / 'scratch')
         stage = self.stage('OPS-001-merge')
         self.assertTrue(os.access(stage.bin / 'gh', os.X_OK))
+
+    def test_a_history_of_branches_commits_dates_commands_and_tags(self) -> None:
+        history = [
+            {'commit': 'feat: add a', 'files': {'a.txt': 'a\n'}, 'date': '2023-02-01T10:00:00', 'tag': 'v1.0.0'},
+            {'branch': 'feature/b', 'commit': 'feat: add b', 'files': {'b.txt': 'b\n'}},
+            {'checkout': 'main', 'commit': 'chore: drop a', 'delete': ['a.txt']},
+            {'git': ['reset', '-q', '--hard', 'HEAD~1']},
+        ]
+        made = run.Scenario('X-001-history', 'X-001', 't', 'p', {'history': history}, [{'kind': 'head_unchanged'}])
+        stage = run.set_up(made, False, self.root / 'scratch', run.placeholders())
+        self.assertEqual(run.git(stage.repo, 'rev-parse', '--abbrev-ref', 'HEAD'), 'main')
+        self.assertEqual(run.git(stage.repo, 'log', '-1', '--format=%s'), 'feat: add a')
+        self.assertEqual(run.git(stage.repo, 'log', '-1', '--format=%cd', '--date=short', 'v1.0.0'), '2023-02-01')
+        self.assertEqual(run.git(stage.repo, 'log', '-1', '--format=%s', 'feature/b'), 'feat: add b')
+        self.assertTrue((stage.repo / 'a.txt').exists(), 'the reset undid the commit that dropped it')
+        self.assertIn('chore: drop a', run.git(stage.repo, 'reflog', '--format=%gs'), 'kept in the reflog')
+
+    def test_a_shim_with_a_reply_prints_it_for_every_call_and_logs_each(self) -> None:
+        setup = {'shims': ['gh'], 'replies': {'gh': '#12 Crash on an empty name (open)\n'}}
+        made = run.Scenario('X-001-reply', 'X-001', 't', 'p', setup, [{'kind': 'head_unchanged'}])
+        stage = run.set_up(made, False, self.root / 'scratch', run.placeholders())
+        for argv in (['issue', 'list'], ['pr', 'view', '--comments']):
+            done = subprocess.run([str(stage.bin / 'gh'), *argv], capture_output=True, text=True, check=True)
+            self.assertEqual(done.stdout, '#12 Crash on an empty name (open)\n')
+        self.assertEqual(run.shim_calls(stage, 'gh'), ['issue list', 'pr view --comments'])
 
 
 class TestChecks(Fake):
@@ -368,6 +409,30 @@ class TestPromptChecks(Fake):
         self.assertFalse(self.measure('write-a-new-prompt-shape', inside)['checks'][1]['pass'])
         shapeless = self.measure('write-a-new-prompt-shape', append('docs/Prompts.md', '\nRelease notes, please.\n'))
         self.assertFalse(shapeless['checks'][2]['pass'])
+
+
+class TestEveryPromptScenario(Fake):
+    """Each prompt scenario can be passed, by its own proof, and cannot be passed by doing nothing."""
+
+    def test_each_proof_passes_and_doing_nothing_fails(self) -> None:
+        library = run.universal()
+        runs = [(measured, label, act, wanted) for measured in run.load_prompt_scenarios()
+                for label, act, wanted in (('proof', measured.proof, 'pass'), ('nothing', 'true', 'fail'))]
+
+        def attempt(index: int) -> dict:
+            measured, _, act, _ = runs[index]
+            script = self.root / f'act-{index}.sh'
+            script.write_text(act, encoding='utf-8')
+            app = ' '.join(shlex.quote(part) for part in (sys.executable, str(self.fake), '--act', str(script)))
+            return run.run_prompt_scenario(measured, library[measured.prompt], 'fake', True,
+                                           {'fake': f'{app} {{prompt}}'}, timeout=60)
+
+        # Every run sets up its own scratch repository, so they run side by side.
+        with concurrent.futures.ThreadPoolExecutor(max_workers=min(8, os.cpu_count() or 2)) as pool:
+            results = list(pool.map(attempt, range(len(runs))))
+        for (measured, label, _, wanted), result in zip(runs, results):
+            with self.subTest(scenario=measured.name, act=label):
+                self.assertEqual(result['status'], wanted, result['checks'])
 
 
 class TestCommandChecks(Fake):

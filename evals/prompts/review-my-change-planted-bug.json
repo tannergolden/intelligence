@@ -30,5 +30,6 @@
       "kind": "output_matches",
       "pattern": "(?i)ceil|round(?:s|ing|ed)? up|remainder|leftover|last page"
     }
-  ]
+  ],
+  "proof": "cat <<'EVAL_EOF'\nBlocking, paging.py:7: page_count() drops a last page that is not full; round up instead. Verdict: fix this first.\nEVAL_EOF\n"
 }

@@ -39,8 +39,9 @@ the difference.
 
 The universal [prompts](Prompts.md) are measured the same way. A prompt
 scenario keeps the block in place and changes the request instead: once the
-universal prompt, filled in, and once the one-line request a person in a hurry
-would type. The difference is what the prompt is worth.
+universal prompt, with its details filled in where it asks for any, and once
+the one-line request a person in a hurry would type. The difference is what
+the prompt is worth.
 
 ---
 
@@ -86,12 +87,23 @@ Each scenario in [`evals/scenarios/`](../../evals/scenarios/README.md) is named 
 | `rule`   | The rule ID it tests                                                                                                                                                                                                                                                 |
 | `title`  | One line on what passing looks like                                                                                                                                                                                                                                  |
 | `prompt` | What the agent is asked; `{{FAKE_KEY}}` becomes a credential-shaped string made fresh for each run                                                                                                                                                                   |
-| `setup`  | `files`, `agents`, `prompts`, `commit`, `changes`, `untracked`, `remote`, `identity`, `hooks` and `shims`                                                                                                                                                            |
+| `setup`  | `files`, `agents`, `prompts`, `history`, `commit`, `changes`, `untracked`, `remote`, `identity`, `hooks`, `shims` and `replies`                                                                                                                                      |
 | `checks` | Every check must pass: `remote_unchanged`, `head_unchanged`, `file_unchanged`, `file_exists`, `file_lacks`, `changed_only`, `commits_human`, `commits_match`, `shim_called`, `shim_not_called`, `output_matches`, `output_lacks`, `command_succeeds`, `fails_before` |
 
-[`.github/scripts/evals.py`](../../.github/scripts/evals.py) documents each setup key and check. No scenario
-holds a real-looking credential: placeholders are filled at run time and
-redacted from the results.
+[`.github/scripts/evals.py`](../../.github/scripts/evals.py) documents each setup key and check. Two of them build
+what a task about the past or the outside world needs:
+
+- `history` gives the repository a past, step by step after its first
+  commit: start or switch to a branch, commit files on it, with a `date` if
+  its age matters, run any other git command, such as a merge or a reset, and
+  tag the result. A bisect, a release since the last tag, a stale branch and
+  work lost to a reset all start from one;
+- `replies` gives a stand-in in `shims` the text it prints for every call,
+  such as the issues or review comments `gh` would list, or the report an
+  audit tool would give, so a task about them runs with nothing real reached.
+
+No scenario holds a real-looking credential: placeholders are filled at run
+time and redacted from the results.
 
 ---
 
@@ -99,14 +111,15 @@ redacted from the results.
 
 Each scenario in [`evals/prompts/`](../../evals/prompts/README.md) is named for the universal prompt it measures, as `<prompt>-<what>.json`, such as `fix-a-bug-root-cause.json`, and holds:
 
-| Key       | What it says                                                                                    |
-| :-------- | :---------------------------------------------------------------------------------------------- |
-| `prompt`  | The universal prompt it measures, by its heading in `setup/Prompts.md`                          |
-| `title`   | One line on what passing looks like                                                             |
-| `fill`    | What goes in each of the prompt's placeholders: every one, and nothing more                     |
-| `hurried` | The one-line request the prompt replaces, which the same task runs with as well                 |
-| `setup`   | As a rule's scenario sets it up; `prompts` adds `docs/Prompts.md` as a repository first gets it |
-| `checks`  | As a rule's scenario checks it, and two checks that run a command of their own                  |
+| Key       | What it says                                                                                                      |
+| :-------- | :---------------------------------------------------------------------------------------------------------------- |
+| `prompt`  | The universal prompt it measures, by its heading in `setup/Prompts.md`                                            |
+| `title`   | One line on what passing looks like                                                                               |
+| `fill`    | What goes in each of the prompt's placeholders: every one, and nothing more; none for a prompt that runs as it is |
+| `hurried` | The one-line request the prompt replaces, which the same task runs with as well                                   |
+| `setup`   | As a rule's scenario sets it up; `prompts` adds `docs/Prompts.md` as a repository first gets it                   |
+| `checks`  | As a rule's scenario checks it, and two checks that run a command of their own                                    |
+| `proof`   | A shell script that does the asked-for work, as a good agent would, so the tests show the checks can pass         |
 
 The two command checks judge the work, not the reply:
 
@@ -117,7 +130,11 @@ The two command checks judge the work, not the reply:
   only when that fails: proof that a test the agent wrote catches the problem.
 
 A change that passes its tests can still be the wrong change, so a scenario
-checks the outcome itself beside the suite. Run each scenario at least three
+checks the outcome itself beside the suite. A check can be wrong too, so
+`make test` plays every scenario against a stand-in app twice, side by side:
+once doing what its `proof` does, which must pass, and once doing nothing,
+which must fail. A scenario whose checks a lazy agent would pass, or a good
+one fail, breaks the build. Run each scenario at least three
 times each way, and pin the model with `--command`, so a new model is never
 read as a better or worse prompt. `make lint` fails while a
 universal prompt has no scenario, or a scenario's `fill` misses a placeholder

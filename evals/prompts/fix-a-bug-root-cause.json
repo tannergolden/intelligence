@@ -34,5 +34,6 @@
       "argv": ["python3", "-m", "unittest", "-q"],
       "paths": ["**/test_*.py"]
     }
-  ]
+  ],
+  "proof": "sed -i.bak 's/len(values) - 1/len(values)/' stats.py && rm stats.py.bak\nmkdir -p \"$(dirname test_total.py)\" && cat > test_total.py <<'EVAL_EOF'\nimport unittest\n\nfrom stats import total\n\n\nclass TestEveryValue(unittest.TestCase):\n    def test_every_value_counts(self):\n        self.assertEqual(total([1, 2, 3]), 6)\nEVAL_EOF\ncat <<'EVAL_EOF'\nThe cause: total() stopped one value short, so average() divided too small a sum.\nEVAL_EOF\n"
 }

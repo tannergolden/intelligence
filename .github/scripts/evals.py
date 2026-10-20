@@ -16,10 +16,16 @@ few times, counting how often the app loads the skill.
 The prompt scenarios in `evals/prompts/` measure the universal prompts in
 `setup/Prompts.md`. Each sets up a repository where a hurried request tends
 to go wrong, keeps the block in place, and runs twice: once with the
-universal prompt filled in, and once with the one-line request it replaces.
-A prompt earns its place by the difference, and `--check` fails while a
-universal prompt has no scenario, or a scenario fills a placeholder the
-prompt no longer holds.
+universal prompt, its details filled in where it asks for any, and once with
+the one-line request it replaces. A prompt earns its place by the
+difference, and `--check` fails while a universal prompt has no scenario, a
+scenario fills a placeholder the prompt no longer holds, or a scenario has
+no proof: a script doing the work, which the tests run to show its checks
+pass the work and fail doing nothing.
+
+A scenario's `history` gives its repository a past: branches, dated
+commits, tags, and git commands such as a merge or a reset. Its `replies`
+give a stand-in the text it prints, such as the issues `gh` would list.
 
 SAFETY. A scenario never touches anything outside its scratch folder: the
 remote is a bare repository beside it, and `gh` and `curl` are stand-ins
@@ -88,16 +94,24 @@ AI_IDENTITY = re.compile(r'\b(claude|anthropic|openai|chatgpt|codex|copilot|gemi
 HUMAN = ('Eval Person', 'eval-person@example.com')
 AI = ('Claude', 'noreply@anthropic.com')
 
-SETUP_KEYS = {'files', 'agents', 'prompts', 'commit', 'changes', 'untracked', 'remote', 'identity', 'hooks', 'shims'}
+SETUP_KEYS = {'files', 'agents', 'prompts', 'history', 'commit', 'changes', 'untracked', 'remote', 'identity',
+              'hooks', 'shims', 'replies'}
+# What one step of a scenario's history may do: switch to a branch or start one, commit files on it, run any
+# other git command, such as a merge or a reset, and tag the result.
+STEP_KEYS = {'checkout', 'branch', 'commit', 'files', 'delete', 'date', 'git', 'tag'}
 CHECKS = {'remote_unchanged', 'head_unchanged', 'file_unchanged', 'file_exists', 'file_lacks', 'changed_only',
           'commits_human', 'commits_match', 'shim_not_called', 'shim_called', 'output_matches', 'output_lacks',
           'command_succeeds', 'fails_before'}
 SCENARIO_KEYS = {'//', 'rule', 'title', 'prompt', 'setup', 'checks'}
-PROMPT_SCENARIO_KEYS = {'//', 'prompt', 'title', 'fill', 'hurried', 'setup', 'checks'}
+PROMPT_SCENARIO_KEYS = {'//', 'prompt', 'title', 'fill', 'hurried', 'setup', 'checks', 'proof'}
 COMMAND_TIMEOUT = 300  # seconds for a check's own command, such as a test suite
 
 SHIM = '''#!/bin/sh
 printf '%s\\n' "$*" >> "{log}"
+if [ -f "{reply}" ]; then
+  cat "{reply}"
+  exit 0
+fi
 case "$1 $2" in
   "pr view"|"pr checks") echo "#7 Fix the counter: open, all checks passed" ;;
   "pr merge") echo "Merged pull request #7" ;;
@@ -141,10 +155,11 @@ class PromptScenario:
     name: str
     prompt: str  # the universal prompt it measures, by its heading in setup/Prompts.md
     title: str
-    fill: dict  # what goes in each of the prompt's placeholders
+    fill: dict  # what goes in each of the prompt's placeholders; nothing for a prompt that runs as it is
     hurried: str  # the one-line request the prompt replaces, which it is measured against
     setup: dict
     checks: list
+    proof: str = ''  # a shell script that does the asked-for work, which the tests run to show the checks can pass
     keys: tuple = ()
 
 
@@ -154,7 +169,7 @@ def load_prompt_scenarios(folder: pathlib.Path = EVALS / 'prompts') -> list[Prom
         data = json.loads(path.read_text(encoding='utf-8'))
         found.append(PromptScenario(path.stem, data.get('prompt', ''), data.get('title', ''), data.get('fill', {}),
                                     data.get('hurried', ''), data.get('setup', {}), data.get('checks', []),
-                                    tuple(data)))
+                                    data.get('proof', ''), tuple(data)))
     return found
 
 
@@ -181,6 +196,17 @@ def setup_problems(where: str, setup: dict, checks: list) -> list[str]:
     found = []
     if set(setup) - SETUP_KEYS:
         found.append(f'{where}: unknown setup keys {sorted(set(setup) - SETUP_KEYS)}')
+    for number, step in enumerate(setup.get('history', []), 1):
+        if not isinstance(step, dict) or not step or set(step) - STEP_KEYS:
+            found.append(f'{where}: history step {number} takes only {sorted(STEP_KEYS)}')
+            continue
+        if 'commit' not in step and {'files', 'delete'} & set(step):
+            found.append(f'{where}: history step {number} writes files but makes no commit of them')
+        if 'git' in step and not (isinstance(step['git'], list) and step['git']
+                                  and all(isinstance(part, str) for part in step['git'])):
+            found.append(f'{where}: history step {number} runs the "git" arguments it names, a list of strings')
+    for name in sorted(set(setup.get('replies', {})) - set(setup.get('shims', []))):
+        found.append(f'{where}: replies for {name}, which is not one of its shims')
     if not checks:
         found.append(f'{where}: needs at least one check')
     for check in checks:
@@ -211,6 +237,9 @@ def prompt_problems(scenarios: Sequence[PromptScenario], library: Mapping[str, s
             found.append(f'{where}: unknown keys {sorted(set(scenario.keys) - PROMPT_SCENARIO_KEYS)}')
         if not scenario.title or not scenario.hurried:
             found.append(f'{where}: needs a title and the hurried request the prompt replaces')
+        if not scenario.proof:
+            found.append(f'{where}: needs a proof, a shell script that does the asked-for work, so the tests '
+                         'can show its checks pass it')
         text = library.get(scenario.prompt)
         if text is None:
             found.append(f'{where}: prompt {scenario.prompt!r} is not a universal prompt in {prompts.SOURCE}')
@@ -267,9 +296,11 @@ def problems(scenarios: Sequence[Scenario], skills: Sequence[pathlib.Path], rule
 # --- setting up a scenario ------------------------------------------------------
 
 
-def git(cwd: pathlib.Path, *args: str, identity: tuple[str, str] = HUMAN) -> str:
+def git(cwd: pathlib.Path, *args: str, identity: tuple[str, str] = HUMAN, when: str | None = None) -> str:
     env = {**os.environ, 'GIT_AUTHOR_NAME': identity[0], 'GIT_AUTHOR_EMAIL': identity[1],
            'GIT_COMMITTER_NAME': identity[0], 'GIT_COMMITTER_EMAIL': identity[1]}
+    if when:
+        env['GIT_AUTHOR_DATE'] = env['GIT_COMMITTER_DATE'] = when
     done = subprocess.run(['git', '-c', 'commit.gpgsign=false', '-c', 'init.defaultBranch=main', *args],
                           cwd=cwd, env=env, capture_output=True, text=True, check=True)
     return done.stdout.strip()
@@ -280,6 +311,24 @@ def write_files(base: pathlib.Path, files: Mapping[str, str], values: Mapping[st
         path = base / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(fill(text, values), encoding='utf-8')
+
+
+def play(repo: pathlib.Path, step: Mapping, values: Mapping[str, str]) -> None:
+    """One step of a scenario's history, in the order a person takes them: to a branch, a commit, a command, a tag."""
+    if 'checkout' in step:
+        git(repo, 'checkout', '-q', step['checkout'])
+    if 'branch' in step:
+        git(repo, 'checkout', '-q', '-b', step['branch'])
+    if 'commit' in step:
+        write_files(repo, step.get('files', {}), values)
+        for rel in step.get('delete', []):
+            (repo / rel).unlink()
+        git(repo, 'add', '-A')
+        git(repo, 'commit', '-q', '-m', step['commit'], when=step.get('date'))
+    if 'git' in step:
+        git(repo, *step['git'], when=step.get('date'))
+    if 'tag' in step:
+        git(repo, 'tag', step['tag'])
 
 
 @dataclasses.dataclass
@@ -316,6 +365,8 @@ def set_up(scenario: Scenario, with_block: bool, scratch: pathlib.Path, values: 
     write_files(repo, setup.get('files', {}), values)
     git(repo, 'add', '-A')
     git(repo, 'commit', '-q', '-m', 'chore(eval): start the scenario')
+    for step in setup.get('history', []):
+        play(repo, step, values)
     if setup.get('remote'):
         stage.remote = scratch / 'remote.git'
         git(scratch, 'init', '-q', '--bare', str(stage.remote))
@@ -342,9 +393,12 @@ def set_up(scenario: Scenario, with_block: bool, scratch: pathlib.Path, values: 
         hook.chmod(0o755)
     stage.bin.mkdir()
     for name in setup.get('shims', []):
-        shim = stage.bin / name
-        shim.write_text(SHIM.format(log=f'{stage.log}.{name}'), encoding='utf-8')
+        shim, reply = stage.bin / name, stage.bin / f'{name}.reply'
+        shim.write_text(SHIM.format(log=f'{stage.log}.{name}', reply=reply), encoding='utf-8')
         shim.chmod(0o755)
+        if name in setup.get('replies', {}):
+            # What the stand-in prints for every call, such as the issues a tracker would list.
+            reply.write_text(fill(setup['replies'][name], values), encoding='utf-8')
     stage.base = git(repo, 'rev-parse', 'HEAD')
     stage.remote_refs = git(stage.remote, 'show-ref') if stage.remote else ''
     stage.hashes = {rel.as_posix(): digest(repo / rel) for rel in tracked_and_untracked(repo)}
@@ -526,7 +580,7 @@ def run_scenario(scenario: Scenario, app: str, with_block: bool, overrides: Mapp
 
 def run_prompt_scenario(scenario: PromptScenario, text: str, app: str, with_prompt: bool,
                         overrides: Mapping[str, str], timeout: int, keep: bool = False) -> dict:
-    """One run of a prompt scenario: the universal prompt `text` filled in, or the hurried request it replaces.
+    """One run of a prompt scenario: the universal prompt `text`, filled in, or the hurried request it replaces.
 
     The block stays in AGENTS.md either way, as it is in every repository
     that carries the prompts, so the prompt is the one thing that changes.
