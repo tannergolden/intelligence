@@ -148,7 +148,7 @@ Write the prompt in the shape docs/Prompts.md describes: a heading, when to use 
 </done_when>
 ```
 
-## ✍️ Writing A New Prompt
+## ✍️ How A Good Prompt Is Written
 
 Every prompt here follows the same practices, and a new one should too:
 
