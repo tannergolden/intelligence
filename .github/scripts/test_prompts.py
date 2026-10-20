@@ -2,10 +2,12 @@
 """Tests for the prompts file every repository gets.
 
 WHY THIS EXISTS. `docs/Prompts.md` reaches every repository that takes part
-in sync, beside the prompts its owner writes, so two promises matter: the
-block between its markers is sealed the same way every time, and nothing
-outside the block is ever touched. These hold the sealing, the change sync
-makes to a repository's copy, and the real source to both.
+in sync, beside the prompts its owner writes, so three promises matter: the
+block between its markers is sealed the same way every time, nothing
+outside the block is ever touched, and every universal prompt keeps the
+shape its practices describe, in text no formatter would rewrite. These
+hold the sealing, the change sync makes to a repository's copy, each rule
+`--check` holds the source to, and the real source to all three.
 
 Run it:
 
@@ -17,9 +19,11 @@ from __future__ import annotations
 import contextlib
 import importlib.util
 import io
+import json
 import pathlib
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -40,8 +44,12 @@ def load(name: str, path: pathlib.Path):
 prompts = load('prompts', HERE / 'prompts.py')
 render = prompts.render
 
-SOURCE = ('<!--\ntitle: x\n-->\n\n# Prompts\n\n---\n\n<!-- INTELLIGENCE:PROMPTS:BEGIN -->\n\n## How\n\nCopy one.\n\n'
-          '<!-- INTELLIGENCE:PROMPTS:END -->\n\n---\n\n## Prompts For This Repository\n\n_Yours._\n')
+PROMPT = ('### Fix A Bug\n\n**Use when** it breaks. **Fill in** what broke.\n\n```text\n<context>\n'
+          '{{WHAT_BROKE}} is broken.\n</context>\n\n<task>\nFix it.\n</task>\n\n<done_when>\n'
+          '- The checks pass.\n</done_when>\n```\n')
+INNER = f'## How\n\nCopy one.\n\n{PROMPT}'
+SOURCE = ('<!--\ntitle: x\n-->\n\n# Prompts\n\n---\n\n<!-- INTELLIGENCE:PROMPTS:BEGIN -->\n\n' + INNER +
+          '\n<!-- INTELLIGENCE:PROMPTS:END -->\n\n---\n\n## Prompts For This Repository\n\n_Yours._\n')
 
 
 class TestSealing(unittest.TestCase):
@@ -50,7 +58,7 @@ class TestSealing(unittest.TestCase):
     def test_the_block_is_sealed_with_the_hash_of_its_text(self) -> None:
         release = prompts.seal(SOURCE)
         found = prompts.find(release.seed)
-        self.assertEqual(found.marker, render.digest('## How\n\nCopy one.\n'))
+        self.assertEqual(found.marker, render.digest(INNER))
         self.assertFalse(found.edited)
         self.assertEqual(release.seed[found.start:found.end], release.region)
         self.assertEqual(release.marker, found.marker)
@@ -146,6 +154,165 @@ class TestProblems(unittest.TestCase):
     def test_a_missing_source_is_named(self) -> None:
         self.assertEqual(prompts.problems(self.root), [f'{prompts.SOURCE} is missing'])
 
+    def test_a_broken_prompt_fails_the_check_with_its_line(self) -> None:
+        self.write(SOURCE.replace('<task>\n', '<task>\n<constraints>\n', 1))
+        found = prompts.problems(self.root)
+        line = SOURCE.splitlines().index('<task>') + 2
+        self.assertIn(f'{prompts.SOURCE}:{line}: "Fix A Bug": <constraints> is never closed', found)
+        self.assertEqual(self.check(), 1)
+
+
+def changed(*pairs: tuple[str, str]) -> str:
+    """SOURCE with each `(old, new)` replaced once, in order."""
+    text = SOURCE
+    for old, new in pairs:
+        if old not in text:
+            raise AssertionError(f'{old!r} is not in the source')
+        text = text.replace(old, new, 1)
+    return text
+
+
+# What each rule the formatter would enforce catches, by a fragment of its message.
+FORMATTER_CASES = {
+    'trailing whitespace': changed(('Fix it.\n', 'Fix it.  \n')),
+    'a tab': changed(('Copy one.', 'Copy\tone.')),
+    'a second blank line in a row': changed(('Copy one.\n', 'Copy one.\n\n')),
+    'a bullet a formatter rewrites': changed(('Copy one.', '* Copy one.')),
+    'a numbered item a formatter rewrites': changed(('Copy one.', '1) Copy one.')),
+    'no blank line before it': changed(('Copy one.\n\n###', 'Copy one.\n###')),
+    'no blank line after it': changed(('## How\n\n', '## How\n')),
+    'a list with no blank line before it': changed(('Copy one.', 'Copy one.\n- Paste it.')),
+    'a line run on from a list item': changed(('Copy one.', '- Copy one.\nPaste it.')),
+}
+
+
+class TestLint(unittest.TestCase):
+    """Each rule `--check` holds the universal prompts to, caught where it breaks."""
+
+    def assertCaught(self, fragment: str, text: str) -> None:
+        found = prompts.lint(text)
+        self.assertTrue(any(fragment in line for line in found), found)
+
+    def test_a_sound_block_passes(self) -> None:
+        self.assertEqual(prompts.lint(SOURCE), [])
+
+    def test_each_problem_names_its_line(self) -> None:
+        line = SOURCE.splitlines().index('Fix it.') + 1
+        self.assertEqual(prompts.lint(changed(('Fix it.\n', 'Fix it. \n'))), [
+            f'{prompts.SOURCE}:{line}: trailing whitespace, which a formatter strips or reads as a line break'])
+
+    def test_text_a_formatter_would_rewrite_is_caught(self) -> None:
+        for fragment, text in FORMATTER_CASES.items():
+            with self.subTest(fragment=fragment):
+                self.assertCaught(fragment, text)
+
+    def test_every_block_of_code_is_a_text_fence_that_closes(self) -> None:
+        cases = {
+            'opens with ```text alone': changed(('```text\n', '```python\n')),
+            'opens with ```text alone, at the start': changed(('```text\n', '  ```text\n')),
+            'a fence inside a block of text': changed(('Fix it.\n', 'Fix it.\n```bash\n')),
+            'a block of code that never closes': changed(('</done_when>\n```\n', '</done_when>\n')),
+        }
+        for fragment, text in cases.items():
+            with self.subTest(fragment=fragment):
+                self.assertCaught(fragment, text)
+
+    def test_every_prompt_keeps_the_shape_the_practices_describe(self) -> None:
+        cases = {
+            'says when to use it with **Use when**': changed(('**Use when** it breaks. ', '')),
+            'holds 2 blocks of text': changed(('</done_when>\n```\n', '</done_when>\n```\n\n```text\nMore.\n```\n')),
+            'holds 0 blocks of text': changed((PROMPT[PROMPT.index('```text'):], 'Only prose.\n')),
+            'has no <context>': changed(('<context>\n{{WHAT_BROKE}} is broken.\n</context>', '{{WHAT_BROKE}} broke.')),
+            'has no <task>': changed(('<task>\nFix it.\n</task>\n\n', '')),
+            'has no <done_when> or <output>': changed(('\n\n<done_when>\n- The checks pass.\n</done_when>', '')),
+            'is not a section the practices name': changed(('<done_when>', '<finish>'), ('</done_when>', '</finish>')),
+            'a second <context>': changed(('<task>', '<context>\nMore.\n</context>\n\n<task>')),
+            'keep them in the order': changed((
+                '<context>\n{{WHAT_BROKE}} is broken.\n</context>\n\n<task>\nFix it.\n</task>',
+                '<task>\nFix it.\n</task>\n\n<context>\n{{WHAT_BROKE}} is broken.\n</context>')),
+            '<task> is never closed': changed(('</task>\n', '')),
+            'closes a tag that is not open': changed(('Fix it.\n', 'Fix it.\n</constraints>\n')),
+            'is not a tag this file writes': changed(('<task>', '<Task>'), ('</task>', '</Task>')),
+            'over the cap': changed(('Fix it.', 'Fix it. ' + 'Then check it. ' * (prompts.CAP // 15))),
+            'a second heading "Fix A Bug"': changed((PROMPT, f'{PROMPT}\n{PROMPT}')),
+            'a heading in the block is': changed(('### Fix A Bug', '#### Fix A Bug')),
+            'holds no universal prompt': changed((PROMPT, 'No prompt here.\n')),
+        }
+        for fragment, text in cases.items():
+            with self.subTest(fragment=fragment):
+                self.assertCaught(fragment, text)
+
+    def test_each_detail_that_changes_is_a_placeholder(self) -> None:
+        cases = {
+            'is not a placeholder': changed(('{{WHAT_BROKE}}', '{{what broke}}')),
+            'a stray {{': changed(('{{WHAT_BROKE}}', '{{WHAT_BROKE}')),
+            'takes double braces, as {{WHAT_BROKE}}': changed(('{{WHAT_BROKE}}', '{WHAT_BROKE}')),
+            'marks nothing to fill in': changed(('{{WHAT_BROKE}}', 'The parser')),
+        }
+        for fragment, text in cases.items():
+            with self.subTest(fragment=fragment):
+                self.assertCaught(fragment, text)
+
+    def test_tags_and_braces_inside_a_section_are_free(self) -> None:
+        text = changed(('{{WHAT_BROKE}} is broken.\n', '{{WHAT_BROKE}} is broken.\n<error>\n{{ERROR}}\n</error>\n'),
+                       ('Fix it.', 'Fix it, and keep {"a": 1} as it is.'))
+        self.assertEqual(prompts.lint(text), [])
+
+    def test_a_tag_may_name_its_source(self) -> None:
+        text = changed(('{{WHAT_BROKE}} is broken.\n', '{{WHAT_BROKE}} is broken.\n<error_output source="CI log">\n'
+                                                      '{{ERROR}}\n</error_output>\n'))
+        self.assertEqual(prompts.lint(text), [])
+
+    def test_a_tag_named_in_backticks_is_a_mention_not_a_section(self) -> None:
+        self.assertEqual(prompts.lint(changed(('Fix it.', 'Fix it, and keep `<task>` in mind.'))), [])
+
+    def test_the_text_an_agent_reads_is_plain_and_calm(self) -> None:
+        cases = {
+            'MUST in capitals': changed(('Fix it.', 'You MUST fix it.')),
+            'NEVER in capitals': changed(('Fix it.', 'Fix it. NEVER skip a test.')),
+            'outside printable ASCII': changed(('Fix it.', 'Fix it \u2192 then test it.')),
+            '$ARGUMENTS is a slot an app fills by itself': changed(('Fix it.', 'Fix $ARGUMENTS.')),
+            '$1 is a slot': changed(('Fix it.', 'Fix $1.')),
+            '${input: is a slot': changed(('Fix it.', 'Fix ${input:what}.')),
+            '!{ is a slot': changed(('Fix it.', 'Fix it, then run !{make check}.')),
+            '"Think step by step" is wording': changed(('Fix it.', 'Think step by step, then fix it.')),
+            '"If in doubt" is wording': changed(('Fix it.', 'Fix it. If in doubt, ask.')),
+            '"You are an expert" is wording': changed(('Fix it.', 'You are an expert. Fix it.')),
+            'hides or reorders text': changed(('Copy one.', 'Copy\u200b one.')),
+        }
+        for fragment, text in cases.items():
+            with self.subTest(fragment=fragment):
+                self.assertCaught(fragment, text)
+
+    def test_capitals_in_a_placeholder_are_no_emphasis(self) -> None:
+        self.assertEqual(prompts.lint(changed(('{{WHAT_BROKE}}', '{{WHAT_MUST_WORK}}'))), [])
+
+
+@unittest.skipUnless(shutil.which('prettier'), 'Prettier is not installed')
+class TestPrettierAgrees(unittest.TestCase):
+    """Where Prettier is installed: it leaves the real source as it is, and rewrites what each formatter rule finds."""
+
+    # The standards' config/prettierrc.json, which their auto-format workflow formats every repository with.
+    CONFIG = {'singleQuote': True, 'tabWidth': 2, 'printWidth': 80, 'trailingComma': 'es5'}
+
+    def formatted(self, text: str) -> str:
+        with tempfile.TemporaryDirectory() as folder:
+            config = pathlib.Path(folder) / 'prettierrc.json'
+            config.write_text(json.dumps(self.CONFIG), encoding='utf-8')
+            done = subprocess.run(['prettier', '--config', str(config), '--parser', 'markdown'], input=text,
+                                  capture_output=True, text=True, check=True)
+        return done.stdout
+
+    def test_the_real_source_is_as_prettier_writes_it(self) -> None:
+        text = (ROOT / prompts.SOURCE).read_text(encoding='utf-8')
+        self.assertEqual(self.formatted(text), text)
+
+    def test_each_formatter_rule_catches_a_change_prettier_would_make(self) -> None:
+        self.assertEqual(self.formatted(SOURCE), SOURCE)
+        for fragment, text in FORMATTER_CASES.items():
+            with self.subTest(fragment=fragment):
+                self.assertNotEqual(self.formatted(text), text)
+
 
 class TestTheRealPrompts(unittest.TestCase):
     """`setup/Prompts.md` in this repository."""
@@ -163,14 +330,10 @@ class TestTheRealPrompts(unittest.TestCase):
         for key in ('description', 'type', 'keywords'):
             self.assertRegex(head, rf'(?m)^{key}: ')
 
-    def test_every_prompt_says_when_to_use_it_and_what_to_fill_in(self) -> None:
-        sections = re.split(r'(?m)^### ', prompts.find(self.release.seed).inner)[1:]
-        self.assertGreaterEqual(len(sections), 5)
-        for section in sections:
-            with self.subTest(prompt=section.splitlines()[0]):
-                self.assertIn('**Use when**', section)
-                self.assertIn('**Fill in**', section)
-                self.assertIn('```text\n', section)
+    def test_it_holds_the_universal_prompts(self) -> None:
+        universal, _ = prompts.parse(prompts.find(self.release.seed).inner)
+        self.assertGreaterEqual(len(universal), 5)
+        self.assertTrue(all(prompt.blocks == 1 for prompt in universal))
 
     def test_every_block_is_plain_text_so_a_formatter_leaves_it_alone(self) -> None:
         self.assertEqual(set(re.findall(r'(?m)^```(\w*)$', self.text)) - {''}, {'text'})

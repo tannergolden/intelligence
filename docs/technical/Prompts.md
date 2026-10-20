@@ -73,17 +73,33 @@ The source is [`setup/Prompts.md`](../../setup/Prompts.md): the file exactly as
 a repository first gets it, with its markers unsealed, so it stays a file
 anyone can edit. [`.github/scripts/prompts.py`](../../.github/scripts/prompts.py)
 seals the block when sync delivers it, and `make check` holds the source to
-what every public repository can carry:
+what every repository can carry and to the shape its own practices describe.
+`prompts.py --check` names each problem with its line:
 
-- exactly one `INTELLIGENCE:PROMPTS` block, with markers that carry no hash;
-- no private repository named, and no en or em dash;
-- every universal prompt with its **Use when** and **Fill in** lines, and every
-  block of code marked `text`, which a formatter leaves alone.
+- one `INTELLIGENCE:PROMPTS` block, with markers that carry no hash, and no
+  private repository named or en or em dash;
+- text a formatter leaves as it is: no trailing whitespace, tab or second
+  blank line, a blank line around each heading, list and block of code, `-`
+  bullets, and every block of code fenced as `text` and closed, with no fence
+  inside it. Each repository formats what a push touched, so a block a
+  formatter would rewrite reads as edited there;
+- every universal prompt under its own `###` heading, with its **Use when**
+  and **Fill in** lines before one block of text that holds `<context>` and
+  then `<task>`, any `<constraints>`, and a `<done_when>` or an `<output>`,
+  every tag closed;
+- each detail that changes in a placeholder of capitals and underscores, and
+  at least one in every prompt;
+- text an agent reads as it is meant: printable ASCII, no emphasis in
+  capitals, no slot such as `$ARGUMENTS` that an app fills by itself, no
+  character that hides or reorders text, and none of the wording the model
+  makers now find useless or harmful, such as "think step by step" or a
+  persona;
+- no prompt over 1,600 characters, and no two headings alike.
 
-Keep the file as Prettier writes it, with the standards' configuration: each
-repository formats what a push touched, and a reformatted block would read as
-edited. Then, in the pull request a release delivers, run `make check`. A
-prompt that only one repository needs goes in that repository's own section,
+Where Prettier is installed, `make test` also runs it over the source with the
+standards' configuration, and fails on any line it would change.
+
+A prompt that only one repository needs goes in that repository's own section,
 never here.
 
 ---
