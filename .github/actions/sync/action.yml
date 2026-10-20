@@ -23,7 +23,7 @@
 # ---
 
 name: '🔁 Intelligence Sync'
-description: "Writes the universal rules of this action's release into the calling repository's AGENTS.md."
+description: "Writes the universal rules and prompts of this action's release into the calling repository's AGENTS.md and docs/Prompts.md."
 
 inputs:
   token:

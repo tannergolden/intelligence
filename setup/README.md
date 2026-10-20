@@ -1,6 +1,6 @@
 <!--
 title: '🧰 SETUP'
-description: 'What you copy out of the hub once: the setup script for every Claude Code cloud session, and the stub that keeps a repository''s rules current.'
+description: 'What leaves the hub for somewhere else: the setup script for every Claude Code cloud session, the stub that keeps a repository''s rules current, and the prompts every repository gets.'
 type: index
 keywords: [claude-code, cloud, setup-script, home-kit, github-actions, sync]
 -->
@@ -21,12 +21,14 @@ _Set up once. Current after every release._
 
 ## 💡 What This Folder Is For
 
-Two files you copy out of the hub, each to its own place:
+Three files that leave the hub, each for its own place: two you copy out
+once, and one sync delivers:
 
-| File                                             | Where it goes                                                   | Read more                                               |
-| :----------------------------------------------- | :-------------------------------------------------------------- | :------------------------------------------------------ |
-| [`claude-cloud-setup.sh`](claude-cloud-setup.sh) | A Claude Code cloud environment's setup script                  | [Cloud Setup](../docs/technical/Cloud-Setup.md)         |
-| [`intelligence-sync.yml`](intelligence-sync.yml) | A repository's `.github/workflows/`, as `intelligence-sync.yml` | [Repository Sync](../docs/technical/Repository-Sync.md) |
+| File                                             | Where it goes                                                           | Read more                                               |
+| :----------------------------------------------- | :---------------------------------------------------------------------- | :------------------------------------------------------ |
+| [`claude-cloud-setup.sh`](claude-cloud-setup.sh) | A Claude Code cloud environment's setup script, copied by you           | [Cloud Setup](../docs/technical/Cloud-Setup.md)         |
+| [`intelligence-sync.yml`](intelligence-sync.yml) | A repository's `.github/workflows/`, as `intelligence-sync.yml`, by you | [Repository Sync](../docs/technical/Repository-Sync.md) |
+| [`Prompts.md`](Prompts.md)                       | Every repository's `docs/`, written and kept current by sync            | [Prompts](../docs/technical/Prompts.md)                 |
 
 ---
 
@@ -38,6 +40,7 @@ Two files you copy out of the hub, each to its own place:
 | :----------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`claude-cloud-setup.sh`](claude-cloud-setup.sh) | Install the universal rules into a Claude Code cloud session.                                                                                                                                 |
 | [`intelligence-sync.yml`](intelligence-sync.yml) | Keeps the universal rules for AI coding agents current in this repository's root AGENTS.md: the block between the INTELLIGENCE markers, which tannergolden/intelligence renders and releases. |
+| [`Prompts.md`](Prompts.md)                       | Ready-made prompts for working in this repository with an AI agent: copy one, fill in its placeholders, and paste it into any AI app.                                                         |
 | [`README.md`](README.md)                         | This file.                                                                                                                                                                                    |
 
 <!-- AUTO-INDEX:END -->

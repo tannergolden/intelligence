@@ -23,8 +23,11 @@ _The repository asks, or you push. Either way, you merge._
 
 Every repository carries the rules in one root `AGENTS.md`, between
 `INTELLIGENCE` markers, beside sections the repository owns, as
-[How It Works](How-It-Works.md) describes. A release reaches it by either of
-two routes, through [`.github/scripts/sync.py`](../../.github/scripts/sync.py):
+[How It Works](How-It-Works.md) describes, and ready-made
+[prompts](Prompts.md) in `docs/Prompts.md`, whose `INTELLIGENCE:PROMPTS`
+block the hub keeps current beside the repository's own prompts. A release
+reaches it by either of two routes, through
+[`.github/scripts/sync.py`](../../.github/scripts/sync.py):
 
 - You review each release once, in the hub.
 - **The stub.** A repository that carries it pulls each release by itself.
@@ -33,19 +36,20 @@ two routes, through [`.github/scripts/sync.py`](../../.github/scripts/sync.py):
   `GITHUB_TOKEN`: no App, no key, no secret.
 - **The push.** `make sync` opens the same pull request in every repository at
   once, under your own `gh` login, with or without the stub.
-- `make merge` merges every sync pull request whose diff is exactly the block
-  and whose checks pass. No bot merges anything.
-- The marker carries a hash of the block, so a release that leaves the block
-  unchanged opens no pull requests at all.
-- `make audit` reports any repository whose block was edited by hand, and
-  whether it carries the stub; the next sync repairs the block.
+- `make merge` merges every sync pull request whose diff is exactly the
+  blocks and whose checks pass. No bot merges anything.
+- Each marker carries a hash of its block, so a release that leaves both
+  blocks unchanged opens no pull requests at all.
+- `make audit` reports any repository whose rules or prompts block was edited
+  by hand, and whether it carries the stub; the next sync repairs the block.
 
 Every repository you own takes part, except the two golden path templates,
 `repo` and `path`, forks and archived ones, and the hub, which holds the
 Constitution and carries no copy of it. A template of any other kind, such
 as the vault template, takes part like the rest, since every repository
 generated from it inherits its `AGENTS.md`. A `no-intelligence` topic opts
-one out. Both routes deliver a release, never unreleased work.
+one out, and a `no-intelligence-prompts` topic keeps only the prompts out.
+Both routes deliver a release, never unreleased work.
 
 ---
 
@@ -61,7 +65,11 @@ leaves it for you to review by hand:
   note does, keeps it first and takes the block after it and its title;
 - a `CLAUDE.md` is folded into `AGENTS.md` under "Folded from CLAUDE.md" and
   deleted, or just deleted when all it does is point at `AGENTS.md`, because
-  Claude Code skips `AGENTS.md` beside one.
+  Claude Code skips `AGENTS.md` beside one;
+- a repository with no `docs/Prompts.md` gets one, with the universal prompts
+  and a section for its own, the first time a release carries the prompts; a
+  `docs/Prompts.md` with no prompts block is the repository's own, and stays
+  as it is.
 
 After that, each sync replaces only the text between the markers.
 
@@ -82,10 +90,12 @@ the Monday after:
 #
 # Keeps the universal rules for AI coding agents current in this
 # repository's root AGENTS.md: the block between the INTELLIGENCE markers,
-# which tannergolden/intelligence renders and releases. Every Monday, and
-# whenever you run it, it proposes the latest release's block as one pull
-# request on `chore/intelligence`, and leaves every section this repository
-# owns as it was. A first sync creates AGENTS.md. Merging stays yours.
+# which tannergolden/intelligence renders and releases. It keeps the
+# universal prompts in docs/Prompts.md current the same way. Every Monday,
+# and whenever you run it, it proposes the latest release's blocks as one
+# pull request on `chore/intelligence`, and leaves every section this
+# repository owns as it was. A first sync creates AGENTS.md and
+# docs/Prompts.md. Merging stays yours.
 #
 # It runs on this repository's own GITHUB_TOKEN, with no App and no key, so
 # two settings matter: Settings > Actions > General must allow GitHub
@@ -95,7 +105,8 @@ the Monday after:
 # secret, if this repository has one, opens it as you instead.
 #
 # `@v0` follows the hub's latest release. To stop, delete this file; the
-# `no-intelligence` topic also keeps `make sync` away.
+# `no-intelligence` topic also keeps `make sync` away, and the
+# `no-intelligence-prompts` topic keeps the prompts out alone.
 
 name: '🔁 Intelligence Sync'
 
@@ -172,10 +183,10 @@ make audit                     # what every repository carries now
 make sync ARGS=--dry-run       # what a sync would change
 make sync                      # open or update one pull request per repository
 make merge ARGS=--dry-run      # what would merge
-make merge                     # merge the green ones whose diff is only the block
+make merge                     # merge the green ones whose diff is only the blocks
 ```
 
-`make sync` delivers the latest release's block. To deliver unreleased rules
+`make sync` delivers the latest release's blocks. To deliver unreleased rules
 on purpose, pass `ARGS='--ref HEAD'`. To see what a repository's stub would
 write, run `apply` in its checkout:
 
@@ -188,8 +199,9 @@ GITHUB_REPOSITORY=tannergolden/<name> python3 /path/to/intelligence/.github/scri
 ## ✅ How Merging Works
 
 `make merge` lands a sync pull request only when its diff is exactly the
-block, the block is the latest release's, GitHub says it can merge, and its
-checks passed. A first sync, or anything bigger, waits for you.
+blocks, in `AGENTS.md`, `docs/Prompts.md` or both, each block is the latest
+release's, GitHub says it can merge, and its checks passed. A first sync, a
+pull request that adds `docs/Prompts.md`, or anything bigger, waits for you.
 
 GitHub holds the checks of a pull request the default `GITHUB_TOKEN` opened
 until someone with write access approves them. Once `make merge` has proven
@@ -209,6 +221,7 @@ says who certified the change.
 
 - [ADR-0003](../adrs/ADR-0003-Push-Sync-&-Owner-Merge.md): the hub pushes, and the owner merges
 - [ADR-0019](../adrs/ADR-0019-Each-Repository-Pulls-With-A-Stub.md): each repository pulls with a stub, on its own token
+- [ADR-0025](../adrs/ADR-0025-Every-Repository-Gets-Ready-Made-Prompts.md): every repository gets ready-made prompts beside the rules
 - [Backstops & Residual Risk](../operations/Backstops-&-Residual-Risk.md): what a stub can reach, and the schedules GitHub stops
 
 ---

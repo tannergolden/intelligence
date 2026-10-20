@@ -76,7 +76,7 @@ permissions decide everything else.
 | OPS-004   | `--no-verify`, hooks switched off for one command, and edits that would remove the guard or its registrations                                                                                            |
 | GIT-001   | A commit git would author, or sign off, as an AI's identity                                                                                                                                              |
 | SEC-001   | A credential-shaped string in a command or in a file being written                                                                                                                                       |
-| The block | A hand edit inside a block the hub renders, which the next sync would overwrite anyway                                                                                                                   |
+| The block | A hand edit inside a block the hub renders, the rules in `AGENTS.md` or the prompts in `docs/Prompts.md`, which the next sync would overwrite anyway                                                     |
 
 It reads a command the way a careful reviewer would, so it catches the honest
 mistake and a determined workaround gets past it: the rulesets and CI stay the

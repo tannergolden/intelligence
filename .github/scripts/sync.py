@@ -2,9 +2,11 @@
 """Deliver the universal rules to every repository the owner owns, and keep them there.
 
 WHY THIS EXISTS. Every repository carries the rules in one root `AGENTS.md`,
-between `INTELLIGENCE` markers, beside sections the repository owns. Each
-release reaches a repository as one pull request on `chore/intelligence`, by
-either of two routes, and merging always stays the owner's:
+between `INTELLIGENCE` markers, beside sections the repository owns, and
+ready-made prompts in `docs/Prompts.md`, whose `INTELLIGENCE:PROMPTS` block
+the hub keeps current beside the repository's own prompts. Each release
+reaches a repository as one pull request on `chore/intelligence`, by either
+of two routes, and merging always stays the owner's:
 
 - THE STUB. A repository that carries `setup/intelligence-sync.yml` as
   `.github/workflows/intelligence-sync.yml` pulls the hub's latest release,
@@ -21,11 +23,12 @@ The commands:
 - `audit` reports what every repository carries now: no `AGENTS.md`, no
   block, a block edited by hand, a stale or unknown block, a `CLAUDE.md`
   that makes Claude Code skip `AGENTS.md`, an Overrides entry that names an
-  Invariant, and whether the stub is there.
+  Invariant, the same for the prompts block, and whether the stub is there.
 - `sync` opens or updates one pull request per repository. A first sync
   creates `AGENTS.md`, or inserts the block into one that has none, and
-  folds any `CLAUDE.md` into it.
-- `merge` merges each sync pull request whose diff is exactly the block and
+  folds any `CLAUDE.md` into it; a repository without `docs/Prompts.md`
+  gets one, unless it has the `no-intelligence-prompts` topic.
+- `merge` merges each sync pull request whose diff is exactly the blocks and
   whose checks passed. Anything bigger, such as a first sync, waits for the
   owner to review it by hand. A pull request the default token opened has
   checks that wait for approval: once the diff is proven to be the block
@@ -71,6 +74,7 @@ from collections.abc import Callable, Sequence
 HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import render  # noqa: E402
+import prompts  # noqa: E402  the ready-made prompts every repository gets
 
 ROOT = HERE.parents[1]
 BRANCH = 'chore/intelligence'
@@ -405,6 +409,8 @@ class Change:
     agents: str  # the new AGENTS.md
     delete_claude: bool
     adoption: list[str]  # what a first sync did, for the pull request; empty for a routine update
+    prompts_file: str | None = None  # the new docs/Prompts.md; None leaves it as it is
+    prompts_note: str | None = None  # what adding docs/Prompts.md did, for the pull request
 
 
 def adopt(repo: str, agents: str | None, claude: str | None, region: str) -> Change:
@@ -432,15 +438,26 @@ def adopt(repo: str, agents: str | None, claude: str | None, region: str) -> Cha
     return Change(text, delete, notes)
 
 
-def outside_block(text: str) -> str:
-    found = render.find(text)
+def with_prompts(change: Change, current: str | None, release: prompts.Prompts | None) -> Change:
+    """The change, with `docs/Prompts.md` added or its block brought current; a release without prompts adds none."""
+    if release is None:
+        return change
+    text, note = prompts.change(current, release)
+    return change if text is None else dataclasses.replace(change, prompts_file=text, prompts_note=note)
+
+
+Finder = Callable[[str], 'render.Found | None']
+
+
+def outside_block(text: str, find: Finder = render.find) -> str:
+    found = find(text)
     return text if found is None else text[:found.start] + text[found.end:]
 
 
-def only_block_changed(old: str, new: str) -> bool:
-    """True when two versions of AGENTS.md differ only between the markers."""
-    return (render.find(old) is not None and render.find(new) is not None
-            and outside_block(old) == outside_block(new))
+def only_block_changed(old: str, new: str, find: Finder = render.find) -> bool:
+    """True when two versions of a file differ only between the markers that `find` finds."""
+    return (find(old) is not None and find(new) is not None
+            and outside_block(old, find) == outside_block(new, find))
 
 
 def overrides(agents: str) -> list[tuple[str, str]]:
@@ -487,6 +504,27 @@ def history(root: pathlib.Path) -> dict[str, str]:
             continue
         if found is not None:
             known[found.marker] = tag
+    return known
+
+
+def prompts_at(root: pathlib.Path, ref: str) -> prompts.Prompts | None:
+    """The prompts a hub ref ships, or None for a ref from before them, or one whose source is broken."""
+    done = subprocess.run(['git', 'show', f'{ref}:{prompts.SOURCE}'], cwd=root, capture_output=True, check=False)
+    if done.returncode != 0:
+        return None
+    try:
+        return prompts.seal(done.stdout.decode('utf-8'))
+    except (UnicodeDecodeError, ValueError):
+        return None
+
+
+def prompts_history(root: pathlib.Path) -> dict[str, str]:
+    """Every prompts block a release shipped, mapped to the oldest release that carried it."""
+    known: dict[str, str] = {}
+    for tag in releases(root):
+        shipped_prompts = prompts_at(root, tag)
+        if shipped_prompts is not None:
+            known[shipped_prompts.marker] = tag
     return known
 
 
@@ -543,56 +581,97 @@ def identity(gh: GitHub) -> tuple[str, str]:
     return user.get('name') or user['login'], f'{user["id"]}+{user["login"]}@users.noreply.github.com'
 
 
-def messages(block_hash: str, ref: str, change: Change,
-             signer: tuple[str, str] | None) -> tuple[str, str, str]:
+def messages(block_hash: str, ref: str, change: Change, signer: tuple[str, str] | None,
+             rules: bool = True) -> tuple[str, str, str]:
     """The commit title, the commit body with its sign-off, and the pull request body.
 
     With no signer, a repository's stub opened it: the body has no sign-off,
     because the standards' open-pr action commits as the owner and signs off
-    itself, and the pull request says how its checks start.
+    itself, and the pull request says how its checks start. `rules` says
+    whether AGENTS.md changes at all: a release can bring the prompts alone.
     """
-    title = f'chore(agents): 🤖 sync the universal rules to {block_hash[:12]}'
-    why = (f'The intelligence hub renders the universal rules from its CONSTITUTION.md. This replaces the copy '
-           f'between the INTELLIGENCE markers in AGENTS.md with the one from release {ref}, and '
-           f'leaves every section this repository owns as it was.')
-    if change.adoption:
+    prompts_hash = prompts.find(change.prompts_file).marker if change.prompts_file else ''
+    title = (f'chore(agents): 🤖 sync the universal rules to {block_hash[:12]}' if rules
+             else f'chore(agents): 🤖 sync the universal prompts to {prompts_hash[:12]}')
+    also = ''
+    if change.prompts_file and not change.prompts_note:
+        also = (' It also brings the universal prompts in docs/Prompts.md up to date, and leaves '
+                "this repository's own prompts as they were.")
+    if change.adoption or change.prompts_note:
+        notes = change.adoption + ([change.prompts_note] if change.prompts_note else [])
         why = ('The intelligence hub delivers the universal rules to every repository its owner '
-               'owns, in one root AGENTS.md. This first sync ' + '; it '.join(change.adoption) + '.')
+               f'owns, in one root AGENTS.md. This {"first sync" if change.adoption else "sync"} '
+               + '; it '.join(notes) + '.')
+        if rules and not change.adoption:
+            why += f' It also brings the block in AGENTS.md to the one from release {ref}.'
+        why += also
+    elif rules:
+        why = (f'The intelligence hub renders the universal rules from its CONSTITUTION.md. This replaces the copy '
+               f'between the INTELLIGENCE markers in AGENTS.md with the one from release {ref}, and '
+               f'leaves every section this repository owns as it was.') + also
+    else:
+        why = ('The intelligence hub keeps the universal prompts in docs/Prompts.md current. This replaces '
+               f'the part between its INTELLIGENCE:PROMPTS markers with the one from release {ref}, and '
+               "leaves this repository's own prompts as they were.")
     body = textwrap.fill(why, 72) + (f'\n\nSigned-off-by: {signer[0]} <{signer[1]}>' if signer else '')
-    first = ' This is a first sync, so review it by hand: `make merge` leaves it alone.'
-    impact = f'Agents read the rules of release {ref} in this repository.' + (first if change.adoption else '')
+    review = (' This is a first sync, so review it by hand: `make merge` leaves it alone.' if change.adoption
+              else ' It adds `docs/Prompts.md`, so review it by hand: `make merge` leaves it alone.'
+              if change.prompts_note else '')
+    impact = (f'Agents read the rules of release {ref} in this repository.' if rules
+              else f'Everyone copies the universal prompts of release {ref} from `docs/Prompts.md`.') + review
     if signer is None:
         impact += " This repository's 🔁 Intelligence Sync opened it; merging it stays the owner's."
-        impact += (' If its checks wait for approval, select **Approve workflows to run** here.' if change.adoption
+        impact += (' If its checks wait for approval, select **Approve workflows to run** here.' if review
                    else ' If its checks wait for approval, `make merge` in the hub approves them once it has '
                         'checked that the diff is the block alone.')
+    marks = f"The block's marker carries `sha256:{block_hash}`, the hash of its text"
+    if change.prompts_file:
+        marks += f", and the prompts block's carries `sha256:{prompts_hash}`"
     pr_body = (f'## Impact\n\n{impact}\n\n'
-               f"## Validation\n\nThe block's marker carries `sha256:{block_hash}`, the hash of its text, "
-               'so `make audit` in the hub can prove it is unedited.\n\n'
+               f'## Validation\n\n{marks}, so `make audit` in the hub can prove each is unedited.\n\n'
                '## Rollback\n\nRevert this pull request. Nothing else in the repository depends on the block.\n')
     return title, body, pr_body
 
 
+def described(change: Change, rules: bool, block: str, prompts_block: str) -> str:
+    """What a change does, a phrase for each part: `block` and `prompts_block` name the updates."""
+    parts = list(change.adoption) or ([block] if rules else [])
+    if change.prompts_note:
+        parts.append(change.prompts_note)
+    elif change.prompts_file is not None:
+        parts.append(prompts_block)
+    return '; '.join(parts)
+
+
 def sync_one(gh: GitHub, repo: dict, region: str, ref: str, signer: tuple[str, str] | None,
-             dry_run: bool) -> str:
+             dry_run: bool, release_prompts: prompts.Prompts | None = None) -> str:
     name, base = repo['name'], repo['default_branch']
     agents = gh.file(name, AGENTS, base)
     claude = gh.file(name, CLAUDE, base)
     change = adopt(name, agents[0] if agents else None, claude[0] if claude else None, region)
-    if agents and change.agents == agents[0] and not change.delete_claude:
+    current = None
+    if release_prompts is not None and not prompts.opted_out(repo):
+        current = gh.file(name, prompts.TARGET, base)
+        change = with_prompts(change, current[0] if current else None, release_prompts)
+    rules = not agents or change.agents != agents[0] or change.delete_claude
+    if not rules and change.prompts_file is None:
         return f'{name}: current'
     block_hash = render.find(region).marker
-    title, body, pr_body = messages(block_hash, ref, change, signer)
+    title, body, pr_body = messages(block_hash, ref, change, signer, rules)
     action = 'adopt' if change.adoption else 'update'
     if dry_run:
-        return f'{name}: would {action} ({"; ".join(change.adoption) or "the block"})'
+        return f'{name}: would {action} ({described(change, rules, "the block", "the prompts block")})'
     base_sha = gh.head(name, base)
     if base_sha is None:
         return f'{name}: skipped, {base} has no commits'
     gh.point_branch(name, BRANCH, base_sha)
-    gh.put(name, AGENTS, change.agents, f'{title}\n\n{body}', BRANCH, agents[1] if agents else None)
+    if rules:
+        gh.put(name, AGENTS, change.agents, f'{title}\n\n{body}', BRANCH, agents[1] if agents else None)
     if change.delete_claude and claude:
         gh.delete(name, CLAUDE, f'{title}\n\n{body}', BRANCH, claude[1])
+    if change.prompts_file is not None:
+        gh.put(name, prompts.TARGET, change.prompts_file, f'{title}\n\n{body}', BRANCH,
+               current[1] if current else None)
     existing = gh.sync_pr(name)
     if existing:
         gh.edit_pr(name, existing['number'], title, pr_body)
@@ -601,13 +680,35 @@ def sync_one(gh: GitHub, repo: dict, region: str, ref: str, signer: tuple[str, s
     return f'{name}: opened pull request #{created["number"]}'
 
 
-def audit_one(gh: GitHub, repo: dict, current: str, known: dict[str, str], invariants: set[str]) -> list[str]:
+def prompts_findings(file: tuple[str, str] | None, current: str, known: dict[str, str]) -> list[str]:
+    """What is wrong with a repository's `docs/Prompts.md`, as short phrases."""
+    if file is None:
+        return ['no docs/Prompts.md']
+    try:
+        block = prompts.find(file[0])
+    except ValueError as error:
+        return [f'docs/Prompts.md: {error}']
+    if block is None:
+        return ['docs/Prompts.md has no prompts block, so sync leaves it alone']
+    if block.edited:
+        return ['the prompts block was edited by hand']
+    if block.marker != current:
+        return [f'the prompts block is from {known[block.marker]}' if block.marker in known
+                else 'the prompts block is not one the hub ever released']
+    return []
+
+
+def audit_one(gh: GitHub, repo: dict, current: str, known: dict[str, str], invariants: set[str],
+              release_prompts: prompts.Prompts | None = None,
+              known_prompts: dict[str, str] | None = None) -> list[str]:
     """What is wrong in one repository, as short phrases; empty when nothing is."""
     name, base = repo['name'], repo['default_branch']
     agents = gh.file(name, AGENTS, base)
     found: list[str] = []
     if gh.file(name, CLAUDE, base):
         found.append('a CLAUDE.md sits beside AGENTS.md, so Claude Code may skip AGENTS.md')
+    if release_prompts is not None and not prompts.opted_out(repo):
+        found += prompts_findings(gh.file(name, prompts.TARGET, base), release_prompts.marker, known_prompts or {})
     if agents is None:
         return ['no AGENTS.md', *found]
     region = render.find(agents[0])
@@ -664,7 +765,7 @@ def start_checks(gh: GitHub, repo: str, number: int, waiting: list[dict]) -> str
     return 'reopened it, which starts its checks'
 
 
-def merge_one(gh: GitHub, repo: dict, current: str, dry_run: bool) -> str:
+def merge_one(gh: GitHub, repo: dict, current: str, dry_run: bool, current_prompts: str | None = None) -> str:
     name, base = repo['name'], repo['default_branch']
     listed = gh.sync_pr(name)
     if not listed:
@@ -672,14 +773,20 @@ def merge_one(gh: GitHub, repo: dict, current: str, dry_run: bool) -> str:
     number = listed['number']
     pr = gh.pr(name, number)
     files = gh.pr_files(name, number)
-    if [f['filename'] for f in files] != [AGENTS] or files[0].get('status') != 'modified':
+    # Each file a merge may land, with what finds its block and the block it must carry now.
+    blocks: dict[str, tuple[Finder, str]] = {AGENTS: (render.find, current)}
+    if current_prompts:
+        blocks[prompts.TARGET] = (prompts.find, current_prompts)
+    if not files or any(f['filename'] not in blocks or f.get('status') != 'modified' for f in files):
         return f'{name}: #{number} changes more than the block; review it by hand'
-    old = gh.file(name, AGENTS, base)
-    new = gh.file(name, AGENTS, pr['head']['sha'])
-    if not old or not new or not only_block_changed(old[0], new[0]):
-        return f'{name}: #{number} changes more than the block; review it by hand'
-    if render.find(new[0]).marker != current:
-        return f'{name}: #{number} carries an older block; run its 🔁 Intelligence Sync, or make sync, first'
+    for path in [f['filename'] for f in files]:
+        find, wanted = blocks[path]
+        old = gh.file(name, path, base)
+        new = gh.file(name, path, pr['head']['sha'])
+        if not old or not new or not only_block_changed(old[0], new[0], find):
+            return f'{name}: #{number} changes more than the block; review it by hand'
+        if find(new[0]).marker != wanted:
+            return f'{name}: #{number} carries an older block; run its 🔁 Intelligence Sync, or make sync, first'
     if pr.get('mergeable') is not True:
         return f'{name}: #{number} is not mergeable yet ({pr.get("mergeable_state")})'
     # Only now, with the diff proven to be the block alone, is it safe to let
@@ -766,8 +873,9 @@ def local_file(checkout: pathlib.Path, name: str) -> str | None:
         return handle.read()
 
 
-def apply(gh: GitHub, full: str, checkout: pathlib.Path, region: str, ref: str, dry_run: bool) -> int:
-    """Write the release's block into one repository's checkout, for the stub's workflow."""
+def apply(gh: GitHub, full: str, checkout: pathlib.Path, region: str, ref: str, dry_run: bool,
+          release_prompts: prompts.Prompts | None = None) -> int:
+    """Write the release's blocks into one repository's checkout, for the stub's workflow."""
     name = full.split('/', 1)[1]
     unchanged = {'changed': 'false'}
     if is_hub(checkout):
@@ -775,31 +883,42 @@ def apply(gh: GitHub, full: str, checkout: pathlib.Path, region: str, ref: str, 
         write_outputs(unchanged)
         return 0
     try:
-        reason = left_out(gh.repo(full))
+        settings = gh.repo(full)
+        reason = left_out(settings)
         if reason:
             print(f'{name}: skipped, {reason}')
             write_outputs(unchanged)
             return 0
         agents, claude = local_file(checkout, AGENTS), local_file(checkout, CLAUDE)
         change = adopt(name, agents, claude, region)
+        if release_prompts is not None and not prompts.opted_out(settings):
+            change = with_prompts(change, local_file(checkout, prompts.TARGET), release_prompts)
     except (GitHubError, ApplyError, ValueError) as error:
         return fail(f'{name}: {error}')
-    if agents is not None and change.agents == agents and not change.delete_claude:
+    rules = agents is None or change.agents != agents or change.delete_claude
+    if not rules and change.prompts_file is None:
         print(f'{name}: current')
         write_outputs(unchanged)
         return 0
     block_hash = render.find(region).marker
-    title, body, pr_body = messages(block_hash, ref, change, None)
-    what = '; '.join(change.adoption) or f'the block, to {block_hash[:12]} from {ref}'
+    title, body, pr_body = messages(block_hash, ref, change, None, rules)
     if dry_run:
+        what = described(change, rules, f'the block, to {block_hash[:12]} from {ref}', 'the prompts block')
         print(f'{name}: would {"adopt" if change.adoption else "update"} ({what})')
         write_outputs(unchanged)
         return 0
-    with open(checkout / AGENTS, 'w', encoding='utf-8', newline='') as handle:
-        handle.write(change.agents)
+    if rules:
+        with open(checkout / AGENTS, 'w', encoding='utf-8', newline='') as handle:
+            handle.write(change.agents)
     if change.delete_claude:
         (checkout / CLAUDE).unlink()
-    print(f'{name}: {"first sync, which " if change.adoption else "updates "}{what}')
+    if change.prompts_file is not None:
+        (checkout / prompts.TARGET).parent.mkdir(parents=True, exist_ok=True)
+        with open(checkout / prompts.TARGET, 'w', encoding='utf-8', newline='') as handle:
+            handle.write(change.prompts_file)
+    what = described(change, rules, f'updates the block, to {block_hash[:12]} from {ref}',
+                     'updates the prompts block')
+    print(f'{name}: {"first sync, which " if change.adoption else ""}{what}')
     write_outputs({'changed': 'true', 'commit-title': title, 'commit-body': body,
                    'pr-title': title, 'pr-body': pr_body})
     return 0
@@ -824,10 +943,11 @@ def main(argv: Sequence[str] | None = None, gh: GitHub | None = None, root: path
             parser.error("apply runs in a repository's workflow, which sets GITHUB_REPOSITORY to owner/name")
         gh = gh or GitHub(full.split('/', 1)[0])
         return apply(gh, full, pathlib.Path(args.path), shipped(root),
-                     release_label(gh, args.hub, args.release), args.dry_run)
+                     release_label(gh, args.hub, args.release), args.dry_run, prompts.load(root))
     gh = gh or GitHub()
     region, ref = delivered(root, args.ref)
     current = render.find(region).marker
+    release_prompts = prompts_at(root, ref)
     try:
         chosen, skipped = targets(gh, args.repo, hub_name(root))
     except GitHubError as error:
@@ -840,12 +960,14 @@ def main(argv: Sequence[str] | None = None, gh: GitHub | None = None, root: path
         known = history(root)
         constitution = render.load_constitution(root)
         invariants = {rid for rid, rule in constitution.rules.items() if rule.kind == 'invariant'}
-        print(f'Auditing against {ref}, block sha256 {current[:12]}')
+        known_prompts = prompts_history(root)
+        print(f'Auditing against {ref}, block sha256 {current[:12]}'
+              + (f', prompts sha256 {release_prompts.marker[:12]}' if release_prompts else ''))
         for repo in chosen:
             try:
-                found = audit_one(gh, repo, current, known, invariants)
+                found = audit_one(gh, repo, current, known, invariants, release_prompts, known_prompts)
                 stub = gh.file(repo['name'], STUB, repo['default_branch']) is not None
-            except GitHubError as error:
+            except (GitHubError, ValueError) as error:
                 found, stub = [str(error)], True
             failures += bool(found)
             # The stub is a choice, not a defect: without it the block is still
@@ -857,10 +979,11 @@ def main(argv: Sequence[str] | None = None, gh: GitHub | None = None, root: path
     for repo in chosen:
         try:
             if args.command == 'sync':
-                print(sync_one(gh, repo, region, ref, signer, args.dry_run))
+                print(sync_one(gh, repo, region, ref, signer, args.dry_run, release_prompts))
             else:
-                print(merge_one(gh, repo, current, args.dry_run))
-        except GitHubError as error:
+                print(merge_one(gh, repo, current, args.dry_run,
+                                release_prompts.marker if release_prompts else None))
+        except (GitHubError, ValueError) as error:
             failures += 1
             print(f'{repo["name"]}: {error}')
     return 1 if failures else 0

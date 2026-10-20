@@ -23,9 +23,10 @@ setup: ## Install PyYAML, which the repository validator needs; CI runs this fir
 
 check: lint test ## Everything CI checks
 
-lint: ## The repository validator, every rendered copy checked against its source, and the evals
+lint: ## The repository validator, every rendered copy checked against its source, the prompts, and the evals
 	$(PYTHON) $(SCRIPTS)/validate-repository.py
 	$(PYTHON) $(SCRIPTS)/render.py --check
+	$(PYTHON) $(SCRIPTS)/prompts.py --check
 	$(PYTHON) $(SCRIPTS)/evals.py --check
 
 test: ## Every test in the repository

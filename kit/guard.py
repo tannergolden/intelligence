@@ -25,8 +25,9 @@ WHAT IT BLOCKS, and the rule behind each:
 - GIT-001: a commit that git would author, or sign off, as an AI's identity;
   `git commit -s` passes whenever git's identity is your user's
 - SEC-001: a credential-shaped string in a command or in a file being written
-- the INTELLIGENCE block: a hand edit inside the block the hub renders,
-  which the next sync would overwrite anyway
+- the hub's blocks: a hand edit inside the rules block of `AGENTS.md` or
+  the prompts block of `docs/Prompts.md`, which the next sync would
+  overwrite anyway
 
 It is a seatbelt, not a sandbox. It reads a command the way a careful
 reviewer would and catches the honest mistake; a determined workaround gets
@@ -85,15 +86,16 @@ SECRETS = (
     ('a private key', re.compile(r'-----BEGIN (?:[A-Z0-9]+ )*PRIVATE KEY-----')),
 )
 
-# The block the hub renders, in the files that carry one. The pattern matches
-# render.py's.
+# The blocks the hub renders, in the files that carry one: the rules, and the
+# prompts. The pattern matches render.py's for the one and prompts.py's for the
+# other.
 REGION = re.compile(
-    r'^<!-- (?P<name>INTELLIGENCE):BEGIN sha256:[0-9a-f]{64} -->[ \t]*\r?\n'
+    r'^<!-- (?P<name>INTELLIGENCE(?::PROMPTS)?):BEGIN sha256:[0-9a-f]{64} -->[ \t]*\r?\n'
     r'.*?'
     r'^<!-- (?P=name):END -->[ \t]*(?:\r?\n|\Z)',
     re.M | re.S,
 )
-MARKER = re.compile(r'^<!-- INTELLIGENCE:(?:BEGIN|END)\b', re.M)
+MARKER = re.compile(r'^<!-- INTELLIGENCE(?::PROMPTS)?:(?:BEGIN|END)\b', re.M)
 BLOCK_SUFFIXES = ('.md', '.markdown', '.mdc')
 
 SHELL_TOOLS = {'bash', 'powershell', 'pwsh', 'shell', 'run_shell_command', 'exec_command', 'local_shell',
@@ -877,7 +879,7 @@ def has_region(path: pathlib.Path) -> bool:
 def block_edit(path: pathlib.Path) -> Verdict:
     return Verdict('machine-written block', f'{path.name} holds a block that tannergolden/intelligence renders, '
                    'and a hand edit there is overwritten by the next sync',
-                   'Leave the block as it is; change the rule in the hub, or tell your user')
+                   'Leave the block as it is; change it in the hub, or tell your user')
 
 
 def tampers(path: pathlib.Path) -> Verdict:

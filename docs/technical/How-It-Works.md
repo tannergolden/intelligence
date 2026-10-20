@@ -108,6 +108,11 @@ module has its own document:
 | The guard hook                                             | Denies the few tool calls the Invariants forbid outright, before they run, in every app | [The Home Kit](The-Home-Kit.md)             |
 | The `develop` skill, and the Worker and Reviewer subagents | A procedure loaded when the task calls for it, and two agents a session hands work to   | [Skills & Subagents](Skills-&-Subagents.md) |
 
+Every repository also gets ready-made [prompts](Prompts.md) in
+`docs/Prompts.md`, in the same pull request as the rules: universal ones the
+hub keeps current between their markers, and a section for the repository's
+own.
+
 Two tools prove the whole thing works: [the loader probe](The-Loader-Probe.md)
 shows which files each app actually loads, and [evals](Evals.md) measure
 whether the agent then follows each rule. Nothing reaches a machine or a

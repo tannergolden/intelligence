@@ -60,7 +60,7 @@ jobs:
       # .github/scripts/test_stub.py keeps them whole.
       required-files: >-
         CONSTITUTION.md home/intelligence.md home/kit.json home/install.py home/SHA256SUMS setup/claude-cloud-setup.sh
-        .github/workflows/sync.yml .github/actions/sync/action.yml setup/intelligence-sync.yml
-        .github/scripts/sync.py .github/scripts/render.py .github/scripts/kit.py
+        .github/workflows/sync.yml .github/actions/sync/action.yml setup/intelligence-sync.yml setup/Prompts.md
+        .github/scripts/sync.py .github/scripts/render.py .github/scripts/kit.py .github/scripts/prompts.py
       check-command: 'make check'
       keep-versions: true

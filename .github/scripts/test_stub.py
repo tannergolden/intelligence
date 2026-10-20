@@ -139,8 +139,9 @@ class TestTheStub(unittest.TestCase):
 
     def test_a_release_carries_every_file_a_stub_resolves(self) -> None:
         needed = {'.github/workflows/sync.yml', '.github/actions/sync/action.yml',
-                  'setup/intelligence-sync.yml', 'home/intelligence.md', *imported_from_hub()}
+                  'setup/intelligence-sync.yml', 'home/intelligence.md', sync.prompts.SOURCE, *imported_from_hub()}
         self.assertIn('.github/scripts/kit.py', needed, 'render.py imports kit.py; the action needs both')
+        self.assertIn('.github/scripts/prompts.py', needed, 'sync.py imports prompts.py')
         self.assertLessEqual(needed, required_files())
         self.assertIn('setup/claude-cloud-setup.sh', required_files(), 'the first line counts too')
 
@@ -148,7 +149,7 @@ class TestTheStub(unittest.TestCase):
         # GitHub hands a calling repository the action from this hub's archive at
         # the tag, so a file export-ignore leaves out fails every stub at once. The
         # reusable workflow is read from the tag itself and may stay out.
-        downloaded = {ACTION.relative_to(ROOT).as_posix(), 'home/intelligence.md',
+        downloaded = {ACTION.relative_to(ROOT).as_posix(), 'home/intelligence.md', sync.prompts.SOURCE,
                       *imported_from_hub()}
         self.assertEqual(downloaded - archived(), set(), 'export-ignore leaves these out')
 

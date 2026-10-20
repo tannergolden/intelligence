@@ -45,6 +45,7 @@ passing tests and a record in [`docs/adrs/`](../adrs/README.md):
 | **Knowledge**             | Public facts beside every home copy of the rules                                         | Removed by [ADR-0023](../adrs/ADR-0023-The-Kit-Carries-No-Facts.md) |
 | **Evals**                 | [Scenarios for every rule](../technical/Evals.md), run with the block and without it     | Built; real runs are yours, `make evals`                            |
 | **Unattended sync**       | A [stub](../technical/Repository-Sync.md) in each repository, on its own token           | Built; copy the stub in after the first release                     |
+| **Prompts**               | Ready-made [prompts](../technical/Prompts.md) in every repository's `docs/Prompts.md`    | Built; first reaches a repository with the release that carries it  |
 | **Machined-region check** | The standards' check that a block's hash matches its text, in every repository's CI      | Built in tannergolden/standards                                     |
 
 ---

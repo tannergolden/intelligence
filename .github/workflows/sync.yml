@@ -4,8 +4,9 @@
 #
 # Purpose: keeps the universal rules current in the repository that calls
 # it. It writes the INTELLIGENCE block of the hub's latest release into
-# that repository's root AGENTS.md, and proposes the change as one pull
-# request on `chore/intelligence`, the same one `make sync` opens by hand.
+# that repository's root AGENTS.md, and the universal prompts into its
+# docs/Prompts.md, and proposes the change as one pull request on
+# `chore/intelligence`, the same one `make sync` opens by hand.
 #
 # THE REPOSITORY PULLS; NOTHING PUSHES IN. A repository that wants the rules
 # carries the stub, setup/intelligence-sync.yml in this hub, as
@@ -72,7 +73,7 @@ jobs:
         uses: tannergolden/standards/.github/actions/harden@v1
         with:
           egress-policy: audit
-          notice: "🔁 Intelligence Sync: bringing this repository's AGENTS.md up to the latest release."
+          notice: "🔁 Intelligence Sync: bringing this repository's AGENTS.md and docs/Prompts.md up to the latest release."
 
       - name: '📂 Checkout Calling Repository'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

@@ -37,7 +37,7 @@ commit messages, sign-offs and pull requests.
 ## 🛠️ Commands
 
 - `make setup`: install PyYAML, which the repository validator in `make lint` needs. CI runs it before the checks.
-- `make check`: everything CI checks, which are the repository validator, `render.py --check`, `evals.py --check` and every test.
+- `make check`: everything CI checks, which are the repository validator, `render.py --check`, `prompts.py --check`, `evals.py --check` and every test.
 - `make test`: the tests alone, every `test_*.py` in `.github/scripts/`.
 - `make render`: rewrite `home/` from `CONSTITUTION.md`, the kit's sources in `kit/` and the installer.
 - `make probe`: prove which instruction files each installed app loads. It makes one model call per check.
@@ -52,6 +52,7 @@ commit messages, sign-offs and pull requests.
 - `make check` passes, and its output is in your report.
 - A change to `CONSTITUTION.md`, anything in `kit/` or `.github/scripts/install.py` is followed by `make render`, and the rendered files are committed with it.
 - A new rule gets a scenario in `evals/scenarios/`, and a new skill a trigger test in `evals/skills/`.
+- A change to `setup/Prompts.md` stays as Prettier writes it, with the standards' configuration, and passes `prompts.py --check`.
 - Every new script has tests beside it, and every folder's `README.md` logs its files, except inside a skill's folder.
 - A change to how something works updates its document in `docs/technical/` or `docs/operations/` in the same commit.
 
@@ -75,7 +76,7 @@ commit messages, sign-offs and pull requests.
 | `kit/`                                  | The kit's sources: the guard, the one skill `develop` and its team, and the Worker and Reviewer subagents                                       |
 | `home/`                                 | Everything a machine downloads, rendered: the home file, the kit, the installer and their hashes, which every release tag serves                |
 | `evals/`                                | Scenarios for every rule, and the skill trigger tests                                                                                           |
-| `setup/`                                | The Claude cloud setup script, and the stub a repository carries                                                                                |
+| `setup/`                                | The Claude cloud setup script, the stub a repository carries, and the prompts every repository gets                                             |
 | `.github/scripts/`                      | Every script, with its test beside it: `render.py`, `kit.py`, `install.py`, `sync.py`, `evals.py`, `loader-probe.py`, and the template's checks |
 | `.github/actions/`                      | The action a repository's stub runs, through `.github/workflows/sync.yml`                                                                       |
 | `docs/technical/`                       | How every part of the hub works, one document each, starting with `How-It-Works.md`                                                             |
@@ -89,7 +90,8 @@ commit messages, sign-offs and pull requests.
 - Never edit inside `home/`. It is rendered, and `make check` fails on a hand edit.
 - The guard hook denies a commit git would author as an AI. In a cloud session, pass `--author` and `--trailer 'Signed-off-by: ...'` with your user's identity, never `-s`.
 - Changing `CONSTITUTION.md` changes nothing elsewhere until a release: other repositories receive the rules only through one, which their stub or `make sync` delivers.
-- `sync.py`, `render.py` and `kit.py` also run inside every repository that carries the stub, at the hub's latest release, from the archive GitHub serves. Cut Release refuses a tag without them, `.gitattributes` keeps `.github/scripts/` in that archive, and `test_stub.py` holds both.
+- `sync.py`, `render.py`, `kit.py` and `prompts.py`, and `setup/Prompts.md`, also run or are read inside every repository that carries the stub, at the hub's latest release, from the archive GitHub serves. Cut Release refuses a tag without them, `.gitattributes` keeps `.github/scripts/` in that archive, and `test_stub.py` holds both.
+- `setup/Prompts.md` keeps its `INTELLIGENCE:PROMPTS` markers unsealed: sync seals them as it delivers the file, and a hash in the source fails `make check`.
 - Never add an `AGENTS.md` or a `CLAUDE.md` here. The hub holds the source of the rules; a copy beside it would be a second source.
 
 ---
@@ -99,6 +101,7 @@ commit messages, sign-offs and pull requests.
 - Cutting a release, running `make sync` or `make merge` against real repositories, or running a repository's 🔁 Intelligence Sync.
 - Adding a universal skill: the owner keeps one, `develop`. A skill one repository needs lives in that repository.
 - Changing a rule's wording, its kind or its ID.
+- Adding, removing or rewording a universal prompt: it reaches every repository at the next release.
 
 ---
 

@@ -54,26 +54,43 @@ CURRENT = render.region(CURRENT_BLOCK)
 GREEN = ([{'name': 'ci', 'status': 'completed', 'conclusion': 'success'}], {'state': 'pending', 'statuses': []})
 
 
+GIT = ['git', '-c', 'user.name=Test', '-c', 'user.email=test@example.com', '-c', 'commit.gpgsign=false',
+       '-c', 'tag.gpgsign=false']
+
+PROMPTS_SOURCE = ('<!--\ntitle: x\n-->\n\n# Prompts\n\n---\n\n<!-- INTELLIGENCE:PROMPTS:BEGIN -->\n\n'
+                  '## How\n\nCopy one.\n\n<!-- INTELLIGENCE:PROMPTS:END -->\n\n---\n\n'
+                  '## Prompts For This Repository\n\n_Yours._\n')
+PROMPTS = sync.prompts.seal(PROMPTS_SOURCE)
+OLD_PROMPTS = sync.prompts.seal(PROMPTS_SOURCE.replace('Copy one.', 'An older guide.'))
+
+
+def git(root: pathlib.Path, *args: str) -> None:
+    subprocess.run(GIT + list(args), cwd=root, check=True, capture_output=True)
+
+
 def make_hub(tags: bool = True) -> pathlib.Path:
     """A throwaway hub: the real Constitution, and two releases of the home file."""
     root = pathlib.Path(tempfile.mkdtemp(prefix='sync-test-'))
     shutil.copy(ROOT / render.CONSTITUTION_FILE, root / render.CONSTITUTION_FILE)
     (root / 'home').mkdir()
-    git = ['git', '-c', 'user.name=Test', '-c', 'user.email=test@example.com', '-c', 'commit.gpgsign=false',
-           '-c', 'tag.gpgsign=false']
-
-    def run(*args: str) -> None:
-        subprocess.run(git + list(args), cwd=root, check=True, capture_output=True)
-
-    run('init', '-q')
-    run('remote', 'add', 'origin', 'https://github.com/tannergolden/intelligence.git')
+    git(root, 'init', '-q')
+    git(root, 'remote', 'add', 'origin', 'https://github.com/tannergolden/intelligence.git')
     for block, tag in ((OLD_BLOCK, 'v0.0.1'), (CURRENT_BLOCK, 'v0.1.0')):
         (root / 'home' / 'intelligence.md').write_text(render.region(block), encoding='utf-8')
-        run('add', '-A')
-        run('commit', '-q', '-m', tag)
+        git(root, 'add', '-A')
+        git(root, 'commit', '-q', '-m', tag)
         if tags:
-            run('tag', tag)
+            git(root, 'tag', tag)
     return root
+
+
+def release_prompts(root: pathlib.Path, source: str = PROMPTS_SOURCE, tag: str = 'v0.2.0') -> None:
+    """A later release of the throwaway hub, the first to ship the prompts."""
+    (root / 'setup').mkdir(exist_ok=True)
+    (root / sync.prompts.SOURCE).write_text(source, encoding='utf-8')
+    git(root, 'add', '-A')
+    git(root, 'commit', '-q', '-m', tag)
+    git(root, 'tag', tag)
 
 
 class FakeGitHub(sync.GitHub):
@@ -487,6 +504,115 @@ class TestMergeAfterTheStub(SyncTestCase):
         self.assertEqual(self.gh.reopened, [])
 
 
+class TestPrompts(SyncTestCase):
+    """A release that ships the prompts: `docs/Prompts.md` beside AGENTS.md, in the same pull request."""
+
+    TARGET = sync.prompts.TARGET
+
+    def setUp(self) -> None:
+        super().setUp()
+        release_prompts(self.hub)
+
+    def current(self, **files: str) -> dict[str, str]:
+        return {'AGENTS.md': '# Alpha\n\n' + CURRENT, **files}
+
+    def test_a_new_repository_gets_the_prompts_beside_its_agents_file(self) -> None:
+        self.gh.add('alpha', {'README.md': '# Alpha\n'})
+        code, out = self.run_sync('sync')
+        self.assertEqual(code, 0, out)
+        tree = self.branch('alpha')
+        self.assertIn(CURRENT, tree['AGENTS.md'])
+        self.assertEqual(tree[self.TARGET], PROMPTS.seed)
+        self.assertIn('adds `docs/Prompts.md`', self.gh.messages['alpha'].replace('\n', ' '))
+        self.assertIn('first sync', self.gh.prs['alpha']['body'])
+
+    def test_a_repository_with_current_rules_gets_the_prompts_alone(self) -> None:
+        self.gh.add('alpha', self.current())
+        self.run_sync('sync')
+        self.assertNotIn('alpha: put AGENTS.md', self.gh.writes)
+        self.assertEqual(self.branch('alpha')[self.TARGET], PROMPTS.seed)
+        title, body = self.gh.messages['alpha'].split('\n\n', 1)
+        self.assertEqual(title, f'chore(agents): 🤖 sync the universal prompts to {PROMPTS.marker[:12]}')
+        self.assertTrue(all(len(line) <= 72 for line in body.splitlines() if not line.startswith('Signed-off-by:')))
+        self.assertIn('review it by hand', self.gh.prs['alpha']['body'])
+        self.assertIn(f'sha256:{PROMPTS.marker}', self.gh.prs['alpha']['body'])
+
+    def test_an_older_prompts_block_is_replaced_and_the_repositorys_own_prompts_stay(self) -> None:
+        mine = OLD_PROMPTS.seed.replace('_Yours._', '### Ship A Release\n\nOurs.')
+        self.gh.add('alpha', self.current(**{self.TARGET: mine}))
+        self.run_sync('sync')
+        self.assertEqual(self.branch('alpha')[self.TARGET], mine.replace(OLD_PROMPTS.region, PROMPTS.region))
+        self.assertIn("leaves this repository's own prompts as they were",
+                      self.gh.messages['alpha'].replace('\n', ' '))
+
+    def test_rules_and_prompts_both_current_is_left_alone(self) -> None:
+        self.gh.add('alpha', self.current(**{self.TARGET: PROMPTS.seed}))
+        _code, out = self.run_sync('sync')
+        self.assertIn('alpha: current', out)
+        self.assertEqual(self.gh.writes, [])
+
+    def test_a_file_of_its_own_and_the_topic_keep_the_prompts_out(self) -> None:
+        self.gh.add('alpha', self.current(**{self.TARGET: '# Our own prompts\n'}))
+        self.gh.add('beta', self.current(), topics=['no-intelligence-prompts'])
+        _code, out = self.run_sync('sync')
+        self.assertIn('alpha: current', out)
+        self.assertIn('beta: current', out)
+        self.assertEqual(self.gh.writes, [])
+
+    def test_a_dry_run_names_the_prompts(self) -> None:
+        self.gh.add('alpha', self.current(**{self.TARGET: OLD_PROMPTS.seed}))
+        _code, out = self.run_sync('sync', '--dry-run')
+        self.assertIn('alpha: would update (the prompts block)', out)
+        self.assertEqual(self.gh.writes, [])
+
+    def test_a_change_to_both_blocks_alone_is_merged(self) -> None:
+        self.gh.add('alpha', {'AGENTS.md': '# Alpha\n\n' + OLD, self.TARGET: OLD_PROMPTS.seed})
+        self.run_sync('sync')
+        code, out = self.run_sync('merge')
+        self.assertEqual(code, 0, out)
+        self.assertIn('alpha: merged #7', out)
+        self.assertEqual(self.gh.trees[('alpha', 'Development')][self.TARGET], PROMPTS.seed)
+
+    def test_adding_the_prompts_waits_for_review_by_hand(self) -> None:
+        self.gh.add('alpha', self.current())
+        self.run_sync('sync')
+        _code, out = self.run_sync('merge')
+        self.assertIn('review it by hand', out)
+        self.assertEqual(self.gh.merged, [])
+
+    def test_a_pull_request_with_an_older_prompts_block_waits(self) -> None:
+        self.gh.add('alpha', self.current(**{self.TARGET: OLD_PROMPTS.seed}))
+        self.run_sync('sync')
+        other = sync.prompts.seal(PROMPTS_SOURCE.replace('Copy one.', 'Another guide.'))
+        self.branch('alpha')[self.TARGET] = other.seed
+        _code, out = self.run_sync('merge')
+        self.assertIn('older block', out)
+
+    def test_audit_names_each_prompts_problem(self) -> None:
+        release_prompts(self.hub, PROMPTS_SOURCE.replace('Copy one.', 'A newer guide.'), 'v0.3.0')
+        newest = sync.prompts.seal(PROMPTS_SOURCE.replace('Copy one.', 'A newer guide.'))
+        cases = {
+            'no docs/Prompts.md': {},
+            'has no prompts block, so sync leaves it alone': {self.TARGET: '# Ours\n'},
+            'the prompts block was edited by hand': {self.TARGET: newest.seed.replace('A newer', 'An edited')},
+            'the prompts block is from v0.2.0': {self.TARGET: PROMPTS.seed},
+            'not one the hub ever released': {self.TARGET: OLD_PROMPTS.seed},
+        }
+        for expected, files in cases.items():
+            with self.subTest(expected=expected):
+                self.gh = FakeGitHub()
+                self.gh.add('alpha', self.current(**files))
+                code, out = self.run_sync('audit')
+                self.assertEqual(code, 1, out)
+                self.assertIn(expected, out)
+        self.gh = FakeGitHub()
+        self.gh.add('alpha', self.current(**{self.TARGET: newest.seed}))
+        self.gh.add('beta', self.current(), topics=['no-intelligence-prompts'])
+        code, out = self.run_sync('audit')
+        self.assertEqual(code, 0, out)
+        self.assertIn(f'prompts sha256 {newest.marker[:12]}', out)
+
+
 class TestTextHandling(unittest.TestCase):
     """The pure functions that place, fold and read text."""
 
@@ -694,6 +820,43 @@ class TestApply(unittest.TestCase):
         self.assertIn('alpha: would adopt', out)
         self.assertFalse((self.checkout / 'AGENTS.md').exists())
         self.assertEqual(self.written(), {'changed': 'false'})
+
+    def ship_prompts(self) -> None:
+        """The hub tree the stub's action runs from carries the prompts."""
+        (self.hub / 'setup').mkdir(exist_ok=True)
+        (self.hub / sync.prompts.SOURCE).write_text(PROMPTS_SOURCE, encoding='utf-8')
+
+    def test_the_prompts_are_written_into_the_checkout(self) -> None:
+        self.ship_prompts()
+        (self.checkout / 'AGENTS.md').write_text('# Alpha\n\n' + CURRENT, encoding='utf-8')
+        code, out = self.run_apply()
+        self.assertEqual(code, 0, out)
+        self.assertEqual((self.checkout / sync.prompts.TARGET).read_text(encoding='utf-8'), PROMPTS.seed)
+        self.assertIn('alpha: adds `docs/Prompts.md`', out)
+        values = self.written()
+        self.assertEqual(values['changed'], 'true')
+        self.assertEqual(values['commit-title'], f'chore(agents): 🤖 sync the universal prompts to {PROMPTS.marker[:12]}')
+        self.assertIn('Approve workflows to run', values['pr-body'])
+        self.assertEqual((self.checkout / 'AGENTS.md').read_text(encoding='utf-8'), '# Alpha\n\n' + CURRENT)
+
+    def test_an_older_prompts_block_is_brought_current_in_place(self) -> None:
+        self.ship_prompts()
+        (self.checkout / 'AGENTS.md').write_text('# Alpha\n\n' + OLD, encoding='utf-8')
+        (self.checkout / 'docs').mkdir()
+        (self.checkout / sync.prompts.TARGET).write_text(OLD_PROMPTS.seed, encoding='utf-8')
+        code, out = self.run_apply()
+        self.assertEqual(code, 0, out)
+        self.assertIn('updates the block, to', out)
+        self.assertIn('updates the prompts block', out)
+        self.assertEqual((self.checkout / sync.prompts.TARGET).read_text(encoding='utf-8'), PROMPTS.seed)
+
+    def test_the_topic_keeps_the_prompts_out_of_the_checkout(self) -> None:
+        self.ship_prompts()
+        self.gh.settings['tannergolden/alpha'] = {'name': 'alpha', 'topics': ['no-intelligence-prompts']}
+        (self.checkout / 'AGENTS.md').write_text('# Alpha\n\n' + CURRENT, encoding='utf-8')
+        _code, out = self.run_apply()
+        self.assertIn('alpha: current', out)
+        self.assertFalse((self.checkout / sync.prompts.TARGET).exists())
 
     def test_it_runs_only_where_actions_names_the_repository(self) -> None:
         with mock.patch.dict(os.environ, {'GITHUB_REPOSITORY': ''}), contextlib.redirect_stderr(io.StringIO()):
