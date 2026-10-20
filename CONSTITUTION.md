@@ -80,8 +80,9 @@ of the repository in 7 of 7 runs with the block on Claude Opus 5.5 and Sonnet
 - gitleaks in the required secrets check, where the standards' gates run
 - push protection on public repositories
 - the guard hook, which denies a command or a file write that carries a token,
-  and a command or file read that opens a credential store in the home folder,
-  such as a private SSH key or ~/.aws/credentials
+  a command or file read that opens a credential store in the home folder, such
+  as a private SSH key or ~/.aws/credentials, a command that prints a token,
+  such as gh auth token, and a search, archive or copy of a whole store folder
 
 **To add:**
 
@@ -157,8 +158,10 @@ as a pipe.
 
 **Enforced by:**
 
-- the guard hook, which denies running a download in a shell unread, piped or
-  passed, and an install that overrides the registry on the command line
+- the guard hook, which denies running a download in a shell or interpreter
+  before anyone reads it, piped, passed or saved and run in the same line, and
+  an install that overrides the registry on the command line or in its
+  environment
 - Copilot's cloud agent, which checks new dependencies against the GitHub
   Advisory Database
 - Claude Code auto mode, which blocks piping a download into bash, a mitigation
@@ -242,7 +245,7 @@ runs with the block, and committed in every run without (October 2026).
 - Claude Code auto mode, which goes back to asking after three blocks in a row
   or twenty in a session
 - required checks, which run on the server and cannot be skipped
-- the guard hook, which denies --no-verify, hooks switched off for one command, and edits that would remove it or its registrations
+- the guard hook, which denies --no-verify, hooks switched off for one command, and edits that would remove it, its registrations or the kit's ask rules
 - the guard's Claude Code registration, which blocks the call when the guard
   cannot run
 
@@ -276,8 +279,8 @@ web search or an API call the task needs is not uploading data.
 
 - Copilot's cloud agent, which can push only to its own branch
 - Claude Code permissions.ask entries the kit installs on local machines, for
-  git push, pull request, issue and release commands, package publishing and
-  GitHub MCP writes
+  git push, pull request, issue, release, repository, gist and workflow
+  commands, gh api writes, package publishing and GitHub MCP writes
 
 **To add:**
 
@@ -574,8 +577,9 @@ writes, the sentence can leave the block.
 **Enforced by:**
 
 - the commitlint rule no-banned-dashes, for commit messages only
-- the guard hook, which denies an em dash in a file write, a commit message or
-  a pull request in repositories tannergolden owns
+- the guard hook, which denies an em dash a change adds to a Markdown file, a
+  commit message or a pull request in repositories tannergolden owns, unless
+  the repository's Overrides entry for DOC-002 allows it
 
 **To add:**
 
