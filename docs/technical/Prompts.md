@@ -174,10 +174,11 @@ fails while a prompt has none, or while a scenario fills a placeholder the
 prompt no longer holds, so a reworded prompt brings its scenario along, and
 `make test` runs each scenario's proof, a script that does the work, to show
 its checks pass the work done right and fail when nothing is done. Before a
-release carries a changed prompt, run its scenario a few times:
+release carries a changed prompt, run its scenario at least seven times each
+way:
 
 ```bash
-make evals ARGS='--apps claude --prompts fix-a-bug --runs 3'
+make evals ARGS='--apps claude --prompts fix-a-bug --runs 7'
 ```
 
 Keep a change only if the prompt does at least as well as before, and run

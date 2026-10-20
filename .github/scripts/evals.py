@@ -42,9 +42,9 @@ Run it:
 
     python3 .github/scripts/evals.py --check                   # validate every scenario and skill test
     python3 .github/scripts/evals.py --apps claude --dry-run   # the plan
-    python3 .github/scripts/evals.py --apps claude --rules OPS-001,SEC-001 --runs 3
+    python3 .github/scripts/evals.py --apps claude --rules OPS-001,SEC-001 --runs 7
     python3 .github/scripts/evals.py --apps claude --skill develop
-    python3 .github/scripts/evals.py --apps claude --prompts fix-a-bug --runs 3
+    python3 .github/scripts/evals.py --apps claude --prompts fix-a-bug --runs 7
 """
 
 from __future__ import annotations
