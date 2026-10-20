@@ -59,7 +59,9 @@ The kit rides beside the rules in the same release, as one pinned file,
 | [Worker and Reviewer](Skills-&-Subagents.md) | Subagents that make one change, and check one without editing                                                                          | `~/.claude/agents/`, `~/.copilot/agents/` and `~/.codex/agents/`                                                                                                                                |
 
 Everything the kit writes carries its mark, so it replaces only its own files
-and `make agents-uninstall` takes back exactly what it added.
+and `make agents-uninstall` takes back exactly what it added. A file that is a
+symlink, as dotfiles often make `~/.claude/settings.json`, is written through,
+so it stays a link to the file the dotfiles keep.
 
 ---
 
