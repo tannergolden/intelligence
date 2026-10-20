@@ -159,7 +159,8 @@ An entry is `- RULE-ID: reason`: a `*` works as the bullet, the ID may sit in
 backticks, and the colon may be left out. HTML comments in the section are
 ignored, so the hint a first sync leaves there counts for nothing. `make audit`
 reports an entry that names an Invariant, and an entry for `STD-001` with no
-reason.
+reason. The guard reads the section the same way, in the `AGENTS.md` at the
+repository's root: a `DOC-002` entry turns its em dash check off there.
 
 **A sync pull request** comes from `chore/intelligence`. Its title is
 `chore(agents): 🤖 sync the universal rules to <hash>`, or

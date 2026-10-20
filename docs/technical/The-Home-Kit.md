@@ -71,16 +71,16 @@ and it either stays silent or denies the call with exit 2 and one line saying
 why and what to do instead. It never allows and never asks, so each app's own
 permissions decide everything else.
 
-| Rule      | What it denies                                                                                                                                                                                                                                                                                                                                                                     |
-| :-------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| OPS-001   | Pushing to a default or protected branch, force-pushing without `--force-with-lease`, deleting or pruning remote refs, pushing tags, and merging a pull request through `git`, `gh` or a GitHub MCP tool                                                                                                                                                                           |
-| OPS-003   | What git cannot undo, when there is something to lose: a hard reset or whole-tree checkout over uncommitted work, `git clean -f`, dropped stashes, history rewrites, and deleting data or settings. A recursive delete of a root, drive or home folder counts in every spelling: `rm -r`, and on Windows `rmdir /s`, `rd /s`, `del /s` and `Remove-Item -Recurse` with its aliases |
-| OPS-004   | `--no-verify`, hooks switched off for one command, and edits that would remove the guard or its registrations, the compaction reminder included                                                                                                                                                                                                                                    |
-| GIT-001   | A commit git would author, or sign off, as an AI's identity                                                                                                                                                                                                                                                                                                                        |
-| SEC-001   | A credential-shaped string in a command or in a file being written, and reading a credential store in the home folder: private keys under `~/.ssh`, `~/.aws/credentials`, gcloud's credential files, Azure's tokens, `~/.docker/config.json`, `~/.netrc`, `~/.git-credentials`, `~/.pypirc` and `~/.config/gh/hosts.yml`, by a read tool or by a command that prints or copies one |
-| SEC-004   | A download piped or substituted straight into a shell or an interpreter, such as `curl ... \| sh`, `bash <(curl ...)` or `iwr ... \| iex`, and a package install that names its registry on the command line, such as `npm install --registry` or `pip install --index-url`                                                                                                        |
-| DOC-002   | An em dash written into a file, a commit message or a pull request's title or body, in a repository tannergolden owns: one with no remote yet, or whose every remote is on github.com under tannergolden                                                                                                                                                                           |
-| The block | A hand edit inside a block the hub renders, the rules in `AGENTS.md` or the prompts in `docs/Prompts.md`, which the next sync would overwrite anyway                                                                                                                                                                                                                               |
+| Rule      | What it denies                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| :-------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| OPS-001   | Pushing to a default or protected branch, force-pushing without `--force-with-lease`, deleting or pruning remote refs, pushing tags, and merging a pull request through `git`, `gh` or a GitHub MCP tool                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| OPS-003   | What git cannot undo, when there is something to lose: a hard reset or whole-tree checkout over uncommitted work, `git clean -f`, dropped stashes, history rewrites, and deleting data or settings. A recursive delete of a root, drive or home folder counts in every spelling: `rm -r`, and on Windows `rmdir /s`, `rd /s`, `del /s` and `Remove-Item -Recurse` with its aliases                                                                                                                                                                                                                                                                                                                                                                                                          |
+| OPS-004   | `--no-verify`, hooks switched off for one command, and edits that would remove the guard or its registrations, the compaction reminder included                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| GIT-001   | A commit git would author, or sign off, as an AI's identity                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| SEC-001   | A credential-shaped string in a command or in a file being written. Reading a credential store in the home folder, by a read tool or by a command that prints, searches, archives or copies one: private keys under `~/.ssh` and `~/.gnupg`, `~/.aws/credentials`, gcloud's credential files, Azure's tokens, `~/.docker/config.json`, `~/.kube/config`, `~/.netrc`, `~/.git-credentials`, `~/.npmrc`, `~/.pypirc`, `~/.cargo/credentials`, `~/.gem/credentials` and `~/.config/gh/hosts.yml`. And a command that prints a credential: `gh auth token`, `gh auth status --show-token`, `git credential fill`, `aws configure get` of a secret, `aws configure export-credentials`, `gcloud auth print-access-token`, `az account get-access-token`, and `security find-generic-password -w` |
+| SEC-004   | A download a shell or an interpreter runs before anyone reads it: piped in, as in `curl ... \| sh` or `iwr ... \| iex`; fed in, as in `bash <(curl ...)`, `sh < <(curl ...)` or `bash <<< "$(curl ...)"`; substituted in, as in `sh -c "$(curl ...)"` or `eval $(curl ...)`; or saved and run in the same line, as in `curl -o i.sh ... && bash i.sh`. And a package install that names a registry other than the public default, on the command line or in a variable set for it: `npm install --registry`, `pip install --index-url`, `uv add --index`, `cargo add --registry`, `PIP_INDEX_URL=...` and their like                                                                                                                                                                        |
+| DOC-002   | An em dash added to a Markdown file, a commit message, or a pull request's title or body through `gh` or the GitHub MCP server, in a repository tannergolden owns: one with no remote yet, or whose every remote is on github.com under tannergolden, so never a fork. A `DOC-002` entry under `## Overrides` in the repository's `AGENTS.md` turns it off there                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| The block | A hand edit inside a block the hub renders, the rules in `AGENTS.md` or the prompts in `docs/Prompts.md`, which the next sync would overwrite anyway                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 
 It reads a command the way a careful reviewer would, so it catches the honest
 mistake and a determined workaround gets past it: the rulesets and CI stay the
@@ -93,22 +93,41 @@ python3 kit/guard.py --command 'git push --force origin main'
 
 A few of its checks draw a careful line:
 
-- **A credential store** is the file itself. A public key, `known_hosts`, an
-  SSH `config` and `ssh-keygen -l` all pass, and so does a project's own
-  `.env`. A copy of a folder that holds a store, such as `cp -r ~/.ssh`,
-  counts as a copy of the store.
+- **A credential store** is the file itself. Under `~/.ssh`, a public key,
+  `config*`, `known_hosts*`, `authorized_keys*`, `environment`, `rc`, a
+  `*.conf` file and anything in a `*.d` folder pass, as do `ssh-keygen -l`
+  and a project's own `.env`. Searching, archiving or copying a folder that
+  holds a store, such as `grep -r ~/.ssh`, `tar czf aws.tgz ~/.aws` or
+  `cp -r ~/.ssh`, counts as reading the store. `rg` and `ag` skip hidden
+  folders, so for them the home folder counts only with `--hidden`.
+- **A pattern is not a file.** The first operand of `grep`, `rg`, `sed`,
+  `awk` or `jq` is its pattern, script or filter unless a flag gives it, and
+  a `cd` earlier in the line moves the commands after it, on cmd and
+  PowerShell's side too. So a session started in the home folder can run
+  `grep -rn ".netrc" code/` or `cd code/app && cat .netrc`.
 - **A download** may be saved to a file, or read as data by `jq`, `grep` or
-  `python3 -c`. Only a shell or interpreter that runs it as code is denied.
-- **The em dash** counts only when a change adds one, so an edit that keeps
-  an older one passes. Where the character itself is data, the escape
-  `\u2014` writes it. Outside a git repository, and in a fork, the guard
-  says nothing about it.
+  `python3 -c`. Only a shell or interpreter that runs it as code in the same
+  command line is denied: save it in one command, and run it in another once
+  your user agrees. `iex` counts only as a command, never inside quoted text,
+  so a commit message that names it passes. The public default registries,
+  `https://registry.npmjs.org`, `https://pypi.org/simple`,
+  `https://rubygems.org` and crates.io, may be named outright.
+- **The em dash** counts only in Markdown, commit messages and pull
+  requests, and only when a change adds one, so code, data and an edit that
+  keeps an older one pass. If your user asked for the dash, a `DOC-002` entry
+  under `## Overrides` in the repository's `AGENTS.md` turns the check off
+  there. Outside a git repository, and in a fork, the guard says nothing
+  about it. It does not see a dash a shell writes, through a here-document,
+  `sed -i` or `>>`, a message `git commit -F` reads from a file, or the body
+  of `gh pr comment` or `gh pr review`.
 
 Claude Code sends its `Read` calls to the guard too, so it can deny reading a
 credential store. That costs about 75 ms per read, measured in a cloud
 container, almost all of it Python starting and loading the script. `Grep` and
 `Glob` stay out, since every search would pay the same. Copilot and
-Antigravity send every call, and Codex reads files through its shell.
+Antigravity send every call, and a search tool among them counts as `rg`
+does: a store's folder is denied, the home folder is not. Codex reads files
+through its shell.
 
 ---
 
