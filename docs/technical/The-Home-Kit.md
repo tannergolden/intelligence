@@ -50,11 +50,11 @@ stop the session from starting.
 The kit rides beside the rules in the same release, as one pinned file,
 `home/kit.json`, and the installer puts each piece where its app reads it:
 
-| Module                                       | What it is                                                                                         | Where it lands                                                                                                                                     |
-| :------------------------------------------- | :------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Guard hook, below                            | Denies force-pushes, merges, `--no-verify`, AI sign-offs and irreversible commands before they run | `~/.agents/hooks/`, registered in Claude Code's settings (read by Grok and Cursor), Codex's and Antigravity's `hooks.json`, and Copilot's `hooks/` |
-| [`develop`](Skills-&-Subagents.md)           | The one skill: builds, tests and ships every other skill, and the agents and teams they dispatch   | `~/.agents/skills/`, `~/.claude/skills/` and Antigravity's skills folder                                                                           |
-| [Worker and Reviewer](Skills-&-Subagents.md) | Subagents that make one change, and check one without editing                                      | `~/.claude/agents/`, `~/.copilot/agents/` and `~/.codex/agents/`                                                                                   |
+| Module                                       | What it is                                                                                                                             | Where it lands                                                                                                                                     |
+| :------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Guard hook, below                            | Denies force-pushes, merges, `--no-verify`, AI sign-offs, irreversible commands, credential reads and unread downloads before they run | `~/.agents/hooks/`, registered in Claude Code's settings (read by Grok and Cursor), Codex's and Antigravity's `hooks.json`, and Copilot's `hooks/` |
+| [`develop`](Skills-&-Subagents.md)           | The one skill: builds, tests and ships every other skill, and the agents and teams they dispatch                                       | `~/.agents/skills/`, `~/.claude/skills/` and Antigravity's skills folder                                                                           |
+| [Worker and Reviewer](Skills-&-Subagents.md) | Subagents that make one change, and check one without editing                                                                          | `~/.claude/agents/`, `~/.copilot/agents/` and `~/.codex/agents/`                                                                                   |
 
 Everything the kit writes carries its mark, so it replaces only its own files
 and `make agents-uninstall` takes back exactly what it added.
@@ -69,14 +69,16 @@ and it either stays silent or denies the call with exit 2 and one line saying
 why and what to do instead. It never allows and never asks, so each app's own
 permissions decide everything else.
 
-| Rule      | What it denies                                                                                                                                                                                           |
-| :-------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| OPS-001   | Pushing to a default or protected branch, force-pushing without `--force-with-lease`, deleting or pruning remote refs, pushing tags, and merging a pull request through `git`, `gh` or a GitHub MCP tool |
-| OPS-003   | What git cannot undo, when there is something to lose: a hard reset or whole-tree checkout over uncommitted work, `git clean -f`, dropped stashes, history rewrites, and deleting data or settings       |
-| OPS-004   | `--no-verify`, hooks switched off for one command, and edits that would remove the guard or its registrations                                                                                            |
-| GIT-001   | A commit git would author, or sign off, as an AI's identity                                                                                                                                              |
-| SEC-001   | A credential-shaped string in a command or in a file being written                                                                                                                                       |
-| The block | A hand edit inside a block the hub renders, the rules in `AGENTS.md` or the prompts in `docs/Prompts.md`, which the next sync would overwrite anyway                                                     |
+| Rule      | What it denies                                                                                                                                                                                                                                                                                                                                                                     |
+| :-------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OPS-001   | Pushing to a default or protected branch, force-pushing without `--force-with-lease`, deleting or pruning remote refs, pushing tags, and merging a pull request through `git`, `gh` or a GitHub MCP tool                                                                                                                                                                           |
+| OPS-003   | What git cannot undo, when there is something to lose: a hard reset or whole-tree checkout over uncommitted work, `git clean -f`, dropped stashes, history rewrites, and deleting data or settings. A recursive delete of a root, drive or home folder counts in every spelling: `rm -r`, and on Windows `rmdir /s`, `rd /s`, `del /s` and `Remove-Item -Recurse` with its aliases |
+| OPS-004   | `--no-verify`, hooks switched off for one command, and edits that would remove the guard or its registrations                                                                                                                                                                                                                                                                      |
+| GIT-001   | A commit git would author, or sign off, as an AI's identity                                                                                                                                                                                                                                                                                                                        |
+| SEC-001   | A credential-shaped string in a command or in a file being written, and reading a credential store in the home folder: private keys under `~/.ssh`, `~/.aws/credentials`, gcloud's credential files, Azure's tokens, `~/.docker/config.json`, `~/.netrc`, `~/.git-credentials`, `~/.pypirc` and `~/.config/gh/hosts.yml`, by a read tool or by a command that prints or copies one |
+| SEC-004   | A download piped or substituted straight into a shell or an interpreter, such as `curl ... \| sh`, `bash <(curl ...)` or `iwr ... \| iex`, and a package install that names its registry on the command line, such as `npm install --registry` or `pip install --index-url`                                                                                                        |
+| DOC-002   | An em dash written into a file, a commit message or a pull request's title or body, in a repository tannergolden owns: one with no remote yet, or whose every remote is on github.com under tannergolden                                                                                                                                                                           |
+| The block | A hand edit inside a block the hub renders, the rules in `AGENTS.md` or the prompts in `docs/Prompts.md`, which the next sync would overwrite anyway                                                                                                                                                                                                                               |
 
 It reads a command the way a careful reviewer would, so it catches the honest
 mistake and a determined workaround gets past it: the rulesets and CI stay the
@@ -86,6 +88,19 @@ through. To see what it would say about one command:
 ```bash
 python3 kit/guard.py --command 'git push --force origin main'
 ```
+
+A few of its checks draw a careful line:
+
+- **A credential store** is the file itself. A public key, `known_hosts`, an
+  SSH `config` and `ssh-keygen -l` all pass, and so does a project's own
+  `.env`. A copy of a folder that holds a store, such as `cp -r ~/.ssh`,
+  counts as a copy of the store.
+- **A download** may be saved to a file, or read as data by `jq`, `grep` or
+  `python3 -c`. Only a shell or interpreter that runs it as code is denied.
+- **The em dash** counts only when a change adds one, so an edit that keeps
+  an older one passes. Where the character itself is data, the escape
+  `\u2014` writes it. Outside a git repository, and in a fork, the guard
+  says nothing about it.
 
 ---
 

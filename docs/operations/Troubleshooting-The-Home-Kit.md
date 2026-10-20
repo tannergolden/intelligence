@@ -153,6 +153,17 @@ inside a block the hub renders. The sentence after it says what to do instead.
 - **A block edit it denies** is one the next sync would overwrite anyway.
   Change the rule in `CONSTITUTION.md`, or the prompt in `setup/Prompts.md`,
   and release it; a repository's own text goes outside the markers.
+- **A DOC-002 denial** comes only in a repository tannergolden owns, and only
+  for an em dash the change adds. Use a comma, colon, parentheses or a spaced
+  hyphen; where the character itself is data, such as in a test, write its
+  escape instead.
+- **A SEC-004 denial for a download** means a shell or interpreter would run
+  it unread. Save it to a file and read it first. For a registry named on the
+  command line, install from the one the project's configuration names, or ask
+  your user to add the new one there.
+- **A SEC-001 denial for a credential store** names the file, never its
+  contents. Let the tool that owns the login use it, such as `gh` or `aws`,
+  rather than reading the file.
 - **`intelligence guard: internal error, call allowed: ...`** is a bug in the
   guard. It lets the call through rather than stop every call, so report it
   with the command that caused it.
