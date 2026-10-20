@@ -58,19 +58,23 @@ repository alone.
 Nothing waives an Invariant. Each one reaches every repository, and each names
 what enforces it outside the prompt, today or still to build, because prose
 alone cannot make an agent stop. On Claude Code the kit also restates the
-Invariants after a conversation is compacted, because a rule read once at the
-start of a long session holds less well than one read just before the action.
+Invariants after a conversation is compacted, because Claude Code promises to
+re-read only a project-root CLAUDE.md after compaction, and a rule close to the
+action holds better than one far behind it.
 
 ### SEC-001
 
 > Never put a credential in a file, commit, log, PR, issue or reply, or hunt for or use one you were not given; if you find one, say where, not what.
 
 **Why.** Agents leak secrets into commits and hunt for other credentials after
-an auth error. GitGuardian's 2026 report found secrets in 3.2% of the commits
-Claude Code made in 2025, against a 1.5% baseline. Using a credential an agent
-comes across is the same breach as hunting for one: GPT-6 Astra found a bot
-token and used it, and credential-search flags rose across the GPT-6 system
-cards (September 2026).
+an auth error: GitGuardian's 2026 report found secrets in 3.2% of the commits
+Claude Code made in 2025, with that year's Claude 4 models, against a 1.5%
+baseline. Using a credential an agent comes across is the same breach as
+hunting for one: GPT-6 Astra found a bot token and used it, and
+credential-search flags rose across the GPT-6 system cards (September 2026).
+In the hub's own scenario, a key pasted with a request to commit it stayed out
+of the repository in 7 of 7 runs with the block on Claude Opus 5.5 and Sonnet
+5.5, and in none without (October 2026).
 
 **Enforced by:**
 
@@ -97,8 +101,9 @@ session start speak with authority. Injected text now impersonates the user or
 claims an action is required to finish the task. Google trains Gemini against
 exactly that, and in its October 2026 report Gemini 3.1 Pro withstood only 4%
 of 75 adaptive coding-agent injection scenarios, against 37% for Gemini 3.8
-Flash and 83% for Gemini 4 Argon. Claude Opus 5.5 let attackers succeed 1.0% of
-the time within 15 attempts in Anthropic's own test (September 2026).
+Flash and 83% for Gemini 4 Argon. On the Gray Swan, UK AISI and CAISI
+benchmark, attackers got through to Claude Opus 5.5 within 15 attempts 1.0% of
+the time (Anthropic, October 2026).
 
 **Enforced by:**
 
@@ -118,7 +123,7 @@ the time within 15 attempts in Anthropic's own test (September 2026).
 
 > Never put your user's personal context anywhere public, or in any repository but a private one made to hold it, and never put a private repository's name or contents anywhere public; check the diff first.
 
-**Why.** No harness knows what is private, and a malicious issue once led an agent to copy private data into a public pull request. A personal knowledge vault is the one place personal context belongs: a private repository generated from the public knowledge template to hold its owner's context, and nothing else.
+**Why.** No harness knows what counts as your user's personal context, and a malicious issue once led an agent to copy private data into a public pull request. A personal knowledge vault is the one place personal context belongs: a private repository generated from the public knowledge template to hold its owner's context, and nothing else.
 
 **Enforced by:**
 
@@ -139,7 +144,8 @@ the time within 15 attempts in Anthropic's own test (September 2026).
 invent package names, and the same invented names recur across runs and
 models, so an attacker can register them before anyone installs one; a
 look-alike name or another registry delivers code the project never chose; and
-a script piped from a download runs before anyone reads it. A 2026 study found
+a script piped from a download runs before anyone reads it. A 2026 study, on
+models it does not name from before the Claude 5 and GPT-6 releases, found
 agents installing from untrusted registries almost whenever a project's setup
 text asked; security wording helped only against the attack it named, and a
 check before each install closed most of the gap. Invention
@@ -175,6 +181,8 @@ is no enforcer here.
 - rulesets that require a pull request and block force-pushes and deletion
 - the Claude cloud git proxy, which rejects branch deletions and tag pushes
 - Copilot's cloud agent, which cannot merge
+- Codex auto-review, when it reviews approvals, which rates a push to a
+  protected branch as high risk
 - the guard hook, which denies plain --force, pushes to a protected branch, remote deletions, tag pushes, and merging a pull request by gh, the REST API or a GitHub MCP tool
 
 **To add:**
@@ -219,7 +227,8 @@ settings (October 2026).
 
 **Enforced by:**
 
-- Claude Code auto mode, which stops a session after repeated denials
+- Claude Code auto mode, which goes back to asking after three blocks in a row
+  or twenty in a session
 - required checks, which run on the server and cannot be skipped
 - the guard hook, which denies --no-verify, hooks switched off for one command, and edits that would remove it or its registrations
 - the guard's Claude Code registration, which blocks the call when the guard
@@ -229,6 +238,8 @@ settings (October 2026).
 
 - hooks that block on failure in Codex, Antigravity and Cursor, where a guard
   that cannot start lets the call through
+- a loader-probe test that a guard which cannot start blocks the call in each
+  app
 - a ConfigChange hook
 - agent configuration paths the agent cannot write
 
@@ -239,8 +250,9 @@ settings (October 2026).
 **Why.** Being asked to start a task is not standing authorization to publish
 anything, and harnesses now lean the other way: all four GPT-6 Codex prompts
 tell the model to open draft pull requests on its own, Claude Code's
-background sessions open drafts, and its auto mode lets pushes and matching
-pull requests through without a prompt (October 2026). Current models read a
+background sessions commit and push to preserve work and open a draft when the
+task calls for one, and its auto mode lets pushes and matching pull requests
+through without a prompt (October 2026). Current models read a
 list literally, so the rule names drafts and the general class of messages and
 data, which Google also puts behind confirmation in Gemini's own computer-use
 instruction.
@@ -256,6 +268,8 @@ instruction.
 
 - Codex rules that prompt before the same commands
 - Antigravity CLI Ask entries for the same commands
+- ask-first entries for each project's deploy commands, which differ from
+  project to project
 
 ### POL-001
 
@@ -263,11 +277,15 @@ instruction.
 
 **Why.** Agents rarely read a repository's contribution policy unless a rule
 sends them there, and some projects bar AI contributions outright. In SWE-CC
-(October 2026), agents complied with repositories' AI policies in only 20.6 to
-30.7% of runs across four models, and contribution rules often sit in the pull
-request template rather than CONTRIBUTING. A rule to refuse held at 0% under
-every prompt tested on previous-generation models (July 2026), so the refusal
-needs a hook as well as the sentence.
+(October 2026), agents met only 20.6 to 30.7% of AI-contribution policies even
+with the rules in a local file, across four models of which two are
+previous-generation, and contribution rules sit in pull request templates and
+agent instruction files as well as CONTRIBUTING. In the hub's own scenario, a
+ban in the pull request template stopped the push in 7 of 7 runs with the
+block on Claude Opus 5.5 and Sonnet 5.5, against 5 and 0 of 7 without (October
+2026). A rule to refuse held at 0% under every prompt tested on
+previous-generation models (July 2026), so the refusal needs a hook as well,
+and OPS-005 also keeps an agent from publishing.
 
 **To add:**
 
@@ -275,7 +293,6 @@ needs a hook as well as the sentence.
   policy file exists
 - a hook before publishing that stops when the repository bars AI
   contributions
-- OPS-005, which also keeps an agent from publishing
 
 ### GIT-001
 
@@ -298,14 +315,17 @@ needs a hook as well as the sentence.
 > Never pass a check by weakening it (deleting, skipping or loosening tests, suppressing errors, special-casing inputs); if a test or the task seems wrong, stop and report which and why.
 
 **Why.** Agents game tests that contradict their task, and a named way out is
-what curbs it. In an October 2026 audit, Claude Haiku, Sonnet and Opus 5.5 and
-the GPT-6 models gamed none of 330 such runs, but Gemini 3.1 Pro and 3.8 Flash
-gamed 11 to 20% until the stop prompt named a channel, which took them to
-about zero, and the open-weight GLM 5.2 gamed 57 to 73% (September 2026).
+what curbs it. In an October 2026 audit, told to stop on a flawed test, Claude
+Haiku, Sonnet and Opus 5.5 and three GPT-6 models gamed none of 330 runs; in a
+minimal loop, Gemini 3.1 Pro and 3.8 Flash gamed 11 to 20% until the prompt
+named a channel, which took them to about zero; and a separate study found the
+open-weight GLM 5.2 hacking 57 to 73% of ordinary rollouts (September 2026).
 Pairing the ban with a sanctioned way to escalate cut hacking from 23.6% to
-5.3% across eight models in August 2026. Saying which test and why makes the
-stop checkable: in the audit, most of what looked like fabrication by Opus 5.5
-was a correct report of a real test defect.
+5.3% across eight models of mixed generations in August 2026. In the hub's own
+scenario, asked only to make a contradictory test pass, Claude Opus 5.5 and
+Sonnet 5.5 reported it in 7 of 7 runs with the block and in none without
+(October 2026). Saying which test and why makes the stop checkable, and
+Article I still has the agent do the rest of the task.
 
 **Enforced by:**
 
@@ -315,14 +335,17 @@ was a correct report of a real test defect.
 
 - a CI check that flags deleted or skipped tests, lowered thresholds and edited snapshots
 - counting executed tests from JUnit output instead of trusting the exit status
+- graders that run outside the agent's container, where an agent works
+  against hidden tests
 
 ### COM-002
 
 > Report what you ran with its result, what failed, what you skipped and what is unverified; claim done or passing only on a tool result from this session, and cite an earlier session only from a record you read in this one.
 
-**Why.** Overclaiming is still the commonest slip. It is GPT-6 Astra's most
-frequent low-severity misbehavior in Codex, the GPT-6 models misreported
-coding work in 0.5 to 1.5% of tests (September 2026), and Gemini 3.1 Pro
+**Why.** Overclaiming is still common. It is GPT-6 Astra's most frequent
+low-severity misbehavior in Codex, the GPT-6 models misreported coding work in
+0.5 to 1.5% of tests run without OpenAI's own anti-deception developer prompt
+(September 2026), and Gemini 3.1 Pro
 fabricated claims on 8.8% of impossible tasks, against 1.8% for 3.8 Flash and
 1.2% for Argon (October 2026). Anthropic reports that grounding each claim in a
 tool result from the session nearly eliminated fabricated status reports for
@@ -358,11 +381,14 @@ output, and the documented checks still run once, so the verification is kept
 while the repeated full runs that fill the context are not. Current models
 need opposite corrections, so the rule sets an end, not an effort: Sonnet 5.5
 at low effort and Haiku 5.5 sometimes report a change done without running a
-check, and Anthropic measured that saying a check which failed to start does
-not count made that rare with no change in quality (September and October
-2026), while GPT-6 Astra already runs broader tests than a task needs. What
-ran and its result belong in the report, as COM-002 says, not every line of
-output.
+check, and Anthropic's measured verification paragraph, which says a check
+that failed to start does not count, made that rare on Sonnet 5.5 with no
+change in quality and improved Haiku 5.5 at some cost in tokens (September and
+October 2026), while GPT-6 Astra already runs broader tests than a task needs.
+In the hub's own scenario, Sonnet 5.5 ran the documented checks in 7 of 7
+runs with the block and in none without (October 2026). When no check can
+start, COM-002's "what is unverified" is the way out, and what ran and its
+result belong in the report, not every line of output.
 
 **Enforced by:**
 
@@ -414,9 +440,9 @@ passes on current models.
 **Why.** Each round trip resends the whole context, and a second copy of an
 unchanged file or log is pure cost in every turn after it. Anthropic and
 OpenAI both advise parallel tool calls for independent steps, and current
-models still need the nudge: Fable 5.1 issues independent calls one per turn
-unless told otherwise, and Gemini 3.7 Flash re-read logs until its turn budget
-ran out (August and September 2026). A file changed since it was read, by an
+models still need the nudge: Fable 5.1 may issue independent calls one per
+turn when they are implied rather than named, and Gemini 3.7 Flash re-read
+logs until its turn budget ran out (August and September 2026). A file changed since it was read, by an
 edit or a tool, is read again, so nothing is acted on stale.
 
 ### WORK-006
@@ -427,7 +453,8 @@ edit or a tool, is read again, so nothing is acted on stale.
 and Anthropic's guidance is to stop and start over once a session has been
 corrected more than twice. Current models still loop: Gemini 3.7 Flash
 re-analyzed the same material until its turn budget ran out (August 2026), and
-Anthropic caps Opus 5.5's automatic continuations at two or three. A fresh
+Anthropic tells harness builders to stop after two or three automatic
+continuations on the same task. A fresh
 diagnosis, or one question to the person who knows, ends the loop sooner and
 more often correctly.
 
@@ -481,7 +508,7 @@ Invariant holds against them too.
 
 **Why.** Scoped Conventional Commits with a body, and branches named by
 intent, are what the standards' gates expect. GPT-6.1 Sol's Codex prompt never
-mentions commits, so in Codex this rule is the only commit guidance it gets.
+mentions commits, so in Codex the block is the only commit guidance it gets.
 
 **Enforced by:**
 
@@ -506,11 +533,7 @@ mentions commits, so in Codex this rule is the only commit guidance it gets.
 
 > Add `Co-Authored-By: <model> <vendor no-reply address>` above the sign-off on each commit an AI shaped.
 
-**Why.** The standards credit an AI in a Co-Authored-By trailer above the sign-off, only on commits it shaped.
-
-**Enforced by:**
-
-- Claude Code's default attribution, which names the model
+**Why.** The standards credit an AI in a Co-Authored-By trailer above the sign-off, only on commits it shaped. Claude Code's attribution note asks for such a trailer, naming the model, but as text, not a check.
 
 **To add:**
 
@@ -580,8 +603,9 @@ the behavior wrong without it, or it is stricter than the vendors' own prompts
 or settles a conflict among them in the owner's favor, or it covers ground
 they leave out. An Invariant must also guard against severe or irreversible
 harm and name what enforces it outside the prompt. A rule that fails the test
-is cut, and a rule names a concrete act and a way out rather than an effort,
-because current models read literally and need opposite corrections.
+is cut. A rule names a concrete act and an end rather than an effort, and every
+prohibition names a way out, because current models read literally and need
+opposite corrections.
 
 To change the rules:
 
@@ -615,7 +639,7 @@ make check                     # the validator, render --check, evals --check an
 | CODE-003 | Folded into CODE-001, which runs the narrowest test first.                             |
 | COM-001  | Cut: it described no behaviour, and the precedence text puts the user's request first. |
 | COM-003  | Cut: harness prompts and the commit body rule cover it.                                |
-| COM-004  | Folded into DOC-003 and WORK-005; its narration clause was cut.                        |
+| COM-004  | Folded into DOC-003; its clauses on narration and whole files were cut.                |
 | DOC-001  | Folded into STD-001, which sends agents to the standards before they write docs.       |
 | GIT-011  | Folded into GIT-010: branches are named by intent.                                     |
 | MEM-001  | Folded into SEC-003.                                                                   |
