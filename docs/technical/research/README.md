@@ -33,10 +33,11 @@ and the decision it fed. A report is trusted for three months from its
 
 <!-- AUTO-INDEX:BEGIN dir=. style=log fields=verified -->
 
-| Entry                                            | Verified   | Purpose                                                                                                                                                                                                                  |
-| :----------------------------------------------- | :--------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`Prompt-Engineering.md`](Prompt-Engineering.md) | 2026-10-20 | What makes a reusable task prompt for an AI coding agent work as of October 2026, and how a library of them should be checked, measured and kept current: the research behind the universal prompts in setup/Prompts.md. |
-| [`README.md`](README.md)                         | -          | This file.                                                                                                                                                                                                               |
+| Entry                                                    | Verified   | Purpose                                                                                                                                                                                                                                                                              |
+| :------------------------------------------------------- | :--------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`Prompt-Engineering.md`](Prompt-Engineering.md)         | 2026-10-20 | What makes a reusable task prompt for an AI coding agent work as of October 2026, and how a library of them should be checked, measured and kept current: the research behind the universal prompts in setup/Prompts.md.                                                             |
+| [`Prompts-For-Every-Task.md`](Prompts-For-Every-Task.md) | 2026-10-20 | Which tasks across every area of software and repository work a library of ready-to-run prompts for AI coding agents should cover, as of October 2026, and what each must hold to run unchanged in any repository: the research behind the ready-to-run prompts in setup/Prompts.md. |
+| [`README.md`](README.md)                                 | -          | This file.                                                                                                                                                                                                                                                                           |
 
 <!-- AUTO-INDEX:END -->
 
