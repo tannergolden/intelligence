@@ -157,8 +157,8 @@ as a pipe.
 
 **Enforced by:**
 
-- the guard hook, which denies piping a download into a shell and an install
-  that overrides the registry on the command line
+- the guard hook, which denies running a download in a shell unread, piped or
+  passed, and an install that overrides the registry on the command line
 - Copilot's cloud agent, which checks new dependencies against the GitHub
   Advisory Database
 - Claude Code auto mode, which blocks piping a download into bash, a mitigation
