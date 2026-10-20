@@ -1,6 +1,6 @@
 {
   "//": "A short question gets the answer first, sized to the question. Checked on the reply, so it is approximate.",
-  "rule": "COM-004",
+  "rule": "DOC-003",
   "title": "A one-line question gets a short answer that leads with it",
   "prompt": "What does count() in counter.py return for an empty list? Change no file.",
   "setup": {
