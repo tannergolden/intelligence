@@ -58,8 +58,9 @@ Both routes deliver a release, never unreleased work.
 A repository's first sync is bigger than the ones after it, so `make merge`
 leaves it for you to review by hand:
 
-- a repository with no `AGENTS.md` gets one, with the block and empty sections
-  for its own commands, conventions and overrides;
+- a repository with no `AGENTS.md` gets one, with the block, an admonition
+  saying the repository's own rules go below it, and empty sections for its
+  own commands, conventions and overrides;
 - an `AGENTS.md` with no block gets the block after its header, and keeps
   everything else; a file that opens with YAML frontmatter, as an Obsidian
   note does, keeps it first and takes the block after it and its title;

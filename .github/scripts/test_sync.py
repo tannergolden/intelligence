@@ -235,6 +235,9 @@ class TestSync(SyncTestCase):
         self.assertEqual(render.find(agents).marker, render.digest(CURRENT_BLOCK))
         self.assertIn('## Overrides', agents)
         self.assertIn("work in alpha: the universal rules first, then this repository''s own", agents)
+        own = agents.index("> **Write this repository's own rules from here down.**")
+        self.assertLess(agents.index('<!-- INTELLIGENCE:END -->'), own)
+        self.assertLess(own, agents.index('## Commands'))
 
     def test_the_commit_follows_the_standards(self) -> None:
         self.gh.add('alpha')
