@@ -22,7 +22,9 @@ import hashlib
 import importlib.util
 import io
 import json
+import os
 import pathlib
+import re
 import shutil
 import subprocess
 import sys
@@ -47,6 +49,10 @@ kit = load('kit', 'kit.py')
 
 BLOCK = '## Working rules\n\n- SEC-001: Never put a credential in a file.\n'
 NEWER = '## Working rules\n\n- SEC-001: Never put a credential anywhere.\n'
+# A block shaped the way render.py renders one, with Invariants for the compaction reminder to find.
+RULES = ('## Constitution\n\n- Invariants: follow every one in every copy.\n- Defaults: your user decides.\n\n'
+         '### Invariants\n\n- SEC-001: Never put a credential in a file.\n\n'
+         '### Defaults\n\n- WORK-001: Change only what the task needs.\n')
 
 LOCAL = {
     '.agents/AGENTS.md': 'block',
@@ -166,6 +172,57 @@ class TestInstall(Home):
         code, out = self.run_kit('install', '--home-file', str(self.home_file))
         self.assertEqual(code, 1, out)
         self.assertEqual(path.read_bytes(), b'{ not json')
+
+    def test_claude_asks_before_each_outward_action(self) -> None:
+        code, out = self.run_kit('install', '--home-file', str(self.home_file))
+        self.assertEqual(code, 0, out)
+        self.assertRegex(out, r'wrote +Claude Code ask rules')
+        asks = json.loads(self.text('.claude/settings.json'))['permissions']['ask']
+        self.assertEqual(asks, list(install.ASK_RULES))
+        for rule in ('Bash(git push *)', 'Bash(gh pr create *)', 'Bash(gh pr comment *)', 'Bash(gh issue create *)',
+                     'Bash(gh release create *)', 'Bash(npm publish *)', 'Bash(cargo publish *)',
+                     'Bash(twine upload *)', 'Bash(gem push *)', 'Bash(docker push *)',
+                     'mcp__github__create_pull_request', 'mcp__github__push_files'):
+            self.assertIn(rule, asks)
+        # Claude Code skips an MCP rule with parentheses, and a Bash rule needs its words before the *.
+        for rule in asks:
+            self.assertRegex(rule, r'^(Bash\([a-z0-9 -]+ \*\)|mcp__github__[a-z_]+)$')
+
+    def test_your_own_ask_rules_stay_and_none_is_doubled(self) -> None:
+        mine = {'theme': 'dark', 'permissions': {'ask': ['Bash(make deploy)', 'Bash(git push *)'],
+                                                 'allow': ['Bash(npm test)']}}
+        self.personal('.claude/settings.json', json.dumps(mine).encode())
+        self.run_kit('install', '--home-file', str(self.home_file))
+        self.run_kit('install', '--home-file', str(self.home_file))
+        permissions = json.loads(self.text('.claude/settings.json'))['permissions']
+        self.assertEqual(permissions['ask'][:2], ['Bash(make deploy)', 'Bash(git push *)'])
+        self.assertEqual(sorted(permissions['ask']), sorted({'Bash(make deploy)', *install.ASK_RULES}))
+        self.assertEqual(permissions['allow'], ['Bash(npm test)'])
+        self.run_kit('uninstall')
+        self.assertEqual(json.loads(self.text('.claude/settings.json')), mine, 'your git push rule stays yours')
+
+    def test_a_rule_a_release_drops_comes_out_and_yours_stays(self) -> None:
+        self.run_kit('install', '--home-file', str(self.home_file))
+        settings = json.loads(self.text('.claude/settings.json'))
+        settings['permissions']['ask'] += ['Bash(old publish *)', 'Bash(make deploy)']
+        self.personal('.claude/settings.json', json.dumps(settings).encode())
+        spath = install.state_path(self.home, self.env)
+        state = json.loads(spath.read_text(encoding='utf-8'))
+        state['settings']['asks'].append('Bash(old publish *)')  # as an earlier release recorded it
+        spath.write_text(json.dumps(state), encoding='utf-8')
+        code, out = self.run_kit('install', '--home-file', str(self.home_file))
+        self.assertEqual(code, 0, out)
+        asks = json.loads(self.text('.claude/settings.json'))['permissions']['ask']
+        self.assertNotIn('Bash(old publish *)', asks)
+        self.assertIn('Bash(make deploy)', asks)
+        self.assertEqual(json.loads(spath.read_text(encoding='utf-8'))['settings']['asks'], list(install.ASK_RULES))
+
+    def test_ask_rules_that_are_not_a_list_are_never_overwritten(self) -> None:
+        path = self.personal('.claude/settings.json', json.dumps({'permissions': {'ask': 'Bash'}}).encode())
+        code, out = self.run_kit('install', '--home-file', str(self.home_file))
+        self.assertEqual(code, 1, out)
+        self.assertIn('permissions.ask that is not a list', out)
+        self.assertEqual(json.loads(path.read_text(encoding='utf-8')), {'permissions': {'ask': 'Bash'}})
 
     def test_a_cloud_session_gets_claude_md_and_nothing_else(self) -> None:
         code, out = self.run_kit('install', '--home-file', str(self.home_file), '--cloud')
@@ -294,6 +351,16 @@ class TestCheck(Home):
         self.assertEqual(code, 1, out)
         self.assertRegex(out, r'missing +Claude Code setting')
 
+    def test_a_lost_ask_rule_is_reported(self) -> None:
+        self.run_kit('install', '--home-file', str(self.home_file))
+        settings = json.loads(self.text('.claude/settings.json'))
+        settings['permissions']['ask'].remove('Bash(git push *)')
+        self.personal('.claude/settings.json', json.dumps(settings).encode())
+        code, out = self.run_kit('check', '--home-file', str(self.home_file))
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, r'missing +Claude Code ask rules')
+        self.assertRegex(out, r'current +Claude Code setting')
+
     def test_a_cloud_session_checks_only_claude_md(self) -> None:
         self.run_kit('install', '--home-file', str(self.home_file), '--cloud')
         code, out = self.run_kit('check', '--home-file', str(self.home_file), '--cloud')
@@ -395,6 +462,37 @@ class TestKitInstall(KitHome):
         self.assertEqual(done.returncode, 2, done.stderr)
         self.assertIn('blocked', done.stderr)
 
+    def test_claude_codes_reads_reach_the_guard(self) -> None:
+        self.install_kit()
+        matcher = self.json('.claude/settings.json')['hooks']['PreToolUse'][-1]['matcher']
+        for tool in ('Read', 'Bash', 'PowerShell', 'Edit', 'Write', 'mcp__github__push_files'):
+            self.assertTrue(re.search(matcher, tool), tool)
+        for tool in ('Grep', 'Glob', 'WebFetch', 'TaskList', 'ReadMcpResource'):
+            self.assertFalse(re.search(matcher, tool), tool)
+
+    def test_claude_code_brings_the_invariants_back_after_a_compaction(self) -> None:
+        self.install_kit()
+        (group,) = self.json('.claude/settings.json')['hooks']['SessionStart']
+        self.assertEqual(group['matcher'], 'compact')
+        (hook,) = group['hooks']
+        self.assertTrue(hook['command'].endswith('intelligence-guard.py --remind'))
+        self.assertNotIn('onFailure', hook, 'a reminder that cannot run never blocks a compaction')
+
+    def test_the_registered_reminder_prints_the_invariants(self) -> None:
+        self.home_file = self.make_home_file(RULES, 'rules.md')
+        guard = (HERE.parents[1] / 'kit' / 'guard.py').read_text(encoding='utf-8')
+        self.kit_file = self.make_kit('real.json', guard=guard)
+        self.install_kit()
+        (group,) = self.json('.claude/settings.json')['hooks']['SessionStart']
+        # Through a shell, as Claude Code runs it after a compaction, with the payload it sends.
+        done = subprocess.run(group['hooks'][0]['command'], shell=True,  # noqa: S602
+                              input='{"hook_event_name": "SessionStart", "source": "compact"}', capture_output=True,
+                              text=True, check=False, env={**os.environ, 'HOME': str(self.home)})
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual(done.stdout, 'These rules from ~/.claude/rules/intelligence.md still hold after '
+                                      'compaction.\n\n- Invariants: follow every one in every copy.\n\n'
+                                      '### Invariants\n\n- SEC-001: Never put a credential in a file.\n')
+
     def test_your_own_hooks_keep_their_place(self) -> None:
         mine = {'matcher': 'Bash', 'hooks': [{'type': 'command', 'command': 'my-check'}]}
         self.personal('.claude/settings.json', json.dumps({'hooks': {'PreToolUse': [mine]}}).encode())
@@ -453,7 +551,10 @@ class TestKitInstall(KitHome):
                                  '.claude/skills/building-skills/.intelligence-kit',
                                  '.claude/skills/building-skills/SKILL.md',
                                  '.claude/skills/building-skills/references/notes.md'])
-        self.assertNotIn('pluginConfigs', self.json('.claude/settings.json'))
+        settings = self.json('.claude/settings.json')
+        self.assertNotIn('pluginConfigs', settings)
+        self.assertNotIn('permissions', settings, 'the cloud session decides its own prompts')
+        self.assertEqual(list(settings['hooks']), ['PreToolUse'])
         code, out = self.check_kit('--cloud')
         self.assertEqual(code, 0, out)
 
@@ -543,6 +644,15 @@ class TestKitUninstall(KitHome):
         self.assertEqual(code, 0, out)
         self.assertEqual(self.snapshot(), before)
 
+    def test_the_reminder_goes_and_your_own_session_hooks_stay(self) -> None:
+        mine = {'matcher': 'startup', 'hooks': [{'type': 'command', 'command': 'my-greeting'}]}
+        self.personal('.claude/settings.json', json.dumps({'hooks': {'SessionStart': [mine]}}).encode())
+        self.install_kit()
+        self.assertEqual(len(self.json('.claude/settings.json')['hooks']['SessionStart']), 2)
+        code, out = self.run_kit('uninstall')
+        self.assertEqual(code, 0, out)
+        self.assertEqual(self.json('.claude/settings.json'), {'hooks': {'SessionStart': [mine]}})
+
 
 class TestKitCheck(KitHome):
     """`check` reports each piece of the kit against the release."""
@@ -563,6 +673,19 @@ class TestKitCheck(KitHome):
         self.assertRegex(out, r'edited +the shared skills folder skill building-skills')
         self.assertRegex(out, r'missing +Antigravity CLI guard hook')
         self.assertRegex(out, r'missing +Claude Code subagent worker')
+
+    def test_a_lost_reminder_is_reported_on_its_own(self) -> None:
+        self.install_kit()
+        data = self.json('.claude/settings.json')
+        del data['hooks']['SessionStart']
+        self.personal('.claude/settings.json', json.dumps(data).encode())
+        code, out = self.check_kit()
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, r'missing +Claude Code compaction reminder')
+        self.assertRegex(out, r'current +Claude Code guard hook')
+        self.install_kit()
+        code, out = self.check_kit()
+        self.assertEqual(code, 0, out)
 
     def test_a_registration_whose_python_is_gone_is_broken(self) -> None:
         self.install_kit()

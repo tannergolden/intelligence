@@ -14,7 +14,10 @@ byte-identical copy of the rules where each app looks:
 - `~/.copilot/instructions/intelligence.instructions.md`
 
 It also writes Claude Code's `instructionFiles` setting, so Claude reads a
-repository's `AGENTS.md` even beside a `CLAUDE.md`. Grok Build reads
+repository's `AGENTS.md` even beside a `CLAUDE.md`, and, outside a cloud
+session, `permissions.ask` rules, so Claude Code asks before each outward
+action OPS-005 names: a push, a pull request or a comment, a release, a
+published package, and the GitHub MCP server's writes. Grok Build reads
 `~/.claude` by default, so it gets no copy of its own. Cursor's User Rules
 live in its settings, so they are pasted by hand.
 
@@ -29,18 +32,20 @@ the rules, each only where that app reads it:
 - the guard hook, `~/.agents/hooks/intelligence-guard.py`, registered as a
   pre-tool hook in Claude Code's settings (which Grok Build and Cursor also
   read), in Codex's `hooks.json`, in a file of its own for Copilot, and in
-  Antigravity's `hooks.json`
+  Antigravity's `hooks.json`; outside a cloud session, Claude Code also runs
+  it after each compaction, to bring the Invariants back into the
+  conversation
 - the skills, copied into `~/.agents/skills/`, `~/.claude/skills/` and
   Antigravity's own skills folder
 - the subagents, for Claude Code, Copilot and Codex
 
-SAFETY. Before changing a file, it records the setting's prior value and
-whether it created the file. `uninstall` uses that record to put everything
-back. It never overwrites a file it does not own: a file, folder or hook is
-the kit's only if it carries the kit's mark. It runs on the Python 3.9 that
-macOS ships, with the standard library only, and makes no network calls:
-whoever runs it has already downloaded the release files and checked their
-SHA-256.
+SAFETY. Before changing a file, it records the setting's prior value, the
+ask rules it added, and whether it created the file. `uninstall` uses that
+record to put everything back, and leaves every rule you wrote. It never
+overwrites a file it does not own: a file, folder or hook is the kit's only
+if it carries the kit's mark. It runs on the Python 3.9 that macOS ships,
+with the standard library only, and makes no network calls: whoever runs it
+has already downloaded the release files and checked their SHA-256.
 
 Run it:
 
@@ -89,6 +94,53 @@ PLUGIN_IDS = ('cc-plugin-agents-md@builtin', 'agents-md@builtin')
 READ_BOTH = 'claude-md-and-agents-md'
 SETTINGS = '.claude/settings.json'
 COPILOT_PREFIX = '---\napplyTo: "**"\n---\n\n'
+# What Claude Code asks your user before, every time (OPS-005): a push, a pull
+# request (drafts too), a comment or review, a release, a published package,
+# and the GitHub MCP server's writes. A rule matches the command as it is
+# usually typed, not every spelling of it; the guard denies the merges and
+# deletions among these outright.
+ASK_RULES = (
+    'Bash(git push *)',
+    'Bash(gh pr create *)',
+    'Bash(gh pr comment *)',
+    'Bash(gh pr review *)',
+    'Bash(gh issue create *)',
+    'Bash(gh issue comment *)',
+    'Bash(gh release create *)',
+    'Bash(gh release upload *)',
+    'Bash(gh release edit *)',
+    'Bash(npm publish *)',
+    'Bash(pnpm publish *)',
+    'Bash(yarn publish *)',
+    'Bash(yarn npm publish *)',
+    'Bash(cargo publish *)',
+    'Bash(twine upload *)',
+    'Bash(python -m twine upload *)',
+    'Bash(python3 -m twine upload *)',
+    'Bash(gem push *)',
+    'Bash(docker push *)',
+    'Bash(docker image push *)',
+    'mcp__github__create_pull_request',
+    'mcp__github__update_pull_request',
+    'mcp__github__update_pull_request_branch',
+    'mcp__github__pull_request_review_write',
+    'mcp__github__add_comment_to_pending_review',
+    'mcp__github__add_reply_to_pull_request_comment',
+    'mcp__github__add_issue_comment',
+    'mcp__github__update_issue_comment',
+    'mcp__github__issue_write',
+    'mcp__github__sub_issue_write',
+    'mcp__github__request_copilot_review',
+    'mcp__github__resolve_review_thread',
+    'mcp__github__unresolve_review_thread',
+    'mcp__github__create_or_update_file',
+    'mcp__github__push_files',
+    'mcp__github__delete_file',
+    'mcp__github__create_branch',
+    'mcp__github__create_repository',
+    'mcp__github__fork_repository',
+    'mcp__github__actions_run_trigger',
+)
 
 # What marks a file or folder as the kit's own; it matches kit.py's OWNED.
 OWNED = "Part of tannergolden/intelligence's home kit, which replaces this file on every install."
@@ -99,9 +151,14 @@ HOOK_TIMEOUT = 30
 # The tools each app's guard registration covers. Claude and Codex filter by
 # name, so most tool calls never start Python; Copilot and Antigravity name
 # tools in ways this kit cannot pin down, so every call reaches the guard,
-# which checks the tool itself.
-CLAUDE_MATCHER = '^(Bash|PowerShell|Edit|Write|MultiEdit|NotebookEdit)$|mcp__'
+# which checks the tool itself. Claude's Read is in, so the guard can deny
+# reading a credential store (SEC-001), at one Python start per read; Grep
+# and Glob stay out.
+CLAUDE_MATCHER = '^(Bash|PowerShell|Edit|Write|MultiEdit|NotebookEdit|Read)$|mcp__'
 CODEX_MATCHER = '^(Bash|apply_patch|Edit|Write)$|mcp__'
+# Claude Code runs a SessionStart hook with this matcher after it compacts a
+# conversation, and adds what the hook prints to the compacted context.
+COMPACT_MATCHER = 'compact'
 
 
 @dataclasses.dataclass(frozen=True)
@@ -380,6 +437,33 @@ def apply_setting(data: dict) -> dict:
     return data
 
 
+def ask_list(data: dict) -> list:
+    """Claude's `permissions.ask` rules, from settings whose shape the kit can add to without guessing."""
+    permissions = data.get('permissions', {})
+    if not isinstance(permissions, dict):
+        raise Refused('has permissions that are not an object; it is never overwritten')
+    asks = permissions.get('ask', [])
+    if not isinstance(asks, list):
+        raise Refused('has a permissions.ask that is not a list; it is never overwritten')
+    return asks
+
+
+def apply_asks(data: dict, dropped: list[str]) -> dict:
+    """Claude's settings with every ask rule in place, and the kit's own rules a release dropped taken out."""
+    asks = ask_list(data)
+    missing = [rule for rule in ASK_RULES if rule not in asks]
+    stale = [rule for rule in dropped if rule in asks]
+    if not missing and not stale:
+        return data
+    data = json.loads(json.dumps(data))
+    permissions = data.setdefault('permissions', {})
+    kept = list(permissions.get('ask', []))
+    for rule in stale:
+        kept.remove(rule)  # the one the kit added; a copy of your own stays
+    permissions['ask'] = kept + missing
+    return data
+
+
 def report(status: str, label: str) -> None:
     print(f'  {status}  {label}')
 
@@ -464,19 +548,20 @@ def retire(home: pathlib.Path, cloud: bool, env: Mapping[str, str], state: dict,
 
 
 def install_setting(home: pathlib.Path, state: dict, spath: pathlib.Path, dry_run: bool) -> int:
+    """Claude Code's instructionFiles setting and its ask rules, merged into the settings you keep."""
     path = home / SETTINGS
     label = f'Claude Code setting: {path}'
+    recorded = (state.get('settings') or {}).get('asks', [])
     try:
         data = read_settings(path)
-        updated = apply_setting(data)
+        reading = apply_setting(data)
+        updated = apply_asks(reading, [rule for rule in recorded if rule not in ASK_RULES])
     except Refused as error:
         report('refused', f'{label} {error}')
         return 1
-    if updated == data:
-        report('current', label)
-        return 0
-    report('would write' if dry_run else 'wrote', label)
-    if dry_run:
+    for name, changed in ((label, reading != data), (f'Claude Code ask rules: {path}', updated != reading)):
+        report('current' if not changed else 'would write' if dry_run else 'wrote', name)
+    if updated == data or dry_run:
         return 0
     if state.get('settings') is None:
         configs = data.get('pluginConfigs')
@@ -488,7 +573,17 @@ def install_setting(home: pathlib.Path, state: dict, spath: pathlib.Path, dry_ru
             'prior': {plugin: (configs or {}).get(plugin) if isinstance(configs, dict) else None
                       for plugin in PLUGIN_IDS},
         }
-        save_state(spath, state)
+    record = state['settings']
+    present = ask_list(data)
+    added = [rule for rule in ASK_RULES if rule not in present]
+    if added and 'had_permissions' not in record:
+        # Whether these were yours before the kit's first rule, so an uninstall
+        # takes out only what it made.
+        record['had_permissions'] = 'permissions' in data
+        record['had_ask'] = 'ask' in data.get('permissions', {})
+    kept = [rule for rule in record.get('asks', []) if rule in ASK_RULES]
+    record['asks'] = kept + [rule for rule in added if rule not in kept]
+    save_state(spath, state)
     make_dirs(path)
     write(path, json.dumps(updated, indent=2) + '\n')
     return 0
@@ -522,6 +617,12 @@ def guard_command(home: pathlib.Path, app: str) -> str:
     # The interpreter that is running the install, which is known to work here.
     python = sys.executable or 'python3'
     return f'{shlex.quote(python)} {shlex.quote(str(home / GUARD))} --app {app}'
+
+
+def remind_command(home: pathlib.Path) -> str:
+    """The guard in its other mode: print the Invariants from Claude Code's home copy, after a compaction."""
+    python = sys.executable or 'python3'
+    return f'{shlex.quote(python)} {shlex.quote(str(home / GUARD))} --remind'
 
 
 def guard_commands(data: object) -> list[str]:
@@ -607,6 +708,10 @@ def kit_registrations(home: pathlib.Path, cloud: bool, env: Mapping[str, str]) -
                           lambda data: drop_groups(data, 'PreToolUse'))]
     if cloud:
         return found
+    reminder = {'matcher': COMPACT_MATCHER, 'hooks': [entry(remind_command(home))]}
+    found.append(Registration('Claude Code compaction reminder', home / SETTINGS,
+                              lambda data: put_group(data, 'SessionStart', reminder),
+                              lambda data: drop_groups(data, 'SessionStart')))
     codex = {'matcher': CODEX_MATCHER, 'hooks': [entry(guard_command(home, 'codex'))]}
     antigravity = {'PreToolUse': [{'hooks': [entry(guard_command(home, 'antigravity'))]}]}
 
@@ -762,10 +867,12 @@ def check(home: pathlib.Path, home_file: pathlib.Path, cloud: bool, env: Mapping
         try:
             data = read_settings(path)
             ok = all(reads_both(data, plugin) for plugin in PLUGIN_IDS)
+            asked = all(rule in ask_list(data) for rule in ASK_RULES)
         except Refused:
-            ok = False
-        failures += 0 if ok else 1
+            ok = asked = False
+        failures += (0 if ok else 1) + (0 if asked else 1)
         print(f'  {"current" if ok else "missing":<8} Claude Code setting: {path}')
+        print(f'  {"current" if asked else "missing":<8} Claude Code ask rules: {path}')
     if kit is not None:
         failures += check_kit(home, kit, cloud, env)
     for line in shadows(home, env):
@@ -791,7 +898,8 @@ def check_kit(home: pathlib.Path, kit: Kit, cloud: bool, env: Mapping[str, str])
             elif registration.apply(data) == data:
                 status = 'current'
             else:
-                status = 'stale' if commands else 'missing'
+                # Two registrations can share a file, so each looks for its own entry.
+                status = 'missing' if registration.remove(data) == data else 'stale'
         except (Refused, ValueError):
             status = 'broken'
         failures += status != 'current'
@@ -856,7 +964,7 @@ def uninstall(home: pathlib.Path, env: Mapping[str, str], dry_run: bool = False)
     if settings:
         restore_setting(settings, dry_run)
     elif not recorded:
-        print("  note     Claude Code's instructionFiles setting was left as it is")
+        print("  note     Claude Code's instructionFiles setting and ask rules were left as they are")
     if dry_run:
         return 0
     # Folders the install created, deepest first: one made for an early copy
@@ -931,9 +1039,10 @@ def uninstall_kit(home: pathlib.Path, env: Mapping[str, str], state: dict, dry_r
             if not dry_run:
                 shutil.rmtree(folder)
     hook_files = {pathlib.Path(p): r for p, r in state['hooks'].items()}
+    removers: dict[pathlib.Path, list[Callable[[dict], dict]]] = {}
     for registration in kit_registrations(home, False, env):
         hook_files.setdefault(registration.path, {'created': False})
-    removers = {r.path: r.remove for r in kit_registrations(home, False, env)}
+        removers.setdefault(registration.path, []).append(registration.remove)
     for path, record in sorted(hook_files.items()):
         if not path.exists() or path not in removers:
             continue
@@ -942,7 +1051,9 @@ def uninstall_kit(home: pathlib.Path, env: Mapping[str, str], state: dict, dry_r
         except Refused as error:
             print(f'  refused  {path} {error}')
             continue
-        updated = removers[path](data)
+        updated = data
+        for remove in removers[path]:  # Claude Code's file holds two: the guard and the reminder
+            updated = remove(updated)
         if updated == data:
             continue
         gone = bool(record.get('created')) and not updated
@@ -972,6 +1083,15 @@ def restore_setting(settings: dict, dry_run: bool) -> None:
                 configs[plugin] = prior
         if not configs and not settings['had_plugin_configs']:
             data.pop('pluginConfigs')
+    permissions = data.get('permissions')
+    if isinstance(permissions, dict) and isinstance(permissions.get('ask'), list):
+        for rule in settings.get('asks', []):
+            if rule in permissions['ask']:
+                permissions['ask'].remove(rule)  # the one the kit added; a copy of your own stays
+        if not permissions['ask'] and not settings.get('had_ask', True):
+            del permissions['ask']
+        if not permissions and not settings.get('had_permissions', True):
+            del data['permissions']
     print(f'  {"would restore" if dry_run else "restored"}  Claude Code setting: {path}')
     if dry_run:
         return
