@@ -196,9 +196,14 @@ as `kit/guard.py`, or on a machine with the kit as
 
 ```bash
 python3 kit/guard.py --command 'git push --force origin main'
+python3 kit/guard.py --remind
 ```
 
-It prints `allowed`, or the denial on stderr with exit 2.
+| Option           | What it does                                                                                                                                                                    |
+| :--------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--app NAME`     | The app whose hook calls it: `claude`, `codex`, `copilot` or `antigravity`                                                                                                      |
+| `--command TEXT` | Check one shell command by hand. It prints `allowed`, or the denial on stderr with exit 2                                                                                       |
+| `--remind`       | Print the Invariants from Claude Code's home copy of the rules, as the compaction hook does; nothing when that copy is missing, or when the payload names another session start |
 
 ---
 

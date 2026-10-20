@@ -17,14 +17,24 @@ WHAT IT BLOCKS, and the rule behind each:
   merging a pull request, through `git`, `gh` or a GitHub MCP tool
 - OPS-003: what git cannot undo, when there is something to lose: `git
   reset --hard` or a whole-tree checkout over uncommitted work, `git clean
-  -f`, dropped stashes, `git branch -D`, history rewrites, `rm -r` aimed at
-  a root or home folder, and deleting databases, cloud resources or
-  repository settings
+  -f`, dropped stashes, `git branch -D`, history rewrites, a recursive
+  delete aimed at a root, drive or home folder (`rm -r`, and on Windows
+  `rmdir /s`, `del /s` and `Remove-Item -Recurse`), and deleting databases,
+  cloud resources or repository settings
 - OPS-004: `--no-verify`, hooks switched off for one command, and edits
   that would remove this guard or its registrations
 - GIT-001: a commit that git would author, or sign off, as an AI's identity;
   `git commit -s` passes whenever git's identity is your user's
-- SEC-001: a credential-shaped string in a command or in a file being written
+- SEC-001: a credential-shaped string in a command or in a file being
+  written, and reading a credential store in the home folder, such as a
+  private SSH key or `~/.aws/credentials`, with a read tool or with a shell
+  command that prints or copies it
+- SEC-004: a download piped or substituted straight into a shell or an
+  interpreter, and a package install that names its registry on the command
+  line
+- DOC-002: an em dash written into a file, a commit message or a pull
+  request, in a repository tannergolden owns: one with no remote yet, or
+  whose every remote is on github.com under tannergolden
 - the hub's blocks: a hand edit inside the rules block of `AGENTS.md` or
   the prompts block of `docs/Prompts.md`, which the next sync would
   overwrite anyway
@@ -35,10 +45,15 @@ past it, which is what OPS-004, the rulesets and CI are for. It runs on the
 Python 3.9 that macOS ships, with the standard library only, makes no network
 calls, and finishes in milliseconds.
 
+With `--remind` it prints the Invariants from Claude Code's home copy of the
+rules instead, for the hook Claude Code runs after it compacts a conversation,
+and prints nothing when that copy is missing.
+
 Run it:
 
     echo '{"tool_name": "Bash", "tool_input": {"command": "git push -f"}}' | python3 guard.py --app claude
     python3 guard.py --command 'git push --force origin main'   # try a command by hand
+    python3 guard.py --remind                                    # what a compaction brings back
 """
 
 # Part of tannergolden/intelligence's home kit, which replaces this file on every install.
@@ -47,6 +62,8 @@ from __future__ import annotations
 
 import argparse
 import dataclasses
+import functools
+import glob
 import json
 import os
 import pathlib
@@ -122,6 +139,88 @@ ASSIGNMENT = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*=')
 HOOK_SKIPS = {'HUSKY': {'0', 'false'}, 'HUSKY_SKIP_HOOKS': None, 'SKIP': None, 'LEFTHOOK': {'0', 'false'}}
 DB_CLIENTS = {'psql', 'mysql', 'mariadb', 'sqlite3', 'sqlcmd', 'mongosh', 'mongo', 'cockroach', 'duckdb'}
 DB_DROP = re.compile(r'\b(drop\s+(database|schema|table)|truncate\s+(table\s+)?\w)', re.I)
+# Shell operators, longest first. The tokenizer returns a run of punctuation,
+# such as `((` or `(<`, as one token, and these split it back apart.
+OPERATORS = ('&>>', '<<<', '&&', '||', '|&', ';;', '<<', '>>', '&>', '>|', '<>', '<&', '>&', '<(', '>(',
+             '(', ')', ';', '&', '|', '<', '>', '\n')
+PUNCTUATION = set('();<>|&\n')
+
+# Reading a credential store (SEC-001): the tools that only read, the commands
+# that print a file or copy it, and the flags of each copier that take a value.
+READ_TOOLS = {'read', 'view', 'view_file', 'read_file', 'readfile', 'read_many_files', 'notebookread', 'grep',
+              'grep_search', 'search_file_content', 'glob'}
+READ_PATH_KEYS = PATH_KEYS + ('absolute_path',)
+PRINTERS = {'cat', 'tac', 'nl', 'less', 'more', 'most', 'head', 'tail', 'bat', 'batcat', 'view', 'base64', 'base32',
+            'basenc', 'xxd', 'od', 'hexdump', 'hd', 'strings', 'grep', 'egrep', 'fgrep', 'rg', 'ag', 'sed', 'awk',
+            'gawk', 'jq', 'yq'}
+COPIERS = {
+    'cp': {'-t', '--target-directory', '-S', '--suffix'},
+    'scp': {'-i', '-F', '-P', '-c', '-l', '-o', '-S', '-J', '-D', '-X'},
+    'rsync': {'-e', '--rsh', '-f', '--filter', '--exclude', '--include', '--exclude-from', '--include-from',
+              '--files-from', '-T', '--temp-dir', '--partial-dir', '--log-file', '--password-file'},
+}
+# The stores, by their path under the home folder, and what each holds. Under
+# ~/.ssh every file is a private key but the public ones named here.
+CREDENTIAL_FILES = {
+    ('.aws', 'credentials'): 'AWS credentials',
+    ('.docker', 'config.json'): 'Docker registry logins',
+    ('.netrc',): 'netrc logins',
+    ('_netrc',): 'netrc logins',
+    ('.git-credentials',): 'stored git credentials',
+    ('.config', 'git', 'credentials'): 'stored git credentials',
+    ('.pypirc',): 'PyPI credentials',
+    ('.config', 'gh', 'hosts.yml'): "the GitHub CLI's token",
+    ('.config', 'gcloud', 'credentials.db'): 'gcloud credentials',
+    ('.config', 'gcloud', 'access_tokens.db'): 'gcloud credentials',
+    ('.config', 'gcloud', 'application_default_credentials.json'): 'gcloud credentials',
+}
+SSH_PUBLIC = {'known_hosts', 'known_hosts.old', 'config', 'authorized_keys', 'authorized_keys2', 'allowed_signers'}
+AZURE_TOKENS = ('msal_token_cache', 'service_principal_entries', 'accesstokens.json', 'tokencache.dat')
+# The folders that hold a store, so copying one copies the store too.
+STORE_FOLDERS = (('.ssh',), ('.aws',), ('.azure',), ('.docker',), ('.config', 'gcloud'), ('.config', 'gh'),
+                 ('.config', 'git'))
+
+# The home folder as PowerShell and cmd name it too, and a drive's root: C:\
+# on Windows, /c/ in Git Bash.
+HOME_WORDS = re.compile(r'^(?:~|\$home|\$\{home\}|\$env:userprofile|\$\{env:userprofile\}|%userprofile%'
+                        r'|\$env:home|\$\{env:home\})(?=/|$)', re.I)
+DRIVE_ROOT = re.compile(r'[A-Za-z]:/?|/[A-Za-z]/?')
+# Words in a cmd or PowerShell line, which keep their backslashes, and the
+# commands there that delete or print.
+WINDOWS_WORD = re.compile(r'''&&|\|\||[;&|\n()]|(?:"[^"]*"?|'[^']*'?|[^\s;&|()"'])+''')
+WINDOWS_DELETES = {'rmdir', 'rd', 'del', 'erase', 'remove-item', 'ri', 'rm'}
+WINDOWS_PRINTERS = {'get-content', 'gc', 'type', 'cat', 'more'}
+
+# Running a download (SEC-004): what fetches a URL, what runs code, and the
+# first letter of an interpreter's flag that hands it code inline or names a
+# module, so its input is only data.
+DOWNLOADERS = {'curl', 'wget', 'fetch', 'http', 'https', 'xh', 'iwr', 'irm', 'invoke-webrequest',
+               'invoke-restmethod'}
+CODE_RUNNERS = re.compile(r'(?:ba|da|z|k|mk|a|c|tc|fi)?sh|python[0-9.]*|pypy[0-9.]*|perl|ruby|node(?:js)?|php|lua')
+INLINE = {'python': 'cm', 'pypy': 'cm', 'perl': 'eE', 'ruby': 'e', 'node': 'ep', 'php': 'rfBRFE', 'lua': 'e'}
+PS_RUNS = re.compile(r'(?:^|[|;&({])\s*(?P<runner>iex|invoke-expression)\b', re.I | re.M)
+PS_DOWNLOADS = re.compile(r'\b(?P<tool>iwr|irm|invoke-webrequest|invoke-restmethod|curl|wget|start-bitstransfer)\b'
+                          r'|\.(?P<method>downloadstring)\s*\(', re.I)
+# A registry named on the command line (SEC-004): each package manager's
+# install commands. A bare `yarn` installs too.
+PACKAGE_INSTALLS = {
+    'npm': {'install', 'i', 'in', 'isntall', 'add', 'ci', 'clean-install', 'ic', 'install-clean', 'install-test',
+            'it', 'install-ci-test', 'cit'},
+    'pnpm': {'install', 'i', 'add'},
+    'yarn': {'install', 'add', ''},
+    'bun': {'install', 'i', 'add', 'a'},
+}
+
+# The em dash the standards ban (DOC-002), written as an escape so this file
+# never holds one, and the remote URLs that make a repository tannergolden's.
+EM_DASH = '\u2014'
+OWNER_REMOTE = re.compile(r'(?:(?:https?|ssh|git)://(?:[^@/]+@)?github\.com(?::\d+)?/|(?:[^@/:]+@)?github\.com:)'
+                          r'tannergolden/', re.I)
+
+# Where Claude Code's home copy of the rules sits: a local install, then a
+# cloud one. `--remind` prints the Invariants from the first that has them.
+REMINDER = 'These rules from {where} still hold after compaction.'
+CLAUDE_COPIES = ('.claude/rules/intelligence.md', '.claude/CLAUDE.md')
 
 
 @dataclasses.dataclass(frozen=True)
@@ -147,12 +246,13 @@ class Call:
 
 @dataclasses.dataclass
 class Simple:
-    """One simple command: its words, the variables set before it, where it runs, and what it writes."""
+    """One simple command: its words, the variables set before it, where it runs, and the files it writes and reads."""
 
     words: list[str]
     env: dict[str, str]
     cwd: pathlib.Path
     writes: list[str] = dataclasses.field(default_factory=list)
+    reads: list[str] = dataclasses.field(default_factory=list)
 
 
 def normalize(payload: Mapping) -> Call:
@@ -198,6 +298,7 @@ def patch_of(args: Mapping) -> str | None:
 
 def decide(call: Call, home: pathlib.Path) -> Verdict | None:
     """Why this call is denied, or None to let it through."""
+    owner_repository.cache_clear()  # git lookups are cached for one call only
     name = call.tool.lower()
     if 'mcp' in name or 'merge_pull_request' in name:
         # A remote tool: nothing it names is a local file, so only its intent and its text count.
@@ -209,6 +310,9 @@ def decide(call: Call, home: pathlib.Path) -> Verdict | None:
     path = first(call.args, PATH_KEYS)
     if command is not None and (name in SHELL_TOOLS or path is None):
         return check_command(command, call.cwd, home)
+    if name in READ_TOOLS:
+        # A read changes nothing, so only what it would read counts.
+        return check_read_call(call.args, call.cwd, home)
     if path is not None:
         return check_edit(call.args, resolve(path, call.cwd), home)
     return None
@@ -265,10 +369,22 @@ def tokens(text: str) -> list[str]:
     lexer.whitespace_split = True
     lexer.commenters = ''
     try:
-        return list(lexer)
+        return [part for token in lexer for part in operators(token)]
     except ValueError:
         # An unbalanced quote: fall back to words, which still find most mistakes.
         return text.replace(';', ' ; ').replace('&&', ' && ').replace('|', ' | ').split()
+
+
+def operators(token: str) -> list[str]:
+    """A run of punctuation split into the shell operators it holds, longest first: `(<` is `(` then `<`."""
+    if not token or any(char not in PUNCTUATION for char in token):
+        return [token]
+    parts = []
+    while token:
+        operator = next(op for op in OPERATORS if token.startswith(op))
+        parts.append(operator)
+        token = token[len(operator):]
+    return parts
 
 
 def substitutions(word: str) -> list[str]:
@@ -317,14 +433,32 @@ def simple_commands(text: str, cwd: pathlib.Path, depth: int = 0) -> list[Simple
 
 def expand(words: list[str], cwd: pathlib.Path, depth: int) -> list[Simple]:
     """Peel redirections, assignments and wrappers off one command, and open `sh -c` and `eval`."""
+    words, env, writes, reads = peel(words)
+    if not words:
+        return [Simple([':'], env, cwd, writes, reads)] if writes or reads else []
+    program = os.path.basename(words[0])
+    if program in SHELLS:
+        for index, word in enumerate(words[1:], 1):
+            if word.startswith('-') and 'c' in word.lstrip('-') and index + 1 < len(words):
+                return simple_commands(words[index + 1], cwd, depth + 1)
+    if program == 'eval':
+        return simple_commands(' '.join(words[1:]), cwd, depth + 1)
+    return [Simple(words, env, cwd, writes, reads)]
+
+
+def peel(words: list[str]) -> tuple[list[str], dict[str, str], list[str], list[str]]:
+    """A command's words without redirections, assignments and wrappers; and its variables, writes and reads."""
     plain: list[str] = []
     writes: list[str] = []
+    reads: list[str] = []
     index = 0
     while index < len(words):
         word = words[index]
         if word in REDIRECTS or word in READS:
             if word in REDIRECTS and index + 1 < len(words):
                 writes.append(words[index + 1])
+            if word in ('<', '<>') and index + 1 < len(words):
+                reads.append(words[index + 1])
             index += 2
             continue
         if word.isdigit() and index + 1 < len(words) and (words[index + 1] in REDIRECTS
@@ -348,16 +482,7 @@ def expand(words: list[str], cwd: pathlib.Path, depth: int) -> list[Simple]:
                 key, _, value = words[0].partition('=')
                 env[key] = value
             words = words[2:] if words[0] in valued else words[1:]
-    if not words:
-        return [Simple([':'], env, cwd, writes)] if writes else []
-    program = os.path.basename(words[0])
-    if program in SHELLS:
-        for index, word in enumerate(words[1:], 1):
-            if word.startswith('-') and 'c' in word.lstrip('-') and index + 1 < len(words):
-                return simple_commands(words[index + 1], cwd, depth + 1)
-    if program == 'eval':
-        return simple_commands(' '.join(words[1:]), cwd, depth + 1)
-    return [Simple(words, env, cwd, writes)]
+    return words, env, writes, reads
 
 
 def check_command(text: str, cwd: pathlib.Path, home: pathlib.Path) -> Verdict | None:
@@ -366,7 +491,8 @@ def check_command(text: str, cwd: pathlib.Path, home: pathlib.Path) -> Verdict |
         return verdict
     if re.search(r':\(\)\s*\{\s*:\s*\|\s*:\s*&\s*\}', text):
         return Verdict('OPS-003', 'the command is a fork bomb', 'Do not run it')
-    commands = simple_commands(strip_heredocs(text)[0], cwd)
+    kept, bodies = strip_heredocs(text)
+    commands = simple_commands(kept, cwd)
     if any(os.path.basename(c.words[0]) == 'git' and 'commit' in c.words for c in commands):
         # Here-document bodies are data, but a commit message written in one still counts.
         verdict = check_signoff_lines(text, 'the commit message')
@@ -376,7 +502,8 @@ def check_command(text: str, cwd: pathlib.Path, home: pathlib.Path) -> Verdict |
         verdict = check_simple(command, home)
         if verdict:
             return verdict
-    return check_api_merge(text)
+    return (check_downloads(kept) or check_powershell_download(kept) or check_windows(kept, cwd, home)
+            or check_messages(commands, bodies) or check_api_merge(text))
 
 
 def check_simple(command: Simple, home: pathlib.Path) -> Verdict | None:
@@ -394,7 +521,7 @@ def check_simple(command: Simple, home: pathlib.Path) -> Verdict | None:
     verdict = check_destructive(program, words)
     if verdict:
         return verdict
-    return check_writes(command, home)
+    return check_reads(command, home) or check_install(command) or check_writes(command, home)
 
 
 def resolve(path: str, cwd: pathlib.Path) -> pathlib.Path:
@@ -780,18 +907,25 @@ def check_rm(command: Simple, home: pathlib.Path) -> Verdict | None:
     targets = [word for word in words if not word.startswith('-')]
     for target in targets:
         path = resolve(target, command.cwd)
-        if recursive and catastrophic(target, path, home):
+        if recursive and catastrophic(target, command.cwd, home):
             return lost(f'`rm -r {target}` deletes a root, home or repository folder')
         if has_region(path):
             return block_edit(path)
     return None
 
 
-def catastrophic(raw: str, path: pathlib.Path, home: pathlib.Path) -> bool:
-    if raw.rstrip('/') in ('', '~', '.', '..', '*', '$HOME', '${HOME}') or raw in ('/*', '~/*', './*'):
+def portable(raw: str) -> str:
+    """A path as a POSIX shell writes it: forward slashes, no quotes, and `~` however the home folder is named."""
+    return HOME_WORDS.sub('~', raw.strip('"\'').replace('\\', '/'))
+
+
+def catastrophic(raw: str, cwd: pathlib.Path, home: pathlib.Path) -> bool:
+    """Whether deleting `raw` with everything under it takes a root, drive, home, system or repository folder."""
+    folder = re.sub(r'/\*(?:\.\*)?$', '', portable(raw))  # deleting what is in a folder empties the folder
+    if folder.rstrip('/') in ('', '~', '.', '..', '*', '*.*') or DRIVE_ROOT.fullmatch(folder):
         return True
     try:
-        real = pathlib.Path(os.path.normpath(str(path)))
+        real = pathlib.Path(os.path.normpath(str(resolve(folder, cwd))))
     except (OSError, ValueError):
         return False
     tops = {pathlib.Path('/'), home, home.parent}
@@ -863,6 +997,470 @@ def check_writes(command: Simple, home: pathlib.Path) -> Verdict | None:
     return None
 
 
+# --- credential stores --------------------------------------------------------
+
+
+def under_home(path: pathlib.Path, home: pathlib.Path) -> pathlib.PurePath | None:
+    """`path` relative to the home folder, or None outside it."""
+    try:
+        return pathlib.PurePath(os.path.normpath(str(path))).relative_to(os.path.normpath(str(home)))
+    except ValueError:
+        return None
+
+
+def credential_store(path: pathlib.Path, home: pathlib.Path) -> str | None:
+    """What a credential store in the home folder holds, when `path` is one."""
+    relative = under_home(path, home)
+    parts = tuple(part.lower() for part in relative.parts) if relative else ()
+    if not parts:
+        return None
+    if parts[0] == '.ssh' and len(parts) > 1:
+        public = parts[-1].endswith('.pub') or parts[-1] in SSH_PUBLIC or 'config.d' in parts
+        return None if public else 'a private SSH key'
+    if parts[:3] == ('.config', 'gcloud', 'legacy_credentials') and len(parts) > 3:
+        return 'gcloud credentials'
+    if len(parts) == 2 and parts[0] == '.azure' and parts[1].startswith(AZURE_TOKENS):
+        return 'Azure tokens'
+    return CREDENTIAL_FILES.get(parts)
+
+
+def holds_store(path: pathlib.Path, home: pathlib.Path) -> str | None:
+    """What a folder holds when a credential store sits inside it; the home folder and those above it count."""
+    folder, base = os.path.normpath(str(path)), os.path.normpath(str(home))
+    if base == folder or base.startswith(folder.rstrip(os.sep) + os.sep):
+        return 'every credential store in the home folder'
+    relative = under_home(path, home)
+    parts = tuple(part.lower() for part in relative.parts) if relative else ()
+    if parts and any(parts == store[:len(parts)] for store in STORE_FOLDERS):
+        return 'credential stores'
+    return None
+
+
+def stores_named(raw: str, cwd: pathlib.Path, home: pathlib.Path,
+                 whole: bool = False) -> tuple[str, str] | None:
+    """Where a path word points and what it holds, when that is a credential store, or with `whole` a folder of one."""
+    path = resolve(portable(raw), cwd)
+    paths = [path]
+    if any(char in raw for char in '*?['):
+        paths = [pathlib.Path(name) for name in glob.glob(str(path))] or paths
+    for each in paths:
+        kind = credential_store(each, home) or (holds_store(each, home) if whole else None)
+        if kind:
+            relative = under_home(each, home)
+            where = str(each) if relative is None else '~' if str(relative) == '.' else f'~/{relative.as_posix()}'
+            return where, kind
+    return None
+
+
+def exposes(actor: str, verb: str, where: str, kind: str) -> Verdict:
+    return Verdict('SEC-001', f'{actor} would {verb} {where}, which holds {kind}',
+                   'Leave credential stores unread: let the tool that owns the login use it, or ask your user')
+
+
+def check_reads(command: Simple, home: pathlib.Path) -> Verdict | None:
+    """A shell command that prints or copies a credential store, or feeds one to a program on its input."""
+    for raw in command.reads:
+        found = stores_named(raw, command.cwd, home)
+        if found:
+            return exposes('the command', 'read', *found)
+    program = os.path.basename(command.words[0])
+    if program in PRINTERS:
+        for raw in bare(command.words[1:], set()):
+            found = stores_named(raw, command.cwd, home)
+            if found:
+                return exposes(f'`{program}`', 'read', *found)
+    if program in COPIERS:
+        sources = bare(command.words[1:], COPIERS[program])
+        if not (program == 'cp' and option(command.words[1:], '-t', '--target-directory')):
+            sources = sources[:-1]  # the last operand is where the copy goes
+        for raw in sources:
+            found = stores_named(raw, command.cwd, home, whole=True)
+            if found:
+                return exposes(f'`{program}`', 'copy', *found)
+    return None
+
+
+def check_read_call(args: Mapping, cwd: pathlib.Path, home: pathlib.Path) -> Verdict | None:
+    """A read tool aimed at a credential store."""
+    listed = args.get('paths')
+    for raw in [args.get(key) for key in READ_PATH_KEYS] + (listed if isinstance(listed, list) else []):
+        if isinstance(raw, str) and raw:
+            found = stores_named(raw, cwd, home)
+            if found:
+                return exposes('the call', 'read', *found)
+    return None
+
+
+# --- downloads and installs ---------------------------------------------------
+
+
+def command_name(word: str) -> str:
+    """A program's name however it is typed: no folder, no `.exe`, in lowercase."""
+    name = os.path.basename(word.replace('\\', '/')).lower()
+    return name[:-4] if name.endswith('.exe') else name
+
+
+def runs_unread(runner: str, downloader: str) -> Verdict:
+    return Verdict('SEC-004', f'the command runs what `{downloader}` downloads in `{runner}` before anyone reads it',
+                   'Save it to a file and show your user what it would run, or install the tool from a package '
+                   'registry')
+
+
+def check_downloads(text: str, depth: int = 0) -> Verdict | None:
+    """A download a shell or interpreter would run unread: piped in, or handed over by `<(...)` or `$(...)`."""
+    if depth > 4:
+        return None
+    pipeline: list[list[str]] = []
+    words: list[str] = []
+    for token in [*tokens(text), ';']:
+        if token in SEPARATORS:
+            segment = peel(words)[0] if words else []
+            if segment:
+                verdict = runs_download(segment, depth)
+                if verdict:
+                    return verdict
+                pipeline.append(segment)
+            words = []
+            if token not in ('|', '|&'):
+                verdict = piped_download(pipeline)
+                if verdict:
+                    return verdict
+                pipeline = []
+            continue
+        for inner in substitutions(token):
+            verdict = check_downloads(inner, depth + 1)
+            if verdict:
+                return verdict
+        words.append(token)
+    return None
+
+
+def piped_download(pipeline: list[list[str]]) -> Verdict | None:
+    for index, segment in enumerate(pipeline):
+        if command_name(segment[0]) in DOWNLOADERS:
+            for later in pipeline[index + 1:]:
+                if runs_input(later):
+                    return runs_unread(os.path.basename(later[0]), os.path.basename(segment[0]))
+    return None
+
+
+def runs_input(words: list[str]) -> bool:
+    """Whether a command runs what arrives on its input as code, as `sh`, `bash -s`, `python3 -` and `iex` do."""
+    program = command_name(words[0])
+    if program in ('iex', 'invoke-expression'):
+        return True
+    if program in ('source', '.'):
+        return words[1:2] in (['/dev/stdin'], ['-'])
+    if program in ('pwsh', 'powershell'):
+        return len(words) == 1 or '-' in words[1:]
+    if not CODE_RUNNERS.fullmatch(program):
+        return False
+    shell = program.endswith('sh')
+    inline = INLINE.get(re.match(r'[a-z]*', program).group(0), '')
+    script = False  # `sh -s` runs its input and passes the words after it as arguments
+    for word in words[1:]:
+        if word in ('-', '/dev/stdin'):
+            return True
+        if word.startswith('--'):
+            if word.split('=')[0] in ('--eval', '--print', '--command'):
+                return False
+            continue
+        if word.startswith('-') and len(word) > 1:
+            if (shell and 'c' in word[1:]) or (not shell and word[1] in inline):
+                return False  # code given inline, so the input is only data
+            script = script or (shell and 's' in word[1:])
+            continue
+        return script  # a script file, which runs instead of the input
+    return True
+
+
+def inline_code(words: list[str]) -> str | None:
+    """The code a command line hands a shell or interpreter: `sh -c CODE`, `python3 -c CODE`, `eval CODE`."""
+    program = command_name(words[0])
+    if program == 'eval':
+        return ' '.join(words[1:])
+    if not CODE_RUNNERS.fullmatch(program):
+        return None
+    shell = program.endswith('sh')
+    inline = INLINE.get(re.match(r'[a-z]*', program).group(0), '')
+    for index, word in enumerate(words[1:], 1):
+        if word.startswith('-') and not word.startswith('--') and len(word) > 1 and (
+                (shell and 'c' in word[1:]) or (not shell and word[1] in inline)):
+            attached = '' if shell else word[2:]
+            return attached or (words[index + 1] if index + 1 < len(words) else None)
+    return None
+
+
+def runs_download(words: list[str], depth: int) -> Verdict | None:
+    """A shell or interpreter handed a download as a file, `bash <(curl ...)`, or as code, `sh -c "$(curl ...)"`."""
+    program = command_name(words[0])
+    if not (program in ('eval', 'source', '.') or CODE_RUNNERS.fullmatch(program)):
+        return None
+    runner = os.path.basename(words[0])
+    for index, word in enumerate(words[:-1]):
+        if word == '<(' and command_name(words[index + 1]) in DOWNLOADERS:
+            return runs_unread(runner, os.path.basename(words[index + 1]))
+    code = inline_code(words)
+    if code is None:
+        return None
+    for inner in substitutions(code):
+        for command in simple_commands(inner, pathlib.Path('.')):
+            if command_name(command.words[0]) in DOWNLOADERS:
+                return runs_unread(runner, os.path.basename(command.words[0]))
+    return check_downloads(code, depth + 1)
+
+
+def check_powershell_download(text: str) -> Verdict | None:
+    """`iex` or `Invoke-Expression` running what `iwr`, `irm` or a WebClient downloads."""
+    runs = PS_RUNS.search(text)
+    fetched = PS_DOWNLOADS.search(text) if runs else None
+    if runs and fetched:
+        return runs_unread(runs.group('runner'), fetched.group('tool') or fetched.group('method'))
+    return None
+
+
+def option(args: list[str], *names: str) -> str | None:
+    """The first of these options given, alone or as `--name=value`."""
+    for arg in args:
+        for name in names:
+            if arg == name or (name.startswith('--') and arg.startswith(name + '=')):
+                return name
+    return None
+
+
+def check_install(command: Simple) -> Verdict | None:
+    """A package install that names its registry on the command line, not the one the project configures."""
+    program, args = os.path.basename(command.words[0]), command.words[1:]
+    if re.fullmatch(r'python[0-9.]*|py', program) and args[:2] == ['-m', 'pip']:
+        program, args = 'pip', args[2:]
+    elif program == 'uv' and args[:1] == ['pip']:
+        program, args = 'uv pip', args[1:]
+    elif re.fullmatch(r'pip[0-9.]*', program):
+        program = 'pip'
+    variables = {key.lower() for key in command.env}
+    found, sub = None, ''
+    if program in PACKAGE_INSTALLS:
+        sub = next(iter(bare(args, {'--registry', '--prefix', '-C', '--dir', '-w', '--workspace', '--filter',
+                                    '--cwd'})), '')
+        if sub in PACKAGE_INSTALLS[program]:
+            found = option(args, '--registry') or ('npm_config_registry' if 'npm_config_registry' in variables
+                                                   else None)
+    elif program in ('pip', 'uv pip'):
+        sub = next(iter(bare(args, {'--proxy', '--cache-dir', '--log', '--python', '-i', '--index-url',
+                                    '--extra-index-url', '--index', '--default-index'})), '')
+        names = ('--index-url', '--extra-index-url') + (('--index', '--default-index') if program == 'uv pip' else ())
+        named = {'pip': ('pip_index_url', 'pip_extra_index_url'),
+                 'uv pip': ('uv_index_url', 'uv_extra_index_url', 'uv_index', 'uv_default_index')}[program]
+        if sub == 'install':
+            found = option(args, *names) or ('-i' if short_index(args) else None) or next(
+                (name.upper() for name in named if name in variables), None)
+    elif program == 'gem':
+        sub = next(iter(bare(args, set())), '')
+        if sub == 'install':
+            found = option(args, '--source', '-s')
+    elif program == 'cargo':
+        sub = next(iter(word for word in bare(args, {'-Z', '--config', '--color', '-C'})
+                        if not word.startswith('+')), '')
+        if sub == 'install':
+            found = option(args, '--index', '--registry')
+    if found is None:
+        return None
+    shown = ' '.join(part for part in (program, sub) if part)
+    return Verdict('SEC-004', f'`{shown}` with `{found}` installs from a registry named on the command line, '
+                   "not the project's own",
+                   "Install from the registry the project's configuration names, or ask your user to add this one "
+                   'there')
+
+
+def short_index(args: list[str]) -> bool:
+    """Whether pip's `-i` is given, alone or in a cluster such as `-qi`."""
+    for arg in args:
+        if arg.startswith('-') and not arg.startswith('--'):
+            for char in arg[1:]:
+                if char == 'i':
+                    return True
+                if char in 'rcetf':  # a flag that takes a value; the rest of the word is that value
+                    break
+    return False
+
+
+# --- cmd and PowerShell -------------------------------------------------------
+
+
+def windows_statements(text: str, depth: int = 0) -> list[list[str]]:
+    """Each simple statement in a cmd or PowerShell line: its words without quotes, backslashes kept."""
+    found: list[list[str]] = []
+    words: list[str] = []
+    for token in [*WINDOWS_WORD.findall(text), ';']:
+        if token in ('&&', '||', ';', '&', '|', '\n', '(', ')'):
+            if words:
+                found.extend(windows_opened(words, depth))
+            words = []
+        else:
+            words.append(token.replace('"', '').replace("'", ''))
+    return found
+
+
+def windows_opened(words: list[str], depth: int) -> list[list[str]]:
+    """One statement, or the statements it hands to `cmd /c` or `powershell -Command`."""
+    program = command_name(words[0])
+    for index, word in enumerate(words[1:], 1):
+        word = word.lower()
+        nested = (program == 'cmd' and word in ('/c', '/k')) or (
+            program in ('powershell', 'pwsh') and len(word) > 1 and '-command'.startswith(word))
+        if nested and depth < 3:
+            return windows_statements(' '.join(words[index + 1:]), depth + 1)
+    return [words]
+
+
+def check_windows(text: str, cwd: pathlib.Path, home: pathlib.Path) -> Verdict | None:
+    """What cmd and PowerShell spell their own way: a recursive delete of a root, drive or home folder, and
+    printing a credential store."""
+    for words in windows_statements(text):
+        program = command_name(words[0])
+        if program in WINDOWS_DELETES:
+            verdict = windows_delete(words, cwd, home)
+            if verdict:
+                return verdict
+        if program in WINDOWS_PRINTERS:
+            redirected = False
+            for raw in words[1:]:
+                if redirected or raw.startswith('-') or re.match(r'\d*>', raw):
+                    # A flag, or where output goes: `> file` writes it, and never reads it.
+                    redirected = bool(re.fullmatch(r'\d*>>?', raw))
+                    continue
+                found = stores_named(raw, cwd, home)
+                if found:
+                    return exposes(f'`{words[0]}`', 'read', *found)
+    return None
+
+
+def windows_delete(words: list[str], cwd: pathlib.Path, home: pathlib.Path) -> Verdict | None:
+    """`rmdir /s`, `del /s` or `Remove-Item -Recurse`, or an alias of it, aimed at a root, drive or home folder."""
+    args = words[1:]
+    lowered = [arg.lower() for arg in args]
+    if any(low in ('-whatif', '-wi') or low.startswith('-whatif:') for low in lowered):
+        return None  # a dry run
+    recursive = next((arg for arg, low in zip(args, lowered) if (
+        re.fullmatch(r'(?:/[a-z](?::[^/\s]*)?)+', low) and '/s' in re.findall(r'/[a-z]', low))
+        or (len(low) > 1 and low.startswith('-') and '-recurse'.startswith(low.partition(':')[0]))), None)
+    if recursive is None:
+        return None
+    targets: list[str] = []
+    skip = False
+    for arg, low in zip(args, lowered):
+        name, colon, value = low.partition(':')
+        if skip:
+            skip = False
+        elif low.startswith('-'):
+            if colon and len(name) > 2 and any(full.startswith(name) for full in ('-path', '-literalpath')):
+                targets.append(arg.partition(':')[2])
+            skip = not colon and len(name) > 3 and any(full.startswith(name)
+                                                       for full in ('-include', '-exclude', '-filter'))
+        elif not re.fullmatch(r'(?:/[a-z](?::[^/\s]*)?)+', low):  # a cmd switch such as /s, /q or /a:h
+            targets += [part for part in arg.split(',') if part]
+    for target in targets:
+        if catastrophic(target, cwd, home):
+            return lost(f'`{words[0]} {recursive} {target}` deletes a root, home or repository folder')
+    return None
+
+
+# --- the em dash --------------------------------------------------------------
+
+
+@functools.lru_cache(maxsize=None)
+def owner_repository(folder: str) -> bool:
+    """Whether the repository holding `folder` is tannergolden's: no remote yet, or every remote on GitHub under
+    tannergolden. Outside a repository it is no one's, so nothing is checked there."""
+    try:
+        done = subprocess.run(['git', '-C', folder, 'config', '--local', '--get-regexp', r'^remote\..*\.url$'],
+                              capture_output=True, text=True, timeout=5, check=False)
+    except (OSError, subprocess.SubprocessError):
+        return False
+    if done.returncode == 1:
+        return True  # a repository with no remote yet; 128 means no repository at all
+    urls = [line.split(None, 1)[-1] for line in done.stdout.splitlines() if line.strip()]
+    return done.returncode == 0 and bool(urls) and all(OWNER_REMOTE.match(url) for url in urls)
+
+
+def nearest_folder(path: pathlib.Path) -> str:
+    """The closest folder that exists on the way to `path`, which may not exist yet."""
+    folder = path.parent
+    while not folder.is_dir() and folder != folder.parent:
+        folder = folder.parent
+    return str(folder)
+
+
+def em_dash(where: str) -> Verdict:
+    return Verdict('DOC-002', f'{where} holds an em dash (U+2014), which the standards ban in this repository',
+                   'Use a comma, colon, parentheses or a spaced hyphen; where the character itself is data, '
+                   'write the escape \\u2014')
+
+
+def edit_dashes(path: pathlib.Path, new_text: str | None, olds: list[str], news: list[str]) -> Verdict | None:
+    """A write or an edit that adds an em dash; one kept from the text it replaces does not count."""
+    if new_text is not None:
+        added = new_text.count(EM_DASH)
+        if added:
+            try:
+                added -= path.read_text(encoding='utf-8').count(EM_DASH)
+            except (OSError, UnicodeDecodeError):
+                pass
+    else:
+        added = sum(text.count(EM_DASH) for text in news) - sum(text.count(EM_DASH) for text in olds)
+    if added > 0 and owner_repository(nearest_folder(path)):
+        return em_dash(f'the text being written to {path.name}')
+    return None
+
+
+def short_values(args: list[str], letter: str, takes_value: str) -> list[str]:
+    """Each value of a short flag, alone, attached (`-mfix`) or ending a cluster (`-am fix`)."""
+    found = []
+    for index, arg in enumerate(args):
+        if arg == '--':
+            break
+        if arg.startswith('-') and not arg.startswith('--') and len(arg) > 1:
+            for position, char in enumerate(arg[1:], 1):
+                if char in takes_value:
+                    if char == letter:
+                        found.append(arg[position + 1:] or (args[index + 1] if index + 1 < len(args) else ''))
+                    break
+    return found
+
+
+def check_messages(commands: list[Simple], bodies: str) -> Verdict | None:
+    """An em dash in a commit message, or in a pull request's title or body."""
+    for command in commands:
+        program = os.path.basename(command.words[0])
+        repo = None
+        if program == 'git':
+            git = parse_git(command)
+            if git is None or git.sub != 'commit':
+                continue
+            texts = short_values(git.args, 'm', COMMIT_VALUED) + values(git.args, '--message')
+            files = short_values(git.args, 'F', COMMIT_VALUED) + values(git.args, '--file')
+            where, folder = 'the commit message', git.cwd
+        elif program == 'gh':
+            words = command.words[1:]
+            if [*bare(words, GH_VALUED), '', ''][:2] not in (['pr', 'create'], ['pr', 'edit']):
+                continue
+            texts = [text for flag in ('--title', '-t', '--body', '-b') for text in values(words, flag)]
+            files = values(words, '--body-file') + values(words, '-F')
+            repo = (values(words, '--repo') + values(words, '-R') or [None])[-1]
+            where, folder = 'the pull request title or body', command.cwd
+        else:
+            continue
+        if any(name in ('-', '/dev/stdin') for name in files) or any('<<' in text for text in texts):
+            texts.append(bodies)  # the message comes from a here-document
+        if not any(EM_DASH in text for text in texts):
+            continue
+        parts = [part for part in re.sub(r'\.git$', '', repo or '').split('/') if part]
+        owned = len(parts) > 1 and parts[-2].lower() == 'tannergolden' if repo else owner_repository(str(folder))
+        if owned:
+            return em_dash(where)
+    return None
+
+
 # --- file edits ---------------------------------------------------------------
 
 
@@ -909,7 +1507,8 @@ def check_edit(args: Mapping, path: pathlib.Path, home: pathlib.Path) -> Verdict
     olds = [old for old in olds if old]
     news = [new for new in news if new]
     written = '\n'.join(text for text in [new_text, *news] if text)
-    verdict = secret_in(written, f'the text being written to {path.name}')
+    verdict = secret_in(written, f'the text being written to {path.name}') or (
+        edit_dashes(path, new_text, olds, news) if EM_DASH in written else None)
     if verdict:
         return verdict
     if path.name in ('COMMIT_EDITMSG', 'MERGE_MSG'):
@@ -943,13 +1542,14 @@ def check_edit(args: Mapping, path: pathlib.Path, home: pathlib.Path) -> Verdict
 
 def check_registration(path: pathlib.Path, new_text: str | None, olds: list[str],
                        news: list[str]) -> Verdict | None:
-    """An edit to a shared settings file that drops the guard or switches every hook off."""
+    """An edit to a shared settings file that drops one of the guard's hooks or switches every hook off."""
     try:
         current = path.read_text(encoding='utf-8')
     except (OSError, UnicodeDecodeError):
         current = ''
     if new_text is not None:
-        if 'intelligence-guard' in current and 'intelligence-guard' not in new_text:
+        # Each registration names the guard once: the pre-tool hook, and in Claude Code the compaction reminder.
+        if new_text.count('intelligence-guard') < current.count('intelligence-guard'):
             return tampers(path)
         added = new_text
     else:
@@ -973,10 +1573,13 @@ def check_patch(patch: str, cwd: pathlib.Path, home: pathlib.Path) -> Verdict | 
         owned, shared = guard_files(home)
         if path in owned or (path in shared and 'intelligence-guard' in body):
             return tampers(path)
-        if not str(path).endswith(BLOCK_SUFFIXES):
-            continue
         added = [line[1:] for line in body.split('\n') if line.startswith('+')]
         removed = [line[1:] for line in body.split('\n') if line.startswith('-')]
+        if (sum(line.count(EM_DASH) for line in added) > sum(line.count(EM_DASH) for line in removed)
+                and owner_repository(nearest_folder(path))):
+            return em_dash(f'the patch for {path.name}')
+        if not str(path).endswith(BLOCK_SUFFIXES):
+            continue
         if any(MARKER.match(line) for line in added + removed):
             return block_edit(path)
         if action == 'Add':
@@ -1007,13 +1610,56 @@ def check_mcp(name: str, args: Mapping) -> Verdict | None:
     return None
 
 
+# --- the compaction reminder --------------------------------------------------
+
+
+def reminder(home: pathlib.Path) -> str:
+    """The precedence line for Invariants and the Invariants, from Claude Code's home copy of the rules; '' without."""
+    for rel in CLAUDE_COPIES:
+        try:
+            text = (home / rel).read_text(encoding='utf-8')
+        except (OSError, UnicodeDecodeError):
+            continue
+        block = next((match.group(0) for match in REGION.finditer(text) if match.group('name') == 'INTELLIGENCE'),
+                     '')
+        lines = block.replace('\r\n', '\n').split('\n')
+        precedence = next((line for line in lines if line.startswith('- Invariants:')), None)
+        start = next((index for index, line in enumerate(lines) if line.strip() == '### Invariants'), None)
+        if precedence is None or start is None:
+            continue
+        end = next((index for index in range(start + 1, len(lines)) if lines[index].startswith(('#', '<!--'))),
+                   len(lines))
+        section = '\n'.join(lines[start:end]).strip()
+        return f'{REMINDER.format(where="~/" + rel)}\n\n{precedence}\n\n{section}\n'
+    return ''
+
+
+def remind(home: pathlib.Path, stdin: str | None) -> int:
+    """Print the reminder, unless the payload names a session start other than a compaction. It never fails."""
+    try:
+        if stdin is None:
+            stdin = '' if sys.stdin is None or sys.stdin.isatty() else sys.stdin.read()
+        payload = json.loads(stdin) if stdin.strip() else {}
+        if isinstance(payload, dict) and payload.get('source', 'compact') != 'compact':
+            return 0
+        text = reminder(home)
+    except Exception:  # a reminder that cannot be read is no reason to disturb the session
+        return 0
+    print(text, end='')
+    return 0
+
+
 def main(argv: list[str] | None = None, stdin: str | None = None) -> int:
     parser = argparse.ArgumentParser(description=(__doc__ or '').split('\n', 1)[0])
     parser.add_argument('--app', default='unknown',
                         help='the app whose hook calls this: claude, codex, copilot or antigravity')
     parser.add_argument('--command', help='check one shell command by hand instead of reading a payload')
+    parser.add_argument('--remind', action='store_true',
+                        help="print the Invariants from Claude Code's home copy of the rules, for after a compaction")
     args = parser.parse_args(argv)
     home = pathlib.Path(os.environ.get('HOME') or pathlib.Path.home())
+    if args.remind:
+        return remind(home, stdin)
     if args.command is not None:
         call = Call('Bash', {'command': args.command}, pathlib.Path.cwd())
     else:
