@@ -26,15 +26,19 @@ WHAT IT BLOCKS, and the rule behind each:
 - GIT-001: a commit that git would author, or sign off, as an AI's identity;
   `git commit -s` passes whenever git's identity is your user's
 - SEC-001: a credential-shaped string in a command or in a file being
-  written, and reading a credential store in the home folder, such as a
+  written; reading a credential store in the home folder, such as a
   private SSH key or `~/.aws/credentials`, with a read tool or with a shell
-  command that prints or copies it
-- SEC-004: a download piped or substituted straight into a shell or an
-  interpreter, and a package install that names its registry on the command
-  line
-- DOC-002: an em dash written into a file, a commit message or a pull
+  command that prints, searches, archives or copies it; and a command that
+  prints a credential, such as `gh auth token`
+- SEC-004: a download a shell or an interpreter runs before anyone reads
+  it, piped, fed or substituted into it, or saved and run in the same line;
+  and a package install that names a registry on the command line, other
+  than the public default
+- DOC-002: an em dash added to a Markdown file, a commit message or a pull
   request, in a repository tannergolden owns: one with no remote yet, or
-  whose every remote is on github.com under tannergolden
+  whose every remote is on github.com under tannergolden, so never a fork
+  whose `upstream` is someone else's; a DOC-002 entry under `## Overrides`
+  in the repository's `AGENTS.md` turns it off there
 - the hub's blocks: a hand edit inside the rules block of `AGENTS.md` or
   the prompts block of `docs/Prompts.md`, which the next sync would
   overwrite anyway
@@ -153,14 +157,43 @@ READ_PATH_KEYS = PATH_KEYS + ('absolute_path',)
 PRINTERS = {'cat', 'tac', 'nl', 'less', 'more', 'most', 'head', 'tail', 'bat', 'batcat', 'view', 'base64', 'base32',
             'basenc', 'xxd', 'od', 'hexdump', 'hd', 'strings', 'grep', 'egrep', 'fgrep', 'rg', 'ag', 'sed', 'awk',
             'gawk', 'jq', 'yq'}
+# Printers whose first operand is a pattern, script or filter, not a file, unless
+# one of the first set of flags gives it; the second set are the flags that take
+# a value. A file a flag names, such as `grep -f FILE`, is read as well.
+PATTERN_FIRST = {
+    'grep': ({'-e', '--regexp', '-f', '--file'},
+             {'-e', '--regexp', '-f', '--file', '-m', '--max-count', '-A', '--after-context', '-B', '--before-context',
+              '-C', '--context', '--include', '--exclude', '--exclude-dir', '--exclude-from', '-d', '--directories',
+              '-D', '--devices', '--label', '--binary-files', '--group-separator'}),
+    'rg': ({'-e', '--regexp', '-f', '--file'},
+           {'-e', '--regexp', '-f', '--file', '-g', '--glob', '--iglob', '-t', '--type', '-T', '--type-not',
+            '--type-add', '-m', '--max-count', '-A', '--after-context', '-B', '--before-context', '-C', '--context',
+            '-j', '--threads', '-r', '--replace', '-E', '--encoding', '-d', '--max-depth', '-M', '--max-columns',
+            '--max-filesize', '--pre', '--pre-glob', '--sort', '--sortr', '--color', '--colors', '--ignore-file',
+            '--engine', '--path-separator', '--context-separator'}),
+    'ag': (set(), {'-G', '--file-search-regex', '--ignore', '-A', '--after', '-B', '--before', '-C', '--context',
+                   '-m', '--max-count', '--depth', '-p', '--path-to-ignore'}),
+    'sed': ({'-e', '--expression', '-f', '--file'}, {'-e', '--expression', '-f', '--file', '-l', '--line-length'}),
+    'awk': ({'-f', '--file'}, {'-f', '--file', '-F', '--field-separator', '-v', '--assign', '-i', '--include', '-l',
+                               '--load'}),
+    'jq': ({'-f', '--from-file'}, {'-f', '--from-file', '--indent', '-L', '--arg', '--argjson', '--slurpfile',
+                                   '--rawfile'}),
+}
+PATTERN_FIRST.update({'egrep': PATTERN_FIRST['grep'], 'fgrep': PATTERN_FIRST['grep'], 'gawk': PATTERN_FIRST['awk'],
+                      'yq': PATTERN_FIRST['jq']})
+FILE_FLAGS = {'-f', '--file', '--from-file'}  # a flag that names a file to read the pattern from
+TWO_VALUES = {'--arg', '--argjson', '--slurpfile', '--rawfile'}  # jq's flags that take a name and a value
 COPIERS = {
     'cp': {'-t', '--target-directory', '-S', '--suffix'},
     'scp': {'-i', '-F', '-P', '-c', '-l', '-o', '-S', '-J', '-D', '-X'},
     'rsync': {'-e', '--rsh', '-f', '--filter', '--exclude', '--include', '--exclude-from', '--include-from',
               '--files-from', '-T', '--temp-dir', '--partial-dir', '--log-file', '--password-file'},
 }
+# Archivers, which copy what they are given, and the flags of each that take a value.
+TAR_VALUED = set('fCTXbHKNV')
+ZIP_VALUED = {'-b', '-n', '-t', '-tt', '-P', '-Z', '-O', '--out', '-x', '-i'}
 # The stores, by their path under the home folder, and what each holds. Under
-# ~/.ssh every file is a private key but the public ones named here.
+# ~/.ssh every file is a private key unless ssh_public() says it is not.
 CREDENTIAL_FILES = {
     ('.aws', 'credentials'): 'AWS credentials',
     ('.docker', 'config.json'): 'Docker registry logins',
@@ -169,16 +202,26 @@ CREDENTIAL_FILES = {
     ('.git-credentials',): 'stored git credentials',
     ('.config', 'git', 'credentials'): 'stored git credentials',
     ('.pypirc',): 'PyPI credentials',
+    ('.npmrc',): 'npm registry tokens',
     ('.config', 'gh', 'hosts.yml'): "the GitHub CLI's token",
     ('.config', 'gcloud', 'credentials.db'): 'gcloud credentials',
     ('.config', 'gcloud', 'access_tokens.db'): 'gcloud credentials',
     ('.config', 'gcloud', 'application_default_credentials.json'): 'gcloud credentials',
+    ('.kube', 'config'): 'Kubernetes credentials',
+    ('.cargo', 'credentials'): 'a crates.io token',
+    ('.cargo', 'credentials.toml'): 'a crates.io token',
+    ('.gem', 'credentials'): 'RubyGems API keys',
+    ('.gnupg', 'secring.gpg'): 'GnuPG private keys',
 }
-SSH_PUBLIC = {'known_hosts', 'known_hosts.old', 'config', 'authorized_keys', 'authorized_keys2', 'allowed_signers'}
 AZURE_TOKENS = ('msal_token_cache', 'service_principal_entries', 'accesstokens.json', 'tokencache.dat')
-# The folders that hold a store, so copying one copies the store too.
-STORE_FOLDERS = (('.ssh',), ('.aws',), ('.azure',), ('.docker',), ('.config', 'gcloud'), ('.config', 'gh'),
-                 ('.config', 'git'))
+# The folders that hold a store and little else, so searching, archiving or
+# copying one whole, or a folder inside one, reads the store too.
+STORE_FOLDERS = (('.ssh',), ('.aws',), ('.azure',), ('.docker',), ('.gnupg',), ('.kube',), ('.config', 'gcloud'),
+                 ('.config', 'gh'), ('.config', 'git'))
+# The settings `aws configure get` would print that are secrets.
+AWS_SECRETS = ('aws_secret_access_key', 'aws_session_token')
+AWS_VALUED = {'--profile', '--region', '--output', '--endpoint-url', '--query', '--color', '--ca-bundle',
+              '--cli-read-timeout', '--cli-connect-timeout'}
 
 # The home folder as PowerShell and cmd name it too, and a drive's root: C:\
 # on Windows, /c/ in Git Bash.
@@ -193,16 +236,28 @@ WINDOWS_PRINTERS = {'get-content', 'gc', 'type', 'cat', 'more'}
 
 # Running a download (SEC-004): what fetches a URL, what runs code, and the
 # first letter of an interpreter's flag that hands it code inline or names a
-# module, so its input is only data.
+# module, so its input is only data. A line that names no downloader skips
+# these checks, so a long script costs no more than it must.
 DOWNLOADERS = {'curl', 'wget', 'fetch', 'http', 'https', 'xh', 'iwr', 'irm', 'invoke-webrequest',
                'invoke-restmethod'}
+DOWNLOAD_HINT = re.compile(r'\b(?:curl|wget|fetch|xh|iwr|irm|invoke-webrequest|invoke-restmethod)\b'
+                           r'|\bhttps?(?=[\s\'"]|$)|downloadstring', re.I)
 CODE_RUNNERS = re.compile(r'(?:ba|da|z|k|mk|a|c|tc|fi)?sh|python[0-9.]*|pypy[0-9.]*|perl|ruby|node(?:js)?|php|lua')
 INLINE = {'python': 'cm', 'pypy': 'cm', 'perl': 'eE', 'ruby': 'e', 'node': 'ep', 'php': 'rfBRFE', 'lua': 'e'}
-PS_RUNS = re.compile(r'(?:^|[|;&({])\s*(?P<runner>iex|invoke-expression)\b', re.I | re.M)
-PS_DOWNLOADS = re.compile(r'\b(?P<tool>iwr|irm|invoke-webrequest|invoke-restmethod|curl|wget|start-bitstransfer)\b'
+# The flags of a shell or interpreter that take a value, so the word after one is not the script it runs.
+RUNNER_VALUED = {'sh': {'-o', '+o', '-O', '+O', '--rcfile', '--init-file'}, 'python': {'-W', '-X'},
+                 'pypy': {'-W', '-X'}, 'perl': {'-I', '-M', '-m'}, 'ruby': {'-I', '-r'}, 'php': {'-c', '-d'},
+                 'node': {'-r', '--require', '--import', '--loader'}, 'lua': {'-l'}}
+# What a curl or wget command saves its download to, and the short flags of each that take a value.
+CURL_VALUED = 'AbcCdDeEFHKmoPQrtTuUwxXyYz'
+WGET_VALUED = 'OoaPUtTweiBlARDIXQ'
+# PowerShell's downloaders, whose output `iex` would run.
+PS_DOWNLOADERS = {'iwr', 'irm', 'invoke-webrequest', 'invoke-restmethod', 'curl', 'wget'}
+PS_DOWNLOADS = re.compile(r'\b(?P<tool>iwr|irm|invoke-webrequest|invoke-restmethod|curl|wget)\b'
                           r'|\.(?P<method>downloadstring)\s*\(', re.I)
 # A registry named on the command line (SEC-004): each package manager's
-# install commands. A bare `yarn` installs too.
+# install commands, and the variables that name a registry for one command.
+# A bare `yarn` installs too.
 PACKAGE_INSTALLS = {
     'npm': {'install', 'i', 'in', 'isntall', 'add', 'ci', 'clean-install', 'ic', 'install-clean', 'install-test',
             'it', 'install-ci-test', 'cit'},
@@ -210,12 +265,26 @@ PACKAGE_INSTALLS = {
     'yarn': {'install', 'add', ''},
     'bun': {'install', 'i', 'add', 'a'},
 }
+REGISTRY_VARIABLES = {
+    'npm': ('npm_config_registry', 'yarn_registry', 'bun_config_registry'),
+    'pip': ('pip_index_url', 'pip_extra_index_url'),
+    'uv': ('uv_index_url', 'uv_extra_index_url', 'uv_default_index', 'uv_index'),
+}
+# The public registries each tool uses when nothing names another, which may be named outright.
+DEFAULT_REGISTRIES = {'https://registry.npmjs.org', 'https://registry.yarnpkg.com', 'https://pypi.org/simple',
+                      'https://pypi.python.org/simple', 'https://rubygems.org', 'crates-io',
+                      'sparse+https://index.crates.io', 'https://github.com/rust-lang/crates.io-index'}
 
 # The em dash the standards ban (DOC-002), written as an escape so this file
-# never holds one, and the remote URLs that make a repository tannergolden's.
+# never holds one; the files it is checked in; the remote URLs that make a
+# repository tannergolden's; and the Overrides section that turns it off, in
+# the shape sync.py reads.
 EM_DASH = '\u2014'
+MARKDOWN = ('.md', '.mdx', '.markdown')
 OWNER_REMOTE = re.compile(r'(?:(?:https?|ssh|git)://(?:[^@/]+@)?github\.com(?::\d+)?/|(?:[^@/:]+@)?github\.com:)'
                           r'tannergolden/', re.I)
+OVERRIDES = re.compile(r'^## Overrides[ \t]*\n(?P<body>.*?)(?=^## |^---[ \t]*$|\Z)', re.M | re.S)
+OVERRIDE = re.compile(r'^\s*[-*]\s+`?(?P<id>[A-Z]{2,5}-\d{3})`?\s*:?\s*(?P<reason>.*)$')
 
 # Where Claude Code's home copy of the rules sits: a local install, then a
 # cloud one. `--remind` prints the Invariants from the first that has them.
@@ -298,11 +367,13 @@ def patch_of(args: Mapping) -> str | None:
 
 def decide(call: Call, home: pathlib.Path) -> Verdict | None:
     """Why this call is denied, or None to let it through."""
-    owner_repository.cache_clear()  # git lookups are cached for one call only
+    remote_urls.cache_clear()  # git lookups and AGENTS.md reads are cached for one call only
+    overridden.cache_clear()
     name = call.tool.lower()
     if 'mcp' in name or 'merge_pull_request' in name:
         # A remote tool: nothing it names is a local file, so only its intent and its text count.
-        return check_mcp(name, call.args) or secret_in(strings(call.args), 'the tool call')
+        return (check_mcp(name, call.args) or secret_in(strings(call.args), 'the tool call')
+                or mcp_dashes(name, call.args, call.cwd))
     patch = patch_of(call.args)
     if patch is not None:
         return check_patch(patch, call.cwd, home)
@@ -312,7 +383,7 @@ def decide(call: Call, home: pathlib.Path) -> Verdict | None:
         return check_command(command, call.cwd, home)
     if name in READ_TOOLS:
         # A read changes nothing, so only what it would read counts.
-        return check_read_call(call.args, call.cwd, home)
+        return check_read_call(name, call.args, call.cwd, home)
     if path is not None:
         return check_edit(call.args, resolve(path, call.cwd), home)
     return None
@@ -422,12 +493,14 @@ def simple_commands(text: str, cwd: pathlib.Path, depth: int = 0) -> list[Simple
         for inner in substitutions(token):
             found.extend(simple_commands(inner, cwd, depth + 1))
         words.append(token)
-    # A `cd` earlier in the line moves the commands after it.
+    # A `cd` earlier in the line moves the commands after it; a bare one goes home.
     here = cwd
     for command in found:
         command.cwd = here if command.cwd == cwd else command.cwd
-        if command.words[:1] == ['cd'] and len(command.words) > 1:
-            here = resolve(command.words[1], here)
+        if command.words[:1] == ['cd']:
+            targets = [word for word in command.words[1:] if word == '-' or not word.startswith('-')]
+            if targets[:1] != ['-']:  # `cd -` goes back to a folder this line never named
+                here = resolve(targets[0] if targets else '~', here)
     return found
 
 
@@ -502,8 +575,11 @@ def check_command(text: str, cwd: pathlib.Path, home: pathlib.Path) -> Verdict |
         verdict = check_simple(command, home)
         if verdict:
             return verdict
-    return (check_downloads(kept) or check_powershell_download(kept) or check_windows(kept, cwd, home)
-            or check_messages(commands, bodies) or check_api_merge(text))
+    if DOWNLOAD_HINT.search(kept):
+        verdict = check_downloads(kept) or check_powershell_download(kept)
+        if verdict:
+            return verdict
+    return check_windows(kept, cwd, home) or check_messages(commands, bodies) or check_api_merge(text)
 
 
 def check_simple(command: Simple, home: pathlib.Path) -> Verdict | None:
@@ -555,17 +631,7 @@ class Git:
                    for arg in self.args)
 
     def short(self, letter: str, takes_value: str = '') -> bool:
-        """Whether a short flag appears, alone or clustered (`-sn`), before any value it holds."""
-        for arg in self.args:
-            if arg == '--':
-                return False
-            if arg.startswith('-') and not arg.startswith('--') and len(arg) > 1:
-                for char in arg[1:]:
-                    if char == letter:
-                        return True
-                    if char in takes_value:
-                        break
-        return False
+        return short_flag(self.args, letter, takes_value)
 
     def positionals(self, valued: Iterable[str] = ()) -> list[str]:
         found, skip = [], False
@@ -1008,6 +1074,15 @@ def under_home(path: pathlib.Path, home: pathlib.Path) -> pathlib.PurePath | Non
         return None
 
 
+def ssh_public(parts: tuple[str, ...]) -> bool:
+    """Whether a path under ~/.ssh, in lowercase parts, is one of its public files: settings, host keys, public
+    keys, and anything in a `*.d` folder. Every other file there is taken for a private key."""
+    name = parts[-1]
+    return (name.startswith(('config', 'known_hosts', 'authorized_keys', 'allowed_signers'))
+            or name in ('environment', 'rc') or name.endswith(('.pub', '.conf'))
+            or any(part.endswith('.d') for part in parts[1:]))
+
+
 def credential_store(path: pathlib.Path, home: pathlib.Path) -> str | None:
     """What a credential store in the home folder holds, when `path` is one."""
     relative = under_home(path, home)
@@ -1015,36 +1090,44 @@ def credential_store(path: pathlib.Path, home: pathlib.Path) -> str | None:
     if not parts:
         return None
     if parts[0] == '.ssh' and len(parts) > 1:
-        public = parts[-1].endswith('.pub') or parts[-1] in SSH_PUBLIC or 'config.d' in parts
-        return None if public else 'a private SSH key'
+        return None if ssh_public(parts) else 'a private SSH key'
     if parts[:3] == ('.config', 'gcloud', 'legacy_credentials') and len(parts) > 3:
         return 'gcloud credentials'
+    if parts[:2] == ('.gnupg', 'private-keys-v1.d') and len(parts) > 2:
+        return 'GnuPG private keys'
     if len(parts) == 2 and parts[0] == '.azure' and parts[1].startswith(AZURE_TOKENS):
         return 'Azure tokens'
     return CREDENTIAL_FILES.get(parts)
 
 
-def holds_store(path: pathlib.Path, home: pathlib.Path) -> str | None:
-    """What a folder holds when a credential store sits inside it; the home folder and those above it count."""
+def holds_store(path: pathlib.Path, home: pathlib.Path, above: bool = True) -> str | None:
+    """What a folder holds when a credential store sits inside it: a store's folder, one inside it, or one that
+    holds it. With `above`, the home folder and the folders above it count too."""
     folder, base = os.path.normpath(str(path)), os.path.normpath(str(home))
-    if base == folder or base.startswith(folder.rstrip(os.sep) + os.sep):
+    if above and (base == folder or base.startswith(folder.rstrip(os.sep) + os.sep)):
         return 'every credential store in the home folder'
     relative = under_home(path, home)
     parts = tuple(part.lower() for part in relative.parts) if relative else ()
-    if parts and any(parts == store[:len(parts)] for store in STORE_FOLDERS):
-        return 'credential stores'
+    if not parts:
+        return None
+    for store in STORE_FOLDERS:
+        if parts == store[:len(parts)]:
+            return 'credential stores'
+        if parts[:len(store)] == store and not (store == ('.ssh',) and ssh_public(parts)):
+            return 'credential stores'
     return None
 
 
-def stores_named(raw: str, cwd: pathlib.Path, home: pathlib.Path,
-                 whole: bool = False) -> tuple[str, str] | None:
-    """Where a path word points and what it holds, when that is a credential store, or with `whole` a folder of one."""
+def stores_named(raw: str, cwd: pathlib.Path, home: pathlib.Path, whole: bool = False,
+                 above: bool = True) -> tuple[str, str] | None:
+    """Where a path word points and what it holds, when that is a credential store, or with `whole` a folder of one
+    (`above` as holds_store takes it)."""
     path = resolve(portable(raw), cwd)
     paths = [path]
     if any(char in raw for char in '*?['):
         paths = [pathlib.Path(name) for name in glob.glob(str(path))] or paths
     for each in paths:
-        kind = credential_store(each, home) or (holds_store(each, home) if whole else None)
+        kind = credential_store(each, home) or (holds_store(each, home, above) if whole else None)
         if kind:
             relative = under_home(each, home)
             where = str(each) if relative is None else '~' if str(relative) == '.' else f'~/{relative.as_posix()}'
@@ -1058,34 +1141,184 @@ def exposes(actor: str, verb: str, where: str, kind: str) -> Verdict:
 
 
 def check_reads(command: Simple, home: pathlib.Path) -> Verdict | None:
-    """A shell command that prints or copies a credential store, or feeds one to a program on its input."""
+    """A shell command that prints, searches, archives or copies a credential store, or feeds one to a program on
+    its input."""
     for raw in command.reads:
         found = stores_named(raw, command.cwd, home)
         if found:
             return exposes('the command', 'read', *found)
-    program = os.path.basename(command.words[0])
+    program, args = os.path.basename(command.words[0]), command.words[1:]
     if program in PRINTERS:
-        for raw in bare(command.words[1:], set()):
-            found = stores_named(raw, command.cwd, home)
+        operands, recursive, hidden = printed(program, args)
+        for raw in operands:
+            # A recursive search reads every file in a folder; rg and ag skip a hidden one unless told not to.
+            found = stores_named(raw, command.cwd, home, whole=recursive, above=hidden)
             if found:
                 return exposes(f'`{program}`', 'read', *found)
+    sources: list[tuple[str, pathlib.Path]] = []
     if program in COPIERS:
-        sources = bare(command.words[1:], COPIERS[program])
-        if not (program == 'cp' and option(command.words[1:], '-t', '--target-directory')):
-            sources = sources[:-1]  # the last operand is where the copy goes
-        for raw in sources:
-            found = stores_named(raw, command.cwd, home, whole=True)
-            if found:
-                return exposes(f'`{program}`', 'copy', *found)
-    return None
+        names = bare(args, COPIERS[program])
+        if not (program == 'cp' and option(args, '-t', '--target-directory')):
+            names = names[:-1]  # the last operand is where the copy goes
+        sources = [(raw, command.cwd) for raw in names]
+    elif program in ('tar', 'bsdtar', 'gtar'):
+        sources = tar_sources(args, command.cwd)
+    elif program == 'zip':
+        sources = [(raw, command.cwd) for raw in bare(args, ZIP_VALUED)[1:]]  # the first operand is the archive
+    for raw, base in sources:
+        found = stores_named(raw, base, home, whole=True)
+        if found:
+            return exposes(f'`{program}`', 'copy', *found)
+    return prints_credential(command)
 
 
-def check_read_call(args: Mapping, cwd: pathlib.Path, home: pathlib.Path) -> Verdict | None:
-    """A read tool aimed at a credential store."""
+def printed(program: str, args: list[str]) -> tuple[list[str], bool, bool]:
+    """The files a printer reads, whether it reads folders whole, and whether it reads their hidden files too.
+
+    A grep, sed, awk or jq takes its pattern, script or filter as its first
+    operand, unless a flag gives it, and a flag such as `grep -f` names a file
+    it reads as well. A recursive grep, rg or ag with no file reads the
+    folder it runs in.
+    """
+    if program not in PATTERN_FIRST:
+        return bare(args, set()), False, True
+    given, valued = PATTERN_FIRST[program]
+    grep = program in ('grep', 'egrep', 'fgrep')
+    searcher = program in ('rg', 'ag')
+    operands: list[str] = []
+    files: list[str] = []
+    found, recursive, hidden = False, searcher, not searcher
+    index, flags = 0, True
+    while index < len(args):
+        arg = args[index]
+        index += 1
+        if not flags or arg == '-' or not arg.startswith('-'):
+            operands.append(arg)
+            continue
+        if arg == '--':
+            flags = False
+            continue
+        if arg.startswith('--'):
+            name, equals, value = arg.partition('=')
+            if name in valued and not equals:
+                if name in TWO_VALUES:  # jq's `--arg NAME VALUE`, whose second word is the value
+                    index += 1
+                value = args[index] if index < len(args) else ''
+                index += 1
+            found = found or name in given
+            recursive = recursive or (grep and (name in ('--recursive', '--dereference-recursive') or (
+                name == '--directories' and value == 'recurse')))
+            hidden = hidden or name in ('--hidden', '--unrestricted')
+            if name in FILE_FLAGS or name in ('--slurpfile', '--rawfile'):
+                files.append(value)
+            continue
+        for position, letter in enumerate(arg[1:], 1):
+            flag = '-' + letter
+            recursive = recursive or (grep and letter in 'rR')
+            hidden = hidden or (searcher and (letter == '.' or arg.startswith('-uu')
+                                              or (program == 'ag' and letter == 'u')))
+            if flag in valued:
+                attached = arg[position + 1:]
+                value = attached or (args[index] if index < len(args) else '')
+                index += 0 if attached else 1
+                found = found or flag in given
+                recursive = recursive or (grep and flag == '-d' and value == 'recurse')
+                if flag in FILE_FLAGS:
+                    files.append(value)
+                break
+    if not found:
+        operands = operands[1:]  # the pattern, script or filter
+    if recursive and not operands:
+        operands = ['.']
+    return operands + files, recursive, hidden
+
+
+def tar_sources(args: list[str], cwd: pathlib.Path) -> list[tuple[str, pathlib.Path]]:
+    """What `tar` puts into an archive it creates or adds to, each with the folder it is read from."""
+    words = list(args)
+    old_style = bool(words) and not words[0].startswith('-')
+    if old_style:
+        words[0] = '-' + words[0]  # `tar czf out.tgz dir`, whose letters take their values from the words after
+    found: list[tuple[str, pathlib.Path]] = []
+    here, creates, index = cwd, False, 0
+    while index < len(words):
+        word = words[index]
+        index += 1
+        if word.startswith('--'):
+            name, equals, value = word.partition('=')
+            creates = creates or name in ('--create', '--append', '--update', '--catenate', '--concatenate')
+            if name in ('--file', '--directory', '--files-from', '--exclude-from', '--exclude') and not equals:
+                value = words[index] if index < len(words) else ''
+                index += 1
+            if name == '--directory':
+                here = resolve(portable(value), here)
+            continue
+        if word.startswith('-') and len(word) > 1:
+            first_word = old_style and index == 1
+            for position, letter in enumerate(word[1:], 1):
+                creates = creates or letter in 'cru'
+                if letter in TAR_VALUED:
+                    attached = '' if first_word else word[position + 1:]
+                    value = attached or (words[index] if index < len(words) else '')
+                    index += 0 if attached else 1
+                    if letter == 'C':
+                        here = resolve(portable(value), here)
+                    if attached:
+                        break
+            continue
+        found.append((word, here))
+    return found if creates else []
+
+
+def prints_credential(command: Simple) -> Verdict | None:
+    """A command that prints a credential when it runs, such as `gh auth token` or `aws configure
+    export-credentials`."""
+    words = command.words
+    program, args = os.path.basename(words[0]), words[1:]
+    shown = kind = ''
+    if program == 'gh':
+        group, action = [*bare(args, GH_VALUED), '', ''][:2]
+        if (group, action) == ('auth', 'token'):
+            shown, kind = 'gh auth token', "the GitHub CLI's token"
+        elif (group, action) == ('auth', 'status') and ('--show-token' in args or '-t' in args):
+            shown, kind = f'gh auth status {"-t" if "-t" in args else "--show-token"}', "the GitHub CLI's token"
+    elif program == 'git':
+        git = parse_git(command)
+        if git is not None and ((git.sub == 'credential' and git.args[:1] == ['fill'])
+                                or (git.sub.startswith('credential-') and 'get' in git.args)):
+            shown, kind = f'git {git.sub} {git.args[0]}', 'stored git credentials'
+    elif program == 'aws':
+        plain = bare(args, AWS_VALUED)
+        if plain[:2] == ['configure', 'export-credentials'] or (
+                plain[:2] == ['configure', 'get'] and any(word.lower().endswith(AWS_SECRETS) for word in plain[2:])):
+            shown, kind = f'aws configure {plain[1]}', 'AWS credentials'
+    elif program == 'gcloud':
+        plain = bare(args, set())
+        printer = next((word for word in plain if word in ('print-access-token', 'print-identity-token')), '')
+        if plain[:1] == ['auth'] and printer:
+            shown, kind = f'gcloud auth {printer}', 'a gcloud token'
+    elif program == 'az':
+        if bare(args, set())[:2] == ['account', 'get-access-token']:
+            shown, kind = 'az account get-access-token', 'an Azure access token'
+    elif program == 'security':
+        plain = bare(args, {'-p'})
+        flag = next((word for word in args if word in ('-w', '-g')), '')
+        if plain[:1] in (['find-generic-password'], ['find-internet-password']) and flag:
+            shown, kind = f'security {plain[0]} {flag}', 'a keychain password'
+    if not kind:
+        return None
+    return Verdict('SEC-001', f'`{shown}` prints {kind}',
+                   'Let the tool that owns the login use it without printing it, or ask your user')
+
+
+def check_read_call(name: str, args: Mapping, cwd: pathlib.Path, home: pathlib.Path) -> Verdict | None:
+    """A read tool aimed at a credential store, or a search tool at a folder that holds one."""
+    search = name in ('grep', 'grep_search', 'search_file_content')
     listed = args.get('paths')
     for raw in [args.get(key) for key in READ_PATH_KEYS] + (listed if isinstance(listed, list) else []):
         if isinstance(raw, str) and raw:
-            found = stores_named(raw, cwd, home)
+            # A search reads a folder whole, but, as rg does, not the home folder's hidden ones.
+            found = stores_named(raw, cwd, home, whole=search, above=False)
             if found:
                 return exposes('the call', 'read', *found)
     return None
@@ -1106,21 +1339,89 @@ def runs_unread(runner: str, downloader: str) -> Verdict:
                    'registry')
 
 
+def runs_saved(name: str, downloader: str) -> Verdict:
+    return Verdict('SEC-004', f'the command runs `{name}`, which `{downloader}` downloads earlier in the same line, '
+                   'before anyone reads it',
+                   'Download it in one command, show your user what it would run, and run it in another once they '
+                   'agree')
+
+
 def check_downloads(text: str, depth: int = 0) -> Verdict | None:
-    """A download a shell or interpreter would run unread: piped in, or handed over by `<(...)` or `$(...)`."""
+    """A download a shell or interpreter would run unread: piped in, fed in by a process substitution or a
+    here-string, substituted in by `$(...)`, or saved and then run in the same line."""
+    return downloads_in(joined(tokens(text)), depth, {})
+
+
+def joined(stream: list[str]) -> list[str]:
+    """Tokens with each unquoted `$(...)` put back into one word, as the tokenizer keeps a quoted one."""
+    found: list[str] = []
+    index = 0
+    while index < len(stream):
+        token = stream[index]
+        index += 1
+        if token.endswith('$') and index < len(stream) and stream[index] == '(':
+            inner, index = group(stream, index + 1)
+            token = f'{token}({" ".join(joined(inner))})'
+        found.append(token)
+    return found
+
+
+def group(stream: list[str], index: int, end: int | None = None) -> tuple[list[str], int]:
+    """The tokens from `index` to the `)` that closes the bracket opened just before it, and the index after it;
+    an unclosed bracket runs to `end`."""
+    end = len(stream) if end is None else end
+    level, start = 1, index
+    while index < end:
+        if stream[index] in ('(', '<(', '>('):
+            level += 1
+        elif stream[index] == ')':
+            level -= 1
+            if level == 0:
+                return stream[start:index], index + 1
+        index += 1
+    return stream[start:end], end
+
+
+def downloads_in(stream: list[str], depth: int, saved: dict[str, str]) -> Verdict | None:
+    """check_downloads on a line's tokens; `saved` maps each file a download went to, so far, to its downloader."""
     if depth > 4:
         return None
     pipeline: list[list[str]] = []
     words: list[str] = []
-    for token in [*tokens(text), ';']:
+    feeds: list[tuple[str, list[str]]] = []
+    stream = [*stream, ';']
+    index = 0
+    while index < len(stream):
+        token = stream[index]
+        index += 1
+        if token in ('<(', '>('):
+            # A process substitution: `<(curl URL)` is a file that holds the download, and `>(sh)` one whose
+            # text sh runs. After a redirection, `sh < <(curl URL)`, it is the command's input or output.
+            inner, index = group(stream, index, len(stream) - 1)  # never past the `;` that ends the line
+            verdict = downloads_in(inner, depth + 1, saved)
+            if verdict:
+                return verdict
+            feeds.append((words.pop() if words and words[-1] in ('<', '>') else token, inner))
+            continue
+        if token == '<<<' and index < len(stream) - 1 and stream[index] not in SEPARATORS:
+            # A here-string, the input of the command it ends.
+            for inner in substitutions(stream[index]):
+                verdict = check_downloads(inner, depth + 1)
+                if verdict:
+                    return verdict
+            feeds.append((token, [stream[index]]))
+            index += 1
+            continue
         if token in SEPARATORS:
             segment = peel(words)[0] if words else []
             if segment:
-                verdict = runs_download(segment, depth)
+                verdict = runs_download(segment, feeds, pipeline, depth, saved)
                 if verdict:
                     return verdict
                 pipeline.append(segment)
-            words = []
+                if command_name(segment[0]) in DOWNLOADERS:
+                    saved.update(dict.fromkeys(saved_files(segment), os.path.basename(segment[0])))
+            words, feeds = [], []
             if token not in ('|', '|&'):
                 verdict = piped_download(pipeline)
                 if verdict:
@@ -1132,6 +1433,30 @@ def check_downloads(text: str, depth: int = 0) -> Verdict | None:
             if verdict:
                 return verdict
         words.append(token)
+    return None
+
+
+def segments(stream: list[str]) -> list[list[str]]:
+    """The commands in a list of tokens, in order, without their redirections and wrappers."""
+    found: list[list[str]] = []
+    words: list[str] = []
+    for token in [*stream, ';']:
+        if token in SEPARATORS:
+            segment = peel(words)[0] if words else []
+            if segment:
+                found.append(segment)
+            words = []
+        else:
+            words.append(token)
+    return found
+
+
+def substituted_download(word: str) -> str | None:
+    """The downloader a `$(...)` or backtick substitution in one word runs, if one does."""
+    for inner in substitutions(word):
+        for command in simple_commands(inner, pathlib.Path('.')):
+            if command_name(command.words[0]) in DOWNLOADERS:
+                return os.path.basename(command.words[0])
     return None
 
 
@@ -1191,32 +1516,158 @@ def inline_code(words: list[str]) -> str | None:
     return None
 
 
-def runs_download(words: list[str], depth: int) -> Verdict | None:
-    """A shell or interpreter handed a download as a file, `bash <(curl ...)`, or as code, `sh -c "$(curl ...)"`."""
+def script_of(words: list[str]) -> str | None:
+    """The file a shell or interpreter runs: its first operand, unless code comes inline or from a module."""
     program = command_name(words[0])
-    if not (program in ('eval', 'source', '.') or CODE_RUNNERS.fullmatch(program)):
+    if program in ('source', '.'):
+        return words[1] if len(words) > 1 else None
+    if program == 'eval' or not CODE_RUNNERS.fullmatch(program) or inline_code(words) is not None:
         return None
+    valued = RUNNER_VALUED.get('sh' if program.endswith('sh') else re.match(r'[a-z]*', program).group(0), set())
+    skip = False
+    for word in words[1:]:
+        if skip or word == '--':
+            skip = False
+            continue
+        if word == '-m' and program.startswith(('python', 'pypy')):
+            return None  # a module, from wherever the interpreter finds one
+        if word.startswith(('-', '+')) and len(word) > 1:
+            skip = word in valued
+            continue
+        return word
+    return None
+
+
+def saved_files(words: list[str]) -> list[str]:
+    """Where a curl or wget command saves what it downloads; standard output is nowhere."""
+    program, args = command_name(words[0]), words[1:]
+    names = [re.sub(r'[?#].*$', '', arg).rstrip('/').rsplit('/', 1)[-1]
+             for arg in args if re.match(r'(?:https?|ftp)://', arg, re.I)]
+    if program == 'curl':
+        found = short_values(args, 'o', CURL_VALUED) + values(args, '--output')
+        if short_flag(args, 'O', CURL_VALUED) or '--remote-name' in args or '--remote-name-all' in args:
+            found += names
+    elif program == 'wget':
+        found = short_values(args, 'O', WGET_VALUED) + values(args, '--output-document') or names
+    else:
+        return []
+    return [os.path.normpath(os.path.expanduser(name)) for name in found if name and name != '-']
+
+
+def runs_download(words: list[str], feeds: list[tuple[str, list[str]]], pipeline: list[list[str]], depth: int,
+                  saved: dict[str, str]) -> Verdict | None:
+    """A download handed to a shell or interpreter as a file, `bash <(curl ...)`, as its input, `sh < <(curl ...)`
+    or `bash <<< "$(curl ...)"`, or as code, `sh -c "$(curl ...)"`; a download written into one, `curl ... >
+    >(sh)`; or a file a download saved earlier in the line, run."""
+    program = command_name(words[0])
     runner = os.path.basename(words[0])
-    for index, word in enumerate(words[:-1]):
-        if word == '<(' and command_name(words[index + 1]) in DOWNLOADERS:
-            return runs_unread(runner, os.path.basename(words[index + 1]))
+    code_runner = program in ('eval', 'source', '.') or bool(CODE_RUNNERS.fullmatch(program))
+    fetched = next((os.path.basename(segment[0]) for segment in [*pipeline, words]
+                    if command_name(segment[0]) in DOWNLOADERS), None)
+    for kind, inner in feeds:
+        if kind in ('<', '<(', '<<<'):
+            source = substituted_download(inner[0]) if kind == '<<<' else next(
+                (os.path.basename(segment[0]) for segment in segments(inner)
+                 if command_name(segment[0]) in DOWNLOADERS), None)
+            if source and (code_runner if kind == '<(' else runs_input(words)):
+                return runs_unread(runner, source)
+            if kind == '<<<' and runs_input(words):
+                verdict = check_downloads(inner[0], depth + 1)  # a here-string a shell runs is code
+                if verdict:
+                    return verdict
+        elif fetched:
+            sinks = segments(inner)  # what the command writes goes to the input of the first command inside
+            if sinks and runs_input(sinks[0]):
+                return runs_unread(os.path.basename(sinks[0][0]), fetched)
+    if not code_runner:
+        name = os.path.normpath(os.path.expanduser(words[0]))
+        return runs_saved(words[0], saved[name]) if '/' in words[0] and name in saved else None
+    script = script_of(words)
+    if script is not None and os.path.normpath(os.path.expanduser(script)) in saved:
+        return runs_saved(script, saved[os.path.normpath(os.path.expanduser(script))])
     code = inline_code(words)
     if code is None:
         return None
-    for inner in substitutions(code):
-        for command in simple_commands(inner, pathlib.Path('.')):
-            if command_name(command.words[0]) in DOWNLOADERS:
-                return runs_unread(runner, os.path.basename(command.words[0]))
-    return check_downloads(code, depth + 1)
-
-
-def check_powershell_download(text: str) -> Verdict | None:
-    """`iex` or `Invoke-Expression` running what `iwr`, `irm` or a WebClient downloads."""
-    runs = PS_RUNS.search(text)
-    fetched = PS_DOWNLOADS.search(text) if runs else None
-    if runs and fetched:
-        return runs_unread(runs.group('runner'), fetched.group('tool') or fetched.group('method'))
+    source = substituted_download(code)
+    if source:
+        return runs_unread(runner, source)
+    if program == 'eval' or program.endswith('sh'):
+        # Only a shell's code is a shell line; an interpreter's would cost a parse and find nothing.
+        return downloads_in(joined(tokens(code)), depth + 1, saved)
     return None
+
+
+def check_powershell_download(text: str, depth: int = 0) -> Verdict | None:
+    """`iex` or `Invoke-Expression`, as a statement's command, running what `iwr`, `irm` or a WebClient downloads:
+    piped into it, or handed to it as its argument. Quoted text is never a command."""
+    if depth > 3:
+        return None
+    for pipeline in powershell_pipelines(text):
+        fetched = ''
+        for element in pipeline:
+            commands = [match for match in element if match.group(0) not in ('(', ')')]
+            if not commands:
+                continue
+            program = unquoted(commands[0].group(0))
+            if command_name(program) in ('iex', 'invoke-expression'):
+                # What iex runs is its argument, code or an expression that makes code.
+                found = PS_DOWNLOADS.search(text, commands[0].end(), element[-1].end())
+                if fetched or found:
+                    return runs_unread(program, fetched or found.group('tool') or found.group('method'))
+            inner = windows_inner([unquoted(match.group(0)) for match in commands])
+            if inner is not None:
+                verdict = check_powershell_download(inner, depth + 1)
+                if verdict:
+                    return verdict
+            fetched = fetched or ps_fetches(element)
+    return None
+
+
+def powershell_pipelines(text: str) -> list[list[list[re.Match]]]:
+    """Each pipeline in a cmd or PowerShell line, as its commands, each a list of tokens: a bracket keeps what it
+    holds in the command it is part of, and quoted text stays in one token."""
+    pipelines: list[list[list[re.Match]]] = []
+    pipeline: list[list[re.Match]] = []
+    element: list[re.Match] = []
+    level = 0
+    for match in WINDOWS_WORD.finditer(text):
+        token = match.group(0)
+        if token == '(':
+            level += 1
+        elif token == ')':
+            level = max(level - 1, 0)
+        elif level == 0 and token in ('|', ';', '&&', '||', '&', '\n'):
+            if element:
+                pipeline.append(element)
+            element = []
+            if token != '|':
+                if pipeline:
+                    pipelines.append(pipeline)
+                pipeline = []
+            continue
+        element.append(match)
+    if element:
+        pipeline.append(element)
+    if pipeline:
+        pipelines.append(pipeline)
+    return pipelines
+
+
+def ps_fetches(element: list[re.Match]) -> str:
+    """The downloader one PowerShell command runs, as a command of its own or a WebClient's DownloadString; ''."""
+    previous = '('
+    for match in element:
+        token = match.group(0)
+        if previous in ('(', '{') and command_name(unquoted(token).lstrip('{')) in PS_DOWNLOADERS:
+            return unquoted(token).lstrip('{')
+        if '.downloadstring' in re.sub(r'"[^"]*"?|\'[^\']*\'?', '', token).lower():
+            return 'DownloadString'
+        previous = token
+    return ''
+
+
+def unquoted(word: str) -> str:
+    return word.replace('"', '').replace("'", '')
 
 
 def option(args: list[str], *names: str) -> str | None:
@@ -1228,41 +1679,56 @@ def option(args: list[str], *names: str) -> str | None:
     return None
 
 
+def option_values(args: list[str], *names: str) -> list[tuple[str, str]]:
+    """Each of these long options given, `--name value` or `--name=value`, with its value."""
+    found = []
+    for index, arg in enumerate(args):
+        name, equals, value = arg.partition('=')
+        if name in names:
+            found.append((name, value if equals else (args[index + 1] if index + 1 < len(args) else '')))
+    return found
+
+
 def check_install(command: Simple) -> Verdict | None:
-    """A package install that names its registry on the command line, not the one the project configures."""
+    """A package install that names a registry on the command line, other than the public one its tool uses when
+    nothing names another."""
     program, args = os.path.basename(command.words[0]), command.words[1:]
     if re.fullmatch(r'python[0-9.]*|py', program) and args[:2] == ['-m', 'pip']:
         program, args = 'pip', args[2:]
-    elif program == 'uv' and args[:1] == ['pip']:
-        program, args = 'uv pip', args[1:]
+    elif program == 'uv' and args[:1] in (['pip'], ['tool']):
+        program, args = f'uv {args[0]}', args[1:]
     elif re.fullmatch(r'pip[0-9.]*', program):
         program = 'pip'
-    variables = {key.lower() for key in command.env}
-    found, sub = None, ''
+    variables = {key.lower(): value for key, value in command.env.items()}
+    named: list[tuple[str, str]] = []  # what names a registry, and the registry it names
+    sub = ''
     if program in PACKAGE_INSTALLS:
         sub = next(iter(bare(args, {'--registry', '--prefix', '-C', '--dir', '-w', '--workspace', '--filter',
                                     '--cwd'})), '')
         if sub in PACKAGE_INSTALLS[program]:
-            found = option(args, '--registry') or ('npm_config_registry' if 'npm_config_registry' in variables
-                                                   else None)
-    elif program in ('pip', 'uv pip'):
-        sub = next(iter(bare(args, {'--proxy', '--cache-dir', '--log', '--python', '-i', '--index-url',
-                                    '--extra-index-url', '--index', '--default-index'})), '')
-        names = ('--index-url', '--extra-index-url') + (('--index', '--default-index') if program == 'uv pip' else ())
-        named = {'pip': ('pip_index_url', 'pip_extra_index_url'),
-                 'uv pip': ('uv_index_url', 'uv_extra_index_url', 'uv_index', 'uv_default_index')}[program]
-        if sub == 'install':
-            found = option(args, *names) or ('-i' if short_index(args) else None) or next(
-                (name.upper() for name in named if name in variables), None)
+            scoped = {arg.partition('=')[0] for arg in args if re.fullmatch(r'--@[^:=\s]+:registry',
+                                                                            arg.partition('=')[0])}
+            named = option_values(args, '--registry', *scoped) + variables_of(variables, 'npm')
+    elif program in ('pip', 'pipx', 'uv', 'uv pip', 'uv tool'):
+        sub = next(iter(bare(args, {'--proxy', '--cache-dir', '--log', '--python', '-p', '-i', '--index-url',
+                                    '--extra-index-url', '--index', '--default-index', '--pip-args', '--suffix'})), '')
+        if (program, sub) in (('pip', 'install'), ('pipx', 'install'), ('uv', 'add'), ('uv pip', 'install'),
+                              ('uv tool', 'install')):
+            uv = program.startswith('uv')
+            named = option_values(args, '--index-url', '--extra-index-url', *(
+                ('--index', '--default-index') if uv else ()))
+            named += [('-i', value) for value in short_values(args, 'i', 'rcefipt' if uv else 'rcetfi')]
+            named += variables_of(variables, 'uv' if uv else 'pip')
     elif program == 'gem':
         sub = next(iter(bare(args, set())), '')
         if sub == 'install':
-            found = option(args, '--source', '-s')
+            named = option_values(args, '--source') + [('-s', value) for value in values(args, '-s')]
     elif program == 'cargo':
         sub = next(iter(word for word in bare(args, {'-Z', '--config', '--color', '-C'})
                         if not word.startswith('+')), '')
-        if sub == 'install':
-            found = option(args, '--index', '--registry')
+        if sub in ('install', 'add'):
+            named = option_values(args, '--index', '--registry')
+    found = next((name for name, value in named if not default_registry(value)), None)
     if found is None:
         return None
     shown = ' '.join(part for part in (program, sub) if part)
@@ -1272,16 +1738,15 @@ def check_install(command: Simple) -> Verdict | None:
                    'there')
 
 
-def short_index(args: list[str]) -> bool:
-    """Whether pip's `-i` is given, alone or in a cluster such as `-qi`."""
-    for arg in args:
-        if arg.startswith('-') and not arg.startswith('--'):
-            for char in arg[1:]:
-                if char == 'i':
-                    return True
-                if char in 'rcetf':  # a flag that takes a value; the rest of the word is that value
-                    break
-    return False
+def variables_of(variables: Mapping[str, str], tool: str) -> list[tuple[str, str]]:
+    """The variables set for one command that name a registry for this tool, with their values."""
+    return [(name.upper(), variables[name]) for name in REGISTRY_VARIABLES[tool] if name in variables]
+
+
+def default_registry(value: str) -> bool:
+    """Whether a registry named on the command line is the public one its tool uses anyway."""
+    url = re.sub(r'^[\w.-]+=(?=[a-z]+:)', '', value.strip('\'"'), flags=re.I)  # uv's `--index name=URL`
+    return url.rstrip('/').lower() in DEFAULT_REGISTRIES
 
 
 # --- cmd and PowerShell -------------------------------------------------------
@@ -1301,25 +1766,40 @@ def windows_statements(text: str, depth: int = 0) -> list[list[str]]:
     return found
 
 
-def windows_opened(words: list[str], depth: int) -> list[list[str]]:
-    """One statement, or the statements it hands to `cmd /c` or `powershell -Command`."""
+def windows_inner(words: list[str]) -> str | None:
+    """The line a statement hands to `cmd /c` or `powershell -Command`, if it does."""
     program = command_name(words[0])
     for index, word in enumerate(words[1:], 1):
         word = word.lower()
-        nested = (program == 'cmd' and word in ('/c', '/k')) or (
-            program in ('powershell', 'pwsh') and len(word) > 1 and '-command'.startswith(word))
-        if nested and depth < 3:
-            return windows_statements(' '.join(words[index + 1:]), depth + 1)
+        if (program == 'cmd' and word in ('/c', '/k')) or (
+                program in ('powershell', 'pwsh') and len(word) > 1 and '-command'.startswith(word)):
+            return ' '.join(words[index + 1:])
+    return None
+
+
+def windows_opened(words: list[str], depth: int) -> list[list[str]]:
+    """One statement, or the statements it hands to `cmd /c` or `powershell -Command`."""
+    inner = windows_inner(words)
+    if inner is not None and depth < 3:
+        return windows_statements(inner, depth + 1)
     return [words]
 
 
 def check_windows(text: str, cwd: pathlib.Path, home: pathlib.Path) -> Verdict | None:
     """What cmd and PowerShell spell their own way: a recursive delete of a root, drive or home folder, and
-    printing a credential store."""
+    printing a credential store. A `cd` moves the statements after it, as in the shell pass."""
+    here = cwd
     for words in windows_statements(text):
         program = command_name(words[0])
+        if program in ('cd', 'chdir', 'set-location', 'sl', 'pushd'):
+            # The last word that is not a flag: `cd /d D:\x` and `Set-Location -Path x` name the folder last.
+            targets = [word for word in words[1:] if not word.startswith('-') and not re.fullmatch(r'/[a-z]', word,
+                                                                                                    re.I)]
+            if targets and targets[-1] != '-':
+                here = resolve(portable(targets[-1]), here)
+            continue
         if program in WINDOWS_DELETES:
-            verdict = windows_delete(words, cwd, home)
+            verdict = windows_delete(words, here, home)
             if verdict:
                 return verdict
         if program in WINDOWS_PRINTERS:
@@ -1329,7 +1809,7 @@ def check_windows(text: str, cwd: pathlib.Path, home: pathlib.Path) -> Verdict |
                     # A flag, or where output goes: `> file` writes it, and never reads it.
                     redirected = bool(re.fullmatch(r'\d*>>?', raw))
                     continue
-                found = stores_named(raw, cwd, home)
+                found = stores_named(raw, here, home)
                 if found:
                     return exposes(f'`{words[0]}`', 'read', *found)
     return None
@@ -1369,18 +1849,55 @@ def windows_delete(words: list[str], cwd: pathlib.Path, home: pathlib.Path) -> V
 
 
 @functools.lru_cache(maxsize=None)
-def owner_repository(folder: str) -> bool:
-    """Whether the repository holding `folder` is tannergolden's: no remote yet, or every remote on GitHub under
-    tannergolden. Outside a repository it is no one's, so nothing is checked there."""
+def remote_urls(folder: str) -> tuple[str, ...] | None:
+    """Each remote's URL in the repository that holds `folder`: none yet, or None outside a repository."""
     try:
         done = subprocess.run(['git', '-C', folder, 'config', '--local', '--get-regexp', r'^remote\..*\.url$'],
                               capture_output=True, text=True, timeout=5, check=False)
     except (OSError, subprocess.SubprocessError):
+        return None
+    if done.returncode not in (0, 1):
+        return None  # 1 is a repository with no remote yet; 128 is no repository at all
+    return tuple(line.split(None, 1)[-1] for line in done.stdout.splitlines() if line.strip())
+
+
+def owner_repository(folder: str) -> bool:
+    """Whether the repository holding `folder` is tannergolden's: no remote yet, or every remote on GitHub under
+    tannergolden. A fork, whose `upstream` is someone else's, is not, and outside a repository nothing is."""
+    urls = remote_urls(folder)
+    return urls is not None and all(OWNER_REMOTE.match(url) for url in urls)
+
+
+@functools.lru_cache(maxsize=None)
+def overridden(folder: str, rule: str) -> bool:
+    """Whether the `AGENTS.md` at the root of the repository holding `folder` names `rule` under `## Overrides`, in
+    the shape sync.py reads: an entry such as `- DOC-002: reason`, with HTML comments left out."""
+    here = pathlib.Path(folder)
+    for root in (here, *here.parents):
+        if (root / '.git').exists():
+            break
+    else:
         return False
-    if done.returncode == 1:
-        return True  # a repository with no remote yet; 128 means no repository at all
-    urls = [line.split(None, 1)[-1] for line in done.stdout.splitlines() if line.strip()]
-    return done.returncode == 0 and bool(urls) and all(OWNER_REMOTE.match(url) for url in urls)
+    try:
+        text = (root / 'AGENTS.md').read_text(encoding='utf-8').replace('\r\n', '\n')
+    except (OSError, UnicodeDecodeError):
+        return False
+    section = OVERRIDES.search(text)
+    body = re.sub(r'<!--.*?-->', '', section.group('body'), flags=re.S) if section else ''
+    return any(entry.group('id') == rule for entry in map(OVERRIDE.match, body.splitlines()) if entry)
+
+
+def dash_banned(folder: str, repository: tuple[str, str] | None = None) -> bool:
+    """Whether DOC-002 holds where an em dash would go: in a repository tannergolden owns, unless its `AGENTS.md`
+    overrides the rule. A repository a command or tool names, as (owner, name), counts in place of the folder's;
+    the folder's override still counts when the folder is a clone of it."""
+    if repository is None:
+        return owner_repository(folder) and not overridden(folder, 'DOC-002')
+    owner, name = repository
+    if owner.lower() != 'tannergolden':
+        return False
+    clone = re.compile(rf'[/:]tannergolden/{re.escape(name)}(?:\.git)?/?$', re.I)
+    return not (any(clone.search(url) for url in remote_urls(folder) or ()) and overridden(folder, 'DOC-002'))
 
 
 def nearest_folder(path: pathlib.Path) -> str:
@@ -1393,12 +1910,15 @@ def nearest_folder(path: pathlib.Path) -> str:
 
 def em_dash(where: str) -> Verdict:
     return Verdict('DOC-002', f'{where} holds an em dash (U+2014), which the standards ban in this repository',
-                   'Use a comma, colon, parentheses or a spaced hyphen; where the character itself is data, '
-                   'write the escape \\u2014')
+                   'Use a comma, colon, parentheses or a spaced hyphen instead; if your user asked for the dash, '
+                   "they can add a DOC-002 entry to the Overrides in the repository's AGENTS.md")
 
 
 def edit_dashes(path: pathlib.Path, new_text: str | None, olds: list[str], news: list[str]) -> Verdict | None:
-    """A write or an edit that adds an em dash; one kept from the text it replaces does not count."""
+    """A write or an edit that adds an em dash to a Markdown file; one kept from the text it replaces does not
+    count, and neither does code or data, where the character can be what the file is about."""
+    if not path.name.lower().endswith(MARKDOWN):
+        return None
     if new_text is not None:
         added = new_text.count(EM_DASH)
         if added:
@@ -1408,9 +1928,34 @@ def edit_dashes(path: pathlib.Path, new_text: str | None, olds: list[str], news:
                 pass
     else:
         added = sum(text.count(EM_DASH) for text in news) - sum(text.count(EM_DASH) for text in olds)
-    if added > 0 and owner_repository(nearest_folder(path)):
+    if added > 0 and dash_banned(nearest_folder(path)):
         return em_dash(f'the text being written to {path.name}')
     return None
+
+
+def mcp_dashes(name: str, args: Mapping, cwd: pathlib.Path) -> Verdict | None:
+    """An em dash in the title or body of a pull request the GitHub MCP server would open or edit, in a repository
+    tannergolden owns."""
+    if not name.endswith(('create_pull_request', 'update_pull_request')):
+        return None
+    if not any(isinstance(args.get(key), str) and EM_DASH in args[key] for key in ('title', 'body')):
+        return None
+    repository = (str(args.get('owner') or ''), str(args.get('repo') or ''))
+    return em_dash('the pull request title or body') if dash_banned(str(cwd), repository) else None
+
+
+def short_flag(args: list[str], letter: str, takes_value: str = '') -> bool:
+    """Whether a short flag appears, alone or clustered (`-sn`), before any value a letter in `takes_value` holds."""
+    for arg in args:
+        if arg == '--':
+            return False
+        if arg.startswith('-') and not arg.startswith('--') and len(arg) > 1:
+            for char in arg[1:]:
+                if char == letter:
+                    return True
+                if char in takes_value:
+                    break
+    return False
 
 
 def short_values(args: list[str], letter: str, takes_value: str) -> list[str]:
@@ -1455,8 +2000,9 @@ def check_messages(commands: list[Simple], bodies: str) -> Verdict | None:
         if not any(EM_DASH in text for text in texts):
             continue
         parts = [part for part in re.sub(r'\.git$', '', repo or '').split('/') if part]
-        owned = len(parts) > 1 and parts[-2].lower() == 'tannergolden' if repo else owner_repository(str(folder))
-        if owned:
+        banned = (len(parts) > 1 and dash_banned(str(folder), (parts[-2], parts[-1]))) if repo else dash_banned(
+            str(folder))
+        if banned:
             return em_dash(where)
     return None
 
@@ -1500,12 +2046,13 @@ def protects(path: pathlib.Path, home: pathlib.Path) -> bool:
 
 def check_edit(args: Mapping, path: pathlib.Path, home: pathlib.Path) -> Verdict | None:
     new_text = first(args, CONTENT_KEYS)
-    olds = [first(args, OLD_KEYS)] + [first(edit, OLD_KEYS) for edit in args.get('edits', [])
-                                      if isinstance(edit, dict)]
-    news = [first(args, NEW_KEYS)] + [first(edit, NEW_KEYS) for edit in args.get('edits', [])
-                                      if isinstance(edit, dict)]
-    olds = [old for old in olds if old]
-    news = [new for new in news if new]
+    edits = args.get('edits')
+    # Each replacement, in order: the text it finds, the text it puts there, and whether it replaces every copy.
+    pairs = [(first(args, OLD_KEYS), first(args, NEW_KEYS), args.get('replace_all') is True)] + [
+        (first(edit, OLD_KEYS), first(edit, NEW_KEYS), edit.get('replace_all') is True)
+        for edit in (edits if isinstance(edits, list) else []) if isinstance(edit, dict)]
+    olds = [old for old, _new, _every in pairs if old]
+    news = [new for _old, new, _every in pairs if new]
     written = '\n'.join(text for text in [new_text, *news] if text)
     verdict = secret_in(written, f'the text being written to {path.name}') or (
         edit_dashes(path, new_text, olds, news) if EM_DASH in written else None)
@@ -1575,8 +2122,9 @@ def check_patch(patch: str, cwd: pathlib.Path, home: pathlib.Path) -> Verdict | 
             return tampers(path)
         added = [line[1:] for line in body.split('\n') if line.startswith('+')]
         removed = [line[1:] for line in body.split('\n') if line.startswith('-')]
-        if (sum(line.count(EM_DASH) for line in added) > sum(line.count(EM_DASH) for line in removed)
-                and owner_repository(nearest_folder(path))):
+        if (path.name.lower().endswith(MARKDOWN)
+                and sum(line.count(EM_DASH) for line in added) > sum(line.count(EM_DASH) for line in removed)
+                and dash_banned(nearest_folder(path))):
             return em_dash(f'the patch for {path.name}')
         if not str(path).endswith(BLOCK_SUFFIXES):
             continue
