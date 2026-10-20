@@ -28,8 +28,9 @@ _Every status has a cause, and most have one command._
   `wrote`, `current` or `refused`, and exits 1 when it refused anything.
 - **The install record**, `~/.local/state/intelligence/install.json`, holds
   what `make agents-uninstall` needs to put each file back: whether the kit
-  created it, the separator it put before a block, and the earlier value of
-  Claude Code's `instructionFiles` setting.
+  created it, the separator it put before a block, the earlier value of
+  Claude Code's `instructionFiles` setting, and the ask rules the kit added
+  to Claude Code's `permissions.ask`.
 - **A cloud session's setup script** prints each problem as a line that starts
   `intelligence:`, and still exits 0, so the session starts either way.
 
@@ -40,16 +41,16 @@ shows where each app's copy lands, and `CODEX_HOME` moves Codex's.
 
 ## 🔍 What check Says
 
-| Status    | What it means                                                                                                                                      | What to do                                                                                                                                              |
-| :-------- | :------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `current` | The file matches the release                                                                                                                       | Nothing                                                                                                                                                 |
-| `missing` | The file, its block, Claude Code's `instructionFiles` setting or a guard registration is not there                                                 | `make agents`                                                                                                                                           |
-| `edited`  | A copy's block no longer matches its marker, a file the kit owns was changed, or a skill folder holds files the kit did not put there              | `make agents`, which writes it again. Keep your own notes outside the markers, and out of the files the kit owns whole                                  |
-| `stale`   | A copy's block is from another release, a guard registration differs from the one this release writes, or a retired knowledge block is still there | `make agents`, with the pin you mean to run                                                                                                             |
-| `broken`  | A file holds more than one `INTELLIGENCE` block, a hook file is not valid JSON, or a guard registration runs a Python that is gone                 | Delete the extra block, or fix the JSON, by hand. For a Python that is gone, `make agents` registers the guard again with the one that runs the install |
-| `foreign` | A file or folder sits where the kit writes one, without the kit's mark                                                                             | The installer never replaces it. Move it aside, then `make agents`                                                                                      |
-| `warning` | A shadow: a file that would hide a copy, or load the rules a second time                                                                           | Below                                                                                                                                                   |
-| `manual`  | Cursor keeps its User Rules in its own settings, where no installer reaches                                                                        | Paste the home file into Settings, Rules, User Rules, and again after a release changes the block                                                       |
+| Status    | What it means                                                                                                                                        | What to do                                                                                                                                              |
+| :-------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `current` | The file matches the release                                                                                                                         | Nothing                                                                                                                                                 |
+| `missing` | The file, its block, Claude Code's `instructionFiles` setting or one of its ask rules, a guard registration, or the compaction reminder is not there | `make agents`                                                                                                                                           |
+| `edited`  | A copy's block no longer matches its marker, a file the kit owns was changed, or a skill folder holds files the kit did not put there                | `make agents`, which writes it again. Keep your own notes outside the markers, and out of the files the kit owns whole                                  |
+| `stale`   | A copy's block is from another release, a guard registration differs from the one this release writes, or a retired knowledge block is still there   | `make agents`, with the pin you mean to run                                                                                                             |
+| `broken`  | A file holds more than one `INTELLIGENCE` block, a hook file is not valid JSON, or a guard registration runs a Python that is gone                   | Delete the extra block, or fix the JSON, by hand. For a Python that is gone, `make agents` registers the guard again with the one that runs the install |
+| `foreign` | A file or folder sits where the kit writes one, without the kit's mark                                                                               | The installer never replaces it. Move it aside, then `make agents`                                                                                      |
+| `warning` | A shadow: a file that would hide a copy, or load the rules a second time                                                                             | Below                                                                                                                                                   |
+| `manual`  | Cursor keeps its User Rules in its own settings, where no installer reaches                                                                          | Paste the home file into Settings, Rules, User Rules, and again after a release changes the block                                                       |
 
 Three files draw a `warning`, each for its own reason:
 
@@ -99,8 +100,9 @@ explain what it leaves:
 - `no install record, so only marked blocks and the kit's own files go`: the
   record is gone, so it takes out only what is unmistakably the kit's, and
   every file of yours keeps its text.
-- `Claude Code's instructionFiles setting was left as it is`: without the
-  record it cannot know what the setting was before, so it leaves it.
+- `Claude Code's instructionFiles setting and ask rules were left as they are`:
+  without the record it cannot know what the setting was before, or which ask
+  rules were yours, so it leaves them all.
 
 A `refused` line during uninstall means a file holds more than one block or is
 not valid JSON. Fix it by hand, and run it again.
@@ -171,6 +173,11 @@ inside a block the hub renders. The sentence after it says what to do instead.
 - **In Codex and Antigravity, a guard that cannot start lets the call
   through.** `make agents-check` reports a registration whose Python is gone
   as `broken`.
+- **After a compaction**, Claude Code runs the guard with `--remind`, which
+  prints the Invariants back into the conversation. To see what it prints,
+  run `python3 ~/.agents/hooks/intelligence-guard.py --remind`; it prints
+  nothing when `~/.claude/rules/intelligence.md` is missing or holds no
+  block, and `make agents` puts that copy back.
 
 ---
 

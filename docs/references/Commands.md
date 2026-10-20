@@ -102,13 +102,13 @@ python3 install.py check --home-file intelligence.md --kit-file kit.json
 python3 install.py uninstall --dry-run
 ```
 
-| Option             | With               | What it does                                                                             |
-| :----------------- | :----------------- | :--------------------------------------------------------------------------------------- |
-| `--home-file FILE` | install, check     | The release's home file; required                                                        |
-| `--kit-file FILE`  | install, check     | The release's `kit.json`; without it, the rules alone are installed or checked           |
-| `--cloud`          | install, check     | A Claude Code cloud session: Claude Code's files only, and no `instructionFiles` setting |
-| `--home DIR`       | every command      | The home folder to work in; yours by default                                             |
-| `--dry-run`        | install, uninstall | Print the plan, and change nothing                                                       |
+| Option             | With               | What it does                                                                                                                |
+| :----------------- | :----------------- | :-------------------------------------------------------------------------------------------------------------------------- |
+| `--home-file FILE` | install, check     | The release's home file; required                                                                                           |
+| `--kit-file FILE`  | install, check     | The release's `kit.json`; without it, the rules alone are installed or checked                                              |
+| `--cloud`          | install, check     | A Claude Code cloud session: Claude Code's files only, with no `instructionFiles` setting, ask rules or compaction reminder |
+| `--home DIR`       | every command      | The home folder to work in; yours by default                                                                                |
+| `--dry-run`        | install, uninstall | Print the plan, and change nothing                                                                                          |
 
 `install` exits 1 when it refused anything, and `check` when anything is not
 `current`. What each status means:

@@ -25,22 +25,24 @@ kit and installer from [`home/`](../../home/README.md), checks each against
 its SHA-256, and runs the installer, which writes byte-identical copies, one
 per app, in the shape each app reads:
 
-| Folder        | Universal rules                                                              | Setting                                                                            |
-| :------------ | :--------------------------------------------------------------------------- | :--------------------------------------------------------------------------------- |
-| `~/.agents/`  | `AGENTS.md`, the master copy every other copy is checked against             | none                                                                               |
-| `~/.claude/`  | `rules/intelligence.md`; in a Claude cloud session, `CLAUDE.md` instead      | `instructionFiles: claude-md-and-agents-md`, so AGENTS.md loads beside a CLAUDE.md |
-| `~/.codex/`   | A marked block in `AGENTS.md`, so your own text stays                        | none                                                                               |
-| `~/.gemini/`  | `AGENTS.md`, which Antigravity CLI reads natively                            | none                                                                               |
-| `~/.copilot/` | `instructions/intelligence.instructions.md`, with `applyTo: "**"`            | none                                                                               |
-| `~/.grok/`    | Nothing: Grok Build reads `~/.claude` by default, so a copy would load twice | none                                                                               |
-| `~/.cursor/`  | Nothing to write: paste the home file into Cursor's User Rules once          | none                                                                               |
+| Folder        | Universal rules                                                              | Setting                                                                                                                                                   |
+| :------------ | :--------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `~/.agents/`  | `AGENTS.md`, the master copy every other copy is checked against             | none                                                                                                                                                      |
+| `~/.claude/`  | `rules/intelligence.md`; in a Claude cloud session, `CLAUDE.md` instead      | `instructionFiles: claude-md-and-agents-md`, so AGENTS.md loads beside a CLAUDE.md; and `permissions.ask` rules, [below](#-asking-before-outward-actions) |
+| `~/.codex/`   | A marked block in `AGENTS.md`, so your own text stays                        | none                                                                                                                                                      |
+| `~/.gemini/`  | `AGENTS.md`, which Antigravity CLI reads natively                            | none                                                                                                                                                      |
+| `~/.copilot/` | `instructions/intelligence.instructions.md`, with `applyTo: "**"`            | none                                                                                                                                                      |
+| `~/.grok/`    | Nothing: Grok Build reads `~/.claude` by default, so a copy would load twice | none                                                                                                                                                      |
+| `~/.cursor/`  | Nothing to write: paste the home file into Cursor's User Rules once          | none                                                                                                                                                      |
 
 Copies, not links: links fail silently in Claude's desktop sessions and Grok's
 sandbox, and would take over files you keep notes in. `make agents-check`
 compares every copy with the release, and `make agents-uninstall` puts back
 what was there before. In a Claude cloud session, [the setup
 script](Cloud-Setup.md) does the same from a pinned release, and can never
-stop the session from starting.
+stop the session from starting. A cloud session gets no `instructionFiles`
+setting, ask rules or compaction reminder: only `CLAUDE.md`, and the kit's
+guard, skills and subagents.
 
 ---
 
@@ -49,11 +51,11 @@ stop the session from starting.
 The kit rides beside the rules in the same release, as one pinned file,
 `home/kit.json`, and the installer puts each piece where its app reads it:
 
-| Module                                       | What it is                                                                                                                             | Where it lands                                                                                                                                     |
-| :------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Guard hook, below                            | Denies force-pushes, merges, `--no-verify`, AI sign-offs, irreversible commands, credential reads and unread downloads before they run | `~/.agents/hooks/`, registered in Claude Code's settings (read by Grok and Cursor), Codex's and Antigravity's `hooks.json`, and Copilot's `hooks/` |
-| [`develop`](Skills-&-Subagents.md)           | The one skill: builds, tests and ships every other skill, and the agents and teams they dispatch                                       | `~/.agents/skills/`, `~/.claude/skills/` and Antigravity's skills folder                                                                           |
-| [Worker and Reviewer](Skills-&-Subagents.md) | Subagents that make one change, and check one without editing                                                                          | `~/.claude/agents/`, `~/.copilot/agents/` and `~/.codex/agents/`                                                                                   |
+| Module                                       | What it is                                                                                                                             | Where it lands                                                                                                                                                                                  |
+| :------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Guard hook, below                            | Denies force-pushes, merges, `--no-verify`, AI sign-offs, irreversible commands, credential reads and unread downloads before they run | `~/.agents/hooks/`, registered in Claude Code's settings (read by Grok and Cursor), Codex's and Antigravity's `hooks.json`, and Copilot's `hooks/`; Claude Code also runs it after a compaction |
+| [`develop`](Skills-&-Subagents.md)           | The one skill: builds, tests and ships every other skill, and the agents and teams they dispatch                                       | `~/.agents/skills/`, `~/.claude/skills/` and Antigravity's skills folder                                                                                                                        |
+| [Worker and Reviewer](Skills-&-Subagents.md) | Subagents that make one change, and check one without editing                                                                          | `~/.claude/agents/`, `~/.copilot/agents/` and `~/.codex/agents/`                                                                                                                                |
 
 Everything the kit writes carries its mark, so it replaces only its own files
 and `make agents-uninstall` takes back exactly what it added.
@@ -72,7 +74,7 @@ permissions decide everything else.
 | :-------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | OPS-001   | Pushing to a default or protected branch, force-pushing without `--force-with-lease`, deleting or pruning remote refs, pushing tags, and merging a pull request through `git`, `gh` or a GitHub MCP tool                                                                                                                                                                           |
 | OPS-003   | What git cannot undo, when there is something to lose: a hard reset or whole-tree checkout over uncommitted work, `git clean -f`, dropped stashes, history rewrites, and deleting data or settings. A recursive delete of a root, drive or home folder counts in every spelling: `rm -r`, and on Windows `rmdir /s`, `rd /s`, `del /s` and `Remove-Item -Recurse` with its aliases |
-| OPS-004   | `--no-verify`, hooks switched off for one command, and edits that would remove the guard or its registrations                                                                                                                                                                                                                                                                      |
+| OPS-004   | `--no-verify`, hooks switched off for one command, and edits that would remove the guard or its registrations, the compaction reminder included                                                                                                                                                                                                                                    |
 | GIT-001   | A commit git would author, or sign off, as an AI's identity                                                                                                                                                                                                                                                                                                                        |
 | SEC-001   | A credential-shaped string in a command or in a file being written, and reading a credential store in the home folder: private keys under `~/.ssh`, `~/.aws/credentials`, gcloud's credential files, Azure's tokens, `~/.docker/config.json`, `~/.netrc`, `~/.git-credentials`, `~/.pypirc` and `~/.config/gh/hosts.yml`, by a read tool or by a command that prints or copies one |
 | SEC-004   | A download piped or substituted straight into a shell or an interpreter, such as `curl ... \| sh`, `bash <(curl ...)` or `iwr ... \| iex`, and a package install that names its registry on the command line, such as `npm install --registry` or `pip install --index-url`                                                                                                        |
@@ -100,6 +102,59 @@ A few of its checks draw a careful line:
   an older one passes. Where the character itself is data, the escape
   `\u2014` writes it. Outside a git repository, and in a fork, the guard
   says nothing about it.
+
+Claude Code sends its `Read` calls to the guard too, so it can deny reading a
+credential store. That costs about 75 ms per read, measured in a cloud
+container, almost all of it Python starting and loading the script. `Grep` and
+`Glob` stay out, since every search would pay the same. Copilot and
+Antigravity send every call, and Codex reads files through its shell.
+
+---
+
+## ✋ Asking Before Outward Actions
+
+OPS-005 lets an agent push, open a pull request, comment or publish only when
+your user asked for that action. On a machine's own install, not in a cloud
+session, the installer adds Claude Code `permissions.ask` rules to
+`~/.claude/settings.json`, so Claude Code asks your user before each one in
+every permission mode, auto and `bypassPermissions` included, and denies it in
+`dontAsk` mode:
+
+| Action                           | Rules                                                                                                                                                                |
+| :------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A push                           | `Bash(git push *)`                                                                                                                                                   |
+| A pull request, drafts too       | `Bash(gh pr create *)`, and the GitHub MCP server's `create_pull_request`, `update_pull_request` and `update_pull_request_branch`                                    |
+| A comment, review or issue       | `Bash(gh pr comment *)`, `Bash(gh pr review *)`, `Bash(gh issue create *)`, `Bash(gh issue comment *)`, and the MCP server's comment, review, issue and thread tools |
+| A release                        | `Bash(gh release create *)`, `Bash(gh release upload *)`, `Bash(gh release edit *)`                                                                                  |
+| A published package              | `npm`, `pnpm` and `yarn publish`, `yarn npm publish`, `cargo publish`, `twine upload`, `gem push` and `docker push`                                                  |
+| A change made straight on GitHub | The MCP server's `create_or_update_file`, `push_files`, `delete_file`, `create_branch`, `create_repository`, `fork_repository` and `actions_run_trigger`             |
+
+The full list is `ASK_RULES` in the installer. A rule your user already has is
+never added twice, and `make agents-uninstall` takes out only the rules the kit
+added, which the install record lists. A rule matches a command as it is
+usually typed, so `git -C . push` gets past it; the guard still denies the
+pushes and merges OPS-001 forbids, in any spelling. The MCP rules name the
+server `github`, so a GitHub server added under another name needs its own.
+
+---
+
+## 🔁 After A Compaction
+
+When Claude Code compacts a long conversation, it runs each `SessionStart`
+hook whose matcher is `compact` and adds what the hook prints to the
+compacted context. On a machine's own install, the installer registers one
+that runs the guard as `intelligence-guard.py --remind`, which prints a line
+saying these rules still hold after compaction, the precedence line for
+Invariants, and the Invariants, from `~/.claude/rules/intelligence.md`. It
+prints nothing when that copy is missing or holds no block.
+
+The guard protects this registration as it protects its own: an edit that
+drops it is denied (OPS-004), and `make agents-uninstall` takes it out. To see
+what it prints:
+
+```bash
+python3 ~/.agents/hooks/intelligence-guard.py --remind
+```
 
 ---
 
