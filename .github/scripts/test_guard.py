@@ -572,7 +572,8 @@ class TestDownloads(Sandbox):
                         f'UV_EXTRA_INDEX_URL={pypi} uv pip install requests', f'UV_DEFAULT_INDEX={pypi} uv add x',
                         f'PIP_EXTRA_INDEX_URL={pypi} pip install requests', f'PIP_INDEX_URL={pypi} pipx install black',
                         f'NPM_CONFIG_REGISTRY={npm} npm ci', f'YARN_REGISTRY={npm} yarn add react',
-                        f'BUN_CONFIG_REGISTRY={npm} bun add react', f'env npm_config_registry={npm} pnpm install'):
+                        f'BUN_CONFIG_REGISTRY={npm} bun add react', f'env npm_config_registry={npm} pnpm install',
+                        f'UV_INDEX_URL={pypi} uv sync', f'uv lock --index-url {pypi}'):
             with self.subTest(command=command):
                 self.denied(command, 'SEC-004')
 
@@ -581,7 +582,8 @@ class TestDownloads(Sandbox):
                         'bun install', 'npm view left-pad --registry https://registry.example.com',
                         'npm config get registry', 'pip install requests', 'pip install -r requirements.txt',
                         'pip install -e .', 'python3 -m pip install -U pip', 'uv pip install -r requirements.txt',
-                        'gem install bundler', 'cargo install ripgrep', 'uv add requests', 'uv sync',
+                        'gem install bundler', 'cargo install ripgrep', 'uv add requests', 'uv sync', 'uv lock',
+                        'uv sync --default-index https://pypi.org/simple',
                         'cargo add serde', 'pipx install black', 'pipx run --spec black black .',
                         'npm install --registry=https://registry.npmjs.org/',
                         'npm install left-pad --registry https://registry.npmjs.org',
