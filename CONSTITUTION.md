@@ -23,7 +23,7 @@ _One sentence each. Every one with a reason._
 
 This file is the single source of the universal rules. Every repository that
 carries the intelligence stub has one root `AGENTS.md`, and between its
-`INTELLIGENCE` markers sits the block [`scripts/render.py`](scripts/render.py)
+`INTELLIGENCE` markers sits the block [`.github/scripts/render.py`](.github/scripts/render.py)
 renders from this file: the precedence in Article I, then every rule in
 Articles II to IV, each as the one sentence quoted under its ID. The home kit
 installs the same block in each app's home folder. Nothing downstream is

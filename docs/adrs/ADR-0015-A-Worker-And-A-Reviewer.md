@@ -65,7 +65,7 @@ The Workforce design put agents in tiers with an App for each, and the plan defe
 
 ### Rationale for Selection
 
-`subagents/worker.md` makes the smallest change that does the task, runs the checks that cover it, never pushes, and reports what changed, what ran, what failed and what it assumed. `subagents/reviewer.md` reads the diff, runs the checks itself, looks for the failures the rules name, verifies every finding and reports them ranked. The source names abstract tools, which `kit.py` maps to Claude Code's names and Copilot's aliases; the Reviewer gets no edit tools in either. Codex has no tool list, so its Reviewer is read-only by instruction. Grok Build and Cursor read Claude's folder.
+`kit/subagents/worker.md` makes the smallest change that does the task, runs the checks that cover it, never pushes, and reports what changed, what ran, what failed and what it assumed. `kit/subagents/reviewer.md` reads the diff, runs the checks itself, looks for the failures the rules name, verifies every finding and reports them ranked. The source names abstract tools, which `kit.py` maps to Claude Code's names and Copilot's aliases; the Reviewer gets no edit tools in either. Codex has no tool list, so its Reviewer is read-only by instruction. Grok Build and Cursor read Claude's folder.
 
 ---
 
@@ -100,7 +100,7 @@ The Workforce design put agents in tiers with an App for each, and the plan defe
 
 ## 🔗 Traceability & Links
 
-- [`subagents/`](../../subagents/README.md), explained in [Skills & Subagents](../technical/Skills-&-Subagents.md)
+- [`kit/subagents/`](../../kit/subagents/README.md), explained in [Skills & Subagents](../technical/Skills-&-Subagents.md)
 - [ADR-0012](ADR-0012-One-Pinned-Kit-For-Every-Module.md): how they ship
 
 ### 🔗 See also

@@ -25,9 +25,9 @@ A skill is a folder an agent opens only when its description matches the
 task. The universal rules stay in the always-loaded block; a skill carries a
 procedure. There is exactly one, by the owner's decision:
 
-| Skill                                      | What it does                                                                                                                                                                                                                                                     |
-| :----------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`develop`](../../skills/develop/SKILL.md) | Builds, updates and improves skills and the agents and teams they dispatch: decides whether the need is a skill at all, researches, reuses before it creates, gates every build with its validator and independent reviewers, and learns from a skill's mistakes |
+| Skill                                          | What it does                                                                                                                                                                                                                                                     |
+| :--------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`develop`](../../kit/skills/develop/SKILL.md) | Builds, updates and improves skills and the agents and teams they dispatch: decides whether the need is a skill at all, researches, reuses before it creates, gates every build with its validator and independent reviewers, and learns from a skill's mistakes |
 
 `develop` carries everything it needs in its own folder, so it works in any
 repository: its Development team in `agents/`, five agents and their roster,
@@ -35,11 +35,11 @@ and two standard-library scripts in `scripts/`. `validate.py` checks a skill,
 an agent, a team or a library against the format every app accepts, and
 `package.py` builds a `.skill` archive for the Claude app, with the team
 vendored and the same bytes on every rebuild. Their tests live in
-[`scripts/test_develop.py`](../../scripts/test_develop.py), outside the
+[`.github/scripts/test_develop.py`](../../.github/scripts/test_develop.py), outside the
 skill, so they never ship. A skill only one repository needs lives in that
 repository's `.agents/skills/` and `.claude/skills/`, never here.
 
-`scripts/kit.py` bundles every folder in [`skills/`](../../skills/README.md)
+`.github/scripts/kit.py` bundles every folder in [`kit/skills/`](../../kit/skills/README.md)
 into `home/kit.json`, and the home kit copies each one into
 `~/.agents/skills/`, `~/.claude/skills/` and Antigravity's
 `~/.gemini/antigravity-cli/skills/`, with a mark that lets it replace its own
@@ -76,15 +76,15 @@ never ships; [Evals](Evals.md) describes them.
 ## 👥 Subagents
 
 The agent hierarchy starts with two subagents a session can hand work to, in
-[`subagents/`](../../subagents/README.md):
+[`kit/subagents/`](../../kit/subagents/README.md):
 
-| Subagent                                     | What it does                                                                                         | Tools                       |
-| :------------------------------------------- | :--------------------------------------------------------------------------------------------------- | :-------------------------- |
-| [`worker.md`](../../subagents/worker.md)     | Makes one well-defined change, runs the checks that cover it, never pushes, and reports the evidence | read, search, edit, execute |
-| [`reviewer.md`](../../subagents/reviewer.md) | Reviews a change before it ships, runs the checks itself, and reports verified findings by severity  | read, search, execute       |
+| Subagent                                         | What it does                                                                                         | Tools                       |
+| :----------------------------------------------- | :--------------------------------------------------------------------------------------------------- | :-------------------------- |
+| [`worker.md`](../../kit/subagents/worker.md)     | Makes one well-defined change, runs the checks that cover it, never pushes, and reports the evidence | read, search, edit, execute |
+| [`reviewer.md`](../../kit/subagents/reviewer.md) | Reviews a change before it ships, runs the checks itself, and reports verified findings by severity  | read, search, execute       |
 
 Each source holds a `name`, a `description` and a list of abstract tools.
-`scripts/kit.py` renders it three ways, and the home kit installs each:
+`.github/scripts/kit.py` renders it three ways, and the home kit installs each:
 
 | App                   | Where                | Form                                         |
 | :-------------------- | :------------------- | :------------------------------------------- |

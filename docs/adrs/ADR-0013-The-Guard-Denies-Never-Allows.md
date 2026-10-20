@@ -65,7 +65,7 @@ Several Invariants guard against damage nobody can take back: a force-push, an a
 
 ### Rationale for Selection
 
-`scripts/guard.py` normalises each app's payload, reads a shell command the way a careful reviewer would, and denies with the rule it enforces:
+`kit/guard.py` normalises each app's payload, reads a shell command the way a careful reviewer would, and denies with the rule it enforces:
 
 - OPS-001: force-pushes without a lease, pushes to protected branches, deleted refs, tag pushes and merges, through git, gh or a GitHub MCP tool
 - OPS-003: what git cannot undo, when there is something to lose
@@ -111,7 +111,7 @@ The installer registers it in Claude Code's settings (which Grok Build and Curso
 
 - [ADR-0011](ADR-0011-The-Universal-Rule-Set.md): the Invariants it enforces
 - [Backstops & residual risk](../operations/Backstops-&-Residual-Risk.md): what still gets past it
-- [`scripts/guard.py`](../../scripts/guard.py)
+- [`kit/guard.py`](../../kit/guard.py)
 
 ### 🔗 See also
 

@@ -12,7 +12,7 @@ Nothing here touches your real home folder or the network.
 
 Run it:
 
-    python3 setup/test_cloud_setup.py
+    python3 .github/scripts/test_cloud_setup.py
 """
 
 from __future__ import annotations
@@ -25,12 +25,11 @@ import subprocess
 import tempfile
 import unittest
 
-HERE = pathlib.Path(__file__).resolve().parent
-ROOT = HERE.parent
-SCRIPT = HERE / 'claude-cloud-setup.sh'
+ROOT = pathlib.Path(__file__).resolve().parents[2]
+SCRIPT = ROOT / 'setup' / 'claude-cloud-setup.sh'
 HOME_FILE = ROOT / 'home' / 'intelligence.md'
 KIT_FILE = ROOT / 'home' / 'kit.json'
-INSTALLER = ROOT / 'scripts' / 'install.py'
+INSTALLER = ROOT / 'home' / 'install.py'
 
 
 def sha256(path: pathlib.Path) -> str:
@@ -46,12 +45,11 @@ class CloudSetup(unittest.TestCase):
         self.root = pathlib.Path(tempfile.mkdtemp(prefix='cloud-setup-test-'))
         self.home = self.root / 'home'
         self.home.mkdir()
-        release = self.root / 'release' / self.version
-        (release / 'home').mkdir(parents=True)
-        (release / 'scripts').mkdir()
-        shutil.copy(HOME_FILE, release / 'home' / 'intelligence.md')
-        shutil.copy(KIT_FILE, release / 'home' / 'kit.json')
-        shutil.copy(INSTALLER, release / 'scripts' / 'install.py')
+        self.release = self.root / 'release' / self.version
+        (self.release / 'home').mkdir(parents=True)
+        shutil.copy(HOME_FILE, self.release / 'home' / 'intelligence.md')
+        shutil.copy(KIT_FILE, self.release / 'home' / 'kit.json')
+        shutil.copy(INSTALLER, self.release / 'home' / 'install.py')
 
     def tearDown(self) -> None:
         shutil.rmtree(self.root, ignore_errors=True)
@@ -104,6 +102,13 @@ class CloudSetup(unittest.TestCase):
         self.assertIn('kit', done.stderr)
         self.assertEqual(self.claude_md().read_bytes(), HOME_FILE.read_bytes())
         self.assertFalse(self.guard().exists())
+
+    def test_a_release_from_before_home_served_the_installer_still_installs(self) -> None:
+        (self.release / 'scripts').mkdir()
+        (self.release / 'home' / 'install.py').rename(self.release / 'scripts' / 'install.py')
+        done = self.run_script(self.script(self.version, sha256(HOME_FILE), sha256(INSTALLER)))
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual(self.claude_md().read_bytes(), HOME_FILE.read_bytes())
 
     def test_running_it_twice_changes_nothing(self) -> None:
         path = self.script(self.version, sha256(HOME_FILE), sha256(INSTALLER))

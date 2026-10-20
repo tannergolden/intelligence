@@ -56,12 +56,12 @@ model call per check, twelve in a full run.
 
 Run it:
 
-    python3 probe/loader-probe.py --dry-run     # show the plan, change nothing
-    python3 probe/loader-probe.py               # every installed app
-    python3 probe/loader-probe.py --apps claude,grok
-    python3 probe/loader-probe.py --skills      # add the skill canary
-    python3 probe/loader-probe.py --keep        # set up a check by hand
-    python3 probe/loader-probe.py --cleanup     # undo --keep, or a crash
+    python3 .github/scripts/loader-probe.py --dry-run     # show the plan, change nothing
+    python3 .github/scripts/loader-probe.py               # every installed app
+    python3 .github/scripts/loader-probe.py --apps claude,grok
+    python3 .github/scripts/loader-probe.py --skills      # add the skill canary
+    python3 .github/scripts/loader-probe.py --keep        # set up a check by hand
+    python3 .github/scripts/loader-probe.py --cleanup     # undo --keep, or a crash
 """
 
 from __future__ import annotations
@@ -710,7 +710,7 @@ def explain_keep(writes: Sequence[tuple[pathlib.Path, str, str]],
         print('A correct answer names exactly one of '
               + ', '.join(f'{name}={codes[name]}' for name in SKILL_NAMES) + '.')
     print()
-    print('When you are done: python3 probe/loader-probe.py --cleanup')
+    print('When you are done: python3 .github/scripts/loader-probe.py --cleanup')
 
 
 def first_line(argv: Sequence[str]) -> str:

@@ -24,7 +24,7 @@ _One skill for now: the one that builds the rest._
 The skills the home kit installs, one folder each in the open Agent Skills
 format; for now, only [`develop/`](develop/SKILL.md). Where
 they land and the rules every skill here follows: [Skills &
-Subagents](../docs/technical/Skills-&-Subagents.md).
+Subagents](../../docs/technical/Skills-&-Subagents.md).
 
 ---
 
@@ -49,6 +49,6 @@ Subagents](../docs/technical/Skills-&-Subagents.md).
 
 <br />
 
-Built with ❤️ by the Engineering Team. Distributed under the terms in [LICENSE](../LICENSE).
+Built with ❤️ by the Engineering Team. Distributed under the terms in [LICENSE](../../LICENSE).
 
 </div>

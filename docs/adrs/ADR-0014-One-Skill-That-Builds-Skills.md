@@ -105,7 +105,7 @@ The plan moved procedures out of the always-loaded block into skills, and drafte
 
 ## 🔗 Traceability & Links
 
-- [`skills/building-skills/SKILL.md`](../../skills/building-skills/SKILL.md)
+- `skills/building-skills/SKILL.md`, since replaced by [`develop`](../../kit/skills/develop/SKILL.md) ([ADR-0021](ADR-0021-Develop-Is-The-One-Skill.md))
 - [The loader probe](../technical/The-Loader-Probe.md): the duplicate-skill canary
 - [ADR-0008](ADR-0008-Names-Without-Prefixes.md): skills are named for what they do
 

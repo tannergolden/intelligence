@@ -21,9 +21,9 @@ _Do the work. Then doubt it._
 
 ## 💡 What This Folder Is For
 
-The Worker and Reviewer subagents, one source each, which `scripts/kit.py`
+The Worker and Reviewer subagents, one source each, which `.github/scripts/kit.py`
 renders for Claude Code, Copilot and Codex. What each does and where it lands:
-[Skills & Subagents](../docs/technical/Skills-&-Subagents.md).
+[Skills & Subagents](../../docs/technical/Skills-&-Subagents.md).
 
 ---
 
@@ -49,6 +49,6 @@ renders for Claude Code, Copilot and Codex. What each does and where it lands:
 
 <br />
 
-Built with ❤️ by the Engineering Team. Distributed under the terms in [LICENSE](../LICENSE).
+Built with ❤️ by the Engineering Team. Distributed under the terms in [LICENSE](../../LICENSE).
 
 </div>

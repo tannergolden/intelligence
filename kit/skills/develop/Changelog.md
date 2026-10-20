@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**`4.0.2`**
+**`4.0.3`**
 
 Semantic versioning, `MAJOR.MINOR.PATCH`, with no leading zeros, as [SemVer 2.0.0](https://semver.org) requires. This value matches `metadata.version` in `SKILL.md`, and the validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
 
@@ -42,6 +42,10 @@ _None yet._
 ## Patch Updates
 
 > Fixes and clarifications. Most recent 4 entries.
+
+### `4.0.3` - 2026-10-20
+
+- tannergolden/intelligence keeps its universal skills in `kit/skills/` and its subagents in `kit/subagents/`, beside the guard: the places Ship names follow.
 
 ### `4.0.2` - 2026-10-20
 

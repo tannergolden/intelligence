@@ -39,8 +39,6 @@ Two files you copy out of the hub, each to its own place:
 | [`claude-cloud-setup.sh`](claude-cloud-setup.sh) | Install the universal rules into a Claude Code cloud session.                                                                                                                                 |
 | [`intelligence-sync.yml`](intelligence-sync.yml) | Keeps the universal rules for AI coding agents current in this repository's root AGENTS.md: the block between the INTELLIGENCE markers, which tannergolden/intelligence renders and releases. |
 | [`README.md`](README.md)                         | This file.                                                                                                                                                                                    |
-| [`test_cloud_setup.py`](test_cloud_setup.py)     | Tests for the Claude cloud setup script.                                                                                                                                                      |
-| [`test_stub.py`](test_stub.py)                   | Tests for the stub a repository carries, and the workflow and action it calls.                                                                                                                |
 
 <!-- AUTO-INDEX:END -->
 

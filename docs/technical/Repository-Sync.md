@@ -24,7 +24,7 @@ _The repository asks, or you push. Either way, you merge._
 Every repository carries the rules in one root `AGENTS.md`, between
 `INTELLIGENCE` markers, beside sections the repository owns, as
 [How It Works](How-It-Works.md) describes. A release reaches it by either of
-two routes, through [`scripts/sync.py`](../../scripts/sync.py):
+two routes, through [`.github/scripts/sync.py`](../../.github/scripts/sync.py):
 
 - You review each release once, in the hub.
 - **The stub.** A repository that carries it pulls each release by itself.
@@ -180,7 +180,7 @@ on purpose, pass `ARGS='--ref HEAD'`. To see what a repository's stub would
 write, run `apply` in its checkout:
 
 ```bash
-GITHUB_REPOSITORY=tannergolden/<name> python3 /path/to/intelligence/scripts/sync.py apply --dry-run
+GITHUB_REPOSITORY=tannergolden/<name> python3 /path/to/intelligence/.github/scripts/sync.py apply --dry-run
 ```
 
 ---

@@ -69,7 +69,7 @@ Taking the source away is not enough on its own. Every machine that installed a 
 
 `knowledge/`, its page and its renderer go, and the kit carries the guard, the skills and the subagents. Its format moves to 2, so an installer from before reads a newer kit as the wrong format rather than as a kit missing a key.
 
-`scripts/install.py` keeps the places the facts went as `RETIRED`. An install takes out each facts block and file an earlier release wrote, puts back the separator it added, and drops the record of it; a dry run only reports what it would take out. `check` calls a block left behind stale, and an uninstall without a record removes them too. The guard protects only the `INTELLIGENCE` block, and `develop` sends a fact about the setup to the repository's `AGENTS.md`.
+`.github/scripts/install.py` keeps the places the facts went as `RETIRED`. An install takes out each facts block and file an earlier release wrote, puts back the separator it added, and drops the record of it; a dry run only reports what it would take out. `check` calls a block left behind stale, and an uninstall without a record removes them too. The guard protects only the `INTELLIGENCE` block, and `develop` sends a fact about the setup to the repository's `AGENTS.md`.
 
 Option 2 would leave every machine with facts that no release keeps current. Option 1 keeps what the owner does not want.
 
@@ -106,8 +106,8 @@ Option 2 would leave every machine with facts that no release keeps current. Opt
 
 ## 🔗 Traceability & Links
 
-- [`scripts/install.py`](../../scripts/install.py): `RETIRED` and `retire()`
-- [`scripts/kit.py`](../../scripts/kit.py): the kit, in format 2
+- [`.github/scripts/install.py`](../../.github/scripts/install.py): `RETIRED` and `retire()`
+- [`.github/scripts/kit.py`](../../.github/scripts/kit.py): the kit, in format 2
 - [ADR-0016](ADR-0016-Knowledge-Starts-As-Public-Facts.md): the facts this supersedes
 - [ADR-0012](ADR-0012-One-Pinned-Kit-For-Every-Module.md): the kit this amends
 - [The Home Kit](../technical/The-Home-Kit.md): what the kit installs, and where

@@ -12,7 +12,7 @@ Nothing here calls GitHub.
 
 Run it:
 
-    python3 setup/test_stub.py
+    python3 .github/scripts/test_stub.py
 """
 
 from __future__ import annotations
@@ -26,14 +26,14 @@ import sys
 import tarfile
 import unittest
 
-ROOT = pathlib.Path(__file__).resolve().parent.parent
+ROOT = pathlib.Path(__file__).resolve().parents[2]
 STUB = ROOT / 'setup' / 'intelligence-sync.yml'
 WORKFLOW = ROOT / '.github' / 'workflows' / 'sync.yml'
 ACTION = ROOT / '.github' / 'actions' / 'sync' / 'action.yml'
 RELEASE = ROOT / '.github' / 'workflows' / 'cut-release.yml'
 GUIDE = ROOT / 'docs' / 'technical' / 'Repository-Sync.md'
 
-_spec = importlib.util.spec_from_file_location('sync', ROOT / 'scripts' / 'sync.py')
+_spec = importlib.util.spec_from_file_location('sync', ROOT / '.github' / 'scripts' / 'sync.py')
 sync = importlib.util.module_from_spec(_spec)
 sys.modules[_spec.name] = sync
 _spec.loader.exec_module(sync)
@@ -68,7 +68,7 @@ def imported_from_hub() -> set[str]:
     """Every file of this hub that loading sync.py loads, as the action does at the tag."""
     code = ('import pathlib, sys\n'
             'root = pathlib.Path.cwd().resolve()\n'
-            "sys.path.insert(0, str(root / 'scripts'))\n"
+            "sys.path.insert(0, str(root / '.github' / 'scripts'))\n"
             'import sync\n'
             'for module in list(sys.modules.values()):\n'
             "    where = getattr(module, '__file__', None)\n"
@@ -131,16 +131,16 @@ class TestTheStub(unittest.TestCase):
 
     def test_the_action_runs_the_script_beside_it_on_the_sync_branch(self) -> None:
         action = text(ACTION)
-        self.assertIn('"${GITHUB_ACTION_PATH}/../../../scripts/sync.py" "${args[@]}"', action)
+        self.assertIn('"${GITHUB_ACTION_PATH}/../../scripts/sync.py" "${args[@]}"', action)
         self.assertIn('args=(apply ', action)
-        self.assertEqual((ACTION.parent / '..' / '..' / '..' / 'scripts' / 'sync.py').resolve(),
-                         ROOT / 'scripts' / 'sync.py')
+        self.assertEqual((ACTION.parent / '..' / '..' / 'scripts' / 'sync.py').resolve(),
+                         ROOT / '.github' / 'scripts' / 'sync.py')
         self.assertIn(f'branch: {sync.BRANCH}', text(WORKFLOW))
 
     def test_a_release_carries_every_file_a_stub_resolves(self) -> None:
         needed = {'.github/workflows/sync.yml', '.github/actions/sync/action.yml',
                   'setup/intelligence-sync.yml', 'home/intelligence.md', *imported_from_hub()}
-        self.assertIn('scripts/kit.py', needed, 'render.py imports kit.py; the action needs both')
+        self.assertIn('.github/scripts/kit.py', needed, 'render.py imports kit.py; the action needs both')
         self.assertLessEqual(needed, required_files())
         self.assertIn('setup/claude-cloud-setup.sh', required_files(), 'the first line counts too')
 

@@ -10,7 +10,7 @@ forms to what each app parses.
 
 Run it:
 
-    python3 scripts/test_kit.py
+    python3 .github/scripts/test_kit.py
 """
 
 from __future__ import annotations
@@ -53,11 +53,11 @@ class Hub(unittest.TestCase):
 
     def setUp(self) -> None:
         self.root = pathlib.Path(tempfile.mkdtemp(prefix='kit-test-'))
-        self.write('scripts/guard.py', f'# {kit.OWNED}\nprint("guard")\n')
-        self.write('skills/processing-invoices/SKILL.md', SKILL)
-        self.write('skills/processing-invoices/references/forms.md', 'Forms.\n')
-        self.write('subagents/reviewer.md', AGENT)
-        self.write('subagents/README.md', 'The folder log, which is not an agent.\n')
+        self.write('kit/guard.py', f'# {kit.OWNED}\nprint("guard")\n')
+        self.write('kit/skills/processing-invoices/SKILL.md', SKILL)
+        self.write('kit/skills/processing-invoices/references/forms.md', 'Forms.\n')
+        self.write('kit/subagents/reviewer.md', AGENT)
+        self.write('kit/subagents/README.md', 'The folder log, which is not an agent.\n')
 
     def tearDown(self) -> None:
         shutil.rmtree(self.root, ignore_errors=True)
@@ -96,18 +96,18 @@ class TestSkills(Hub):
     def test_the_folder_name(self) -> None:
         for bad in ('Processing-Invoices', 'processing--invoices', '-invoices', 'claude-helper', 'synced'):
             with self.subTest(name=bad):
-                self.write(f'skills/{bad}/SKILL.md', SKILL.replace('processing-invoices', bad))
-                self.assertTrue(any(f'skills/{bad}' in line for line in self.problems()))
-                shutil.rmtree(self.root / 'skills' / bad)
+                self.write(f'kit/skills/{bad}/SKILL.md', SKILL.replace('processing-invoices', bad))
+                self.assertTrue(any(f'kit/skills/{bad}' in line for line in self.problems()))
+                shutil.rmtree(self.root / 'kit' / 'skills' / bad)
 
     def test_the_name_matches_the_folder(self) -> None:
-        self.write('skills/processing-invoices/SKILL.md', SKILL.replace('name: processing-invoices', 'name: other'))
+        self.write('kit/skills/processing-invoices/SKILL.md', SKILL.replace('name: processing-invoices', 'name: other'))
         self.assertProblem('name must equal the folder name')
 
     def test_frontmatter_opens_the_file_and_holds_only_portable_keys(self) -> None:
-        self.write('skills/processing-invoices/SKILL.md', '# Title\n' + SKILL)
+        self.write('kit/skills/processing-invoices/SKILL.md', '# Title\n' + SKILL)
         self.assertProblem('must open with ---')
-        self.write('skills/processing-invoices/SKILL.md', SKILL.replace('---\n\n#', 'argument-hint: x\n---\n\n#'))
+        self.write('kit/skills/processing-invoices/SKILL.md', SKILL.replace('---\n\n#', 'argument-hint: x\n---\n\n#'))
         self.assertProblem('not argument-hint')
 
     def test_the_description_triggers(self) -> None:
@@ -120,18 +120,18 @@ class TestSkills(Hub):
         }
         for text, fragment in cases.items():
             with self.subTest(fragment=fragment):
-                self.write('skills/processing-invoices/SKILL.md', text)
+                self.write('kit/skills/processing-invoices/SKILL.md', text)
                 self.assertProblem(fragment)
 
     def test_the_body_and_its_references_stay_small_and_shallow(self) -> None:
-        self.write('skills/processing-invoices/SKILL.md', SKILL + 'line\n' * 501)
+        self.write('kit/skills/processing-invoices/SKILL.md', SKILL + 'line\n' * 501)
         self.assertProblem('over 500 lines')
-        self.write('skills/processing-invoices/SKILL.md', SKILL)
-        self.write('skills/processing-invoices/references/deep/nested.md', 'Too deep.\n')
+        self.write('kit/skills/processing-invoices/SKILL.md', SKILL)
+        self.write('kit/skills/processing-invoices/references/deep/nested.md', 'Too deep.\n')
         self.assertProblem('one level below SKILL.md')
 
     def test_a_folder_without_skill_md(self) -> None:
-        self.write('skills/empty-skill/notes.md', 'No skill here.\n')
+        self.write('kit/skills/empty-skill/notes.md', 'No skill here.\n')
         self.assertProblem('has no SKILL.md')
 
 
@@ -168,7 +168,7 @@ class TestSubagents(Hub):
         }
         for text, fragment in cases.items():
             with self.subTest(fragment=fragment):
-                self.write('subagents/reviewer.md', text)
+                self.write('kit/subagents/reviewer.md', text)
                 self.assertProblem(fragment)
 
 
@@ -176,24 +176,25 @@ class TestEveryFile(Hub):
     """What holds for every file the kit carries, whatever its source."""
 
     def test_a_private_repository_is_never_named(self) -> None:
-        self.write('skills/processing-invoices/references/forms.md', 'The secrets live in tannergolden/vault.\n')
+        forms = 'kit/skills/processing-invoices/references/forms.md'
+        self.write(forms, 'The secrets live in tannergolden/vault.\n')
         self.assertProblem('tannergolden/vault')
-        self.write('skills/processing-invoices/references/forms.md', 'The rules live in tannergolden/intelligence.\n')
+        self.write(forms, 'The rules live in tannergolden/intelligence.\n')
         self.assertEqual(self.problems(), [])
 
     def test_no_dash_the_standards_ban_reaches_any_file(self) -> None:
-        self.write('skills/processing-invoices/references/forms.md', 'Forms \u2014 all of them.\n')
+        self.write('kit/skills/processing-invoices/references/forms.md', 'Forms \u2014 all of them.\n')
         self.assertProblem('en or em dash')
 
     def test_a_guard_without_the_kits_mark_is_refused(self) -> None:
-        self.write('scripts/guard.py', 'print("guard")\n')
+        self.write('kit/guard.py', 'print("guard")\n')
         self.assertProblem('must carry the line')
 
 
 class TestTheRealKit(unittest.TestCase):
     """The modules in this repository."""
 
-    root = HERE.parent
+    root = HERE.parents[1]
 
     def test_they_break_no_rule(self) -> None:
         self.assertEqual(kit.problems(self.root), [])

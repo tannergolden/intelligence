@@ -70,7 +70,7 @@ After 1.0 the plan brings back the modules it deferred: the guard hook, skills, 
 
 ### Rationale for Selection
 
-`scripts/kit.py` renders the bundle from the sources: `scripts/guard.py`, `skills/`, `subagents/` and `knowledge/public.json`. It holds each source to the strictest rule any target app enforces, so a skill with a bad name or a subagent with an unknown tool stops `make check` rather than failing silently on a machine. `render.py` writes the bundle with the other rendered files, lists it in `home/SHA256SUMS`, and prints `kit_sha256` with the other pins. The installer takes it with `--kit-file`; a pin with no kit hash, from a release before the kit, installs the rules alone. Everything the kit writes carries its mark, so the installer replaces only what is its own and `uninstall` takes back exactly what it added.
+`.github/scripts/kit.py` renders the bundle from the sources: `kit/guard.py`, `kit/skills/`, `kit/subagents/` and `knowledge/public.json`. It holds each source to the strictest rule any target app enforces, so a skill with a bad name or a subagent with an unknown tool stops `make check` rather than failing silently on a machine. `render.py` writes the bundle with the other rendered files, lists it in `home/SHA256SUMS`, and prints `kit_sha256` with the other pins. The installer takes it with `--kit-file`; a pin with no kit hash, from a release before the kit, installs the rules alone. Everything the kit writes carries its mark, so the installer replaces only what is its own and `uninstall` takes back exactly what it added.
 
 ---
 
@@ -106,7 +106,7 @@ After 1.0 the plan brings back the modules it deferred: the guard hook, skills, 
 ## 🔗 Traceability & Links
 
 - [ADR-0010](ADR-0010-Releases-Serve-Rendered-Files.md): releases serve rendered files, checked against pins
-- [`scripts/kit.py`](../../scripts/kit.py) and [`home/`](../../home/README.md), explained in [The Home Kit](../technical/The-Home-Kit.md)
+- [`.github/scripts/kit.py`](../../.github/scripts/kit.py) and [`home/`](../../home/README.md), explained in [The Home Kit](../technical/The-Home-Kit.md)
 
 ### 🔗 See also
 

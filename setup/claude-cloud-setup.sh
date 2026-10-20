@@ -51,7 +51,9 @@ main() {
   trap 'rm -rf "$dir"' EXIT
   fetch "$BASE/$VERSION/home/intelligence.md" "$dir/intelligence.md" \
     || { notice "could not download the home file for $VERSION"; return 0; }
-  fetch "$BASE/$VERSION/scripts/install.py" "$dir/install.py" \
+  # A release from before the installer moved into home/ serves it from scripts/.
+  fetch "$BASE/$VERSION/home/install.py" "$dir/install.py" 2>/dev/null \
+    || fetch "$BASE/$VERSION/scripts/install.py" "$dir/install.py" \
     || { notice "could not download the installer for $VERSION"; return 0; }
   [ "$(sha256 "$dir/intelligence.md")" = "$HOME_SHA256" ] \
     || { notice "the home file for $VERSION does not match its pin, so nothing was installed"; return 0; }

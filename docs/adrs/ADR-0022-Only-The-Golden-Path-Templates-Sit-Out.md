@@ -67,7 +67,7 @@ The vault template, tannergolden/knowledge, is a template too, and it carries th
 
 ### Rationale for Selection
 
-It is the rule the standards already apply to upkeep. Their stubs for checks, formatting, governance and maintenance sit out only in a template named `repo` or `path`, and run in any other template, the vault template among them; only a job that means nothing in any template, such as initialisation, skips them all. Keeping a block current is upkeep, so the hub now draws the line where the standards do. `left_out()` in `scripts/sync.py` reads the name from the same repository settings it already reads, and its tests hold both halves: a golden path template is skipped, and a template of its own is synced and written into.
+It is the rule the standards already apply to upkeep. Their stubs for checks, formatting, governance and maintenance sit out only in a template named `repo` or `path`, and run in any other template, the vault template among them; only a job that means nothing in any template, such as initialisation, skips them all. Keeping a block current is upkeep, so the hub now draws the line where the standards do. `left_out()` in `.github/scripts/sync.py` reads the name from the same repository settings it already reads, and its tests hold both halves: a golden path template is skipped, and a template of its own is synced and written into.
 
 Option 3 would decide a repository's part in sync by a file it may not have yet, so sync could never adopt a template, and the decision would need every repository's `AGENTS.md` before any other check. Option 1 leaves the vault template's block to go stale at every release.
 
@@ -104,7 +104,7 @@ Option 3 would decide a repository's part in sync by a file it may not have yet,
 
 ## 🔗 Traceability & Links
 
-- [`scripts/sync.py`](../../scripts/sync.py): `left_out()` and `GOLDEN_PATH_TEMPLATES`
+- [`.github/scripts/sync.py`](../../.github/scripts/sync.py): `left_out()` and `GOLDEN_PATH_TEMPLATES`
 - [ADR-0003](ADR-0003-Push-Sync-&-Owner-Merge.md): the sync this amends
 - [ADR-0019](ADR-0019-Each-Repository-Pulls-With-A-Stub.md): the stub, which applies the same rule
 - [Repository Sync](../technical/Repository-Sync.md): which repositories take part

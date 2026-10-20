@@ -13,7 +13,7 @@ anything a secret scanner would flag.
 
 Run it:
 
-    python3 scripts/test_guard.py
+    python3 .github/scripts/test_guard.py
 """
 
 from __future__ import annotations
@@ -32,10 +32,11 @@ import unittest
 from unittest import mock
 
 HERE = pathlib.Path(__file__).resolve().parent
+ROOT = HERE.parents[1]
 
 
-def load(name: str, file: str):
-    spec = importlib.util.spec_from_file_location(name, HERE / file)
+def load(name: str, path: pathlib.Path):
+    spec = importlib.util.spec_from_file_location(name, path)
     module = importlib.util.module_from_spec(spec)
     # Dataclasses look their own module up by name while the class is built.
     sys.modules[name] = module
@@ -43,8 +44,8 @@ def load(name: str, file: str):
     return module
 
 
-guard = load('guard', 'guard.py')
-render = load('render', 'render.py')
+guard = load('guard', ROOT / 'kit' / 'guard.py')
+render = load('render', HERE / 'render.py')
 
 HUMAN = 'Tanner Golden <24684994+tannergolden@users.noreply.github.com>'
 GITHUB_TOKEN = 'ghp_' + 'a1B2c3D4e5' * 4

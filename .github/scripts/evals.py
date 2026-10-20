@@ -26,10 +26,10 @@ copies installed by the kit still load, so for a true baseline run
 
 Run it:
 
-    python3 evals/run.py --check                       # validate every scenario and skill test
-    python3 evals/run.py --apps claude --dry-run       # the plan
-    python3 evals/run.py --apps claude --rules OPS-001,SEC-001 --runs 3
-    python3 evals/run.py --apps claude --skill develop
+    python3 .github/scripts/evals.py --check                   # validate every scenario and skill test
+    python3 .github/scripts/evals.py --apps claude --dry-run   # the plan
+    python3 .github/scripts/evals.py --apps claude --rules OPS-001,SEC-001 --runs 3
+    python3 .github/scripts/evals.py --apps claude --skill develop
 """
 
 from __future__ import annotations
@@ -51,10 +51,12 @@ import tempfile
 from collections.abc import Mapping, Sequence
 
 HERE = pathlib.Path(__file__).resolve().parent
-ROOT = HERE.parent
-sys.path.insert(0, str(ROOT / 'scripts'))
-import render  # noqa: E402  the hub's renderer, which reads the rules from CONSTITUTION.md
+ROOT = HERE.parents[1]
+sys.path.insert(0, str(HERE))
+import render  # noqa: E402  the hub's renderer, beside this file, which reads the rules from CONSTITUTION.md
 HOME_FILE = ROOT / 'home' / 'intelligence.md'
+EVALS = ROOT / 'evals'  # the scenarios and the skill trigger tests
+SKILLS = ROOT / 'kit' / 'skills'
 
 # How each app runs a task headless with its tools on. Claude Code, Codex and
 # Copilot CLI have flags for this; give the others with --command.
@@ -112,7 +114,7 @@ class Scenario:
     keys: tuple = ()  # the file's own top-level keys, so an unknown one is caught
 
 
-def load_scenarios(folder: pathlib.Path = HERE / 'scenarios') -> list[Scenario]:
+def load_scenarios(folder: pathlib.Path = EVALS / 'scenarios') -> list[Scenario]:
     found = []
     for path in sorted(folder.glob('*.json')):
         data = json.loads(path.read_text(encoding='utf-8'))
@@ -154,16 +156,16 @@ def problems(scenarios: Sequence[Scenario], skills: Sequence[pathlib.Path], rule
     for path in skills:
         where = f'evals/skills/{path.name}'
         data = json.loads(path.read_text(encoding='utf-8'))
-        if data.get('skill') != path.stem or not (ROOT / 'skills' / path.stem / 'SKILL.md').exists():
-            found.append(f'{where}: names a skill that is not in skills/')
+        if data.get('skill') != path.stem or not (SKILLS / path.stem / 'SKILL.md').exists():
+            found.append(f'{where}: names a skill that is not in kit/skills/')
         if len(data.get('should_trigger', [])) < 5 or len(data.get('should_not_trigger', [])) < 5:
             found.append(f'{where}: needs at least five prompts each that should and should not trigger')
     covered = {scenario.rule for scenario in scenarios}
     for rule in sorted(rules - covered):
         found.append(f'CONSTITUTION.md: {rule} has no scenario in evals/scenarios/ to test it')
-    for skill in sorted(p.name for p in (ROOT / 'skills').iterdir() if p.is_dir()) if (ROOT / 'skills').is_dir() else []:
-        if not (HERE / 'skills' / f'{skill}.json').exists():
-            found.append(f'skills/{skill}: no trigger test in evals/skills/')
+    for skill in sorted(p.name for p in SKILLS.iterdir() if p.is_dir()) if SKILLS.is_dir() else []:
+        if not (EVALS / 'skills' / f'{skill}.json').exists():
+            found.append(f'kit/skills/{skill}: no trigger test in evals/skills/')
     return found
 
 
@@ -454,7 +456,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     scenarios = load_scenarios()
-    skills = sorted((HERE / 'skills').glob('*.json'))
+    skills = sorted((EVALS / 'skills').glob('*.json'))
     broken = problems(scenarios, skills, rule_ids())
     for line in broken:
         print(f'error: {line}', file=sys.stderr)
@@ -483,7 +485,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         'intelligence-evals' / f"results-{when.replace(':', '')}.json"
 
     if args.skill:
-        path = HERE / 'skills' / f'{args.skill}.json'
+        path = EVALS / 'skills' / f'{args.skill}.json'
         if not path.exists():
             parser.error(f'no trigger test at {path}')
         if args.dry_run:

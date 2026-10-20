@@ -12,7 +12,7 @@ Nothing here writes to the repository it ships in.
 
 Run it:
 
-    python3 scripts/test_render.py
+    python3 .github/scripts/test_render.py
 """
 
 from __future__ import annotations
@@ -106,13 +106,14 @@ class Hub:
 
     def __init__(self, spec: dict | None = None) -> None:
         self.root = pathlib.Path(tempfile.mkdtemp(prefix='render-test-'))
-        (self.root / 'scripts').mkdir()
-        (self.root / 'scripts' / 'install.py').write_text('# installer\n', encoding='utf-8')
+        (self.root / '.github' / 'scripts').mkdir(parents=True)
+        (self.root / render.INSTALLER_SOURCE).write_text('# installer\n', encoding='utf-8')
         self.write(spec or SPEC)
 
     def ship_kit(self) -> None:
         """Give this hub the guard, so it renders the kit too."""
-        (self.root / 'scripts' / 'guard.py').write_text(f'# {render.kit.OWNED}\n', encoding='utf-8')
+        (self.root / 'kit').mkdir()
+        (self.root / 'kit' / 'guard.py').write_text(f'# {render.kit.OWNED}\n', encoding='utf-8')
 
     def write(self, spec: dict) -> None:
         self.write_text(markdown(spec))
@@ -373,7 +374,14 @@ class TestCommandLine(HubTestCase):
     def test_the_sums_cover_what_a_consumer_downloads(self) -> None:
         self.hub.run('--write')
         sums = (self.hub.root / 'home' / 'SHA256SUMS').read_text(encoding='utf-8').splitlines()
-        self.assertEqual([line.split('  ')[1] for line in sums], ['home/intelligence.md', 'scripts/install.py'])
+        self.assertEqual([line.split('  ')[1] for line in sums], ['home/intelligence.md', 'home/install.py'])
+
+    def test_the_installer_is_served_from_home_byte_for_byte(self) -> None:
+        self.hub.run('--write')
+        served = (self.hub.root / 'home' / 'install.py').read_bytes()
+        self.assertEqual(served, (self.hub.root / render.INSTALLER_SOURCE).read_bytes())
+        sums = (self.hub.root / 'home' / 'SHA256SUMS').read_text(encoding='utf-8')
+        self.assertIn(f'{render.digest(served.decode())}  home/install.py', sums)
 
     def test_a_hub_with_the_modules_ships_and_pins_the_kit(self) -> None:
         self.hub.ship_kit()
@@ -382,7 +390,7 @@ class TestCommandLine(HubTestCase):
         kit_text = (self.hub.root / 'home' / 'kit.json').read_text(encoding='utf-8')
         sums = (self.hub.root / 'home' / 'SHA256SUMS').read_text(encoding='utf-8').splitlines()
         self.assertEqual([line.split('  ')[1] for line in sums],
-                         ['home/intelligence.md', 'home/kit.json', 'scripts/install.py'])
+                         ['home/intelligence.md', 'home/kit.json', 'home/install.py'])
         self.assertIn(f'{render.digest(kit_text)}  home/kit.json', sums)
         code, out = self.hub.run('--pins')
         self.assertIn(f'kit_sha256={render.digest(kit_text)}', out)
@@ -399,16 +407,17 @@ class TestCommandLine(HubTestCase):
 
     def test_a_broken_module_stops_the_render(self) -> None:
         self.hub.ship_kit()
-        (self.hub.root / 'scripts' / 'guard.py').write_text('# a guard without the mark\n', encoding='utf-8')
+        (self.hub.root / 'kit' / 'guard.py').write_text('# a guard without the mark\n', encoding='utf-8')
         code, out = self.hub.run('--write')
         self.assertEqual(code, 1, out)
         self.assertIn('must carry the line', out)
 
     def test_changing_the_installer_makes_the_sums_stale(self) -> None:
         self.hub.run('--write')
-        (self.hub.root / 'scripts' / 'install.py').write_text('# changed\n', encoding='utf-8')
+        (self.hub.root / render.INSTALLER_SOURCE).write_text('# changed\n', encoding='utf-8')
         code, out = self.hub.run('--check')
         self.assertEqual(code, 1, out)
+        self.assertIn('home/install.py: stale', out)
         self.assertIn('home/SHA256SUMS: stale', out)
 
     def test_a_hand_edit_to_the_home_file_fails_the_check(self) -> None:
@@ -446,6 +455,18 @@ class TestCommandLine(HubTestCase):
         self.assertEqual(code, 0, out)
         self.assertIn('version=v0.1.0', out)
         self.assertIn(f'home_sha256={render.digest(render.region(EXPECTED))}', out)
+
+    def test_pins_find_the_installer_of_a_release_from_before_home_served_it(self) -> None:
+        self.hub.run('--write')
+        (self.hub.root / 'home' / 'install.py').unlink()
+        (self.hub.root / 'scripts').mkdir()
+        (self.hub.root / render.OLD_INSTALLER).write_text('# the old installer\n', encoding='utf-8')
+        git = ['git', '-c', 'user.name=Test', '-c', 'user.email=test@example.com', '-c', 'commit.gpgsign=false']
+        for command in (['init', '-q'], ['add', '-A'], ['commit', '-q', '-m', 'rules'], ['tag', 'v0.1.0']):
+            subprocess.run(git + command, cwd=self.hub.root, check=True, capture_output=True)
+        code, out = self.hub.run('--pins', 'v0.1.0')
+        self.assertEqual(code, 0, out)
+        self.assertIn(f"install_sha256={render.digest('# the old installer\n')}", out)
 
 
 class TestCloudSetup(HubTestCase):
@@ -491,7 +512,7 @@ class TestCloudSetup(HubTestCase):
             self.hub.run('--setup', 'v0.1.0')
 
     def test_the_real_template_has_every_placeholder(self) -> None:
-        text = (SCRIPT.parents[1] / render.SETUP_FILE).read_text(encoding='utf-8')
+        text = (SCRIPT.parents[2] / render.SETUP_FILE).read_text(encoding='utf-8')
         for name in ('VERSION', 'HOME_SHA256', 'INSTALL_SHA256', 'KIT_SHA256'):
             self.assertIn(f"{name}='@{name}@'", text)
 
@@ -499,7 +520,7 @@ class TestCloudSetup(HubTestCase):
 class TestTheRealConstitution(unittest.TestCase):
     """The Constitution in this repository, and the copies rendered from it."""
 
-    root = SCRIPT.parents[1]
+    root = SCRIPT.parents[2]
 
     def test_it_breaks_no_rule_and_fits_its_cap(self) -> None:
         constitution = render.load_constitution(self.root)

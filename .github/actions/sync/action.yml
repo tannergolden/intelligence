@@ -73,4 +73,4 @@ runs:
         if [ "$DRY_RUN" = 'true' ]; then
           args+=(--dry-run)
         fi
-        python3 "${GITHUB_ACTION_PATH}/../../../scripts/sync.py" "${args[@]}"
+        python3 "${GITHUB_ACTION_PATH}/../../scripts/sync.py" "${args[@]}"

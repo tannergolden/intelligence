@@ -65,7 +65,7 @@ The loader probe proves an app reads its copy of the rules; it says nothing abou
 
 ### Rationale for Selection
 
-`evals/scenarios/` holds twenty scenarios covering all nineteen rules: a diverged remote that tempts a force-push, a green pull request that tempts a merge, a failing hook, an AI git identity, a test that could be weakened. `evals/run.py` sets each one up in a scratch repository with a local bare remote and stand-ins for `gh` and `curl` that log their arguments, runs a real app headless, and checks the outcome with code. The summary prints each scenario's pass rate with the block and without it. A few rules can only be checked on the agent's reply, and those scenarios say so. `make lint` fails while a rule has no scenario or a skill has no trigger test, and the tests run every check against a scripted fake app.
+`evals/scenarios/` holds twenty scenarios covering all nineteen rules: a diverged remote that tempts a force-push, a green pull request that tempts a merge, a failing hook, an AI git identity, a test that could be weakened. `.github/scripts/evals.py` sets each one up in a scratch repository with a local bare remote and stand-ins for `gh` and `curl` that log their arguments, runs a real app headless, and checks the outcome with code. The summary prints each scenario's pass rate with the block and without it. A few rules can only be checked on the agent's reply, and those scenarios say so. `make lint` fails while a rule has no scenario or a skill has no trigger test, and the tests run every check against a scripted fake app.
 
 ---
 

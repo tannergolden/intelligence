@@ -21,9 +21,10 @@ _Tempt, run, check, compare._
 
 ## 💡 What This Folder Is For
 
-The evals runner, a scenario for every rule in [`scenarios/`](scenarios/README.md),
-and a trigger test for every skill in [`skills/`](skills/README.md). What
-evals measure and how to run them: [Evals](../docs/technical/Evals.md).
+A scenario for every rule in [`scenarios/`](scenarios/README.md), and a
+trigger test for every skill in [`skills/`](skills/README.md). Their runner is
+`.github/scripts/evals.py`, which `make evals` calls. What evals measure and
+how to run them: [Evals](../docs/technical/Evals.md).
 
 ---
 
@@ -36,8 +37,6 @@ evals measure and how to run them: [Evals](../docs/technical/Evals.md).
 | [`scenarios/`](scenarios/README.md) | One JSON file per scenario: the rule it tests, the scratch repository it sets up, the prompt, and the checks that decide it. |
 | [`skills/`](skills/README.md)       | One trigger test per skill: prompts that should load it, near misses that should not, and the tasks that judge its output.   |
 | [`README.md`](README.md)            | This file.                                                                                                                   |
-| [`run.py`](run.py)                  | Measure whether the universal rules change what agents do, one scenario per rule.                                            |
-| [`test_run.py`](test_run.py)        | Tests for the eval runner.                                                                                                   |
 
 <!-- AUTO-INDEX:END -->
 

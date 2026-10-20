@@ -11,7 +11,7 @@ Nothing here calls a real model or touches anything outside a scratch folder.
 
 Run it:
 
-    python3 evals/test_run.py
+    python3 .github/scripts/test_evals.py
 """
 
 from __future__ import annotations
@@ -30,7 +30,7 @@ import unittest
 from unittest import mock
 
 HERE = pathlib.Path(__file__).resolve().parent
-_spec = importlib.util.spec_from_file_location('eval_run', HERE / 'run.py')
+_spec = importlib.util.spec_from_file_location('eval_run', HERE / 'evals.py')
 run = importlib.util.module_from_spec(_spec)
 # Dataclasses look their own module up by name while the class is built.
 sys.modules[_spec.name] = run
@@ -87,7 +87,7 @@ class TestTheScenarios(unittest.TestCase):
 
     def test_every_rule_has_a_scenario_and_every_scenario_is_sound(self) -> None:
         scenarios = run.load_scenarios()
-        self.assertEqual(run.problems(scenarios, sorted((HERE / 'skills').glob('*.json')), run.rule_ids()), [])
+        self.assertEqual(run.problems(scenarios, sorted((run.EVALS / 'skills').glob('*.json')), run.rule_ids()), [])
         self.assertEqual({s.rule for s in scenarios}, run.rule_ids())
 
     def test_a_malformed_scenario_is_caught(self) -> None:
@@ -104,7 +104,7 @@ class TestTheScenarios(unittest.TestCase):
                 self.assertTrue(any(fragment in line for line in found), found)
 
     def test_no_file_holds_a_real_looking_credential(self) -> None:
-        for path in (HERE / 'scenarios').glob('*.json'):
+        for path in (run.EVALS / 'scenarios').glob('*.json'):
             self.assertNotIn('sk-ant-', path.read_text(encoding='utf-8'), path.name)
 
 

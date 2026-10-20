@@ -21,6 +21,11 @@ _Tagged, rendered, pinned._
 
 </div>
 
+> [!IMPORTANT]
+> **Amended by [ADR-0024](ADR-0024-The-Hub-Keeps-Its-Template-Layout.md).** A release serves the installer
+> from `home/install.py`, beside the home file and the kit, so everything a
+> machine downloads comes from `home/`.
+
 ---
 
 ## 📋 Meta Information
@@ -70,7 +75,7 @@ Building assets inside Cut Release would mean a new job with its own permissions
 
 ### Rationale for Selection
 
-`home/intelligence.md` and `scripts/install.py` are committed, and `make check`, which CI runs and Cut Release runs as its `check-command`, fails while the rendered copies differ from the law. So the file at a tag is always the file the law produced. A public repository serves any file at a tag with no token, at a URL that never changes:
+`home/intelligence.md` and `home/install.py` are committed, and `make check`, which CI runs and Cut Release runs as its `check-command`, fails while the rendered copies differ from the law. So the file at a tag is always the file the law produced. A public repository serves any file at a tag with no token, at a URL that never changes:
 
 ```text
 https://raw.githubusercontent.com/tannergolden/intelligence/<version>/home/intelligence.md

@@ -11,7 +11,9 @@ written by hand:
   each app's folder, and which every repository's stub delivers between the
   markers of its root `AGENTS.md`;
 - the kit, `home/kit.json`, which carries the guard hook, the skill and the
-  subagents, rendered by `kit.py`;
+  subagents, rendered by `kit.py` from `kit/`;
+- the installer, `home/install.py`, a copy of `install.py` beside this
+  file, so a machine downloads everything it installs from `home/`;
 - `home/SHA256SUMS`, the hashes a consumer pins.
 
 The hub keeps no `AGENTS.md` of its own: it holds the source, not a copy.
@@ -31,11 +33,11 @@ caught wherever it lands.
 
 Run it:
 
-    python3 scripts/render.py              # print the block
-    python3 scripts/render.py --write      # rewrite every copy from the Constitution
-    python3 scripts/render.py --check      # fail on a broken Constitution or a stale copy
-    python3 scripts/render.py --pins v0.1.0  # the hashes to pin for a release
-    python3 scripts/render.py --setup v0.1.0  # the cloud setup script, pinned
+    python3 .github/scripts/render.py              # print the block
+    python3 .github/scripts/render.py --write      # rewrite every copy from the Constitution
+    python3 .github/scripts/render.py --check      # fail on a broken Constitution or a stale copy
+    python3 .github/scripts/render.py --pins v0.1.0  # the hashes to pin for a release
+    python3 .github/scripts/render.py --setup v0.1.0  # the cloud setup script, pinned
 """
 
 from __future__ import annotations
@@ -51,7 +53,7 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import kit  # kit.py sits beside this file, wherever it is run from
 
-ROOT = pathlib.Path(__file__).resolve().parents[1]
+ROOT = pathlib.Path(__file__).resolve().parents[2]
 
 BEGIN = '<!-- INTELLIGENCE:BEGIN sha256:{} -->'
 END = '<!-- INTELLIGENCE:END -->'
@@ -68,7 +70,10 @@ MAX_RULE = 300
 CONSTITUTION_FILE = 'CONSTITUTION.md'
 HOME_FILE = 'home/intelligence.md'
 SUMS_FILE = 'home/SHA256SUMS'
-INSTALLER = 'scripts/install.py'
+INSTALLER = 'home/install.py'
+INSTALLER_SOURCE = '.github/scripts/install.py'
+# Where a release from before the installer moved into home/ serves it.
+OLD_INSTALLER = 'scripts/install.py'
 KIT_FILE = kit.KIT_FILE
 SETUP_FILE = 'setup/claude-cloud-setup.sh'
 
@@ -448,7 +453,7 @@ def replace(text: str, new_region: str) -> str:
 
 def sums(root: pathlib.Path, home_text: str, kit_text: str | None = None) -> str:
     """`home/SHA256SUMS`: what a consumer downloads from a release, and its hash."""
-    installer = (root / INSTALLER).read_bytes()
+    installer = (root / INSTALLER_SOURCE).read_bytes()
     lines = [f'{digest(home_text)}  {HOME_FILE}']
     if kit_text is not None:
         lines.append(f'{digest(kit_text)}  {KIT_FILE}')
@@ -462,12 +467,13 @@ def has_kit(root: pathlib.Path) -> bool:
 
 
 def renderings(root: pathlib.Path, constitution: Constitution) -> dict[str, str]:
-    """Every file this repository commits that the Constitution decides, and its content."""
+    """Every file this repository renders into `home/`, and its content."""
     home = region(render_block(constitution))
     kit_text = kit.render_kit(root) if has_kit(root) else None
     out = {HOME_FILE: home}
     if kit_text is not None:
         out[KIT_FILE] = kit_text
+    out[INSTALLER] = (root / INSTALLER_SOURCE).read_text(encoding='utf-8')
     out[SUMS_FILE] = sums(root, home, kit_text)
     return out
 
@@ -479,7 +485,7 @@ def stale(root: pathlib.Path, constitution: Constitution) -> list[str]:
         path = root / rel
         current = path.read_text(encoding='utf-8') if path.exists() else None
         if current != text:
-            found.append(f'{rel}: stale; run `python3 scripts/render.py --write`')
+            found.append(f'{rel}: stale; run `make render`')
     return found
 
 
@@ -494,6 +500,7 @@ def pins(root: pathlib.Path, ref: str | None) -> str:
     """The lines a consumer pins: the version and the hash of each file it downloads.
 
     A release from before the kit existed pins no kit, and `kit_sha256` is empty.
+    One from before the installer moved into `home/` serves it at `scripts/install.py`.
     """
     def read(rel: str) -> bytes:
         return git_show(root, ref, rel) if ref else (root / rel).read_bytes()
@@ -503,9 +510,15 @@ def pins(root: pathlib.Path, ref: str | None) -> str:
             return hashlib.sha256(read(rel)).hexdigest()
         except (OSError, SystemExit):
             return ''
+
+    def installer() -> bytes:
+        try:
+            return read(INSTALLER)
+        except (OSError, SystemExit):
+            return read(OLD_INSTALLER)
     return (f'version={ref or "unreleased"}\n'
             f'home_sha256={hashlib.sha256(read(HOME_FILE)).hexdigest()}\n'
-            f'install_sha256={hashlib.sha256(read(INSTALLER)).hexdigest()}\n'
+            f'install_sha256={hashlib.sha256(installer()).hexdigest()}\n'
             f'kit_sha256={optional(KIT_FILE)}\n')
 
 

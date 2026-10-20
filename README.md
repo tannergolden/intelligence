@@ -82,29 +82,26 @@ and other people's repositories follow their own rules.
 
 <!-- AUTO-INDEX:BEGIN dir=. style=log -->
 
-| Entry                                       | Purpose                                                                                                                                                              |
-| :------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`.devcontainer/`](.devcontainer/README.md) | The language-neutral development container this repository ships, and how to give it the toolchain your project needs.                                               |
-| [`.github/`](.github/)                      | CODEOWNERS, CONTRIBUTING, Dependabot, release notes config, Template Sync's list, actions, scripts and workflows - logged below                                      |
-| [`.vscode/`](.vscode/README.md)             | The VS Code settings and extension recommendations this repository shares, and why every other file in this folder stays out of git.                                 |
-| [`assets/`](assets/README.md)               | Where this project keeps what presents it: four folders to start, a name ready for every other kind, and the rules every file follows.                               |
-| [`docs/`](docs/README.md)                   | Where this project keeps its own documents, and where the engineering standards it follows actually live.                                                            |
-| [`evals/`](evals/README.md)                 | Scenarios that tempt an agent to break each universal rule, run against real apps with the block and without it, and checked by code.                                |
-| [`home/`](home/README.md)                   | The rendered home file and kit the home kit installs, and the hashes a consumer pins, served from every release tag.                                                 |
-| [`probe/`](probe/README.md)                 | Proves, on the machine that runs it, which instruction files each AI coding app actually loads.                                                                      |
-| [`scripts/`](scripts/README.md)             | The scripts that render the Constitution and the kit, install them on a machine, guard every tool call, and deliver the rules to every repository, with their tests. |
-| [`setup/`](setup/README.md)                 | What you copy out of the hub once: the setup script for every Claude Code cloud session, and the stub that keeps a repository's rules current.                       |
-| [`skills/`](skills/README.md)               | The skills the home kit installs into every AI coding app, each a folder in the open Agent Skills format.                                                            |
-| [`subagents/`](subagents/README.md)         | The Worker and Reviewer subagents the home kit installs, each one source rendered for Claude Code, Copilot and Codex.                                                |
-| [`.editorconfig`](.editorconfig)            | Editor defaults every editor honours: UTF-8, LF, a final newline, and indentation per language                                                                       |
-| [`.env.example`](.env.example)              | Environment variable template for this project.                                                                                                                      |
-| [`.gitattributes`](.gitattributes)          | Git attributes - line endings, diffs, and what counts as binary                                                                                                      |
-| [`.gitignore`](.gitignore)                  | &#x1F5C4;&#xFE0F; Universal Ignore Patterns                                                                                                                          |
-| [`.markdownlint.json`](.markdownlint.json)  | Repository-wide markdownlint rules. Discovered by mechanism, which is why this lives at the root.                                                                    |
-| [`CONSTITUTION.md`](CONSTITUTION.md)        | The universal rules every AI agent follows in every repository and on every machine: written once here, rendered into the block every AGENTS.md carries.             |
-| [`LICENSE`](LICENSE)                        | MIT License                                                                                                                                                          |
-| [`Makefile`](Makefile)                      | The hub's commands. Each one is plain Python from the standard library, so the same targets run on a Mac, in CI and in a cloud session.                              |
-| [`README.md`](README.md)                    | This file.                                                                                                                                                           |
+| Entry                                       | Purpose                                                                                                                                                  |
+| :------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`.devcontainer/`](.devcontainer/README.md) | The language-neutral development container this repository ships, and how to give it the toolchain your project needs.                                   |
+| [`.github/`](.github/)                      | CODEOWNERS, CONTRIBUTING, Dependabot, release notes config, Template Sync's list, actions, scripts and workflows - logged below                          |
+| [`.vscode/`](.vscode/README.md)             | The VS Code settings and extension recommendations this repository shares, and why every other file in this folder stays out of git.                     |
+| [`assets/`](assets/README.md)               | Where this project keeps what presents it: four folders to start, a name ready for every other kind, and the rules every file follows.                   |
+| [`docs/`](docs/README.md)                   | Where this project keeps its own documents, and where the engineering standards it follows actually live.                                                |
+| [`evals/`](evals/README.md)                 | Scenarios that tempt an agent to break each universal rule, run against real apps with the block and without it, and checked by code.                    |
+| [`home/`](home/README.md)                   | Everything a machine downloads from a release, rendered: the home file, the kit and the installer the home kit runs, and the hashes a consumer pins.     |
+| [`kit/`](kit/README.md)                     | The sources of everything the home kit installs besides the rules: the guard hook, the skills and the subagents, rendered into home/kit.json.            |
+| [`setup/`](setup/README.md)                 | What you copy out of the hub once: the setup script for every Claude Code cloud session, and the stub that keeps a repository's rules current.           |
+| [`.editorconfig`](.editorconfig)            | Editor defaults every editor honours: UTF-8, LF, a final newline, and indentation per language                                                           |
+| [`.env.example`](.env.example)              | Environment variable template for this project.                                                                                                          |
+| [`.gitattributes`](.gitattributes)          | Git attributes - line endings, diffs, and what counts as binary                                                                                          |
+| [`.gitignore`](.gitignore)                  | &#x1F5C4;&#xFE0F; Universal Ignore Patterns                                                                                                              |
+| [`.markdownlint.json`](.markdownlint.json)  | Repository-wide markdownlint rules. Discovered by mechanism, which is why this lives at the root.                                                        |
+| [`CONSTITUTION.md`](CONSTITUTION.md)        | The universal rules every AI agent follows in every repository and on every machine: written once here, rendered into the block every AGENTS.md carries. |
+| [`LICENSE`](LICENSE)                        | MIT License                                                                                                                                              |
+| [`Makefile`](Makefile)                      | The hub's commands. Each one is plain Python from the standard library, so the same targets run on a Mac, in CI and in a cloud session.                  |
+| [`README.md`](README.md)                    | This file.                                                                                                                                               |
 
 <!-- AUTO-INDEX:END -->
 

@@ -19,7 +19,7 @@ Nothing here calls GitHub or touches the repository it ships in.
 
 Run it:
 
-    python3 scripts/test_sync.py
+    python3 .github/scripts/test_sync.py
 """
 
 from __future__ import annotations
@@ -39,6 +39,7 @@ import unittest
 from unittest import mock
 
 HERE = pathlib.Path(__file__).resolve().parent
+ROOT = HERE.parents[1]
 _spec = importlib.util.spec_from_file_location('sync', HERE / 'sync.py')
 sync = importlib.util.module_from_spec(_spec)
 # Dataclasses look their own module up by name while the class is built.
@@ -47,7 +48,7 @@ _spec.loader.exec_module(sync)
 render = sync.render
 
 OLD_BLOCK = '## Working rules\n\n- SEC-001: An older wording.\n'
-CURRENT_BLOCK = render.render_block(render.load_constitution(HERE.parent))
+CURRENT_BLOCK = render.render_block(render.load_constitution(ROOT))
 OLD = render.region(OLD_BLOCK)
 CURRENT = render.region(CURRENT_BLOCK)
 GREEN = ([{'name': 'ci', 'status': 'completed', 'conclusion': 'success'}], {'state': 'pending', 'statuses': []})
@@ -56,7 +57,7 @@ GREEN = ([{'name': 'ci', 'status': 'completed', 'conclusion': 'success'}], {'sta
 def make_hub(tags: bool = True) -> pathlib.Path:
     """A throwaway hub: the real Constitution, and two releases of the home file."""
     root = pathlib.Path(tempfile.mkdtemp(prefix='sync-test-'))
-    shutil.copy(HERE.parent / render.CONSTITUTION_FILE, root / render.CONSTITUTION_FILE)
+    shutil.copy(ROOT / render.CONSTITUTION_FILE, root / render.CONSTITUTION_FILE)
     (root / 'home').mkdir()
     git = ['git', '-c', 'user.name=Test', '-c', 'user.email=test@example.com', '-c', 'commit.gpgsign=false',
            '-c', 'tag.gpgsign=false']
@@ -662,8 +663,8 @@ class TestApply(unittest.TestCase):
 
     def test_the_hub_and_every_repository_left_out_are_skipped(self) -> None:
         (self.checkout / 'CONSTITUTION.md').write_text('# Constitution\n', encoding='utf-8')
-        (self.checkout / 'scripts').mkdir()
-        (self.checkout / 'scripts' / 'render.py').write_text('', encoding='utf-8')
+        (self.checkout / '.github' / 'scripts').mkdir(parents=True)
+        (self.checkout / '.github' / 'scripts' / 'render.py').write_text('', encoding='utf-8')
         _code, out = self.run_apply(repo='tannergolden/intelligence')
         self.assertIn('intelligence: skipped, the hub', out)
         (self.checkout / 'CONSTITUTION.md').unlink()

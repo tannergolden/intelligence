@@ -41,15 +41,15 @@ topic.
 
 Run it, from the hub's root:
 
-    python3 scripts/sync.py audit
-    python3 scripts/sync.py sync --dry-run
-    python3 scripts/sync.py sync
-    python3 scripts/sync.py merge --dry-run
-    python3 scripts/sync.py merge
+    python3 .github/scripts/sync.py audit
+    python3 .github/scripts/sync.py sync --dry-run
+    python3 .github/scripts/sync.py sync
+    python3 .github/scripts/sync.py merge --dry-run
+    python3 .github/scripts/sync.py merge
 
 and, as the stub's workflow does, in a repository's checkout:
 
-    GITHUB_REPOSITORY=owner/name python3 /path/to/hub/scripts/sync.py apply --dry-run
+    GITHUB_REPOSITORY=owner/name python3 /path/to/hub/.github/scripts/sync.py apply --dry-run
 """
 
 from __future__ import annotations
@@ -72,7 +72,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import render  # noqa: E402
 
-ROOT = HERE.parent
+ROOT = HERE.parents[1]
 BRANCH = 'chore/intelligence'
 OPT_OUT = 'no-intelligence'
 # The golden path templates sit out, so they stay free of agent files and every repository
@@ -751,7 +751,8 @@ def shipped(root: pathlib.Path) -> str:
 
 def is_hub(checkout: pathlib.Path) -> bool:
     """True in a checkout of the hub, which holds the Constitution and takes no copy of it."""
-    return (checkout / render.CONSTITUTION_FILE).is_file() and (checkout / 'scripts' / 'render.py').is_file()
+    renderer = checkout / '.github' / 'scripts' / 'render.py'
+    return (checkout / render.CONSTITUTION_FILE).is_file() and renderer.is_file()
 
 
 def local_file(checkout: pathlib.Path, name: str) -> str | None:

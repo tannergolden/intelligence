@@ -107,7 +107,7 @@ Version 1 runs `make sync` under the owner's own `gh` login after each release (
 
 - [ADR-0003](ADR-0003-Push-Sync-&-Owner-Merge.md): the hub pushes, the owner merges
 - [ADR-0019](ADR-0019-Each-Repository-Pulls-With-A-Stub.md): the stub that supersedes this record
-- [`.github/workflows/sync.yml`](../../.github/workflows/sync.yml) and [`scripts/sync.py`](../../scripts/sync.py)
+- [`.github/workflows/sync.yml`](../../.github/workflows/sync.yml) and [`.github/scripts/sync.py`](../../.github/scripts/sync.py)
 
 ### 🔗 See also
 

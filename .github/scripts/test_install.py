@@ -12,7 +12,7 @@ Nothing here touches your real home folder.
 
 Run it:
 
-    python3 scripts/test_install.py
+    python3 .github/scripts/test_install.py
 """
 
 from __future__ import annotations

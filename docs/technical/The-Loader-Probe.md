@@ -88,12 +88,12 @@ hand with `--keep --skills`.
 From the root of the hub:
 
 ```bash
-python3 probe/loader-probe.py --dry-run     # show the plan, change nothing
-python3 probe/loader-probe.py               # every installed app
-python3 probe/loader-probe.py --apps claude,grok
-python3 probe/loader-probe.py --skills      # add the skill canary
-python3 probe/loader-probe.py --keep        # set up a check by hand
-python3 probe/loader-probe.py --cleanup     # undo --keep, or a crash
+python3 .github/scripts/loader-probe.py --dry-run     # show the plan, change nothing
+python3 .github/scripts/loader-probe.py               # every installed app
+python3 .github/scripts/loader-probe.py --apps claude,grok
+python3 .github/scripts/loader-probe.py --skills      # add the skill canary
+python3 .github/scripts/loader-probe.py --keep        # set up a check by hand
+python3 .github/scripts/loader-probe.py --cleanup     # undo --keep, or a crash
 ```
 
 It needs Python 3.9 or later and git, and nothing else. Each check is one model
@@ -102,7 +102,7 @@ subscriptions. An app installed under
 another name takes `--command`, which must keep the `{prompt}` slot:
 
 ```bash
-python3 probe/loader-probe.py --apps codex --command "codex=codex-beta exec {prompt}"
+python3 .github/scripts/loader-probe.py --apps codex --command "codex=codex-beta exec {prompt}"
 ```
 
 **Checking by hand.** Copilot in VS Code and the Cursor editor have no headless

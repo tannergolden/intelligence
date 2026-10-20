@@ -1,7 +1,10 @@
 # The hub's commands. Each one is plain Python from the standard library, so
 # the same targets run on a Mac, in CI and in a cloud session. The one
 # exception is PyYAML, which the repository validator in `make lint` needs and
-# `make setup` installs. `make help` lists them.
+# `make setup` installs. Every script they run lives in .github/scripts/,
+# beside its test. `make help` lists them.
+
+SCRIPTS := .github/scripts
 
 PYTHON ?= python3
 PYYAML_VERSION ?= 6.0.3
@@ -21,38 +24,34 @@ setup: ## Install PyYAML, which the repository validator needs; CI runs this fir
 check: lint test ## Everything CI checks
 
 lint: ## The repository validator, every rendered copy checked against its source, and the evals
-	$(PYTHON) .github/scripts/validate-repository.py
-	$(PYTHON) scripts/render.py --check
-	$(PYTHON) evals/run.py --check
+	$(PYTHON) $(SCRIPTS)/validate-repository.py
+	$(PYTHON) $(SCRIPTS)/render.py --check
+	$(PYTHON) $(SCRIPTS)/evals.py --check
 
 test: ## Every test in the repository
-	$(PYTHON) -m unittest discover -s .github/scripts -p 'test_*.py'
-	$(PYTHON) -m unittest discover -s scripts -p 'test_*.py'
-	$(PYTHON) -m unittest discover -s probe -p 'test_*.py'
-	$(PYTHON) -m unittest discover -s setup -p 'test_*.py'
-	$(PYTHON) -m unittest discover -s evals -p 'test_*.py'
+	$(PYTHON) -m unittest discover -s $(SCRIPTS) -p 'test_*.py'
 
-render: ## Rewrite every copy from CONSTITUTION.md, and the kit from its sources
-	$(PYTHON) scripts/render.py --write
+render: ## Rewrite home/ from CONSTITUTION.md, the kit and the installer
+	$(PYTHON) $(SCRIPTS)/render.py --write
 
 probe: ## Prove which files each installed app loads, one model call per check
-	$(PYTHON) probe/loader-probe.py $(ARGS)
+	$(PYTHON) $(SCRIPTS)/loader-probe.py $(ARGS)
 
 evals: ## Measure each rule with the block and without; ARGS='--apps claude --dry-run'
-	$(PYTHON) evals/run.py $(ARGS)
+	$(PYTHON) $(SCRIPTS)/evals.py $(ARGS)
 
 audit: ## Report what every repository carries, against the latest release
-	$(PYTHON) scripts/sync.py audit $(ARGS)
+	$(PYTHON) $(SCRIPTS)/sync.py audit $(ARGS)
 
 sync: ## Open or update one pull request per repository; ARGS=--dry-run previews
-	$(PYTHON) scripts/sync.py sync $(ARGS)
+	$(PYTHON) $(SCRIPTS)/sync.py sync $(ARGS)
 
 merge: ## Merge every green sync pull request whose diff is only the block, starting checks that wait
-	$(PYTHON) scripts/sync.py merge $(ARGS)
+	$(PYTHON) $(SCRIPTS)/sync.py merge $(ARGS)
 
 pins: ## The hashes to pin for VERSION, or for this checkout
-	$(PYTHON) scripts/render.py --pins $(VERSION)
+	$(PYTHON) $(SCRIPTS)/render.py --pins $(VERSION)
 
 cloud-setup: ## The Claude cloud setup script, pinned to VERSION
 	@test -n "$(VERSION)" || { echo 'usage: make cloud-setup VERSION=vX.Y.Z' >&2; exit 2; }
-	@$(PYTHON) scripts/render.py --setup $(VERSION)
+	@$(PYTHON) $(SCRIPTS)/render.py --setup $(VERSION)

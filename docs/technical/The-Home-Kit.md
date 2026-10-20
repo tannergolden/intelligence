@@ -22,7 +22,7 @@ _Copies, not links. Checked against the release, and taken back to the byte._
 ## 💡 What Gets Installed
 
 `make agents`, in your dotfiles, downloads the pinned release's home file,
-kit and [`scripts/install.py`](../../scripts/install.py), checks each against
+kit and installer from [`home/`](../../home/README.md), checks each against
 its SHA-256, and runs the installer, which writes byte-identical copies, one
 per app, in the shape each app reads:
 
@@ -63,7 +63,7 @@ and `make agents-uninstall` takes back exactly what it added.
 
 ## 🛡️ The Guard Hook
 
-[`scripts/guard.py`](../../scripts/guard.py) is the one script behind every
+[`kit/guard.py`](../../kit/guard.py) is the one script behind every
 app's pre-tool hook. Each app pipes the tool call it is about to make to it,
 and it either stays silent or denies the call with exit 2 and one line saying
 why and what to do instead. It never allows and never asks, so each app's own
@@ -84,30 +84,35 @@ real gates. In Codex and Antigravity, a guard that cannot start lets the call
 through. To see what it would say about one command:
 
 ```bash
-python3 scripts/guard.py --command 'git push --force origin main'
+python3 kit/guard.py --command 'git push --force origin main'
 ```
 
 ---
 
 ## 📦 How A Machine Gets It
 
-`home/` holds what a release serves, rendered from the Constitution and never edited by
+`home/` holds everything a machine downloads, rendered from the Constitution,
+[`kit/`](../../kit/README.md) and the installer's source, and never edited by
 hand: `make render` rewrites it, and `make check` fails CI when it has drifted.
 
-| File              | What it is                                                                   |
-| :---------------- | :--------------------------------------------------------------------------- |
-| `intelligence.md` | The home file: the universal block between its `INTELLIGENCE` markers        |
-| `kit.json`        | The kit: the guard, the skills and the subagents                             |
-| `SHA256SUMS`      | The SHA-256 of the home file, the kit and `scripts/install.py`, for a reader |
+| File              | What it is                                                                                                       |
+| :---------------- | :--------------------------------------------------------------------------------------------------------------- |
+| `intelligence.md` | The home file: the universal block between its `INTELLIGENCE` markers                                            |
+| `kit.json`        | The kit: the guard, the skills and the subagents                                                                 |
+| `install.py`      | The installer, copied from [`.github/scripts/install.py`](../../.github/scripts/install.py), where its tests run |
+| `SHA256SUMS`      | The SHA-256 of the home file, the kit and the installer, for a reader                                            |
 
-A release is a tag, and each tag serves that folder and the installer as they
-were at that commit:
+A release is a tag, and each tag serves that folder as it was at that commit:
 
 ```text
 https://raw.githubusercontent.com/tannergolden/intelligence/<version>/home/intelligence.md
 https://raw.githubusercontent.com/tannergolden/intelligence/<version>/home/kit.json
-https://raw.githubusercontent.com/tannergolden/intelligence/<version>/scripts/install.py
+https://raw.githubusercontent.com/tannergolden/intelligence/<version>/home/install.py
 ```
+
+A release from before the installer moved into `home/` serves it at
+`scripts/install.py`, and dotfiles, the setup script and `make pins` look
+there for such a release ([ADR-0024](../adrs/ADR-0024-The-Hub-Keeps-Its-Template-Layout.md)).
 
 The consumer checks each file against a SHA-256 it pinned beforehand, and
 never against a hash from the same download. `make pins VERSION=vX.Y.Z`
@@ -122,6 +127,7 @@ reader.
 - [ADR-0010](../adrs/ADR-0010-Releases-Serve-Rendered-Files.md): a release tag serves the rendered files, checked against pins
 - [ADR-0012](../adrs/ADR-0012-One-Pinned-Kit-For-Every-Module.md): every module ships in one pinned kit beside the rules
 - [ADR-0013](../adrs/ADR-0013-The-Guard-Denies-Never-Allows.md): one guard behind every app's hook, which only ever denies
+- [ADR-0024](../adrs/ADR-0024-The-Hub-Keeps-Its-Template-Layout.md): the scripts in `.github/scripts/`, the kit's sources in `kit/`, and everything a machine downloads in `home/`
 
 ---
 

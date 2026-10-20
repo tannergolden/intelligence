@@ -68,7 +68,7 @@ Sorting the vault's seven skills, the owner decided that only `develop` should b
 
 ### Rationale for Selection
 
-`skills/develop/` keeps the vault skill's modes, Create pipeline, dispatch scaling, self-improvement loop, mandatory output structure and bootstrap, and drops every mention of the vault:
+`kit/skills/develop/` keeps the vault skill's modes, Create pipeline, dispatch scaling, self-improvement loop, mandatory output structure and bootstrap, and drops every mention of the vault:
 
 - **Its Development team ships inside it**, in `agents/`: the roster and five agents, with portable frontmatter and the capability names `kit.py` maps for every app. This is the published form `develop` already described, and its packager now builds it.
 - **Gate 1 is its own validator**, `scripts/validate.py`, standard-library Python that checks a skill, an agent, a team or a whole agent library against the format every app accepts. A repository's own rules stay with that repository's checks, which `develop` runs beside it, so a vault keeps its engine and a code repository its CI.
@@ -76,7 +76,7 @@ Sorting the vault's seven skills, the owner decided that only `develop` should b
 - **The first step of the pipeline is `building-skills`' decision table**: a skill, a rule, a hook, a script or a fact. Skills live by tier: universal in the hub, one repository's in its `.agents/skills/` and `.claude/skills/`, the Claude app's as an archive.
 - **The description says "Use when"**, the frontmatter keeps one line per key, its templates sit one level down, it pre-approves no tools, and its licence is MIT.
 
-The scripts' tests live in `scripts/test_develop.py` and its trigger test in `evals/skills/develop.json`, outside the skill, so neither ships. The vault removes its own copy and its Development team, which moved here. Option 2 would leave two skill builders fighting over every request to build a skill; Option 1 would keep the weaker factory.
+The scripts' tests live in `.github/scripts/test_develop.py` and its trigger test in `evals/skills/develop.json`, outside the skill, so neither ships. The vault removes its own copy and its Development team, which moved here. Option 2 would leave two skill builders fighting over every request to build a skill; Option 1 would keep the weaker factory.
 
 ---
 
@@ -111,7 +111,7 @@ The scripts' tests live in `scripts/test_develop.py` and its trigger test in `ev
 
 ## 🔗 Traceability & Links
 
-- [`skills/develop/SKILL.md`](../../skills/develop/SKILL.md): the skill
+- [`kit/skills/develop/SKILL.md`](../../kit/skills/develop/SKILL.md): the skill
 - [ADR-0014](ADR-0014-One-Skill-That-Builds-Skills.md): the one skill this replaces
 - [ADR-0015](ADR-0015-A-Worker-And-A-Reviewer.md): the Worker and Reviewer, which stay the hub's subagents
 - [Skills & Subagents](../technical/Skills-&-Subagents.md): where each app reads the skill

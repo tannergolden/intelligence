@@ -3,13 +3,14 @@
 
 WHY THIS EXISTS. The rules are one block, but the modules around them are
 many files in three formats: the guard hook, the skills, and the subagents
-written three ways. A release ships them as one JSON file, so a consumer pins one more hash instead of one per file, and the
-installer writes strings it never has to convert. The sources stay readable
-and reviewable:
+written three ways. A release ships them as one JSON file, so a consumer
+pins one more hash instead of one per file, and the installer writes
+strings it never has to convert. The sources stay readable and reviewable,
+all under `kit/`:
 
-- `scripts/guard.py`, the guard every app's pre-tool hook calls;
-- `skills/<name>/`, each a folder in the open Agent Skills format;
-- `subagents/<name>.md`, each rendered for Claude Code, Copilot and Codex.
+- `kit/guard.py`, the guard every app's pre-tool hook calls;
+- `kit/skills/<name>/`, each a folder in the open Agent Skills format;
+- `kit/subagents/<name>.md`, each rendered for Claude Code, Copilot and Codex.
 
 It also holds each source to the strictest rule any target app enforces,
 because a skill with a bad name loads nowhere and says nothing. `render.py`
@@ -18,8 +19,8 @@ stale one.
 
 Run it:
 
-    python3 scripts/kit.py            # print the bundle
-    python3 scripts/kit.py --check    # list every problem in the sources
+    python3 .github/scripts/kit.py            # print the bundle
+    python3 .github/scripts/kit.py --check    # list every problem in the sources
 """
 
 from __future__ import annotations
@@ -30,9 +31,11 @@ import pathlib
 import re
 import sys
 
-ROOT = pathlib.Path(__file__).resolve().parents[1]
+ROOT = pathlib.Path(__file__).resolve().parents[2]
 KIT_FILE = 'home/kit.json'
-GUARD_FILE = 'scripts/guard.py'
+GUARD_FILE = 'kit/guard.py'
+SKILLS_DIR = 'kit/skills'
+SUBAGENTS_DIR = 'kit/subagents'
 
 # The line that marks a file or folder as the kit's own. The installer
 # replaces what carries it and refuses to touch what does not.
@@ -105,9 +108,9 @@ def toml_block(value: str) -> str:
 def load_skills(root: pathlib.Path, found: list[str]) -> dict[str, dict[str, str]]:
     """Every skill folder's files, as text by path inside the folder."""
     skills: dict[str, dict[str, str]] = {}
-    base = root / 'skills'
+    base = root / SKILLS_DIR
     for folder in sorted(p for p in base.iterdir() if p.is_dir()) if base.is_dir() else []:
-        where = f'skills/{folder.name}'
+        where = f'{SKILLS_DIR}/{folder.name}'
         files = {}
         for path in sorted(p for p in folder.rglob('*') if p.is_file()):
             rel = path.relative_to(folder).as_posix()
@@ -163,11 +166,11 @@ def check_skill(name: str, text: str, where: str, found: list[str]) -> None:
 def load_subagents(root: pathlib.Path, found: list[str]) -> dict[str, dict[str, str]]:
     """Every subagent, rendered for each app that reads them."""
     agents: dict[str, dict[str, str]] = {}
-    base = root / 'subagents'
+    base = root / SUBAGENTS_DIR
     for path in sorted(base.glob('*.md')) if base.is_dir() else []:
         if path.name == 'README.md':
             continue
-        where = f'subagents/{path.name}'
+        where = f'{SUBAGENTS_DIR}/{path.name}'
         try:
             fields, body = frontmatter(path.read_text(encoding='utf-8'))
         except ValueError as error:
@@ -212,8 +215,8 @@ def bundle(root: pathlib.Path) -> tuple[dict, list[str]]:
     if OWNED not in guard:
         found.append(f'{GUARD_FILE}: must carry the line "# {OWNED}", which marks the installed copy')
     kit = {
-        '//': 'Everything the home kit installs besides the rules, rendered by scripts/kit.py from '
-              'scripts/guard.py, skills/ and subagents/. Never edit this file by hand.',
+        '//': 'Everything the home kit installs besides the rules, rendered by .github/scripts/kit.py from '
+              'kit/guard.py, kit/skills/ and kit/subagents/. Never edit this file by hand.',
         # 2 dropped the knowledge facts (ADR-0023); the installer reads this one format.
         'format': 2,
         'guard': guard,

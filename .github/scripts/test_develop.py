@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for the develop skill's validator and packager.
 
-WHY THIS EXISTS. `skills/develop/scripts/validate.py` is Gate 1 for every
+WHY THIS EXISTS. `kit/skills/develop/scripts/validate.py` is Gate 1 for every
 skill and agent the develop skill builds, in every repository the home kit
 reaches, and `package.py` builds the archive a person uploads to the Claude
 app. A check that passes a broken skill ships it everywhere; an archive that
@@ -13,7 +13,7 @@ Nothing here writes outside a temporary folder.
 
 Run it:
 
-    python3 scripts/test_develop.py
+    python3 .github/scripts/test_develop.py
 """
 
 from __future__ import annotations
@@ -29,7 +29,7 @@ import tempfile
 import unittest
 import zipfile
 
-SKILL_DIR = pathlib.Path(__file__).resolve().parents[1] / 'skills' / 'develop'
+SKILL_DIR = pathlib.Path(__file__).resolve().parents[2] / 'kit' / 'skills' / 'develop'
 SCRIPTS = SKILL_DIR / 'scripts'
 sys.dont_write_bytecode = True  # keep the skill folder free of caches
 

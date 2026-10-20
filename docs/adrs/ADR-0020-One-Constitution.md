@@ -69,7 +69,7 @@ The owner asked for one `CONSTITUTION.md` in the hub, as the place every `AGENTS
 
 ### Rationale for Selection
 
-`CONSTITUTION.md` sits at the hub's root. Article I quotes the precedence, Articles II to IV hold the rules by kind, Article V sets the block's heading, source line and budget, Article VI says how the file is written and changed, and an appendix lists the retired IDs. Each rule is a `###` heading of its ID, the one sentence agents read as a quote under it, then **Why.**, **Enforced by:** and **To add:**. `scripts/render.py` reads that shape and holds the file to Article VI, so a missing reason, a second quote or a rule outside an Article fails `make check` with its line number.
+`CONSTITUTION.md` sits at the hub's root. Article I quotes the precedence, Articles II to IV hold the rules by kind, Article V sets the block's heading, source line and budget, Article VI says how the file is written and changed, and an appendix lists the retired IDs. Each rule is a `###` heading of its ID, the one sentence agents read as a quote under it, then **Why.**, **Enforced by:** and **To add:**. `.github/scripts/render.py` reads that shape and holds the file to Article VI, so a missing reason, a second quote or a rule outside an Article fails `make check` with its line number.
 
 The block opens with a line naming its source, so a person reading any `AGENTS.md` knows where the reasons are. Option 3 would put a second managed file in every repository, which ADR-0002 rules out and the owner did not want; Option 1 keeps two forms of every rule.
 

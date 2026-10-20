@@ -12,7 +12,7 @@ Nothing here touches your real home folder or calls a real model.
 
 Run it:
 
-    python3 probe/test_loader_probe.py
+    python3 .github/scripts/test_loader_probe.py
 """
 
 from __future__ import annotations

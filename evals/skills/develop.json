@@ -26,7 +26,7 @@
   "quality": [
     {
       "prompt": "Build a skill that walks an agent through cutting a release in this repository.",
-      "expect": "a skill folder that passes skills/develop/scripts/validate.py, with a description holding 'Use when', a Changelog whose Current Version matches metadata.version, and a trigger test"
+      "expect": "a skill folder that passes kit/skills/develop/scripts/validate.py, with a description holding 'Use when', a Changelog whose Current Version matches metadata.version, and a trigger test"
     }
   ]
 }
