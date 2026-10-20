@@ -47,6 +47,7 @@ def load(name: str, path: pathlib.Path):
 guard = load('guard', ROOT / 'kit' / 'guard.py')
 render = load('render', HERE / 'render.py')
 prompts = load('prompts', HERE / 'prompts.py')
+install = load('install', HERE / 'install.py')
 
 HUMAN = 'Tanner Golden <24684994+tannergolden@users.noreply.github.com>'
 GITHUB_TOKEN = 'ghp_' + 'a1B2c3D4e5' * 4
@@ -889,6 +890,45 @@ class TestSelfProtection(Sandbox):
                                    new_string='true').rule, 'OPS-004')
         self.assertIsNone(self.edit('Write', file_path=str(self.settings),
                                     content=json.dumps(data, indent=2).replace('dark', 'light')))
+
+    def test_the_kits_ask_rules_cannot_be_dropped(self) -> None:
+        data = json.loads(self.settings.read_text(encoding='utf-8'))
+        data['permissions'] = {'ask': ['Bash(make deploy)', *guard.ASK_RULES], 'allow': ['Bash(npm test)']}
+        text = json.dumps(data, indent=2)
+        self.settings.write_text(text, encoding='utf-8')
+        fewer = json.loads(text)
+        fewer['permissions']['ask'].remove('Bash(git push *)')
+        moved = json.loads(json.dumps(fewer))
+        moved['permissions']['allow'].append('Bash(git push *)')
+        rule = '      "Bash(git push *)",\n'
+        dropped = [('Write', {'content': json.dumps(fewer, indent=2)}),
+                   ('Write', {'content': json.dumps(moved, indent=2)}),
+                   ('Write', {'content': text.replace('"ask"', '"asked"')}),
+                   ('Edit', {'old_string': rule, 'new_string': ''}),
+                   ('MultiEdit', {'edits': [{'old_string': '"theme": "dark"', 'new_string': '"theme": "light"'},
+                                            {'old_string': rule, 'new_string': ''}]}),
+                   ('apply_patch', {'input': f'*** Begin Patch\n*** Update File: {self.settings}\n@@\n-{rule}'
+                                             '*** End Patch\n'})]
+        for tool, args in dropped:
+            with self.subTest(tool=tool, args=str(args)[:60]):
+                verdict = self.edit(tool, file_path=str(self.settings), **args)
+                self.assertEqual(verdict.rule, 'OPS-004', verdict.line())
+        self.assertEqual(self.edit('Write', file_path=str(self.settings), **dropped[0][1]).line(),
+                         'intelligence guard blocked this (OPS-004): the change would drop `Bash(git push *)` from the '
+                         f'ask rules in {self.settings}, which make Claude Code ask your user before an outward '
+                         'action. Leave the ask rules in place and let Claude Code ask your user; make '
+                         'agents-uninstall is what takes them out')
+        mine = json.loads(text)
+        mine['permissions']['ask'].remove('Bash(make deploy)')  # your own rule, which is yours to drop
+        for tool, args in (('Write', {'content': json.dumps(mine, indent=2)}),
+                           ('Write', {'content': text.replace('dark', 'light')}),
+                           ('Edit', {'old_string': '"Bash(make deploy)",', 'new_string': ''}),
+                           ('Edit', {'old_string': '"Bash(npm test)"', 'new_string': '"Bash(npm test)", "Bash(ls)"'})):
+            with self.subTest(tool=tool, args=str(args)[:60]):
+                self.assertIsNone(self.edit(tool, file_path=str(self.settings), **args))
+
+    def test_the_guards_ask_rules_are_the_installers(self) -> None:
+        self.assertEqual(guard.ASK_RULES, install.ASK_RULES)
 
 
 class TestCompactionReminder(Sandbox):
