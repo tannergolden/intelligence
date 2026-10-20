@@ -131,13 +131,13 @@ Learn what the universal rules in an agent instruction file should say, how they
 
 ### 🛠️ Spikes / Prototypes
 
-- `render.py` measures the revised block at 4,997 of its 5,000 characters, 25 rules, with no format problems.
-- Evals of every new or reworded rule run on Claude Code with Claude Opus 5.5, 7 runs per condition; their results are recorded in [ADR-0030](../../adrs/ADR-0030-Rules-Written-For-Current-Models.md).
+- `render.py` measured the first revision at 4,997 of its 5,000 characters, 25 rules. After the audit's rewordings it measured 5,151, over the cap, so WORK-005 was cut, and the final block measures 4,989 characters, 24 rules, with no format problems.
+- Evals of every new or reworded rule ran on Claude Code with Claude Opus 5.5 and Claude Sonnet 5.5, 7 runs per condition, and every rule's scenarios ran again on the final block; the results are recorded in [ADR-0030](../../adrs/ADR-0030-Rules-Written-For-Current-Models.md).
 - No run on Codex, Copilot, Antigravity or Cursor has been made: none is installed where the evals ran.
 
 ### 🏁 Conclusion / Recommendation
 
-Keep the constitution's shape: a small unwaivable tier whose rules each name an enforcer, one sentence per behavior, no emphasis, and an explicit precedence ladder. Reword the sentences the current evidence faults, add an Invariant for installing packages, fold two Defaults into their neighbors, and build the mechanisms the restraint rules depend on: guard denials for the acts the rules name, ask-first permissions for outward actions, and the Invariants restated after compaction. Measure the block with the hub's own evals on each new default model, since nobody else does. Recorded in [ADR-0030](../../adrs/ADR-0030-Rules-Written-For-Current-Models.md).
+Keep the constitution's shape: a small unwaivable tier whose rules each name an enforcer, one sentence per behavior, no emphasis, and an explicit precedence ladder. Reword the sentences the current evidence faults, add an Invariant for installing packages, fold or cut the Defaults current models no longer need, and build the mechanisms the restraint rules depend on: guard denials for the acts the rules name, ask-first permissions for outward actions, and the Invariants restated after compaction. Measure the block with the hub's own evals on each new default model, since nobody else does. Recorded in [ADR-0030](../../adrs/ADR-0030-Rules-Written-For-Current-Models.md).
 
 ### ✅ Confidence & Caveats
 
