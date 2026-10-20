@@ -123,6 +123,7 @@ here.
 ## 🔗 See Also
 
 - [ADR-0025](../adrs/ADR-0025-Every-Repository-Gets-Ready-Made-Prompts.md): why the prompts reach every repository, and how they are split
+- [ADR-0026](../adrs/ADR-0026-Every-Prompt-Is-Linted-&-Measured.md): why each universal prompt is checked by `make check` and measured by evals
 - [Prompt Engineering](research/Prompt-Engineering.md): the research the prompts and their practices rest on
 - [Evals](Evals.md): how a prompt scenario measures a universal prompt
 - [Repository Sync](Repository-Sync.md): the pull request both blocks ride in

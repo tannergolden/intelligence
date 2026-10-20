@@ -146,6 +146,7 @@ there rather than in the skill's folder, so they never ship with it, and
 ## 🔗 See Also
 
 - [ADR-0018](../adrs/ADR-0018-Evals-Measure-The-Block.md): evals measure each rule with the block and without it
+- [ADR-0026](../adrs/ADR-0026-Every-Prompt-Is-Linted-&-Measured.md): each universal prompt is measured against the request it replaces
 - [The Constitution](../../CONSTITUTION.md): the rules each scenario tests
 - [Prompts](Prompts.md): the universal prompts each prompt scenario measures
 
