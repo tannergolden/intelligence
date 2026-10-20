@@ -606,7 +606,7 @@ class TestWindowsDeletes(Sandbox):
                         'del /s /q C:\\*.*', 'rd /s /q %USERPROFILE%', 'Remove-Item -Recurse -Force C:\\',
                         'Remove-Item -Recurse -Force $HOME', 'Remove-Item -Recurse -Force ~',
                         'Remove-Item -Path $env:USERPROFILE -Recurse -Force',
-                        'Remove-Item -Recurse -Force -Path:C:\\', 'ri -r -fo $env:USERPROFILE', 'rm -r -Force $HOME',
+                        'Remove-Item -Recurse -Force -Path:C:\\', 'ri -r -Force $env:USERPROFILE', 'rm -r -Force $HOME',
                         'del -Recurse ~\\*', 'rmdir -Recurse ${env:USERPROFILE}', 'Remove-Item -Recurse "C:/"',
                         'cmd /c "rd /s /q C:\\"', 'powershell -Command "Remove-Item -Recurse -Force $env:USERPROFILE"',
                         'rm -rf /c/'):

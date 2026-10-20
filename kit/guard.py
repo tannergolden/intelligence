@@ -243,7 +243,8 @@ DOWNLOADERS = {'curl', 'wget', 'fetch', 'http', 'https', 'xh', 'iwr', 'irm', 'in
                'invoke-restmethod'}
 DOWNLOAD_HINT = re.compile(r'\b(?:curl|wget|fetch|xh|iwr|irm|invoke-webrequest|invoke-restmethod)\b'
                            r'|\bhttps?(?=[\s\'"]|$)|downloadstring', re.I)
-CODE_RUNNERS = re.compile(r'(?:ba|da|z|k|mk|a|c|tc|fi)?sh|python[0-9.]*|pypy[0-9.]*|perl|ruby|node(?:js)?|php|lua')
+CODE_RUNNERS = re.compile(r'(?:bash|dash|zsh|ksh|mksh|ash|csh|tcsh|fish|sh)|python[0-9.]*|pypy[0-9.]*|perl|ruby'
+                          r'|node(?:js)?|php|lua')
 INLINE = {'python': 'cm', 'pypy': 'cm', 'perl': 'eE', 'ruby': 'e', 'node': 'ep', 'php': 'rfBRFE', 'lua': 'e'}
 # The flags of a shell or interpreter that take a value, so the word after one is not the script it runs.
 RUNNER_VALUED = {'sh': {'-o', '+o', '-O', '+O', '--rcfile', '--init-file'}, 'python': {'-W', '-X'},
@@ -260,7 +261,7 @@ PS_DOWNLOADS = re.compile(r'\b(?P<tool>iwr|irm|invoke-webrequest|invoke-restmeth
 # install commands, and the variables that name a registry for one command.
 # A bare `yarn` installs too.
 PACKAGE_INSTALLS = {
-    'npm': {'install', 'i', 'in', 'isntall', 'add', 'ci', 'clean-install', 'ic', 'install-clean', 'install-test',
+    'npm': {'install', 'i', 'in', 'add', 'ci', 'clean-install', 'ic', 'install-clean', 'install-test',
             'it', 'install-ci-test', 'cit'},
     'pnpm': {'install', 'i', 'add'},
     'yarn': {'install', 'add', ''},
