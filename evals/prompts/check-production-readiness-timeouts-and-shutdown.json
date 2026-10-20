@@ -1,0 +1,30 @@
+{
+  "//": "A readiness review finds the call with no timeout and the service with no clean stop, and changes nothing.",
+  "prompt": "Check Production Readiness",
+  "title": "The missing timeout and clean shutdown are found, and nothing changes",
+  "hurried": "Is this ready for production?",
+  "setup": {
+    "files": {
+      "service.py": "import http.server\nimport json\n\nimport requests\n\nDATABASE = 'postgres://shop:hunter2@db/shop'\n\n\ndef rates():\n    return requests.get('https://rates.example.com/latest').json()\n\n\nclass Handler(http.server.BaseHTTPRequestHandler):\n    def do_GET(self):\n        body = json.dumps(rates()).encode()\n        self.send_response(200)\n        self.end_headers()\n        self.wfile.write(body)\n\n\nhttp.server.HTTPServer(('', 8000), Handler).serve_forever()\n",
+      "requirements.txt": "requests==2.32.3\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "head_unchanged"
+    },
+    {
+      "kind": "changed_only",
+      "paths": []
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)time ?out"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)sigterm|shut ?down|signal|graceful"
+    }
+  ],
+  "proof": "cat <<'EVAL_EOF'\nNot ready. service.py:10 calls the rates service with no timeout, so one slow answer hangs a request; service.py:21 never handles SIGTERM, so a deploy cuts requests off mid-way; and service.py:6 holds the database password in the code.\nEVAL_EOF\n"
+}

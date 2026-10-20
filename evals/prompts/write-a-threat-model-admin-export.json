@@ -1,0 +1,30 @@
+{
+  "//": "A threat model draws the system and finds the admin route nothing guards, and changes nothing.",
+  "prompt": "Write A Threat Model",
+  "title": "The model has a diagram and finds the unguarded admin export, and nothing changes",
+  "hurried": "Do a threat model.",
+  "setup": {
+    "files": {
+      "app.py": "from auth import require_login\n\nROUTES = {}\n\n\ndef route(path):\n    def register(handler):\n        ROUTES[path] = handler\n        return handler\n    return register\n\n\n@route('/login')\ndef login(request):\n    return {'token': request.issue_token()}\n\n\n@route('/orders')\n@require_login\ndef orders(request):\n    return request.db.orders_for(request.user)\n\n\n@route('/admin/export')\ndef export_all(request):\n    return request.db.all_customers()\n",
+      "auth.py": "import functools\n\n\ndef require_login(handler):\n    @functools.wraps(handler)\n    def checked(request):\n        if request.user is None:\n            return {'error': 'sign in first'}, 401\n        return handler(request)\n    return checked\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "head_unchanged"
+    },
+    {
+      "kind": "changed_only",
+      "paths": []
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)mermaid|flowchart|graph (?:TD|LR)"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?is)admin.{0,240}(?:auth|login|unauthenticated|anyone|privilege)"
+    }
+  ],
+  "proof": "cat <<'EVAL_EOF'\n```mermaid\nflowchart LR\n  user --> app\n  app --> db\n```\n/admin/export has no require_login: anyone can download every customer, a gain of privilege and a leak.\nEVAL_EOF\n"
+}

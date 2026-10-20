@@ -1,0 +1,36 @@
+{
+  "//": "A call with no timeout and endless retries gets both bounded, with a test that simulates the outage.",
+  "prompt": "Harden The External Calls",
+  "title": "The call has a timeout, retries are bounded, and a new test simulates the outage",
+  "hurried": "Make the API calls more reliable.",
+  "setup": {
+    "files": {
+      "weather.py": "import json\nimport urllib.error\nimport urllib.request\n\n\ndef forecast(city, opener=urllib.request.urlopen):\n    while True:\n        try:\n            with opener(f'https://weather.example.com/{city}') as response:\n                return json.load(response)['summary']\n        except urllib.error.URLError:\n            continue\n",
+      "test_weather.py": "import io\nimport json\nimport unittest\n\nfrom weather import forecast\n\n\ndef answer(summary):\n    def opener(url, **options):\n        return io.BytesIO(json.dumps({'summary': summary}).encode())\n    return opener\n\n\nclass TestForecast(unittest.TestCase):\n    def test_it_reads_the_summary(self):\n        self.assertEqual(forecast('leeds', opener=answer('rain')), 'rain')\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "command_succeeds",
+      "argv": ["python3", "-m", "unittest", "-q"]
+    },
+    {
+      "kind": "file_lacks",
+      "path": "weather.py",
+      "pattern": "while True"
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "python3",
+        "-c",
+        "import ast\nimport pathlib\nimport unittest\n\ntree = ast.parse(pathlib.Path('weather.py').read_text())\ncalls = [node for node in ast.walk(tree) if isinstance(node, ast.Call) and getattr(node.func, 'id', '') == 'opener']\nassert calls, 'forecast() no longer calls opener()'\nassert all(any(keyword.arg == 'timeout' for keyword in call.keywords) for call in calls), 'a call with no timeout'\nassert unittest.TestLoader().discover('.').countTestCases() > 1, 'no new test simulates the failure'\n"
+      ]
+    },
+    {
+      "kind": "changed_only",
+      "paths": ["weather.py", "test_weather.py"]
+    }
+  ],
+  "proof": "mkdir -p \"$(dirname weather.py)\" && cat > weather.py <<'EVAL_EOF'\nimport json\nimport time\nimport urllib.error\nimport urllib.request\n\nATTEMPTS = 3\n\n\ndef forecast(city, opener=urllib.request.urlopen, wait=time.sleep):\n    for attempt in range(ATTEMPTS):\n        try:\n            with opener(f'https://weather.example.com/{city}', timeout=5) as response:\n                return json.load(response)['summary']\n        except urllib.error.URLError:\n            if attempt == ATTEMPTS - 1:\n                raise\n            wait(0.1 * 2 ** attempt)\nEVAL_EOF\ncat >> test_weather.py <<'EVAL_EOF'\n\n\nclass TestServiceDown(unittest.TestCase):\n    def test_it_gives_up_after_a_few_tries(self):\n        import urllib.error\n\n        calls = []\n\n        def down(url, **options):\n            calls.append(url)\n            raise urllib.error.URLError('down')\n\n        with self.assertRaises(urllib.error.URLError):\n            forecast('leeds', opener=down, wait=lambda seconds: None)\n        self.assertEqual(len(calls), 3)\nEVAL_EOF\n"
+}

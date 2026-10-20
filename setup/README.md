@@ -40,7 +40,7 @@ once, and one sync delivers:
 | :----------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`claude-cloud-setup.sh`](claude-cloud-setup.sh) | Install the universal rules into a Claude Code cloud session.                                                                                                                                 |
 | [`intelligence-sync.yml`](intelligence-sync.yml) | Keeps the universal rules for AI coding agents current in this repository's root AGENTS.md: the block between the INTELLIGENCE markers, which tannergolden/intelligence renders and releases. |
-| [`Prompts.md`](Prompts.md)                       | Ready-made prompts for working in this repository with an AI agent: copy one, fill in its placeholders, and paste it into any AI app.                                                         |
+| [`Prompts.md`](Prompts.md)                       | Ready-made prompts for working in this repository with an AI agent: find one for your task, copy it, fill in any details it asks for, and paste it into your agent.                           |
 | [`README.md`](README.md)                         | This file.                                                                                                                                                                                    |
 
 <!-- AUTO-INDEX:END -->

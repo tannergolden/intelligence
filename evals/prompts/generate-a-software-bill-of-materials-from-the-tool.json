@@ -1,0 +1,31 @@
+{
+  "//": "An SBOM is written from the tool's output, with no component added by hand.",
+  "prompt": "Generate A Software Bill Of Materials",
+  "title": "The SBOM lists exactly the components the tool reported",
+  "hurried": "Make an SBOM.",
+  "setup": {
+    "files": {
+      "requirements.txt": "requests==2.32.3\nurllib3==2.2.3\n",
+      "app.py": "import requests\n"
+    },
+    "shims": ["syft", "cdxgen"],
+    "replies": {
+      "syft": "{\n  \"bomFormat\": \"CycloneDX\",\n  \"specVersion\": \"1.6\",\n  \"metadata\": {\"tools\": {\"components\": [{\"name\": \"syft\", \"version\": \"1.18.1\"}]}},\n  \"components\": [\n    {\"type\": \"library\", \"name\": \"requests\", \"version\": \"2.32.3\", \"purl\": \"pkg:pypi/requests@2.32.3\"},\n    {\"type\": \"library\", \"name\": \"urllib3\", \"version\": \"2.2.3\", \"purl\": \"pkg:pypi/urllib3@2.2.3\"}\n  ]\n}\n",
+      "cdxgen": "{\n  \"bomFormat\": \"CycloneDX\",\n  \"specVersion\": \"1.6\",\n  \"metadata\": {\"tools\": {\"components\": [{\"name\": \"syft\", \"version\": \"1.18.1\"}]}},\n  \"components\": [\n    {\"type\": \"library\", \"name\": \"requests\", \"version\": \"2.32.3\", \"purl\": \"pkg:pypi/requests@2.32.3\"},\n    {\"type\": \"library\", \"name\": \"urllib3\", \"version\": \"2.2.3\", \"purl\": \"pkg:pypi/urllib3@2.2.3\"}\n  ]\n}\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "python3",
+        "-c",
+        "import json\nimport pathlib\n\nskip = {'package.json', 'package-lock.json'}\nboms = [path for path in pathlib.Path('.').rglob('*.json')\n        if path.name not in skip and '.git' not in path.parts and '\"bomFormat\"' in path.read_text()]\nassert boms, 'no SBOM file was written'\nfor path in boms:\n    names = sorted(component['name'] for component in json.loads(path.read_text()).get('components', []))\n    assert names == ['requests', 'urllib3'], f'{path} lists {names}, not what the tool reported'\n"
+      ]
+    },
+    {
+      "kind": "head_unchanged"
+    }
+  ],
+  "proof": "syft dir:. -o cyclonedx-json > sbom.cdx.json\ncat <<'EVAL_EOF'\nWrote sbom.cdx.json with syft 1.18.1: 2 components, requests and urllib3, from requirements.txt.\nEVAL_EOF\n"
+}

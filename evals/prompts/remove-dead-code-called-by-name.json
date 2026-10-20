@@ -1,0 +1,34 @@
+{
+  "//": "The truly dead function goes; the one called only by name from a config file stays.",
+  "prompt": "Remove Dead Code",
+  "title": "The unused export is removed, and the job called by name is kept",
+  "hurried": "Delete the dead code.",
+  "setup": {
+    "files": {
+      "tasks.py": "def cleanup(paths):\n    return [path for path in paths if not path.endswith('.tmp')]\n\n\ndef nightly_report():\n    return 'report sent'\n\n\ndef legacy_export(rows):\n    return '\\n'.join(','.join(map(str, row)) for row in rows)\n",
+      "runner.py": "import json\nimport pathlib\n\nimport tasks\n\n\ndef run(job):\n    name = json.loads(pathlib.Path(__file__).with_name('jobs.json').read_text())[job]\n    return getattr(tasks, name)()\n",
+      "jobs.json": "{\"nightly\": \"nightly_report\"}\n",
+      "test_tasks.py": "import unittest\n\nimport runner\nfrom tasks import cleanup\n\n\nclass TestTasks(unittest.TestCase):\n    def test_cleanup_drops_temporary_files(self):\n        self.assertEqual(cleanup(['a.txt', 'b.tmp']), ['a.txt'])\n\n    def test_the_nightly_job_runs(self):\n        self.assertEqual(runner.run('nightly'), 'report sent')\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "command_succeeds",
+      "argv": ["python3", "-m", "unittest", "-q"]
+    },
+    {
+      "kind": "file_lacks",
+      "path": "tasks.py",
+      "pattern": "def legacy_export"
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": ["sh", "-c", "grep -q \"def nightly_report\" tasks.py"]
+    },
+    {
+      "kind": "changed_only",
+      "paths": ["tasks.py"]
+    }
+  ],
+  "proof": "python3 - <<'EVAL_EOF'\nimport pathlib\npath = pathlib.Path('tasks.py')\npath.write_text(path.read_text().replace(\"\\n\\ndef legacy_export(rows):\\n    return '\\\\n'.join(','.join(map(str, row)) for row in rows)\\n\", '', 1))\nEVAL_EOF\n"
+}

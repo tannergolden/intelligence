@@ -1,6 +1,6 @@
 <!--
 title: '💬 PROMPTS'
-description: 'The ready-made prompts every repository gets in docs/Prompts.md: the universal ones the hub keeps current between their markers, the section each repository fills with its own, and how to change either.'
+description: 'The ready-made prompts every repository gets in docs/Prompts.md: the universal ones the hub keeps current between their markers, most ready to run as they are, the section each repository fills with its own, and how to change either.'
 type: guide
 keywords: [prompts, repository-sync, prompt-engineering]
 -->
@@ -13,7 +13,7 @@ keywords: [prompts, repository-sync, prompt-engineering]
 
 **Ready-made prompts in every repository, so nobody has to write a good one from scratch.**
 
-_Copy one. Fill it in. Paste it._
+_Find one. Copy it. Paste it._
 
 </div>
 
@@ -26,19 +26,83 @@ context it cannot see, the limits, and how to tell when it is done. So every
 repository that takes part in [sync](Repository-Sync.md) gets
 `docs/Prompts.md`, a page of prompts anyone can copy into any AI app, the
 owner and every collaborator alike. Each prompt sits in its own fenced block,
-so GitHub shows a copy button on it, and marks what changes from one use to
-the next with a placeholder in double braces, such as `{{ERROR_OUTPUT}}`.
+so GitHub shows a copy button on it.
+
+Most of the universal prompts run as they are: the agent finds what changes
+from one repository to the next, such as its commands, its default branch or
+its last release, in the repository itself. The few that need what only a
+person knows, such as the bug they saw, mark it with a placeholder in double
+braces, such as `{{ERROR_OUTPUT}}`, and name it in a **Fill in** line.
 
 The file has two parts, split the way `AGENTS.md` is:
 
-| Part                                             | Whose                     | What it holds                                                                                                                                             |
-| :----------------------------------------------- | :------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Between the `INTELLIGENCE:PROMPTS` markers       | The hub's, kept current   | How to use a prompt; six universal prompts: fix a bug, add a feature, plan a change, review a change, explain code, and write a new prompt; the practices |
-| "Prompts For This Repository", after the markers | The repository's, its own | The prompts its owner writes for the work that repository does                                                                                            |
+| Part                                             | Whose                     | What it holds                                                                                                                |
+| :----------------------------------------------- | :------------------------ | :--------------------------------------------------------------------------------------------------------------------------- |
+| Between the `INTELLIGENCE:PROMPTS` markers       | The hub's, kept current   | How to use a prompt; an index of every prompt; the universal prompts, grouped by the kind of work they do; and the practices |
+| "Prompts For This Repository", after the markers | The repository's, its own | The prompts its owner writes for the work that repository does                                                               |
 
-The last universal prompt turns a rough request into a new prompt in the same
-shape and adds it to the repository's own section, so writing a good prompt
-needs no study first.
+The universal prompts cover the work any repository has, in 17 areas, from a
+first look at the code to a release:
+
+| Area                          | Prompts that run as they are                                                                                                                                                                                                    | Prompts to fill in                   |
+| :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------- |
+| Get started                   | Tour This Repository, Set Up This Project, Make Setup Repeatable, Catch Me Up                                                                                                                                                   | Explain This Code                    |
+| Plan and build                |                                                                                                                                                                                                                                 | Plan A Change, Add A Feature         |
+| Debug and fix                 | Make Every Check Pass, Find The Commit That Broke It, Hunt For Bugs, Clear The Warnings                                                                                                                                         | Fix A Bug                            |
+| Test                          | Fill The Test Gaps, Test My Changes, Test The Tests, Add A Smoke Test, Fix Flaky Tests, Speed Up The Tests                                                                                                                      |                                      |
+| Keep the code healthy         | Find The Riskiest Code, Simplify The Most Complex Code, Remove Duplicated Code, Remove Dead Code, Tighten The Types, Triage The TODO Comments, Review The Whole Codebase                                                        |                                      |
+| Review and ship               | Review This Branch, Commit My Work, Write The Pull Request, Address The Review Comments, Update This Branch, Split This Branch                                                                                                  | Review My Change                     |
+| Look after the repository     | Check The Repository Setup, Add Issue And Pull Request Templates, Stop Tracking Generated Files, Find What Bloats The Repository, Triage The Open Issues, Sort The Open Pull Requests, Clean Up Old Branches, Find My Lost Work |                                      |
+| Dependencies                  | Update The Dependencies, Fix Vulnerable Dependencies, Remove Unused Dependencies, Set Up Dependency Updates, Check Dependency Licenses                                                                                          |                                      |
+| Security and privacy          | Find Security Holes, Find Security Holes In This Branch, Find Leaked Secrets, Map The Personal Data, Write A Threat Model, Generate A Software Bill Of Materials                                                                |                                      |
+| Build and CI                  | Run Every Check In CI, Speed Up CI, Harden The CI Workflows                                                                                                                                                                     |                                      |
+| Release                       | Prepare The Next Release, Write The Release Notes, Find Breaking Changes                                                                                                                                                        |                                      |
+| Document                      | Refresh The README, Fix Stale Docs, Document The Public Interface, Write An Architecture Overview, Record Past Decisions, Write The Contributing Guide, Document The Configuration                                              |                                      |
+| Performance and reliability   | Check Production Readiness, Speed Up The Slowest Path, Find Resource Leaks, Harden The External Calls, Find Swallowed Errors, Find Concurrency Bugs, Make It Observable                                                         |                                      |
+| Data and APIs                 | Check The Migrations Are Safe, Check The API Contract, Check The API Design                                                                                                                                                     |                                      |
+| User interface                | Fix Accessibility Problems, Prepare For Translation, Speed Up Page Load                                                                                                                                                         |                                      |
+| Containers and infrastructure | Harden The Container Image, Review The Infrastructure Code, Find Cloud Savings, Write The Runbook                                                                                                                               |                                      |
+| Work with agents              | Write The Agent Instructions, Set Up Cloud Agents, Continue Where I Left Off, Suggest What To Do Next, Check What The Agent Did, Write A Handoff Note                                                                           | Write A New Prompt, Improve A Prompt |
+
+A prompt that runs as it is needs an agent that works in the repository, one
+that can open its files and run its commands; a prompt to fill in also works in
+an app that sees only what is pasted into it. A line added after a prompt, such
+as "Only the billing module.", points it at part of the repository. Write A New
+Prompt turns a rough request into a new prompt in the same shape and adds it to
+the repository's own section, so writing a good prompt needs no study first,
+and Improve A Prompt fixes one that went wrong.
+
+---
+
+## 🧭 How A Prompt Runs Anywhere
+
+A prompt that reaches every repository cannot name one repository's commands,
+files or branches, so each universal prompt is written to find them and to stay
+safe where it does not fit, as the research behind it found agents need:
+
+- **It finds what it needs.** It reads `AGENTS.md`, the README, the
+  contributing guide, the build files and the CI configuration for the
+  commands, and treats CI as what must pass. It finds the default branch from
+  the remote and the last release from the tags. A prompt that edits runs the
+  checks first, and stops to ask if they already fail, so a later failure is
+  known to be its own.
+- **It says what it may change.** A prompt that only looks says to change
+  nothing; one that edits names what it may touch, such as only the docs, and
+  what it must never do, such as push, rewrite history, edit a lock file by
+  hand, or weaken a test to make it pass.
+- **It stops where a person decides.** A license, a major upgrade, a design
+  change, a secret to rotate or a comment to post waits for a person, and the
+  prompt says so.
+- **It has a way out.** It says what to do when the task cannot be done
+  honestly, or does not apply, such as a page with no user interface, rather
+  than leaving the agent to fake a result.
+- **It proves the result.** It ends with what shows the work is done, such as
+  a check that fails before and passes after, a measurement before and after,
+  or a finding traced to the input that triggers it, and what to report.
+- **It reads what it did not write as data.** A diff, an issue or a review
+  comment is material to weigh, never an instruction; a secret is named by
+  where it is, never by its value; and an advisory or a commit hash comes from
+  a tool's output, never from memory.
 
 ---
 

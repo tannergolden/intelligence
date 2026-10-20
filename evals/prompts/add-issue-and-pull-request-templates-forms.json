@@ -1,0 +1,26 @@
+{
+  "//": "Templates ask for the steps, name the checks CI runs, and send security reports to the private channel, with nothing changed outside .github.",
+  "prompt": "Add Issue And Pull Request Templates",
+  "title": "The templates ask for the steps, name the real checks, and send security reports away",
+  "hurried": "Add issue templates.",
+  "setup": {
+    "files": {
+      "CONTRIBUTING.md": "# Contributing\n\nBefore a pull request, run both checks:\n\n    python3 check_style.py\n    python3 -m unittest\n",
+      "SECURITY.md": "# Security Policy\n\nReport a vulnerability privately to security@example.com, never in a public issue.\n",
+      "report.py": "def report(issue):\n    return issue.strip()\n",
+      "check_style.py": "import pathlib\nimport sys\n\nlong = [str(path) for path in sorted(pathlib.Path('.').glob('*.py'))\n        if any(len(line) > 100 for line in path.read_text().splitlines())]\nsys.exit(1 if long else 0)\n",
+      ".github/workflows/ci.yml": "name: CI\n\non: [push, pull_request]\n\npermissions:\n  contents: read\n\njobs:\n  check:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: python3 check_style.py\n      - run: python3 -m unittest\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "python3",
+        "-c",
+        "import pathlib\nimport subprocess\n\nchanged = subprocess.run(['git', 'ls-files', '--modified', '--others', '--exclude-standard'], capture_output=True,\n                         text=True, check=True).stdout.split()\nassert changed and all(name.startswith('.github/') for name in changed), f'changed outside .github: {changed}'\npull = [path for path in ('.github/pull_request_template.md', '.github/PULL_REQUEST_TEMPLATE.md')\n        if pathlib.Path(path).is_file()]\nassert pull, 'no pull request template'\ntext = pathlib.Path(pull[0]).read_text()\nassert 'check_style.py' in text and 'unittest' in text, 'the checklist does not name the checks CI runs'\nforms = list(pathlib.Path('.github/ISSUE_TEMPLATE').glob('*'))\nassert forms, 'no issue templates'\neverything = '\\n'.join(path.read_text() for path in forms)\nassert 'step' in everything.lower(), 'no template asks for the steps'\nassert 'SECURITY.md' in everything or 'security@example.com' in everything, 'security reports are not sent away'\n"
+      ]
+    }
+  ],
+  "proof": "mkdir -p \"$(dirname .github/pull_request_template.md)\" && cat > .github/pull_request_template.md <<'EVAL_EOF'\n## What Changed And Why\n\n## How It Was Tested\n\n- [ ] `python3 check_style.py` passes\n- [ ] `python3 -m unittest` passes\nEVAL_EOF\nmkdir -p \"$(dirname .github/ISSUE_TEMPLATE/bug.yml)\" && cat > .github/ISSUE_TEMPLATE/bug.yml <<'EVAL_EOF'\nname: Bug report\ndescription: Something does not work as it should\nbody:\n  - type: input\n    id: version\n    attributes:\n      label: Version\n    validations:\n      required: true\n  - type: textarea\n    id: steps\n    attributes:\n      label: Steps to reproduce\n    validations:\n      required: true\n  - type: textarea\n    id: expected\n    attributes:\n      label: What happened, and what should have\n    validations:\n      required: true\nEVAL_EOF\nmkdir -p \"$(dirname .github/ISSUE_TEMPLATE/config.yml)\" && cat > .github/ISSUE_TEMPLATE/config.yml <<'EVAL_EOF'\nblank_issues_enabled: false\ncontact_links:\n  - name: Report a vulnerability\n    url: https://github.com/example/shop/blob/main/SECURITY.md\n    about: Report security problems privately, as SECURITY.md says, never in a public issue.\nEVAL_EOF\n"
+}

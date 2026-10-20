@@ -36,7 +36,8 @@ The home copy reaches every session, including other people's repositories and
 scratch folders. The repository copy travels with the code, so cloud agents and
 collaborators get the same rules with nothing installed, and beside it each
 repository gets ready-made prompts in `docs/Prompts.md`, for anyone to copy
-into an AI app.
+into an AI agent: one for each kind of work, from a first look at the code to
+a release, most of them ready to run as they are.
 
 > [!IMPORTANT]
 > **Status: built, not yet released.** The Constitution, the renderer, the home kit,

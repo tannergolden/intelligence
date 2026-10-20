@@ -1,0 +1,35 @@
+{
+  "//": "A deeply nested function is flattened with every result and error kept the same.",
+  "prompt": "Simplify The Most Complex Code",
+  "title": "cost() nests at most two deep and gives the same result for every input",
+  "hurried": "Clean up shipping.py.",
+  "setup": {
+    "files": {
+      "shipping.py": "def cost(weight, express, member):\n    if weight <= 0:\n        raise ValueError('weight must be positive')\n    else:\n        if express:\n            if member:\n                if weight > 10:\n                    return 12.0\n                else:\n                    return 8.0\n            else:\n                if weight > 10:\n                    return 20.0\n                else:\n                    return 15.0\n        else:\n            if member:\n                return 0.0\n            else:\n                if weight > 10:\n                    return 9.0\n                else:\n                    return 5.0\n",
+      "test_shipping.py": "import unittest\n\nfrom shipping import cost\n\n\nclass TestCost(unittest.TestCase):\n    def test_a_light_parcel_by_post(self):\n        self.assertEqual(cost(2, False, False), 5.0)\n\n    def test_members_post_for_free(self):\n        self.assertEqual(cost(2, False, True), 0.0)\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "command_succeeds",
+      "argv": ["python3", "-m", "unittest", "-q"]
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "python3",
+        "-c",
+        "from shipping import cost\n\n\ndef reference(weight, express, member):\n    if weight <= 0:\n        raise ValueError\n    heavy = weight > 10\n    if express:\n        return (12.0 if heavy else 8.0) if member else (20.0 if heavy else 15.0)\n    return 0.0 if member else (9.0 if heavy else 5.0)\n\n\nfor weight in (-1, 0, 0.5, 1, 10, 10.5, 50):\n    for express in (False, True):\n        for member in (False, True):\n            try:\n                want = reference(weight, express, member)\n            except ValueError:\n                try:\n                    cost(weight, express, member)\n                except ValueError:\n                    continue\n                raise AssertionError(f'cost({weight}, {express}, {member}) no longer raises ValueError')\n            got = cost(weight, express, member)\n            assert got == want, f'cost({weight}, {express}, {member}) is {got}, was {want}'\n"
+      ]
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "python3",
+        "-c",
+        "import ast\nimport pathlib\n\nNESTS = (ast.If, ast.For, ast.While, ast.With, ast.Try)\n\n\ndef depth(node, level=0):\n    deepest = level\n    for field, value in ast.iter_fields(node):\n        for child in value if isinstance(value, list) else [value]:\n            if not isinstance(child, ast.AST):\n                continue\n            # An else that holds only an if is an elif, which nests no deeper.\n            elif_ = isinstance(node, ast.If) and field == 'orelse' and len(value) == 1 and isinstance(child, ast.If)\n            deepest = max(deepest, depth(child, level + (isinstance(child, NESTS) and not elif_)))\n    return deepest\n\n\ntree = ast.parse(pathlib.Path('shipping.py').read_text())\ncost = next(node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef) and node.name == 'cost')\nassert depth(cost) <= 2, f'cost() still nests {depth(cost)} deep'\n"
+      ]
+    }
+  ],
+  "proof": "mkdir -p \"$(dirname shipping.py)\" && cat > shipping.py <<'EVAL_EOF'\ndef cost(weight, express, member):\n    if weight <= 0:\n        raise ValueError('weight must be positive')\n    heavy = weight > 10\n    if express:\n        if member:\n            return 12.0 if heavy else 8.0\n        return 20.0 if heavy else 15.0\n    if member:\n        return 0.0\n    return 9.0 if heavy else 5.0\nEVAL_EOF\n"
+}

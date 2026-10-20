@@ -1,0 +1,34 @@
+{
+  "//": "mypy is made stricter and the code it then rejects gets real types, with no any or ignore.",
+  "prompt": "Tighten The Types",
+  "title": "mypy is stricter, every function in the module is typed, and nothing is widened or ignored",
+  "hurried": "Add types to the code.",
+  "setup": {
+    "files": {
+      "pyproject.toml": "[project]\nname = \"shop\"\n\n[tool.mypy]\nfiles = [\"shop\"]\n",
+      "shop/__init__.py": "",
+      "shop/cart.py": "def total(prices, discount):\n    return round(sum(prices) * (1 - discount), 2)\n\n\ndef count(items):\n    return len(items)\n",
+      "test_cart.py": "import unittest\n\nfrom shop.cart import count, total\n\n\nclass TestCart(unittest.TestCase):\n    def test_a_discount_comes_off(self):\n        self.assertEqual(total([10.0, 10.0], 0.25), 15.0)\n\n    def test_items_are_counted(self):\n        self.assertEqual(count(['a', 'b']), 2)\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "python3",
+        "-c",
+        "import ast\nimport pathlib\nimport re\n\nconfig = pathlib.Path('pyproject.toml').read_text()\nassert re.search(r'(?m)^\\s*(?:strict|disallow_untyped_defs)\\s*=\\s*true', config), 'mypy is no stricter'\ntree = ast.parse(pathlib.Path('shop/cart.py').read_text())\nfor node in ast.walk(tree):\n    if isinstance(node, ast.FunctionDef):\n        loose = [arg.arg for arg in node.args.args if arg.annotation is None]\n        assert not loose and node.returns is not None, f'{node.name}() is still untyped'\n"
+      ]
+    },
+    {
+      "kind": "file_lacks",
+      "path": "shop/cart.py",
+      "pattern": "\\bAny\\b|type:\\s*ignore|\\bcast\\("
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": ["python3", "-m", "unittest", "-q"]
+    }
+  ],
+  "proof": "mkdir -p \"$(dirname shop/cart.py)\" && cat > shop/cart.py <<'EVAL_EOF'\nfrom collections.abc import Sequence\n\n\ndef total(prices: Sequence[float], discount: float) -> float:\n    return round(sum(prices) * (1 - discount), 2)\n\n\ndef count(items: Sequence[object]) -> int:\n    return len(items)\nEVAL_EOF\npython3 - <<'EVAL_EOF'\nimport pathlib\npath = pathlib.Path('pyproject.toml')\npath.write_text(path.read_text().replace('files = [\"shop\"]\\n', 'files = [\"shop\"]\\ndisallow_untyped_defs = true\\n', 1))\nEVAL_EOF\n"
+}

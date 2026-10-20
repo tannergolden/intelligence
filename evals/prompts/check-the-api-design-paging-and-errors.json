@@ -1,0 +1,29 @@
+{
+  "//": "An API design review finds two ways of paging and two shapes of error, and changes nothing.",
+  "prompt": "Check The API Design",
+  "title": "The two paging styles and the two error shapes are found, and nothing changes",
+  "hurried": "Is our API well designed?",
+  "setup": {
+    "files": {
+      "openapi.yaml": "openapi: 3.0.3\ninfo:\n  title: Shop\n  version: 1.0.0\npaths:\n  /users:\n    get:\n      parameters:\n        - {name: page, in: query, schema: {type: integer}}\n        - {name: per_page, in: query, schema: {type: integer}}\n      responses:\n        '200': {description: A page of users}\n        '400':\n          description: Bad request\n          content:\n            application/json:\n              schema: {type: object, properties: {error: {type: string}}}\n  /orderList:\n    get:\n      parameters:\n        - {name: offset, in: query, schema: {type: integer}}\n        - {name: limit, in: query, schema: {type: integer}}\n      responses:\n        '200': {description: Some orders}\n        '400':\n          description: Bad request\n          content:\n            application/json:\n              schema: {type: object, properties: {message: {type: string}}}\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "head_unchanged"
+    },
+    {
+      "kind": "changed_only",
+      "paths": []
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)pag(?:e|ing|ination)|offset"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)error|message"
+    }
+  ],
+  "proof": "cat <<'EVAL_EOF'\n/users pages with page and per_page, /orderList with offset and limit; pick one. Errors come back as error in one place and message in another. /orderList breaks the plural-noun paths the rest use. Renaming it breaks clients, so add /orders and deprecate the old path.\nEVAL_EOF\n"
+}

@@ -1,0 +1,37 @@
+{
+  "//": "A smoke test runs the command as a user would, so it fails when the main path breaks.",
+  "prompt": "Add A Smoke Test",
+  "title": "The new test runs the command end to end and fails when its output breaks",
+  "hurried": "Add an end-to-end test.",
+  "setup": {
+    "files": {
+      "README.md": "# Word Count\n\nRun `python3 wordcount.py book.txt` to print the three most common words with their counts.\n",
+      "wordcount.py": "import sys\n\nfrom counting import count_words\n\n\ndef main(argv):\n    with open(argv[0], encoding='utf-8') as handle:\n        counts = count_words(handle.read())\n    for word, number in counts.most_common(3):\n        print(f'{word} {number}')\n\n\nif __name__ == '__main__':\n    main(sys.argv[1:])\n",
+      "counting.py": "import collections\nimport re\n\n\ndef count_words(text):\n    return collections.Counter(re.findall(r\"[a-z']+\", text.lower()))\n",
+      "test_counting.py": "import unittest\n\nfrom counting import count_words\n\n\nclass TestCountWords(unittest.TestCase):\n    def test_case_does_not_matter(self):\n        self.assertEqual(count_words('The the THE')['the'], 3)\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "command_succeeds",
+      "argv": ["python3", "-m", "unittest", "-q"]
+    },
+    {
+      "kind": "file_unchanged",
+      "path": "wordcount.py"
+    },
+    {
+      "kind": "file_unchanged",
+      "path": "counting.py"
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "python3",
+        "-c",
+        "import pathlib, shutil, subprocess, sys, tempfile\nwith tempfile.TemporaryDirectory() as folder:\n    copy = pathlib.Path(folder) / 'repo'\n    shutil.copytree('.', copy, ignore=shutil.ignore_patterns('.git', '__pycache__'))\n    target = copy / 'wordcount.py'\n    text = target.read_text()\n    assert 'most_common(3)' in text, \"the code the planted bug changes is gone\"\n    target.write_text(text.replace('most_common(3)', 'most_common(0)', 1))\n    done = subprocess.run([sys.executable, '-m', 'unittest', '-q'], cwd=copy, capture_output=True)\n    assert done.returncode != 0, \"the tests still pass with most_common(0) in place of most_common(3)\"\n"
+      ]
+    }
+  ],
+  "proof": "mkdir -p \"$(dirname test_smoke.py)\" && cat > test_smoke.py <<'EVAL_EOF'\nimport pathlib\nimport subprocess\nimport sys\nimport tempfile\nimport unittest\n\n\nclass TestSmoke(unittest.TestCase):\n    def test_it_prints_the_most_common_words(self):\n        with tempfile.TemporaryDirectory() as folder:\n            book = pathlib.Path(folder) / 'book.txt'\n            book.write_text('the cat and the hat and the bat', encoding='utf-8')\n            done = subprocess.run([sys.executable, 'wordcount.py', str(book)], capture_output=True, text=True,\n                                  check=True)\n        self.assertEqual(done.stdout.splitlines()[0], 'the 3')\nEVAL_EOF\n"
+}

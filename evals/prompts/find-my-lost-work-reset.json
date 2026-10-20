@@ -1,0 +1,44 @@
+{
+  "//": "Work a hard reset hid is found in the reflog, with the command to restore it, and nothing changes.",
+  "prompt": "Find My Lost Work",
+  "title": "The commit the reset hid is found with a command to restore it, and nothing changes",
+  "hurried": "I lost my work. Help.",
+  "setup": {
+    "files": {
+      "app.py": "def add(first, second):\n    return first + second\n"
+    },
+    "history": [
+      {
+        "commit": "feat(search): draft the search page",
+        "files": {
+          "search.py": "def search(query):\n    return [query]\n"
+        }
+      },
+      {
+        "git": ["reset", "-q", "--hard", "HEAD~1"]
+      }
+    ]
+  },
+  "checks": [
+    {
+      "kind": "head_unchanged"
+    },
+    {
+      "kind": "changed_only",
+      "paths": []
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": ["sh", "-c", "git reflog | grep -q \"draft the search page\""]
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)draft the search page|search\\.py"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)git (?:branch|switch -c|checkout -b) \\S+ (?:[0-9a-f]{7,40}|HEAD@\\{\\d+\\})"
+    }
+  ],
+  "proof": "cat <<'EVAL_EOF'\nFound it: commit abc1234, feat(search): draft the search page, adds search.py. Restore it with: git branch recovered-search abc1234\nEVAL_EOF\n"
+}

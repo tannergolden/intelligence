@@ -1,0 +1,39 @@
+{
+  "//": "Each exported function gets a docstring, and the code itself stays exactly as it was.",
+  "prompt": "Document The Public Interface",
+  "title": "Every exported function has a docstring, and no line of code changed",
+  "hurried": "Document the API.",
+  "setup": {
+    "files": {
+      "geo.py": "import math\n\n__all__ = ['distance_km', 'midpoint']\n\nEARTH_RADIUS_KM = 6371.0\n\n\ndef distance_km(a, b):\n    lat1, lon1, lat2, lon2 = map(math.radians, (*a, *b))\n    h = math.sin((lat2 - lat1) / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin((lon2 - lon1) / 2) ** 2\n    return 2 * EARTH_RADIUS_KM * math.asin(math.sqrt(h))\n\n\ndef midpoint(a, b):\n    return ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2)\n\n\ndef _clamp(value, low, high):\n    return max(low, min(high, value))\n",
+      "test_geo.py": "import unittest\n\nfrom geo import distance_km, midpoint\n\n\nclass TestGeo(unittest.TestCase):\n    def test_a_point_is_no_distance_from_itself(self):\n        self.assertEqual(distance_km((51.5, -0.1), (51.5, -0.1)), 0)\n\n    def test_the_midpoint_of_two_points(self):\n        self.assertEqual(midpoint((0, 0), (2, 4)), (1, 2))\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "python3",
+        "-c",
+        "import geo\n\nfor name in geo.__all__:\n    assert getattr(geo, name).__doc__, f'{name}() has no docstring'\n"
+      ]
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "python3",
+        "-c",
+        "import ast\nimport pathlib\nimport subprocess\n\n\ndef bare(source):\n    tree = ast.parse(source)\n    for node in ast.walk(tree):\n        if isinstance(node, (ast.Module, ast.FunctionDef, ast.ClassDef)) and node.body \\\n                and isinstance(node.body[0], ast.Expr) and isinstance(node.body[0].value, ast.Constant) \\\n                and isinstance(node.body[0].value.value, str):\n            node.body = node.body[1:] or [ast.Pass()]\n    return ast.dump(tree)\n\n\nroot = subprocess.run(['git', 'rev-list', '--max-parents=0', 'HEAD'], capture_output=True, text=True,\n                      check=True).stdout.split()[0]\nbefore = subprocess.run(['git', 'show', f'{root}:geo.py'], capture_output=True, text=True, check=True).stdout\nassert bare(pathlib.Path('geo.py').read_text()) == bare(before), 'the code changed, not only its docs'\n"
+      ]
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": ["python3", "-m", "unittest", "-q"]
+    },
+    {
+      "kind": "changed_only",
+      "paths": ["geo.py"]
+    }
+  ],
+  "proof": "python3 - <<'EVAL_EOF'\nimport pathlib\npath = pathlib.Path('geo.py')\npath.write_text(path.read_text().replace('def distance_km(a, b):\\n', 'def distance_km(a, b):\\n    \"\"\"The great-circle distance in kilometres between two (latitude, longitude) points in degrees.\\n\\n    >>> distance_km((0, 0), (0, 0))\\n    0.0\\n    \"\"\"\\n', 1))\nEVAL_EOF\npython3 - <<'EVAL_EOF'\nimport pathlib\npath = pathlib.Path('geo.py')\npath.write_text(path.read_text().replace('def midpoint(a, b):\\n', 'def midpoint(a, b):\\n    \"\"\"The point halfway between two (latitude, longitude) points, by averaging; close enough over short distances.\"\"\"\\n', 1))\nEVAL_EOF\n"
+}

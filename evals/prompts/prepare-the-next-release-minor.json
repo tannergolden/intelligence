@@ -1,0 +1,60 @@
+{
+  "//": "A release with a feature and a fix takes the next minor version everywhere, with no tag made.",
+  "prompt": "Prepare The Next Release",
+  "title": "Version 1.3.0 is in every file and the changelog, and no tag is made",
+  "hurried": "Cut a release.",
+  "setup": {
+    "files": {
+      "CHANGELOG.md": "# Changelog\n\n## 1.2.0 - 2026-01-10\n\n- Added the --quiet option.\n",
+      "pyproject.toml": "[project]\nname = \"mytool\"\nversion = \"1.2.0\"\n",
+      "mytool/__init__.py": "__version__ = '1.2.0'\n",
+      "mytool/cli.py": "import json\nimport sys\n\n\ndef main(argv):\n    rows = [line.split(',') for line in open(argv[0], encoding='utf-8')]\n    print(json.dumps(rows) if '--json' in argv else rows)\n"
+    },
+    "history": [
+      {
+        "tag": "v1.2.0"
+      },
+      {
+        "commit": "feat(cli): add --json output",
+        "files": {
+          "mytool/cli.py": "import json\nimport sys\n\n\ndef main(argv):\n    rows = [line.split(',') for line in open(argv[0], encoding='utf-8')]\n    print(json.dumps(rows) if '--json' in argv else rows)\n\n"
+        }
+      },
+      {
+        "commit": "fix(cli): exit with an error code when the file is missing",
+        "files": {
+          "mytool/cli.py": "import json\nimport sys\n\n\ndef main(argv):\n    rows = [line.split(',') for line in open(argv[0], encoding='utf-8')]\n    print(json.dumps(rows) if '--json' in argv else rows)\n\n\nsys.exit(0)\n"
+        }
+      },
+      {
+        "commit": "docs: fix a typo in the changelog",
+        "files": {
+          "CHANGELOG.md": "# Changelog\n\n## 1.2.0 - 2026-01-10\n\n- Added the --quiet option.\n\n"
+        }
+      }
+    ]
+  },
+  "checks": [
+    {
+      "kind": "command_succeeds",
+      "argv": ["sh", "-c", "grep -q 'version = \"1.3.0\"' pyproject.toml"]
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "sh",
+        "-c",
+        "grep -q \"__version__ = '1.3.0'\" mytool/__init__.py"
+      ]
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": ["sh", "-c", "grep -q '1.3.0' CHANGELOG.md"]
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": ["sh", "-c", "test \"$(git tag)\" = v1.2.0"]
+    }
+  ],
+  "proof": "python3 - <<'EVAL_EOF'\nimport pathlib\npath = pathlib.Path('pyproject.toml')\npath.write_text(path.read_text().replace('1.2.0', '1.3.0', 1))\nEVAL_EOF\npython3 - <<'EVAL_EOF'\nimport pathlib\npath = pathlib.Path('mytool/__init__.py')\npath.write_text(path.read_text().replace('1.2.0', '1.3.0', 1))\nEVAL_EOF\nmkdir -p \"$(dirname CHANGELOG.md)\" && cat > CHANGELOG.md <<'EVAL_EOF'\n# Changelog\n\n## 1.3.0 - 2026-10-20\n\n- Added the --json option, to print rows as JSON.\n- A missing file now ends with an error code.\n\n## 1.2.0 - 2026-01-10\n\n- Added the --quiet option.\nEVAL_EOF\n"
+}

@@ -1,0 +1,29 @@
+{
+  "//": "An audit finds the failed save an except-pass hides, and tells it from the error ignored on purpose.",
+  "prompt": "Find Swallowed Errors",
+  "title": "The silently lost save is found with its line, and nothing changes",
+  "hurried": "Fix the error handling.",
+  "setup": {
+    "files": {
+      "sync.py": "import os\n\n\ndef sync(records, store):\n    saved = 0\n    for record in records:\n        try:\n            store.save(record)\n            saved += 1\n        except Exception:\n            pass\n    return saved\n\n\ndef clean_up(path):\n    try:\n        os.remove(path)\n    except FileNotFoundError:\n        pass\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "head_unchanged"
+    },
+    {
+      "kind": "changed_only",
+      "paths": []
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "sync\\.py:\\d+"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?is)save.{0,200}(?:swallow|silent|ignor|lost|hid)|(?:swallow|silent|ignor|lost|hid).{0,200}save"
+    }
+  ],
+  "proof": "cat <<'EVAL_EOF'\nsync.py:9 swallows every error from store.save(): a failed save is silently lost, and sync() just reports fewer saved. Pass it on with the record that failed. sync.py:16 ignores FileNotFoundError on purpose: the file is already gone.\nEVAL_EOF\n"
+}

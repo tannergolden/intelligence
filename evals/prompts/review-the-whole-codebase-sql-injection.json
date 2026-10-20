@@ -1,0 +1,30 @@
+{
+  "//": "A whole-codebase review leads with the injection a query built from input allows, and changes nothing.",
+  "prompt": "Review The Whole Codebase",
+  "title": "The SQL injection is the finding that leads, with its file, and nothing changes",
+  "hurried": "Review this codebase.",
+  "setup": {
+    "files": {
+      "users.py": "import sqlite3\n\n\ndef connect(path=':memory:'):\n    db = sqlite3.connect(path)\n    db.execute('CREATE TABLE IF NOT EXISTS users (name TEXT, email TEXT)')\n    return db\n\n\ndef find(db, name):\n    return db.execute(f\"SELECT name, email FROM users WHERE name = '{name}'\").fetchall()\n\n\ndef add(db, name, email):\n    db.execute('INSERT INTO users VALUES (?, ?)', (name, email))\n",
+      "test_users.py": "import unittest\n\nfrom users import add, connect, find\n\n\nclass TestUsers(unittest.TestCase):\n    def test_a_user_can_be_found(self):\n        db = connect()\n        add(db, 'ada', 'ada@example.com')\n        self.assertEqual(find(db, 'ada'), [('ada', 'ada@example.com')])\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "head_unchanged"
+    },
+    {
+      "kind": "changed_only",
+      "paths": []
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)sql injection|injection|parameteri[sz]|placeholder"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "users\\.py"
+    }
+  ],
+  "proof": "cat <<'EVAL_EOF'\nMost important, users.py:11: find() builds its SQL from the name with an f-string, so a name such as x' OR '1'='1 returns every user: SQL injection. Use a ? placeholder, as add() does.\nEVAL_EOF\n"
+}

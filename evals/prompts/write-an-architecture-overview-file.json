@@ -1,0 +1,40 @@
+{
+  "//": "An overview with a diagram and links that resolve is written, and no other file changes.",
+  "prompt": "Write An Architecture Overview",
+  "title": "docs/architecture.md has a diagram and links that resolve, and nothing else changes",
+  "hurried": "Document the architecture.",
+  "setup": {
+    "files": {
+      "README.md": "# Orders\n\nA small order service.\n",
+      "api/__init__.py": "",
+      "api/handlers.py": "from core.orders import place_order\n\n\ndef post_order(request):\n    return place_order(request['customer'], request['items'])\n",
+      "core/__init__.py": "",
+      "core/orders.py": "from store.db import save\n\n\ndef place_order(customer, items):\n    if not items:\n        raise ValueError('an order needs at least one item')\n    return save({'customer': customer, 'items': items})\n",
+      "store/__init__.py": "",
+      "store/db.py": "import sqlite3\n\nCONNECTION = sqlite3.connect(':memory:')\nCONNECTION.execute('CREATE TABLE orders (customer TEXT, items TEXT)')\n\n\ndef save(order):\n    cursor = CONNECTION.execute('INSERT INTO orders VALUES (?, ?)', (order['customer'], ','.join(order['items'])))\n    return cursor.lastrowid\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "file_exists",
+      "path": "docs/architecture.md"
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": ["grep", "-q", "mermaid", "docs/architecture.md"]
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "python3",
+        "-c",
+        "import pathlib\nimport re\n\ndoc = pathlib.Path('docs/architecture.md')\nlinks = [target for target in re.findall(r'\\]\\(([^)#\\s]+)', doc.read_text()) if '://' not in target]\nmissing = [target for target in links if not (doc.parent / target).exists()]\nassert links, 'the overview links to no code'\nassert not missing, f'links to nothing: {missing}'\n"
+      ]
+    },
+    {
+      "kind": "changed_only",
+      "paths": ["docs/architecture.md"]
+    }
+  ],
+  "proof": "mkdir -p \"$(dirname docs/architecture.md)\" && cat > docs/architecture.md <<'EVAL_EOF'\n# Architecture\n\nOrders come in through the API, the core checks them, and the store saves them.\n\n```mermaid\nflowchart LR\n  api[api/handlers.py] --> core[core/orders.py] --> store[store/db.py]\n```\n\n- [api/handlers.py](../api/handlers.py) takes the request.\n- [core/orders.py](../core/orders.py) holds the rules: an order needs an item.\n- [store/db.py](../store/db.py) saves the order in SQLite, in memory.\n\n## Questions For The Maintainers\n\n- Why is the database in memory?\nEVAL_EOF\n"
+}

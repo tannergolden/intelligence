@@ -1,0 +1,34 @@
+{
+  "//": "An update bot is set up for every package manager the repository has, its workflows and image included.",
+  "prompt": "Set Up Dependency Updates",
+  "title": "Dependabot covers npm, pip, the image and the workflows, and nothing else changes",
+  "hurried": "Set up Dependabot.",
+  "setup": {
+    "files": {
+      "package.json": "{\n  \"name\": \"shop\",\n  \"version\": \"1.0.0\",\n  \"dependencies\": {\n    \"left-pad\": \"^1.3.0\"\n  }\n}\n",
+      "package-lock.json": "{\"lockfileVersion\": 3}\n",
+      "requirements.txt": "requests==2.32.3\n",
+      "Dockerfile": "FROM python:3.12-slim\n",
+      ".github/workflows/ci.yml": "name: CI\n\non: [push, pull_request]\n\npermissions:\n  contents: read\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n      - run: pip install -r requirements.txt\n      - run: python3 -m unittest\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "file_exists",
+      "path": ".github/dependabot.yml"
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "python3",
+        "-c",
+        "import pathlib\n\nconfig = pathlib.Path('.github/dependabot.yml').read_text()\nfor ecosystem in ('npm', 'pip', 'docker', 'github-actions'):\n    assert f'package-ecosystem: {ecosystem}' in config or f'package-ecosystem: \"{ecosystem}\"' in config, ecosystem\n"
+      ]
+    },
+    {
+      "kind": "changed_only",
+      "paths": [".github/dependabot.yml"]
+    }
+  ],
+  "proof": "mkdir -p \"$(dirname .github/dependabot.yml)\" && cat > .github/dependabot.yml <<'EVAL_EOF'\nversion: 2\nupdates:\n  - package-ecosystem: npm\n    directory: /\n    schedule:\n      interval: weekly\n    cooldown:\n      default-days: 5\n    groups:\n      minor-and-patch:\n        update-types: [minor, patch]\n  - package-ecosystem: pip\n    directory: /\n    schedule:\n      interval: weekly\n    groups:\n      minor-and-patch:\n        update-types: [minor, patch]\n  - package-ecosystem: docker\n    directory: /\n    schedule:\n      interval: weekly\n  - package-ecosystem: github-actions\n    directory: /\n    schedule:\n      interval: weekly\nEVAL_EOF\n"
+}

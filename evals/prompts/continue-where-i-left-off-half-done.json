@@ -1,0 +1,42 @@
+{
+  "//": "Coming back finds the stub left half done and the next step in the plan, and changes nothing.",
+  "prompt": "Continue Where I Left Off",
+  "title": "The stub and the next step in the plan are found, and nothing changes",
+  "hurried": "Where was I?",
+  "setup": {
+    "files": {
+      "README.md": "# Search\n"
+    },
+    "history": [
+      {
+        "branch": "feature/search",
+        "commit": "feat(search): build the index",
+        "files": {
+          "search.py": "def build(documents):\n    index = {}\n    for number, text in enumerate(documents):\n        for word in text.lower().split():\n            index.setdefault(word, set()).add(number)\n    return index\n",
+          "PLAN.md": "# Search Plan\n\n- [x] Build the index\n- [ ] Rank the results\n- [ ] Add the search page\n"
+        }
+      }
+    ],
+    "changes": {
+      "search.py": "def build(documents):\n    index = {}\n    for number, text in enumerate(documents):\n        for word in text.lower().split():\n            index.setdefault(word, set()).add(number)\n    return index\n\n\ndef query(index, text):\n    # TODO: rank the results\n    raise NotImplementedError\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "head_unchanged"
+    },
+    {
+      "kind": "changed_only",
+      "paths": []
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)\\brank"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)NotImplementedError|stub|query\\(\\)"
+    }
+  ],
+  "proof": "cat <<'EVAL_EOF'\nfeature/search builds the index, which PLAN.md marks done. Half done: query() in search.py is a stub that raises NotImplementedError. Next: rank the results, then add the search page.\nEVAL_EOF\n"
+}

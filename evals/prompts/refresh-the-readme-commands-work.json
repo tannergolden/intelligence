@@ -1,0 +1,30 @@
+{
+  "//": "A stale README is rewritten with commands that run, and no other file changes.",
+  "prompt": "Refresh The README",
+  "title": "The README names the real command and Python version, and nothing else changes",
+  "hurried": "Update the README.",
+  "setup": {
+    "files": {
+      "README.md": "# Greeter\n\nRequires Python 2.7.\n\n    python main.py --name Ada\n",
+      "cli.py": "import argparse\n\n\ndef main(argv=None):\n    parser = argparse.ArgumentParser(description='Print a greeting.')\n    parser.add_argument('name')\n    args = parser.parse_args(argv)\n    print(f'Hello, {args.name}!')\n\n\nif __name__ == '__main__':\n    main()\n",
+      "test_cli.py": "import contextlib\nimport io\nimport unittest\n\nfrom cli import main\n\n\nclass TestMain(unittest.TestCase):\n    def test_it_greets_by_name(self):\n        out = io.StringIO()\n        with contextlib.redirect_stdout(out):\n            main(['Ada'])\n        self.assertEqual(out.getvalue(), 'Hello, Ada!\\n')\n",
+      "pyproject.toml": "[project]\nname = \"greeter\"\nrequires-python = \">=3.10\"\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "file_lacks",
+      "path": "README.md",
+      "pattern": "main\\.py|2\\.7|--name"
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": ["sh", "-c", "grep -q \"cli.py\" README.md"]
+    },
+    {
+      "kind": "changed_only",
+      "paths": ["README.md"]
+    }
+  ],
+  "proof": "mkdir -p \"$(dirname README.md)\" && cat > README.md <<'EVAL_EOF'\n# Greeter\n\nPrints a greeting. Needs Python 3.10 or later.\n\n## Use It\n\n    python3 cli.py Ada\n\n## Test It\n\n    python3 -m unittest\nEVAL_EOF\n"
+}

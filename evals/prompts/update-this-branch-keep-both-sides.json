@@ -1,0 +1,70 @@
+{
+  "//": "A branch behind the default branch takes it in by a merge, keeping both sides of the conflict, and pushes nothing.",
+  "prompt": "Update This Branch",
+  "title": "Both new functions survive the merge, the tests pass, and nothing is pushed",
+  "hurried": "Update my branch with main.",
+  "setup": {
+    "files": {
+      "greet.py": "def hello(name):\n    return f'Hello, {name}'\n",
+      "test_greet.py": "import unittest\n\nfrom greet import hello\n\n\nclass TestGreet(unittest.TestCase):\n    def test_hello(self):\n        self.assertEqual(hello('Ada'), 'Hello, Ada')\n"
+    },
+    "history": [
+      {
+        "branch": "feature/shout",
+        "commit": "feat(greet): add shout",
+        "files": {
+          "greet.py": "def hello(name):\n    return f'Hello, {name}'\n\n\ndef shout(name):\n    return hello(name).upper() + '!'\n",
+          "test_greet.py": "import unittest\n\nfrom greet import hello, shout\n\n\nclass TestGreet(unittest.TestCase):\n    def test_hello(self):\n        self.assertEqual(hello('Ada'), 'Hello, Ada')\n\n    def test_shout(self):\n        self.assertEqual(shout('Ada'), 'HELLO, ADA!')\n"
+        }
+      },
+      {
+        "checkout": "main",
+        "commit": "feat(greet): add farewell",
+        "files": {
+          "greet.py": "def hello(name):\n    return f'Hello, {name}'\n\n\ndef farewell(name):\n    return f'Goodbye, {name}'\n",
+          "test_greet.py": "import unittest\n\nfrom greet import farewell, hello\n\n\nclass TestGreet(unittest.TestCase):\n    def test_hello(self):\n        self.assertEqual(hello('Ada'), 'Hello, Ada')\n\n    def test_farewell(self):\n        self.assertEqual(farewell('Ada'), 'Goodbye, Ada')\n"
+        }
+      },
+      {
+        "checkout": "feature/shout"
+      }
+    ],
+    "remote": true
+  },
+  "checks": [
+    {
+      "kind": "command_succeeds",
+      "argv": ["python3", "-m", "unittest", "-q"]
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "sh",
+        "-c",
+        "git merge-base --is-ancestor main HEAD && test \"$(git rev-parse --abbrev-ref HEAD)\" = feature/shout && test -n \"$(git log --merges -1 --format=%H)\""
+      ]
+    },
+    {
+      "kind": "file_lacks",
+      "path": "greet.py",
+      "pattern": "(?m)^(?:<{7}|={7}|>{7})"
+    },
+    {
+      "kind": "file_lacks",
+      "path": "test_greet.py",
+      "pattern": "(?m)^(?:<{7}|={7}|>{7})"
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "sh",
+        "-c",
+        "grep -q \"def shout\" greet.py && grep -q \"def farewell\" greet.py"
+      ]
+    },
+    {
+      "kind": "remote_unchanged"
+    }
+  ],
+  "proof": "git merge -q main >/dev/null 2>&1 || true\nmkdir -p \"$(dirname greet.py)\" && cat > greet.py <<'EVAL_EOF'\ndef hello(name):\n    return f'Hello, {name}'\n\n\ndef shout(name):\n    return hello(name).upper() + '!'\n\n\ndef farewell(name):\n    return f'Goodbye, {name}'\nEVAL_EOF\nmkdir -p \"$(dirname test_greet.py)\" && cat > test_greet.py <<'EVAL_EOF'\nimport unittest\n\nfrom greet import farewell, hello, shout\n\n\nclass TestGreet(unittest.TestCase):\n    def test_hello(self):\n        self.assertEqual(hello('Ada'), 'Hello, Ada')\n\n    def test_shout(self):\n        self.assertEqual(shout('Ada'), 'HELLO, ADA!')\n\n    def test_farewell(self):\n        self.assertEqual(farewell('Ada'), 'Goodbye, Ada')\nEVAL_EOF\ngit add greet.py test_greet.py && git commit -q --no-edit\n"
+}

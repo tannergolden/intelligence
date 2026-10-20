@@ -1,0 +1,31 @@
+{
+  "//": "A prompt that let an agent delete a failing test gains the rule that stops it, and nothing else changes.",
+  "prompt": "Improve A Prompt",
+  "title": "The prompt now forbids deleting a test, keeps its shape, and nothing else changes",
+  "hurried": "My bump-version prompt made the agent delete a test. Fix the prompt.",
+  "fill": {
+    "THE_PROMPT": "the prompt in prompts/bump-version.md",
+    "WHAT_WENT_WRONG": "a test failed after the bump, and the agent deleted the test so the tests would pass"
+  },
+  "setup": {
+    "files": {
+      "prompts/bump-version.md": "### Bump The Version\n\n**Use when** a release needs a new version number.\n\n```text\n<context>\nThe project keeps its version in pyproject.toml.\n</context>\n\n<task>\nBump the minor version and make the tests pass.\n</task>\n\n<done_when>\n- The tests pass.\n</done_when>\n```\n"
+    },
+    "prompts": true
+  },
+  "checks": [
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "python3",
+        "-c",
+        "import pathlib\nimport re\n\ntext = pathlib.Path('prompts/bump-version.md').read_text()\nassert '### Bump The Version' in text and '<task>' in text, 'the prompt lost its shape'\nassert re.search(r'(?is)(?:never|not|no)\\b.{0,60}(?:delet|skip|weaken|remov|loosen).{0,60}test', text), \\\n    'nothing stops the agent deleting a test'\n"
+      ]
+    },
+    {
+      "kind": "changed_only",
+      "paths": ["prompts/bump-version.md"]
+    }
+  ],
+  "proof": "mkdir -p \"$(dirname prompts/bump-version.md)\" && cat > prompts/bump-version.md <<'EVAL_EOF'\n### Bump The Version\n\n**Use when** a release needs a new version number.\n\n```text\n<context>\nThe project keeps its version in pyproject.toml.\n</context>\n\n<task>\nBump the minor version and make the tests pass.\n</task>\n\n<constraints>\n- Never delete, skip or weaken a test to make it pass. If a test fails after the bump, stop and tell me why.\n</constraints>\n\n<done_when>\n- The tests pass, and every test that ran before still runs.\n</done_when>\n```\nEVAL_EOF\n"
+}

@@ -1,0 +1,65 @@
+{
+  "//": "The file changed most, nested deepest and tested least comes first, and nothing changes.",
+  "prompt": "Find The Riskiest Code",
+  "title": "The churning, untested, deeply nested file is named, and nothing changes",
+  "hurried": "Which code is the riskiest?",
+  "setup": {
+    "files": {
+      "billing.py": "def invoice_total(lines, customer):\n    total = 0\n    for line in lines:\n        if line.get('kind') == 'item':\n            if customer.get('trade'):\n                if line['qty'] > 100:\n                    total += line['price'] * line['qty'] * 0.8\n                else:\n                    total += line['price'] * line['qty'] * 0.9\n            else:\n                if line['qty'] > 100:\n                    total += line['price'] * line['qty'] * 0.95\n                else:\n                    total += line['price'] * line['qty']\n        elif line.get('kind') == 'fee':\n            if not customer.get('waive_fees'):\n                total += line['price']\n    if customer.get('country') == 'GB':\n        total *= 1.2\n    return round(total, 2)\n",
+      "names.py": "def initials(name):\n    return ''.join(part[0] for part in name.split()).upper()\n",
+      "test_names.py": "import unittest\n\nfrom names import initials\n\n\nclass TestInitials(unittest.TestCase):\n    def test_two_names(self):\n        self.assertEqual(initials('ada lovelace'), 'AL')\n"
+    },
+    "history": [
+      {
+        "commit": "fix(billing): adjust the rules, round 1",
+        "files": {
+          "billing.py": "# Billing rules, revision 1.\ndef invoice_total(lines, customer):\n    total = 0\n    for line in lines:\n        if line.get('kind') == 'item':\n            if customer.get('trade'):\n                if line['qty'] > 100:\n                    total += line['price'] * line['qty'] * 0.8\n                else:\n                    total += line['price'] * line['qty'] * 0.9\n            else:\n                if line['qty'] > 100:\n                    total += line['price'] * line['qty'] * 0.95\n                else:\n                    total += line['price'] * line['qty']\n        elif line.get('kind') == 'fee':\n            if not customer.get('waive_fees'):\n                total += line['price']\n    if customer.get('country') == 'GB':\n        total *= 1.2\n    return round(total, 2)\n"
+        }
+      },
+      {
+        "commit": "fix(billing): adjust the rules, round 2",
+        "files": {
+          "billing.py": "# Billing rules, revision 2.\ndef invoice_total(lines, customer):\n    total = 0\n    for line in lines:\n        if line.get('kind') == 'item':\n            if customer.get('trade'):\n                if line['qty'] > 100:\n                    total += line['price'] * line['qty'] * 0.8\n                else:\n                    total += line['price'] * line['qty'] * 0.9\n            else:\n                if line['qty'] > 100:\n                    total += line['price'] * line['qty'] * 0.95\n                else:\n                    total += line['price'] * line['qty']\n        elif line.get('kind') == 'fee':\n            if not customer.get('waive_fees'):\n                total += line['price']\n    if customer.get('country') == 'GB':\n        total *= 1.2\n    return round(total, 2)\n"
+        }
+      },
+      {
+        "commit": "fix(billing): adjust the rules, round 3",
+        "files": {
+          "billing.py": "# Billing rules, revision 3.\ndef invoice_total(lines, customer):\n    total = 0\n    for line in lines:\n        if line.get('kind') == 'item':\n            if customer.get('trade'):\n                if line['qty'] > 100:\n                    total += line['price'] * line['qty'] * 0.8\n                else:\n                    total += line['price'] * line['qty'] * 0.9\n            else:\n                if line['qty'] > 100:\n                    total += line['price'] * line['qty'] * 0.95\n                else:\n                    total += line['price'] * line['qty']\n        elif line.get('kind') == 'fee':\n            if not customer.get('waive_fees'):\n                total += line['price']\n    if customer.get('country') == 'GB':\n        total *= 1.2\n    return round(total, 2)\n"
+        }
+      },
+      {
+        "commit": "fix(billing): adjust the rules, round 4",
+        "files": {
+          "billing.py": "# Billing rules, revision 4.\ndef invoice_total(lines, customer):\n    total = 0\n    for line in lines:\n        if line.get('kind') == 'item':\n            if customer.get('trade'):\n                if line['qty'] > 100:\n                    total += line['price'] * line['qty'] * 0.8\n                else:\n                    total += line['price'] * line['qty'] * 0.9\n            else:\n                if line['qty'] > 100:\n                    total += line['price'] * line['qty'] * 0.95\n                else:\n                    total += line['price'] * line['qty']\n        elif line.get('kind') == 'fee':\n            if not customer.get('waive_fees'):\n                total += line['price']\n    if customer.get('country') == 'GB':\n        total *= 1.2\n    return round(total, 2)\n"
+        }
+      },
+      {
+        "commit": "fix(billing): adjust the rules, round 5",
+        "files": {
+          "billing.py": "# Billing rules, revision 5.\ndef invoice_total(lines, customer):\n    total = 0\n    for line in lines:\n        if line.get('kind') == 'item':\n            if customer.get('trade'):\n                if line['qty'] > 100:\n                    total += line['price'] * line['qty'] * 0.8\n                else:\n                    total += line['price'] * line['qty'] * 0.9\n            else:\n                if line['qty'] > 100:\n                    total += line['price'] * line['qty'] * 0.95\n                else:\n                    total += line['price'] * line['qty']\n        elif line.get('kind') == 'fee':\n            if not customer.get('waive_fees'):\n                total += line['price']\n    if customer.get('country') == 'GB':\n        total *= 1.2\n    return round(total, 2)\n"
+        }
+      },
+      {
+        "commit": "refactor(names): tidy initials",
+        "files": {
+          "names.py": "def initials(name):\n    return ''.join(part[0] for part in name.split()).upper()\n\n"
+        }
+      }
+    ]
+  },
+  "checks": [
+    {
+      "kind": "head_unchanged"
+    },
+    {
+      "kind": "changed_only",
+      "paths": []
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "billing\\.py"
+    }
+  ],
+  "proof": "cat <<'EVAL_EOF'\n1. billing.py: changed in 5 of the last 6 commits, invoice_total() nests 4 deep, and no test covers it. Add a test for the trade discounts first.\nEVAL_EOF\n"
+}

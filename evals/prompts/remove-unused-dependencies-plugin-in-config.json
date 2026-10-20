@@ -1,0 +1,34 @@
+{
+  "//": "The unused package goes; the plugin used only from a config file stays.",
+  "prompt": "Remove Unused Dependencies",
+  "title": "The unused package is removed, and the plugin named in the config is kept",
+  "hurried": "Remove unused dependencies.",
+  "setup": {
+    "files": {
+      "requirements.txt": "requests==2.32.3\nsix==1.16.0\npytest-cov==5.0.0\n",
+      "setup.cfg": "[tool:pytest]\naddopts = --cov=app\n",
+      "app.py": "import requests\n\n\ndef fetch(url):\n    return requests.get(url, timeout=10).text\n"
+    },
+    "shims": ["pip", "pip3"]
+  },
+  "checks": [
+    {
+      "kind": "file_lacks",
+      "path": "requirements.txt",
+      "pattern": "(?m)^six\\b"
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "sh",
+        "-c",
+        "grep -q \"^pytest-cov\" requirements.txt && grep -q \"^requests\" requirements.txt"
+      ]
+    },
+    {
+      "kind": "changed_only",
+      "paths": ["requirements.txt"]
+    }
+  ],
+  "proof": "python3 - <<'EVAL_EOF'\nimport pathlib\npath = pathlib.Path('requirements.txt')\npath.write_text(path.read_text().replace('six==1.16.0\\n', '', 1))\nEVAL_EOF\n"
+}

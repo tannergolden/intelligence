@@ -1,0 +1,34 @@
+{
+  "//": "A contract check finds the missing field, the wrong status and the undocumented route.",
+  "prompt": "Check The API Contract",
+  "title": "The missing email, the 400 for a 404, and the undocumented POST are found, and nothing changes",
+  "hurried": "Does the API match the spec?",
+  "setup": {
+    "files": {
+      "openapi.yaml": "openapi: 3.0.3\ninfo:\n  title: Users\n  version: 1.0.0\npaths:\n  /users/{id}:\n    get:\n      parameters:\n        - name: id\n          in: path\n          required: true\n          schema:\n            type: integer\n      responses:\n        '200':\n          description: The user\n          content:\n            application/json:\n              schema:\n                type: object\n                required: [id, name, email]\n                properties:\n                  id:\n                    type: integer\n                  name:\n                    type: string\n                  email:\n                    type: string\n        '404':\n          description: No such user\n",
+      "api.py": "USERS = {1: {'id': 1, 'name': 'Ada', 'email': 'ada@example.com'}}\n\n\ndef get_user(user_id):\n    user = USERS.get(user_id)\n    if user is None:\n        return 400, {'error': 'bad request'}\n    return 200, {'id': user['id'], 'name': user['name']}\n\n\ndef create_user(body):\n    user_id = max(USERS) + 1\n    USERS[user_id] = {'id': user_id, **body}\n    return 201, USERS[user_id]\n\n\nROUTES = {('GET', '/users/{id}'): get_user, ('POST', '/users'): create_user}\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "head_unchanged"
+    },
+    {
+      "kind": "changed_only",
+      "paths": []
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)email"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "\\b404\\b"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)POST\\s*/users"
+    }
+  ],
+  "proof": "cat <<'EVAL_EOF'\nGET /users/{id}: the spec promises email, but api.py:8 leaves it out; the spec says 404 for no such user, but api.py:7 returns 400. POST /users is in the code but not the spec.\nEVAL_EOF\n"
+}

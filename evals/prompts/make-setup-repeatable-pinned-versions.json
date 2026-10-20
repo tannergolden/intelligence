@@ -1,0 +1,38 @@
+{
+  "//": "Setup gains a pinned Python version taken from CI and one setup command, with no sudo.",
+  "prompt": "Make Setup Repeatable",
+  "title": "Python is pinned to the version CI uses, and setup needs no sudo",
+  "hurried": "Make setup easier.",
+  "setup": {
+    "files": {
+      "README.md": "# Shop\n\nInstall Python, then run `pip install -r requirements.txt`.\n",
+      "requirements.txt": "",
+      "app.py": "def add(first, second):\n    return first + second\n",
+      "test_app.py": "import unittest\n\nfrom app import add\n\n\nclass TestAdd(unittest.TestCase):\n    def test_it_adds(self):\n        self.assertEqual(add(2, 3), 5)\n",
+      ".github/workflows/ci.yml": "name: CI\n\non: [push, pull_request]\n\npermissions:\n  contents: read\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n      - run: pip install -r requirements.txt\n      - run: python3 -m unittest\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "python3",
+        "-c",
+        "import pathlib\n\nfiles = ('.python-version', '.tool-versions', 'mise.toml', '.mise.toml', '.devcontainer/devcontainer.json',\n         '.devcontainer.json')\npinned = [name for name in files if pathlib.Path(name).is_file() and '3.12' in pathlib.Path(name).read_text()]\nassert pinned, 'no version file pins Python 3.12, the version CI uses'\n"
+      ]
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "python3",
+        "-c",
+        "import pathlib\nimport subprocess\n\nchanged = subprocess.run(['git', 'ls-files', '--modified', '--others', '--exclude-standard'], capture_output=True,\n                         text=True, check=True).stdout.split()\nsudo = [name for name in changed if pathlib.Path(name).is_file() and 'sudo ' in pathlib.Path(name).read_text()]\nassert not sudo, f'setup that needs sudo: {sudo}'\n"
+      ]
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": ["python3", "-m", "unittest", "-q"]
+    }
+  ],
+  "proof": "mkdir -p \"$(dirname .python-version)\" && cat > .python-version <<'EVAL_EOF'\n3.12\nEVAL_EOF\nmkdir -p \"$(dirname script/setup)\" && cat > script/setup <<'EVAL_EOF'\n#!/bin/sh\nset -e\npython3 -m pip install -r requirements.txt\nEVAL_EOF\npython3 - <<'EVAL_EOF'\nimport pathlib\npath = pathlib.Path('README.md')\npath.write_text(path.read_text().replace('Install Python, then run `pip install -r requirements.txt`.', 'Run `sh script/setup`; it installs the Python version in `.python-version` needs.', 1))\nEVAL_EOF\n"
+}

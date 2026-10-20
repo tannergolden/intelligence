@@ -1,0 +1,37 @@
+{
+  "//": "A clickable div, an image with no text and an unlabelled field are fixed with native elements.",
+  "prompt": "Fix Accessibility Problems",
+  "title": "The page has a real button, alt text and a labelled field",
+  "hurried": "Fix accessibility.",
+  "setup": {
+    "files": {
+      "index.html": "<!doctype html>\n<html lang=\"en\">\n  <head>\n    <title>Newsletter</title>\n  </head>\n  <body>\n    <img src=\"logo.png\">\n    <form>\n      <input id=\"email\" type=\"email\">\n      <div class=\"button\" onclick=\"subscribe()\">Subscribe</div>\n    </form>\n    <script src=\"app.js\"></script>\n  </body>\n</html>\n",
+      "app.js": "function subscribe() {\n  document.forms[0].submit();\n}\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "file_lacks",
+      "path": "index.html",
+      "pattern": "<div[^>]*onclick"
+    },
+    {
+      "kind": "file_lacks",
+      "path": "index.html",
+      "pattern": "<img(?![^>]*\\balt=)[^>]*>"
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "python3",
+        "-c",
+        "import pathlib\nimport re\n\npage = pathlib.Path('index.html').read_text()\nassert re.search(r'<label[^>]*for=\"email\"|<input[^>]*aria-label', page), 'the email field has no label'\nassert '<button' in page, 'there is no button to subscribe with'\n"
+      ]
+    },
+    {
+      "kind": "changed_only",
+      "paths": ["index.html", "app.js", "style.css"]
+    }
+  ],
+  "proof": "mkdir -p \"$(dirname index.html)\" && cat > index.html <<'EVAL_EOF'\n<!doctype html>\n<html lang=\"en\">\n  <head>\n    <title>Newsletter</title>\n  </head>\n  <body>\n    <img src=\"logo.png\" alt=\"Newsletter\">\n    <form>\n      <label for=\"email\">Email</label>\n      <input id=\"email\" type=\"email\">\n      <button type=\"button\" onclick=\"subscribe()\">Subscribe</button>\n    </form>\n    <script src=\"app.js\"></script>\n  </body>\n</html>\nEVAL_EOF\n"
+}

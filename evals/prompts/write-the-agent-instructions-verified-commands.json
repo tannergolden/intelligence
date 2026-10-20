@@ -1,0 +1,38 @@
+{
+  "//": "AGENTS.md gains the real commands, stays short, and the managed block in it is untouched.",
+  "prompt": "Write The Agent Instructions",
+  "title": "AGENTS.md names the real scripts in under a page, with the managed block as it was",
+  "hurried": "Write an AGENTS.md.",
+  "setup": {
+    "files": {
+      "scripts/test.sh": "#!/bin/sh\nset -e\npython3 -m unittest -q\n",
+      "scripts/lint.sh": "#!/bin/sh\nset -e\npython3 scripts/style.py\n",
+      "scripts/style.py": "import pathlib\nimport sys\n\ntabs = [str(path) for path in sorted(pathlib.Path('.').glob('*.py')) if '\\t' in path.read_text()]\nfor path in tabs:\n    print(f'{path}: indent with spaces, not tabs')\nsys.exit(1 if tabs else 0)\n",
+      "app.py": "def add(first, second):\n    return first + second\n",
+      "test_app.py": "import unittest\n\nfrom app import add\n\n\nclass TestAdd(unittest.TestCase):\n    def test_it_adds(self):\n        self.assertEqual(add(2, 3), 5)\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "sh",
+        "-c",
+        "grep -q \"scripts/test.sh\" AGENTS.md && grep -q \"scripts/lint.sh\" AGENTS.md"
+      ]
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "python3",
+        "-c",
+        "import pathlib\nimport re\nimport subprocess\n\nroot = subprocess.run(['git', 'rev-list', '--max-parents=0', 'HEAD'], capture_output=True, text=True,\n                      check=True).stdout.split()[0]\nbefore = subprocess.run(['git', 'show', f'{root}:AGENTS.md'], capture_output=True, text=True, check=True).stdout\nafter = pathlib.Path('AGENTS.md').read_text()\nblock = re.compile(r'(?ms)^<!-- INTELLIGENCE:BEGIN.*?^<!-- INTELLIGENCE:END -->')\nassert block.search(before) and block.search(after), 'the managed block is gone'\nassert block.search(before).group(0) == block.search(after).group(0), 'the managed block changed'\noutside = block.sub('', after)\nassert len(outside.splitlines()) <= 60, f'{len(outside.splitlines())} lines outside the block, more than a page'\n"
+      ]
+    },
+    {
+      "kind": "changed_only",
+      "paths": ["AGENTS.md"]
+    }
+  ],
+  "proof": "cat >> AGENTS.md <<'EVAL_EOF'\n\n## Commands\n\n- Test: `sh scripts/test.sh`\n- Lint: `sh scripts/lint.sh`\nEVAL_EOF\n"
+}
