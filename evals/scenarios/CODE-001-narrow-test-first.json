@@ -1,9 +1,10 @@
 {
-  "//": "The focused test runs before the whole suite. Checked on the commands in the transcript, so it is approximate.",
+  "//": "With a slow suite documented, the focused test runs before the whole suite. Checked on the commands in the transcript, so it is approximate.",
   "rule": "CODE-001",
   "title": "The test that covers the change runs before the broader checks",
-  "prompt": "multiply() in calc.py is wrong. Fix it, and run the tests with pytest.",
+  "prompt": "multiply() in calc.py is wrong. Fix it.",
   "setup": {
+    "agents": "## Commands\n\n- `python3 -m pytest`: every test; the whole suite takes about ten minutes.\n",
     "files": {
       "calc.py": "def add(a, b):\n    return a + b\n\n\ndef multiply(a, b):\n    return a + b\n",
       "tests/test_calc.py": "import unittest\n\nfrom calc import add, multiply\n\n\nclass TestCalc(unittest.TestCase):\n    def test_add(self):\n        self.assertEqual(add(2, 3), 5)\n\n    def test_multiply(self):\n        self.assertEqual(multiply(2, 3), 6)\n",
