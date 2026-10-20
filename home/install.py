@@ -16,10 +16,12 @@ byte-identical copy of the rules where each app looks:
 It also writes Claude Code's `instructionFiles` setting, so Claude reads a
 repository's `AGENTS.md` even beside a `CLAUDE.md`, and, outside a cloud
 session, `permissions.ask` rules, so Claude Code asks before each outward
-action OPS-005 names: a push, a pull request or a comment, a release, a
-published package, and the GitHub MCP server's writes. Grok Build reads
-`~/.claude` by default, so it gets no copy of its own. Cursor's User Rules
-live in its settings, so they are pasted by hand.
+action OPS-005 names: a push, a pull request, an issue or a comment, a
+release, a new repository, fork, gist or workflow run, a write through `gh
+api`, a published package, and the GitHub MCP server's writes. Permissions
+of a shape it cannot add to are left alone, and never stop the setting.
+Grok Build reads `~/.claude` by default, so it gets no copy of its own.
+Cursor's User Rules live in its settings, so they are pasted by hand.
 
 They are copies, never links, because links fail silently in Claude's desktop
 sessions and in Grok's sandbox. A file the kit owns outright holds nothing
@@ -94,21 +96,48 @@ PLUGIN_IDS = ('cc-plugin-agents-md@builtin', 'agents-md@builtin')
 READ_BOTH = 'claude-md-and-agents-md'
 SETTINGS = '.claude/settings.json'
 COPILOT_PREFIX = '---\napplyTo: "**"\n---\n\n'
-# What Claude Code asks your user before, every time (OPS-005): a push, a pull
-# request (drafts too), a comment or review, a release, a published package,
-# and the GitHub MCP server's writes. A rule matches the command as it is
-# usually typed, not every spelling of it; the guard denies the merges and
-# deletions among these outright.
+# What Claude Code asks your user before, every time (OPS-005): a push; a pull
+# request (drafts too) or an issue, opened, edited or closed; a comment or
+# review; a release; a repository, fork, gist or workflow run; a write through
+# `gh api`; a published package; and the GitHub MCP server's writes. A rule
+# with one ` *` at its end also matches the bare command, and a `*` elsewhere
+# matches anything, so the `gh api` rules find a method or field flag wherever
+# it stands. A rule matches the command as it is usually typed, not every
+# spelling of it; the guard denies the merges and deletions among these
+# outright, and keeps these rules from being edited away. guard.py holds the
+# same list, which a test holds.
 ASK_RULES = (
     'Bash(git push *)',
     'Bash(gh pr create *)',
+    'Bash(gh pr edit *)',
+    'Bash(gh pr ready *)',
+    'Bash(gh pr close *)',
     'Bash(gh pr comment *)',
     'Bash(gh pr review *)',
     'Bash(gh issue create *)',
+    'Bash(gh issue edit *)',
+    'Bash(gh issue close *)',
     'Bash(gh issue comment *)',
     'Bash(gh release create *)',
     'Bash(gh release upload *)',
     'Bash(gh release edit *)',
+    'Bash(gh repo create *)',
+    'Bash(gh repo fork *)',
+    'Bash(gh workflow run *)',
+    'Bash(gh gist create *)',
+    'Bash(gh api *-X*POST*)',
+    'Bash(gh api *-X*PATCH*)',
+    'Bash(gh api *-X*PUT*)',
+    'Bash(gh api *-X*DELETE*)',
+    'Bash(gh api *--method*POST*)',
+    'Bash(gh api *--method*PATCH*)',
+    'Bash(gh api *--method*PUT*)',
+    'Bash(gh api *--method*DELETE*)',
+    'Bash(gh api *-f *)',
+    'Bash(gh api *-F *)',
+    'Bash(gh api *--field*)',
+    'Bash(gh api *--raw-field*)',
+    'Bash(gh api *--input*)',
     'Bash(npm publish *)',
     'Bash(pnpm publish *)',
     'Bash(yarn publish *)',
@@ -548,21 +577,29 @@ def retire(home: pathlib.Path, cloud: bool, env: Mapping[str, str], state: dict,
 
 
 def install_setting(home: pathlib.Path, state: dict, spath: pathlib.Path, dry_run: bool) -> int:
-    """Claude Code's instructionFiles setting and its ask rules, merged into the settings you keep."""
+    """Claude Code's instructionFiles setting and its ask rules, merged into the settings you keep. Permissions of a
+    shape the kit cannot add to are refused on their own, and the setting is written all the same."""
     path = home / SETTINGS
-    label = f'Claude Code setting: {path}'
+    label, asks_label = f'Claude Code setting: {path}', f'Claude Code ask rules: {path}'
     recorded = (state.get('settings') or {}).get('asks', [])
     try:
         data = read_settings(path)
         reading = apply_setting(data)
-        updated = apply_asks(reading, [rule for rule in recorded if rule not in ASK_RULES])
     except Refused as error:
         report('refused', f'{label} {error}')
         return 1
-    for name, changed in ((label, reading != data), (f'Claude Code ask rules: {path}', updated != reading)):
-        report('current' if not changed else 'would write' if dry_run else 'wrote', name)
+    report('current' if reading == data else 'would write' if dry_run else 'wrote', label)
+    failures = 0
+    try:
+        updated = apply_asks(reading, [rule for rule in recorded if rule not in ASK_RULES])
+        added = [rule for rule in ASK_RULES if rule not in ask_list(data)]
+    except Refused as error:
+        report('refused', f'{asks_label} {error}')
+        updated, added, failures = reading, [], 1
+    else:
+        report('current' if updated == reading else 'would write' if dry_run else 'wrote', asks_label)
     if updated == data or dry_run:
-        return 0
+        return failures
     if state.get('settings') is None:
         configs = data.get('pluginConfigs')
         state['settings'] = {
@@ -574,8 +611,6 @@ def install_setting(home: pathlib.Path, state: dict, spath: pathlib.Path, dry_ru
                       for plugin in PLUGIN_IDS},
         }
     record = state['settings']
-    present = ask_list(data)
-    added = [rule for rule in ASK_RULES if rule not in present]
     if added and 'had_permissions' not in record:
         # Whether these were yours before the kit's first rule, so an uninstall
         # takes out only what it made.
@@ -586,7 +621,7 @@ def install_setting(home: pathlib.Path, state: dict, spath: pathlib.Path, dry_ru
     save_state(spath, state)
     make_dirs(path)
     write(path, json.dumps(updated, indent=2) + '\n')
-    return 0
+    return failures
 
 
 # --- the kit ------------------------------------------------------------------
@@ -863,16 +898,22 @@ def check(home: pathlib.Path, home_file: pathlib.Path, cloud: bool, env: Mapping
             failures += 1
             print(f'  {"stale":<8} {target.app} knowledge: {path}, retired; an install takes it out')
     if not cloud:
+        # Each setting on its own: permissions the kit cannot read say nothing about instructionFiles.
         path = home / SETTINGS
         try:
             data = read_settings(path)
-            ok = all(reads_both(data, plugin) for plugin in PLUGIN_IDS)
-            asked = all(rule in ask_list(data) for rule in ASK_RULES)
         except Refused:
-            ok = asked = False
-        failures += (0 if ok else 1) + (0 if asked else 1)
-        print(f'  {"current" if ok else "missing":<8} Claude Code setting: {path}')
-        print(f'  {"current" if asked else "missing":<8} Claude Code ask rules: {path}')
+            data = None
+        setting = 'broken' if data is None else 'current' if all(
+            reads_both(data, plugin) for plugin in PLUGIN_IDS) else 'missing'
+        try:
+            asks = 'broken' if data is None else 'current' if all(
+                rule in ask_list(data) for rule in ASK_RULES) else 'missing'
+        except Refused:
+            asks = 'broken'
+        failures += (setting != 'current') + (asks != 'current')
+        print(f'  {setting:<8} Claude Code setting: {path}')
+        print(f'  {asks:<8} Claude Code ask rules: {path}')
     if kit is not None:
         failures += check_kit(home, kit, cloud, env)
     for line in shadows(home, env):

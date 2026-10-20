@@ -182,11 +182,46 @@ class TestInstall(Home):
         for rule in ('Bash(git push *)', 'Bash(gh pr create *)', 'Bash(gh pr comment *)', 'Bash(gh issue create *)',
                      'Bash(gh release create *)', 'Bash(npm publish *)', 'Bash(cargo publish *)',
                      'Bash(twine upload *)', 'Bash(gem push *)', 'Bash(docker push *)',
-                     'mcp__github__create_pull_request', 'mcp__github__push_files'):
+                     'mcp__github__create_pull_request', 'mcp__github__push_files', 'Bash(gh pr edit *)',
+                     'Bash(gh pr ready *)', 'Bash(gh pr close *)', 'Bash(gh issue edit *)', 'Bash(gh issue close *)',
+                     'Bash(gh repo create *)', 'Bash(gh repo fork *)', 'Bash(gh workflow run *)',
+                     'Bash(gh gist create *)', 'Bash(gh api *-X*POST*)', 'Bash(gh api *--method*DELETE*)',
+                     'Bash(gh api *-f *)', 'Bash(gh api *-F *)', 'Bash(gh api *--field*)',
+                     'Bash(gh api *--raw-field*)', 'Bash(gh api *--input*)'):
             self.assertIn(rule, asks)
-        # Claude Code skips an MCP rule with parentheses, and a Bash rule needs its words before the *.
+        self.assertEqual(len(asks), len(set(asks)))
+        # Claude Code skips an MCP rule with parentheses. A Bash rule's words come before its first *, and only a
+        # lone trailing ` *` also matches the bare command, so each `gh api` rule finds its flag anywhere after `api`.
         for rule in asks:
-            self.assertRegex(rule, r'^(Bash\([a-z0-9 -]+ \*\)|mcp__github__[a-z_]+)$')
+            self.assertRegex(rule, r'^(Bash\([a-z0-9 -]+ \*\)|mcp__github__[a-z_]+'
+                                   r'|Bash\(gh api \*(-X|--method)\*(POST|PATCH|PUT|DELETE)\*\)'
+                                   r'|Bash\(gh api \*-[fF] \*\)|Bash\(gh api \*--(field|raw-field|input)\*\))$')
+
+    def test_each_ask_rule_matches_the_commands_it_is_for(self) -> None:
+        # Claude Code turns a Bash rule into a pattern: each * matches anything, and a rule whose one * ends it
+        # after a space also matches the bare command. Runs of spaces count as one.
+        def matches(rule: str, command: str) -> bool:
+            body = rule[len('Bash('):-1]
+            pattern = '.*'.join(re.escape(part) for part in body.split('*'))
+            if body.endswith(' *') and body.count('*') == 1:
+                pattern = re.escape(body[:-2]) + '( .*)?'
+            return re.fullmatch(pattern, re.sub(r'[ \t]+', ' ', command), re.S) is not None
+
+        bash = [rule for rule in install.ASK_RULES if rule.startswith('Bash(')]
+        for command in ('git push', 'git push -u origin feat/x', 'gh pr edit 3 --title x', 'gh pr ready 3',
+                        'gh pr close 3', 'gh issue edit 4 --body x', 'gh issue close 4', 'gh repo create o/r --private',
+                        'gh repo fork o/r', 'gh workflow run ci.yml', 'gh gist create notes.md',
+                        'gh api -X POST repos/o/r/issues', 'gh api repos/o/r/issues/1 -X PATCH',
+                        'gh api -XPUT repos/o/r/topics', 'gh api --method DELETE repos/o/r/labels/x',
+                        'gh api --method=POST repos/o/r/forks', 'gh api repos/o/r/issues -f title=x',
+                        'gh api graphql -F n=3 -f query=x', 'gh api repos/o/r/hooks --input hook.json',
+                        'gh api repos/o/r/issues --field title=x', 'gh api repos/o/r/issues --raw-field=title=x'):
+            with self.subTest(command=command):
+                self.assertTrue(any(matches(rule, command) for rule in bash), command)
+        for command in ('gh api repos/o/r/pulls', 'gh api -X GET repos/o/r/pulls', 'gh pr view 3', 'gh issue list',
+                        'gh repo view o/r', 'gh workflow list', 'gh gist list', 'git pushd', 'gh apix -f x'):
+            with self.subTest(command=command):
+                self.assertFalse(any(matches(rule, command) for rule in bash), command)
 
     def test_your_own_ask_rules_stay_and_none_is_doubled(self) -> None:
         mine = {'theme': 'dark', 'permissions': {'ask': ['Bash(make deploy)', 'Bash(git push *)'],
@@ -217,12 +252,28 @@ class TestInstall(Home):
         self.assertIn('Bash(make deploy)', asks)
         self.assertEqual(json.loads(spath.read_text(encoding='utf-8'))['settings']['asks'], list(install.ASK_RULES))
 
-    def test_ask_rules_that_are_not_a_list_are_never_overwritten(self) -> None:
-        path = self.personal('.claude/settings.json', json.dumps({'permissions': {'ask': 'Bash'}}).encode())
-        code, out = self.run_kit('install', '--home-file', str(self.home_file))
-        self.assertEqual(code, 1, out)
-        self.assertIn('permissions.ask that is not a list', out)
-        self.assertEqual(json.loads(path.read_text(encoding='utf-8')), {'permissions': {'ask': 'Bash'}})
+    def test_permissions_it_cannot_add_to_are_never_overwritten_and_never_stop_the_setting(self) -> None:
+        for permissions, error in (({'ask': 'Bash'}, 'a permissions.ask that is not a list'),
+                                   (None, 'permissions that are not an object'),
+                                   (['Bash(ls)'], 'permissions that are not an object')):
+            with self.subTest(permissions=permissions):
+                original = {'theme': 'dark', 'permissions': permissions}
+                path = self.personal('.claude/settings.json', json.dumps(original).encode())
+                code, out = self.run_kit('install', '--home-file', str(self.home_file))
+                self.assertEqual(code, 1, out)
+                self.assertRegex(out, r'wrote +Claude Code setting')
+                self.assertRegex(out, rf'refused +Claude Code ask rules: \S+ has {error}')
+                settings = json.loads(path.read_text(encoding='utf-8'))
+                self.assertEqual(settings['permissions'], permissions)
+                for plugin in install.PLUGIN_IDS:
+                    self.assertEqual(settings['pluginConfigs'][plugin]['options']['instructionFiles'],
+                                     install.READ_BOTH)
+                code, out = self.run_kit('check', '--home-file', str(self.home_file))
+                self.assertEqual(code, 1, out)
+                self.assertRegex(out, r'current +Claude Code setting')
+                self.assertRegex(out, r'broken +Claude Code ask rules')
+                self.run_kit('uninstall')
+                self.assertEqual(json.loads(path.read_text(encoding='utf-8')), original)
 
     def test_a_cloud_session_gets_claude_md_and_nothing_else(self) -> None:
         code, out = self.run_kit('install', '--home-file', str(self.home_file), '--cloud')

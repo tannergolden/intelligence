@@ -22,7 +22,8 @@ WHAT IT BLOCKS, and the rule behind each:
   `rmdir /s`, `del /s` and `Remove-Item -Recurse`), and deleting databases,
   cloud resources or repository settings
 - OPS-004: `--no-verify`, hooks switched off for one command, and edits
-  that would remove this guard or its registrations
+  that would remove this guard, its registrations or the ask rules the kit
+  adds to Claude Code's settings
 - GIT-001: a commit that git would author, or sign off, as an AI's identity;
   `git commit -s` passes whenever git's identity is your user's
 - SEC-001: a credential-shaped string in a command or in a file being
@@ -285,6 +286,74 @@ OWNER_REMOTE = re.compile(r'(?:(?:https?|ssh|git)://(?:[^@/]+@)?github\.com(?::\
                           r'tannergolden/', re.I)
 OVERRIDES = re.compile(r'^## Overrides[ \t]*\n(?P<body>.*?)(?=^## |^---[ \t]*$|\Z)', re.M | re.S)
 OVERRIDE = re.compile(r'^\s*[-*]\s+`?(?P<id>[A-Z]{2,5}-\d{3})`?\s*:?\s*(?P<reason>.*)$')
+
+# The ask rules the installer adds to Claude Code's settings (OPS-005), which
+# an edit must not drop (OPS-004). They match install.py's ASK_RULES, which a
+# test holds.
+ASK_RULES = (
+    'Bash(git push *)',
+    'Bash(gh pr create *)',
+    'Bash(gh pr edit *)',
+    'Bash(gh pr ready *)',
+    'Bash(gh pr close *)',
+    'Bash(gh pr comment *)',
+    'Bash(gh pr review *)',
+    'Bash(gh issue create *)',
+    'Bash(gh issue edit *)',
+    'Bash(gh issue close *)',
+    'Bash(gh issue comment *)',
+    'Bash(gh release create *)',
+    'Bash(gh release upload *)',
+    'Bash(gh release edit *)',
+    'Bash(gh repo create *)',
+    'Bash(gh repo fork *)',
+    'Bash(gh workflow run *)',
+    'Bash(gh gist create *)',
+    'Bash(gh api *-X*POST*)',
+    'Bash(gh api *-X*PATCH*)',
+    'Bash(gh api *-X*PUT*)',
+    'Bash(gh api *-X*DELETE*)',
+    'Bash(gh api *--method*POST*)',
+    'Bash(gh api *--method*PATCH*)',
+    'Bash(gh api *--method*PUT*)',
+    'Bash(gh api *--method*DELETE*)',
+    'Bash(gh api *-f *)',
+    'Bash(gh api *-F *)',
+    'Bash(gh api *--field*)',
+    'Bash(gh api *--raw-field*)',
+    'Bash(gh api *--input*)',
+    'Bash(npm publish *)',
+    'Bash(pnpm publish *)',
+    'Bash(yarn publish *)',
+    'Bash(yarn npm publish *)',
+    'Bash(cargo publish *)',
+    'Bash(twine upload *)',
+    'Bash(python -m twine upload *)',
+    'Bash(python3 -m twine upload *)',
+    'Bash(gem push *)',
+    'Bash(docker push *)',
+    'Bash(docker image push *)',
+    'mcp__github__create_pull_request',
+    'mcp__github__update_pull_request',
+    'mcp__github__update_pull_request_branch',
+    'mcp__github__pull_request_review_write',
+    'mcp__github__add_comment_to_pending_review',
+    'mcp__github__add_reply_to_pull_request_comment',
+    'mcp__github__add_issue_comment',
+    'mcp__github__update_issue_comment',
+    'mcp__github__issue_write',
+    'mcp__github__sub_issue_write',
+    'mcp__github__request_copilot_review',
+    'mcp__github__resolve_review_thread',
+    'mcp__github__unresolve_review_thread',
+    'mcp__github__create_or_update_file',
+    'mcp__github__push_files',
+    'mcp__github__delete_file',
+    'mcp__github__create_branch',
+    'mcp__github__create_repository',
+    'mcp__github__fork_repository',
+    'mcp__github__actions_run_trigger',
+)
 
 # Where Claude Code's home copy of the rules sits: a local install, then a
 # cloud one. `--remind` prints the Invariants from the first that has them.
@@ -2064,7 +2133,7 @@ def check_edit(args: Mapping, path: pathlib.Path, home: pathlib.Path) -> Verdict
     if path in owned:
         return tampers(path)
     if path in shared:
-        return check_registration(path, new_text, olds, news)
+        return check_registration(path, new_text, pairs, home)
     if not str(path).endswith(BLOCK_SUFFIXES):
         return None
     try:
@@ -2087,9 +2156,10 @@ def check_edit(args: Mapping, path: pathlib.Path, home: pathlib.Path) -> Verdict
     return None
 
 
-def check_registration(path: pathlib.Path, new_text: str | None, olds: list[str],
-                       news: list[str]) -> Verdict | None:
-    """An edit to a shared settings file that drops one of the guard's hooks or switches every hook off."""
+def check_registration(path: pathlib.Path, new_text: str | None, pairs: list[tuple[str | None, str | None, bool]],
+                       home: pathlib.Path) -> Verdict | None:
+    """An edit to a shared settings file that drops one of the guard's hooks or one of the kit's ask rules, or
+    switches every hook off."""
     try:
         current = path.read_text(encoding='utf-8')
     except (OSError, UnicodeDecodeError):
@@ -2098,14 +2168,49 @@ def check_registration(path: pathlib.Path, new_text: str | None, olds: list[str]
         # Each registration names the guard once: the pre-tool hook, and in Claude Code the compaction reminder.
         if new_text.count('intelligence-guard') < current.count('intelligence-guard'):
             return tampers(path)
-        added = new_text
+        after = added = new_text
     else:
-        if any('intelligence-guard' in old for old in olds):
+        if any(old and 'intelligence-guard' in old for old, _new, _every in pairs):
             return tampers(path)
-        added = '\n'.join(news)
+        after = current
+        for old, new, every in pairs:
+            if old:
+                after = after.replace(old, new or '', -1 if every else 1)
+        added = '\n'.join(new for _old, new, _every in pairs if new)
     if 'disableAllHooks' in added and 'disableAllHooks' not in current:
         return Verdict('OPS-004', 'the edit turns every hook off', 'Leave the hooks on, and report what blocked you')
+    if path == home / '.claude' / 'settings.json':
+        rule = dropped_ask(current, after)
+        if rule:
+            return drops_ask(rule, path)
     return None
+
+
+def ask_rules(text: str) -> set[str] | None:
+    """The `permissions.ask` rules in Claude Code's settings; None when the text is not JSON."""
+    try:
+        data = json.loads(text) if text.strip() else {}
+    except ValueError:
+        return None
+    permissions = data.get('permissions') if isinstance(data, dict) else None
+    asks = permissions.get('ask') if isinstance(permissions, dict) else None
+    return {rule for rule in asks if isinstance(rule, str)} if isinstance(asks, list) else set()
+
+
+def dropped_ask(before: str, after: str, parse: bool = True) -> str | None:
+    """The first of the kit's ask rules that Claude Code's settings hold before a change and not after it."""
+    had, has = (ask_rules(before), ask_rules(after)) if parse else (None, None)
+    if had is None or has is None:  # not JSON, such as a patch's lines, so count each rule's quoted text instead
+        return next((rule for rule in ASK_RULES if after.count(json.dumps(rule)) < before.count(json.dumps(rule))),
+                    None)
+    return next((rule for rule in ASK_RULES if rule in had and rule not in has), None)
+
+
+def drops_ask(rule: str, path: pathlib.Path) -> Verdict:
+    return Verdict('OPS-004', f'the change would drop `{rule}` from the ask rules in {path}, which make Claude Code '
+                   'ask your user before an outward action',
+                   'Leave the ask rules in place and let Claude Code ask your user; make agents-uninstall is what '
+                   'takes them out')
 
 
 def check_patch(patch: str, cwd: pathlib.Path, home: pathlib.Path) -> Verdict | None:
@@ -2122,6 +2227,10 @@ def check_patch(patch: str, cwd: pathlib.Path, home: pathlib.Path) -> Verdict | 
             return tampers(path)
         added = [line[1:] for line in body.split('\n') if line.startswith('+')]
         removed = [line[1:] for line in body.split('\n') if line.startswith('-')]
+        if path == home / '.claude' / 'settings.json':
+            rule = dropped_ask('\n'.join(removed), '\n'.join(added), parse=False)
+            if rule:
+                return drops_ask(rule, path)
         if (path.name.lower().endswith(MARKDOWN)
                 and sum(line.count(EM_DASH) for line in added) > sum(line.count(EM_DASH) for line in removed)
                 and dash_banned(nearest_folder(path))):

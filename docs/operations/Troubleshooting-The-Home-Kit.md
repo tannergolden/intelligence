@@ -1,6 +1,6 @@
 <!--
 title: '🩺 TROUBLESHOOTING THE HOME KIT'
-description: 'What the installer, its check, the Claude cloud setup script and the guard hook print when something on a machine is wrong, and what to do about each. Read it when make agents-check is not all current, a cloud session starts without the rules, or the guard blocks a call.'
+description: 'What the installer, its check, the Claude cloud setup script and the guard hook print when something on a machine is wrong, and what to do about each. Read it when make agents-check is not all current, a cloud session starts without the rules, the guard blocks a call, or Claude Code asks before an action.'
 type: guide
 keywords: [install, agents-check, cloud-setup, guard, dotfiles, uninstall]
 -->
@@ -42,16 +42,16 @@ shows where each app's copy lands, and `CODEX_HOME` moves Codex's.
 
 ## 🔍 What check Says
 
-| Status    | What it means                                                                                                                                        | What to do                                                                                                                                              |
-| :-------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `current` | The file matches the release                                                                                                                         | Nothing                                                                                                                                                 |
-| `missing` | The file, its block, Claude Code's `instructionFiles` setting or one of its ask rules, a guard registration, or the compaction reminder is not there | `make agents`                                                                                                                                           |
-| `edited`  | A copy's block no longer matches its marker, a file the kit owns was changed, or a skill folder holds files the kit did not put there                | `make agents`, which writes it again. Keep your own notes outside the markers, and out of the files the kit owns whole                                  |
-| `stale`   | A copy's block is from another release, a guard registration differs from the one this release writes, or a retired knowledge block is still there   | `make agents`, with the pin you mean to run                                                                                                             |
-| `broken`  | A file holds more than one `INTELLIGENCE` block, a hook file is not valid JSON, or a guard registration runs a Python that is gone                   | Delete the extra block, or fix the JSON, by hand. For a Python that is gone, `make agents` registers the guard again with the one that runs the install |
-| `foreign` | A file or folder sits where the kit writes one, without the kit's mark                                                                               | The installer never replaces it. Move it aside, then `make agents`                                                                                      |
-| `warning` | A shadow: a file that would hide a copy, or load the rules a second time                                                                             | Below                                                                                                                                                   |
-| `manual`  | Cursor keeps its User Rules in its own settings, where no installer reaches                                                                          | Paste the home file into Settings, Rules, User Rules, and again after a release changes the block                                                       |
+| Status    | What it means                                                                                                                                                                                                                           | What to do                                                                                                                                              |
+| :-------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `current` | The file matches the release                                                                                                                                                                                                            | Nothing                                                                                                                                                 |
+| `missing` | The file, its block, Claude Code's `instructionFiles` setting or one of its ask rules, a guard registration, or the compaction reminder is not there                                                                                    | `make agents`                                                                                                                                           |
+| `edited`  | A copy's block no longer matches its marker, a file the kit owns was changed, or a skill folder holds files the kit did not put there                                                                                                   | `make agents`, which writes it again. Keep your own notes outside the markers, and out of the files the kit owns whole                                  |
+| `stale`   | A copy's block is from another release, a guard registration differs from the one this release writes, or a retired knowledge block is still there                                                                                      | `make agents`, with the pin you mean to run                                                                                                             |
+| `broken`  | A file holds more than one `INTELLIGENCE` block, a hook or settings file is not valid JSON, Claude Code's `permissions` or its `ask` list is in a shape the installer cannot add to, or a guard registration runs a Python that is gone | Delete the extra block, or fix the JSON, by hand. For a Python that is gone, `make agents` registers the guard again with the one that runs the install |
+| `foreign` | A file or folder sits where the kit writes one, without the kit's mark                                                                                                                                                                  | The installer never replaces it. Move it aside, then `make agents`                                                                                      |
+| `warning` | A shadow: a file that would hide a copy, or load the rules a second time                                                                                                                                                                | Below                                                                                                                                                   |
+| `manual`  | Cursor keeps its User Rules in its own settings, where no installer reaches                                                                                                                                                             | Paste the home file into Settings, Rules, User Rules, and again after a release changes the block                                                       |
 
 Three files draw a `warning`, each for its own reason:
 
@@ -72,13 +72,13 @@ Each line is `wrote`, `current` or `refused`, or `would write` under
 `--dry-run`. A `retired` line means it took out the knowledge facts an older
 release wrote, which is expected once. A refusal names its file and why:
 
-| After the file name                                                               | What to do                                                                                            |
-| :-------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------- |
-| `exists and is not the kit's; it is never overwritten`                            | Move your file aside, or fold what you need from it into one the kit does not own, then install again |
-| `holds more than one INTELLIGENCE block; remove the extra by hand`                | Delete the extra block, then install again                                                            |
-| `is not valid JSON (...); fix it first, it is never overwritten`                  | Fix that settings or hooks file, such as `~/.claude/settings.json`, then install again                |
-| `is not a JSON object`, or says a part of the file is not an object or not a list | The same: the file's shape is not one the installer can add to without guessing                       |
-| `holds an "intelligence" hook that is not the kit's`                              | Antigravity's `hooks.json` has a hook of yours under that name: rename it, then install again         |
+| After the file name                                                               | What to do                                                                                                                                                                                                                  |
+| :-------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `exists and is not the kit's; it is never overwritten`                            | Move your file aside, or fold what you need from it into one the kit does not own, then install again                                                                                                                       |
+| `holds more than one INTELLIGENCE block; remove the extra by hand`                | Delete the extra block, then install again                                                                                                                                                                                  |
+| `is not valid JSON (...); fix it first, it is never overwritten`                  | Fix that settings or hooks file, such as `~/.claude/settings.json`, then install again                                                                                                                                      |
+| `is not a JSON object`, or says a part of the file is not an object or not a list | The same: the file's shape is not one the installer can add to without guessing. When only Claude Code's `permissions` is, the ask rules are refused on their own line and the `instructionFiles` setting is written anyway |
+| `holds an "intelligence" hook that is not the kit's`                              | Antigravity's `hooks.json` has a hook of yours under that name: rename it, then install again                                                                                                                               |
 
 Some problems stop the install before it writes anything, because the files it
 was given are not a release's:
@@ -173,6 +173,9 @@ inside a block the hub renders. The sentence after it says what to do instead.
   `gh auth token`, is denied the same way: `gh` and `aws` use theirs without
   printing them. A search that names a pattern, such as
   `grep -rn ".netrc" code/`, passes; one run over a store's folder does not.
+- **An OPS-004 denial for an ask rule** means an edit to
+  `~/.claude/settings.json` would drop one of the rules the kit added. Leave
+  them: `make agents-uninstall` takes them out with the rest of the kit.
 - **`intelligence guard: internal error, call allowed: ...`** is a bug in the
   guard. It lets the call through rather than stop every call, so report it
   with the command that caused it.
@@ -186,6 +189,27 @@ inside a block the hub renders. The sentence after it says what to do instead.
   run `python3 ~/.agents/hooks/intelligence-guard.py --remind`; it prints
   nothing when `~/.claude/rules/intelligence.md` is missing or holds no
   block, and `make agents` puts that copy back.
+
+---
+
+## ✋ When Claude Code Asks First
+
+The ask rules the kit adds make Claude Code ask your user before a push, a
+pull request, a comment, a release, a publish, or a write through `gh api`,
+as [The Home Kit](../technical/The-Home-Kit.md#-asking-before-outward-actions)
+lists them.
+
+- **It asks in every mode.** An ask rule wins over an allow rule, and asks
+  even in `bypassPermissions` and auto mode; `dontAsk` mode denies the call
+  instead. A rule that ends in a lone ` *`, such as `Bash(git push *)`, also
+  matches the bare command, `git push`.
+- **A headless `claude -p` run cannot push.** With no one to answer, the
+  call is denied. Run the session interactively, or answer the prompt with a
+  `PermissionRequest` hook or a `--permission-prompt-tool` that decides as
+  your user would.
+- **A spelling the rules do not expect gets past them**, such as
+  `git -C . push`. The guard still denies the pushes and merges OPS-001
+  forbids, in any spelling.
 
 ---
 
