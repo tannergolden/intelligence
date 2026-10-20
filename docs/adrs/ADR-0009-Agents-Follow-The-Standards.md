@@ -20,6 +20,13 @@ _The rules point. The standards decide._
 
 </div>
 
+> [!NOTE]
+> **Corrected by [ADR-0030](ADR-0030-Rules-Written-For-Current-Models.md).** No
+> source could be found for the rise in doc reading from 11% to 75% cited below:
+> summaries of Vercel's published evaluation give pass rates of 53%, 53%, 79%
+> and 100% instead. STD-001's reason now rests on SWE-CC, where agents tried a
+> URL in 28.9% of runs and opened a local rules file in 91.6%.
+
 ---
 
 ## 📋 Meta Information
