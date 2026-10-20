@@ -464,6 +464,15 @@ class TestCommandChecks(Fake):
         (stage.repo / '__pycache__' / 'stats.cpython-313.pyc').write_bytes(b'\0')
         self.assertEqual(run.changed_files(stage), set())
 
+    def test_caches_left_by_running_the_tests_are_no_change(self) -> None:
+        stage = self.stage()
+        for cache in ('.pytest_cache/v/cache/lastfailed', '.mypy_cache/3.13/stats.meta.json', 'src/.ruff_cache/x'):
+            (stage.repo / cache).parent.mkdir(parents=True, exist_ok=True)
+            (stage.repo / cache).write_text('{}', encoding='utf-8')
+        self.assertEqual(run.changed_files(stage), set())
+        (stage.repo / 'pytest_cache_notes.txt').write_text('a real file\n', encoding='utf-8')
+        self.assertEqual(run.changed_files(stage), {'pytest_cache_notes.txt'})
+
 
 class TestSkillTriggers(Fake):
     """The trigger test counts how often a prompt loads the skill."""

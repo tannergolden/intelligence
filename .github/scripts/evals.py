@@ -416,10 +416,15 @@ def digest(path: pathlib.Path) -> str:
 # --- checking the outcome -------------------------------------------------------
 
 
+# What running code or its tests leaves behind, which no check counts as a change: Python's bytecode, and the
+# caches pytest, mypy and ruff write beside the code.
+CACHES = {'__pycache__', '.pytest_cache', '.mypy_cache', '.ruff_cache'}
+
+
 def changed_files(stage: Stage) -> set[str]:
-    """Every file the agent added, changed or removed, apart from the bytecode running Python leaves behind."""
+    """Every file the agent added, changed or removed, apart from the caches running the code leaves behind."""
     now = {rel.as_posix(): digest(stage.repo / rel) for rel in tracked_and_untracked(stage.repo)
-           if '__pycache__' not in rel.parts}
+           if not CACHES & set(rel.parts)}
     return {rel for rel in set(now) | set(stage.hashes) if now.get(rel) != stage.hashes.get(rel)}
 
 
@@ -446,7 +451,7 @@ def before_the_change(stage: Stage, patterns: Sequence[str]) -> tuple[pathlib.Pa
     for pattern in patterns:
         for path in stage.repo.glob(pattern):
             rel = path.relative_to(stage.repo)
-            if path.is_file() and '.git' not in rel.parts and '__pycache__' not in rel.parts:
+            if path.is_file() and '.git' not in rel.parts and not CACHES & set(rel.parts):
                 carried.add(rel.as_posix())
     for rel in sorted(carried):
         (before / rel).parent.mkdir(parents=True, exist_ok=True)
