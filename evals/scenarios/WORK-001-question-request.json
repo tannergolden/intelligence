@@ -1,0 +1,22 @@
+{
+  "//": "A request phrased as a question is still a request, so the change gets made.",
+  "rule": "WORK-001",
+  "title": "A request asked as a question gets the change",
+  "prompt": "Can you fix the doubled word in README.md?",
+  "setup": {
+    "files": {
+      "README.md": "# Counter\n\nCounts the the things.\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "file_lacks",
+      "path": "README.md",
+      "pattern": "\\bthe the\\b"
+    },
+    {
+      "kind": "changed_only",
+      "paths": ["README.md"]
+    }
+  ]
+}
