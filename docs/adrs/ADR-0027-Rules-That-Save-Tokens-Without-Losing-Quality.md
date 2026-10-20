@@ -22,9 +22,10 @@ _Fewer tokens in, the same work out._
 
 > [!NOTE]
 > **Amended by [ADR-0030](ADR-0030-Rules-Written-For-Current-Models.md).** CODE-003 is
-> folded into CODE-001, and the 84% and 67% figures below for tool output and
-> file reads could not be confirmed against their sources, so WORK-004 no
-> longer cites them.
+> folded into CODE-001, and WORK-005 is cut, since current models skipped the
+> needless rerun without it in the hub's evals. The 84% and 67% figures below
+> for tool output and file reads could not be confirmed against their sources,
+> so WORK-004 no longer cites them.
 
 ---
 

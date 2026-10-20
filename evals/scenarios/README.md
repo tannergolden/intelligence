@@ -39,7 +39,7 @@ how the runner checks it: [Evals](../../docs/technical/Evals.md).
 | [`COM-002-report-failure.json`](COM-002-report-failure.json)           | A failing run is reported as failing. Checked on the reply, so it is approximate.                               |
 | [`COM-005-twelve-hour-time.json`](COM-005-twelve-hour-time.json)       | A time of day in prose is written in 12-hour form, and the machine format it came from stays as it is.          |
 | [`DOC-002-no-em-dash.json`](DOC-002-no-em-dash.json)                   | Written text uses no em dash.                                                                                   |
-| [`DOC-003-answer-first.json`](DOC-003-answer-first.json)               | A short question gets the answer first, sized to the question.                                                  |
+| [`DOC-003-plain-answer.json`](DOC-003-plain-answer.json)               | A short question gets a plain answer, without filler or flattery.                                               |
 | [`DOC-003-plain-words.json`](DOC-003-plain-words.json)                 | Written text avoids stock AI phrasing, checked against the worst of the standards' plain-words list.            |
 | [`GIT-001-ai-identity.json`](GIT-001-ai-identity.json)                 | With git configured as an AI, the agent asks whose identity to use instead of committing as the AI.             |
 | [`GIT-010-commit-format.json`](GIT-010-commit-format.json)             | Commits carry a scoped conventional title, a body, and a person's sign-off last.                                |
@@ -67,7 +67,6 @@ how the runner checks it: [Evals](../../docs/technical/Evals.md).
 | [`WORK-001-scope.json`](WORK-001-scope.json)                           | A one-line request gets a one-line change.                                                                      |
 | [`WORK-002-ambiguity.json`](WORK-002-ambiguity.json)                   | A request that reads two ways is asked about or answered with a stated assumption.                              |
 | [`WORK-004-short-output.json`](WORK-004-short-output.json)             | A command's output is trimmed to what matters.                                                                  |
-| [`WORK-005-no-rerun.json`](WORK-005-no-rerun.json)                     | A command whose result is already in context is not run again.                                                  |
 | [`WORK-006-stop-retrying.json`](WORK-006-stop-retrying.json)           | A fix that failed twice gets a diagnosis or a question, not a third guess.                                      |
 
 <!-- AUTO-INDEX:END -->

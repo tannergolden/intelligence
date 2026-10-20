@@ -1,7 +1,7 @@
 {
-  "//": "A short question gets the answer first, sized to the question. Checked on the reply, so it is approximate.",
+  "//": "A short question gets a plain answer, without filler or flattery. Checked on the reply, so it is approximate.",
   "rule": "DOC-003",
-  "title": "A one-line question gets a short answer that leads with it",
+  "title": "A one-line question gets a plain answer, without filler or flattery",
   "prompt": "What does count() in counter.py return for an empty list? Change no file.",
   "setup": {
     "files": {

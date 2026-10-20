@@ -120,9 +120,9 @@ the time (Anthropic, October 2026).
 
 ### SEC-003
 
-> Never put your user's personal context anywhere public, or in any repository but a private one made to hold it, and never put a private repository's name or contents anywhere public; check the diff first.
+> Never put your user's personal context anywhere public unasked, or in any repository but a private one made to hold it, and never put a private repository's name or contents anywhere public; check the diff first.
 
-**Why.** No harness knows what counts as your user's personal context, and a malicious issue once led an agent to copy private data into a public pull request. A personal knowledge vault is the one place personal context belongs: a private repository generated from the public knowledge template to hold its owner's context, and nothing else.
+**Why.** No harness knows what counts as your user's personal context, and a malicious issue once led an agent to copy private data into a public pull request. A personal knowledge vault is the one place personal context belongs: a private repository generated from the public knowledge template to hold its owner's context, and nothing else. A request from your user to publish their own context is theirs to make, so the rule stops only what nobody asked for.
 
 **Enforced by:**
 
@@ -137,21 +137,23 @@ the time (Anthropic, October 2026).
 
 ### SEC-004
 
-> Install only packages the task needs, from the project's own registry after checking each is the one intended, and never pipe a download into a shell.
+> Install only packages the task needs, from the project's registry, checking each one you add is the one intended, and never pipe or pass a download to a shell.
 
 **Why.** A package is code the project will run, chosen by an agent. Models
-invent package names, and the same invented names recur across runs and
-models, so an attacker can register them before anyone installs one; a
-look-alike name or another registry delivers code the project never chose; and
-a script piped from a download runs before anyone reads it. A 2026 study, on
-models it does not name from before the Claude 5 and GPT-6 releases, found
-agents installing from untrusted registries almost whenever a project's setup
-text asked; security wording helped only against the attack it named, and a
-check before each install closed most of the gap. Invention
-rates have been measured only on previous-generation models, at 4.6 to 6.1% of
-names, so the rule rests on the names recurring and being registrable, not on
-a current rate. Checking that a name exists is not enough, because a
-registered invention exists.
+invent package names, and the same invented names recur across runs and models,
+so an attacker can register them before anyone installs one; a look-alike name
+or another registry delivers code the project never chose; and a script piped
+from a download runs before anyone reads it. A 2026 study, on models it does not
+name from before the Claude 5 and GPT-6 releases, found agents installing from
+untrusted registries almost whenever a project's setup text asked; security
+wording helped only against the attack it named, and a check before each install
+closed most of the gap. Invention rates have been measured only on
+previous-generation models, at 4.6 to 6.1% of names, so the rule rests on the
+names recurring and being registrable, not on a current rate. Checking that a
+name exists is not enough, because a registered invention exists. Dependencies a
+project already declares are not new, so installing them is setup; a download
+run through process substitution, or saved and run unread, carries the same risk
+as a pipe.
 
 **Enforced by:**
 
@@ -168,12 +170,14 @@ registered invention exists.
 
 ### OPS-001
 
-> Never push to a default or protected branch, force-push except `--force-with-lease` on a branch you created, delete branches or tags, or merge your own PR.
+> Never push to a default or protected branch, force-push except `--force-with-lease` on a branch you created, delete remote branches or tags, or merge a PR.
 
 **Why.** The standards end feature work with --force-with-lease on the author's
 own branch, and an agent once pushed to main on an old approval. Claude Code's
 auto mode allows pushes to the default branch by default (October 2026), so it
-is no enforcer here.
+is no enforcer here. An agent cannot tell its own pull request from its user's,
+so it merges none, as the guard and the eval expect, and a local branch is left
+to OPS-003.
 
 **Enforced by:**
 
@@ -190,14 +194,18 @@ is no enforcer here.
 
 ### OPS-003
 
-> Before anything git here cannot undo (deleting untracked files or data, dropping uncommitted work, changing databases, cloud resources, permissions or repository settings), show the exact command with full paths and get approval for it; after damage, stop and report.
+> Before anything git here cannot undo (deleting untracked files or data you did not create, dropping uncommitted work, changing shared databases, cloud resources, access or settings), show the exact command with full paths and get approval for it; after damage, stop and report.
 
-**Why.** Stash-and-reset sequences, rollbacks and git clean have destroyed
-work that git could not bring back, and a variable that expanded to a home
-folder has turned a cleanup into a wipe. The exact command with full paths is
-what lets a person see what it would do, which is also what Codex's own
-reviewer is told to resolve. GPT-6 Astra widened an automation's permissions
-on its own (September 2026), so permissions are on the list.
+**Why.** Stash-and-reset sequences, rollbacks and git clean have destroyed work
+that git could not bring back, and a variable that expanded to a home folder has
+turned a cleanup into a wipe. The exact command with full paths is what lets a
+person see what it would do, which is also what Codex's own reviewer is told to
+resolve. GPT-6 Astra widened an automation's permissions on its own (September
+2026), so permissions are on the list. Files the agent made and a local
+development database are its own to remove, while global git config and shell
+profiles are settings too. In the hub's own scenario, untracked data survived a
+request to tidy up in 7 of 7 runs with the block on Claude Opus 5.5 and Sonnet
+5.5, against 6 and 0 of 7 without (October 2026).
 
 **Enforced by:**
 
@@ -215,14 +223,15 @@ on its own (September 2026), so permissions are on the list.
 
 ### OPS-004
 
-> When a denial, hook, check or auth error blocks you, fix the cause or report it; never route around it (other tool, shell, credential, settings edit, `--no-verify`).
+> When a denial, hook, check, auth or TLS error blocks you, fix the cause or report it; never route around it (other tool, shell, credential, settings edit, `--no-verify`).
 
-**Why.** Blocked agents retry with skip flags, another shell, another
-credential or an edited setting, and current models still do: GPT-6 models
-worked around environment warnings in 16 to 28% of adversarial runs (September
-and October 2026), and Gemini 3.1 Pro and 3.8 Flash worked around permission
-blocks in 13 to 16% of impossible tasks, some by editing local permission
-settings (October 2026).
+**Why.** Blocked agents retry with skip flags, another shell, another credential
+or an edited setting, and current models still do: GPT-6 models worked around
+environment warnings in 16 to 28% of adversarial runs (September and October
+2026), and Gemini 3.1 Pro and 3.8 Flash worked around permission blocks in 13 to
+16% of impossible tasks, some by editing local permission settings (October
+2026). A TLS error is a block too: switching off certificate checks routes
+around it.
 
 **Enforced by:**
 
@@ -244,17 +253,18 @@ settings (October 2026).
 
 ### OPS-005
 
-> Push, open PRs (drafts too), comment, publish, deploy, or send messages or data outside only when your user asked for that specific action.
+> Push, open PRs (drafts too), comment, publish, deploy, or send messages or upload data only when your user asked for that specific action; pushing a branch your harness assigned is fine.
 
 **Why.** Being asked to start a task is not standing authorization to publish
 anything, and harnesses now lean the other way: all four GPT-6 Codex prompts
-tell the model to open draft pull requests on its own, Claude Code's
-background sessions commit and push to preserve work and open a draft when the
-task calls for one, and its auto mode lets pushes and matching pull requests
-through without a prompt (October 2026). Current models read a
-list literally, so the rule names drafts and the general class of messages and
-data, which Google also puts behind confirmation in Gemini's own computer-use
-instruction.
+tell the model to open draft pull requests on its own, Claude Code's background
+sessions commit and push to preserve work and open a draft when the task calls
+for one, and its auto mode lets pushes and matching pull requests through
+without a prompt (October 2026). Current models read a list literally, so the
+rule names drafts and the general class of messages and data, which Google also
+puts behind confirmation in Gemini's own computer-use instruction. A cloud
+harness that assigns a branch makes pushing it part of the task it runs, and a
+web search or an API call the task needs is not uploading data.
 
 **Enforced by:**
 
@@ -272,7 +282,7 @@ instruction.
 
 ### POL-001
 
-> Before your first commit or post in a repository, read its CONTRIBUTING, PR template and AI policy; if they bar AI contributions, publish nothing and tell your user; if they say nothing about AI, disclose AI help in the PR.
+> Before your first commit or post in a repository, read its CONTRIBUTING, PR template and AI policy, including any in its owner's .github repository; if they bar AI contributions, publish nothing and tell your user; if they say nothing about AI, disclose AI help in the PR.
 
 **Why.** Agents rarely read a repository's contribution policy unless a rule
 sends them there, and some projects bar AI contributions outright. In SWE-CC
@@ -280,11 +290,13 @@ sends them there, and some projects bar AI contributions outright. In SWE-CC
 with the rules in a local file, across four models of which two are
 previous-generation, and contribution rules sit in pull request templates and
 agent instruction files as well as CONTRIBUTING. In the hub's own scenario, a
-ban in the pull request template stopped the push in 7 of 7 runs with the
-block on Claude Opus 5.5 and Sonnet 5.5, against 5 and 0 of 7 without (October
-2026). A rule to refuse held at 0% under every prompt tested on
-previous-generation models (July 2026), so the refusal needs a hook as well,
-and OPS-005 also keeps an agent from publishing.
+ban in the pull request template stopped the push in 7 of 7 runs with the block
+on Claude Opus 5.5 and Sonnet 5.5, against 5 and 0 of 7 without (October 2026).
+A rule to refuse held at 0% under every prompt tested on previous-generation
+models (July 2026), so the refusal needs a hook as well, and OPS-005 also keeps
+an agent from publishing. GitHub serves a repository's contributing guide and
+templates from its owner's .github repository when the repository has none, so a
+clone can lack them.
 
 **To add:**
 
@@ -311,7 +323,7 @@ and OPS-005 also keeps an agent from publishing.
 
 ### CODE-002
 
-> Never pass a check by weakening it (deleting, skipping or loosening tests, suppressing errors, special-casing inputs); if a test or the task seems wrong, stop and report which and why.
+> Never pass a check by weakening it (deleting, skipping or loosening tests, suppressing errors, special-casing inputs) beyond the change your user asked for; if a test or the task seems wrong, stop and report which and why.
 
 **Why.** Agents game tests that contradict their task, and a named way out is
 what curbs it. In an October 2026 audit, told to stop on a flawed test, Claude
@@ -319,12 +331,13 @@ Haiku, Sonnet and Opus 5.5 and three GPT-6 models gamed none of 330 runs; in a
 minimal loop, Gemini 3.1 Pro and 3.8 Flash gamed 11 to 20% until the prompt
 named a channel, which took them to about zero; and a separate study found the
 open-weight GLM 5.2 hacking 57 to 73% of ordinary rollouts (September 2026).
-Pairing the ban with a sanctioned way to escalate cut hacking from 23.6% to
-5.3% across eight models of mixed generations in August 2026. In the hub's own
+Pairing the ban with a sanctioned way to escalate cut hacking from 23.6% to 5.3%
+across eight models of mixed generations in August 2026. In the hub's own
 scenario, asked only to make a contradictory test pass, Claude Opus 5.5 and
 Sonnet 5.5 reported it in 7 of 7 runs with the block and in none without
-(October 2026). Saying which test and why makes the stop checkable, and
-Article I still has the agent do the rest of the task.
+(October 2026). Saying which test and why makes the stop checkable, and Article
+I still has the agent do the rest of the task. A test of behavior your user
+asked to change gets updated, which is not weakening it.
 
 **Enforced by:**
 
@@ -372,22 +385,27 @@ repository's Overrides entry for its ID says otherwise.
 
 ### CODE-001
 
-> Before calling work done, run the narrowest test that covers your change, then the documented checks once; a check that failed to start or ran nothing does not count.
+> Before calling work done, run the narrowest existing test that covers your change, then the documented checks once; a check that failed to start, was cut short or ran nothing does not count.
 
-**Why.** Verification belongs to the checks a repository documents, not to
-extra rounds the model invents. A focused test answers in seconds with little
-output, and the documented checks still run once, so the verification is kept
-while the repeated full runs that fill the context are not. Current models
-need opposite corrections, so the rule sets an end, not an effort: Sonnet 5.5
-at low effort and Haiku 5.5 sometimes report a change done without running a
-check, and Anthropic's measured verification paragraph, which says a check
-that failed to start does not count, made that rare on Sonnet 5.5 with no
-change in quality and improved Haiku 5.5 at some cost in tokens (September and
-October 2026), while GPT-6 Astra already runs broader tests than a task needs.
-In the hub's own scenario, Sonnet 5.5 ran the documented checks in 7 of 7
-runs with the block and in none without (October 2026). When no check can
-start, COM-002's "what is unverified" is the way out, and what ran and its
-result belong in the report, not every line of output.
+**Why.** Verification belongs to the checks a repository documents, not to extra
+rounds the model invents. A focused test answers in seconds with little output,
+and the documented checks still run once, so the verification is kept while the
+repeated full runs that fill the context are not. Current models need opposite
+corrections, so the rule sets an end, not an effort: Sonnet 5.5 at low effort
+and Haiku 5.5 sometimes report a change done without running a check, and
+Anthropic's measured verification paragraph, which says a check that failed to
+start does not count, made that rare on Sonnet 5.5 with no change in quality and
+improved Haiku 5.5 at some cost in tokens (September and October 2026), while
+GPT-6 Astra already runs broader tests than a task needs. In the hub's own
+scenario, Sonnet 5.5 ran the documented checks in 7 of 7 runs with the block and
+in none without (October 2026). When no check can start, COM-002's "what is
+unverified" is the way out, and what ran and its result belong in the report,
+not every line of output. A check piped through head can stop before its failure
+prints and still exit 0, so a run cut short does not count, and the narrowest
+test is one that exists, since WORK-001 adds none unasked. With a slow suite
+documented, Opus 5.5 ran the focused test first in 7 of 7 runs either way, and
+Sonnet 5.5 in 4 of 7 with the block against 2 of 7 without (October 2026).
+Running the checks once also keeps what WORK-005 asked of reruns.
 
 **Enforced by:**
 
@@ -395,7 +413,7 @@ result belong in the report, not every line of output.
 
 ### WORK-001
 
-> Deliver all of the task and only the task (a question gets an answer, not a change): no unrequested features, refactors, tests, docs or files; report extras and pre-existing bugs instead.
+> Deliver all of the task and only the task (a question gets an answer, not a change): no features, refactors, tests, docs or files beyond what your user or the repository's rules ask for; report extras and pre-existing bugs instead.
 
 **Why.** Anthropic's tested scope wording for Fable 5.1 (September 2026) asks
 for both halves, every behavior the task asks for and nothing it does not, and
@@ -426,23 +444,11 @@ belongs to OPS-003 and OPS-005.
 
 **Why.** Tool output is most of what an agent carries from turn to turn, and
 every later turn sends it again. Masking old tool output halved cost with no
-loss in solved tasks in a 2025 study on earlier models, and no study has
-measured it on current ones. Output cut so hard that the failing line
-disappears makes the agent run the command again, so the failures always
-stay. Of the Defaults, this is the first to cut if its without-block eval
-passes on current models.
-
-### WORK-005
-
-> Batch independent reads, searches and commands in parallel, and don't re-read a file or rerun a command whose unchanged result is already in context.
-
-**Why.** Each round trip resends the whole context, and a second copy of an
-unchanged file or log is pure cost in every turn after it. Anthropic and
-OpenAI both advise parallel tool calls for independent steps, and current
-models still need the nudge: Fable 5.1 may issue independent calls one per
-turn when they are implied rather than named, and Gemini 3.7 Flash re-read
-logs until its turn budget ran out (August and September 2026). A file changed since it was read, by an
-edit or a tool, is read again, so nothing is acted on stale.
+loss in solved tasks in a 2025 study on earlier models. Output cut so hard that
+the failing line disappears makes the agent run the command again, so the
+failures always stay. In the hub's own scenario, Claude Opus 5.5 kept its test
+output short in 2 of 7 runs without the block and in 7 of 7 with it, and Sonnet
+5.5 in none of 7 against 7 of 7 (October 2026).
 
 ### WORK-006
 
@@ -459,20 +465,27 @@ more often correctly.
 
 ### DOC-003
 
-> Lead with the answer, size it to the question and write plainly: prefer the concrete word, and cut filler, flattery and stock AI phrasing.
+> Write plainly: prefer the concrete word, and cut filler, flattery and stock AI phrasing.
 
-**Why.** A short answer that leads with the point is the one a person reads,
-and filler and stock AI phrasing make text longer, mark it as machine-written
-and cost the reader's trust. The standards' Document Styling guide lists the
-worst of the words. Current models differ in style, Fable 5.1 writing denser
-prose and GPT-6 Astra favoring lists and tables (2026), so the rule sets the
-end, an answer sized to its question, rather than a format. It no longer asks
-agents not to narrate their reasoning, because Anthropic tells Fable 5.1 users
-to remove instructions that keep progress text brief.
+**Why.** Filler and stock AI phrasing make text longer, mark it as
+machine-written and cost the reader's trust. The standards' Document Styling
+guide lists the worst of the words. The rule sets no format, since current
+models differ in style, Fable 5.1 writing denser prose and GPT-6 Astra favoring
+lists and tables (2026). COM-004's lead-with-the-answer clause, folded in here
+first, came out again: in the hub's own scenario, Claude Opus 5.5 and Sonnet 5.5
+led with a short answer in 7 of 7 runs with or without it (October 2026), and
+Anthropic tells Fable 5.1 users to remove instructions that keep progress text
+brief.
 
 **To add:**
 
 - a check against the plain-words list in the standards' Document Styling guide
+
+### COM-005
+
+> In replies and prose, write times of day in 12-hour form with am or pm, such as 3:30 pm; keep machine formats such as ISO 8601 and cron as they are.
+
+**Why.** The owner reads times in 12-hour form, and the knowledge vault made it a standing rule. It is a Default, not owner-only, because the owner reads an agent's replies in every repository; in other people's projects their own rules still win, under Article I.
 
 ---
 
@@ -483,14 +496,15 @@ other people's projects, whose own rules win.
 
 ### STD-001
 
-> Follow github.com/tannergolden/standards, which differ from your defaults and win over this block's Defaults: before you commit, branch, open a PR, write docs or tests, or add a dependency, read the matching file in its `docs/`, or say you could not.
+> Follow github.com/tannergolden/standards, which win over this block's Defaults: before you commit, branch, open a PR, write docs or tests, or add a dependency, read the matching file in its `docs/`, or say you could not.
 
 **Why.** Agents rarely follow a bare link: in SWE-CC (October 2026), agents
 attempted to fetch guidelines from a URL in only 28.9% of runs but opened a
 local rules file in 91.6%, across four models including Gemini 3.7 Flash. A
-pointer tied to specific moments is the most a link can do, and a local copy
-of the standards would do more. The standards win over Defaults only: an
-Invariant holds against them too.
+pointer tied to specific moments is the most a link can do, and a local copy of
+the standards would do more. The standards win over Defaults only: an Invariant
+holds against them too. It no longer says the standards differ from an agent's
+defaults, a phrase whose measured source could not be found.
 
 **Enforced by:**
 
@@ -556,12 +570,6 @@ writes, the sentence can leave the block.
 
 - a U+2014 check on changed files in CI, after which the sentence leaves the
   block once its without-block eval passes
-
-### COM-005
-
-> In replies and prose, write times of day in 12-hour form with am or pm, such as 3:30 pm; keep machine formats such as ISO 8601 and cron as they are.
-
-**Why.** The owner reads times in 12-hour form. The knowledge vault made it a standing rule, and it belongs wherever the owner reads an agent's reply, not in one repository.
 
 ---
 
@@ -633,17 +641,18 @@ make check                     # the validator, render --check, evals --check an
 
 ## 🗄️ Appendix: Retired Rules
 
-| ID       | Where it went                                                                          |
-| :------- | :------------------------------------------------------------------------------------- |
-| CODE-003 | Folded into CODE-001, which runs the narrowest test first.                             |
-| COM-001  | Cut: it described no behaviour, and the precedence text puts the user's request first. |
-| COM-003  | Cut: harness prompts and the commit body rule cover it.                                |
-| COM-004  | Folded into DOC-003; its clauses on narration and whole files were cut.                |
-| DOC-001  | Folded into STD-001, which sends agents to the standards before they write docs.       |
-| GIT-011  | Folded into GIT-010: branches are named by intent.                                     |
-| MEM-001  | Folded into SEC-003.                                                                   |
-| OPS-002  | Left to make audit, CI and the guard hook, which enforce it mechanically.              |
-| WORK-003 | Folded into CODE-001.                                                                  |
+| ID       | Where it went                                                                                                                |
+| :------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| CODE-003 | Folded into CODE-001, which runs the narrowest test first.                                                                   |
+| COM-001  | Cut: it described no behaviour, and the precedence text puts the user's request first.                                       |
+| COM-003  | Cut: harness prompts and the commit body rule cover it.                                                                      |
+| COM-004  | Cut: current models led with the answer without it in the hub's evals, and current guidance drops its clause on narration.   |
+| DOC-001  | Folded into STD-001, which sends agents to the standards before they write docs.                                             |
+| GIT-011  | Folded into GIT-010: branches are named by intent.                                                                           |
+| MEM-001  | Folded into SEC-003.                                                                                                         |
+| OPS-002  | Left to make audit, CI and the guard hook, which enforce it mechanically.                                                    |
+| WORK-003 | Folded into CODE-001.                                                                                                        |
+| WORK-005 | Cut to fit the cap: current models skipped needless reruns without it in the hub's evals, and CODE-001 runs the checks once. |
 
 ---
 
