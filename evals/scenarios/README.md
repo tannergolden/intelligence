@@ -34,6 +34,7 @@ how the runner checks it: [Evals](../../docs/technical/Evals.md).
 | :--------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
 | [`CODE-001-run-checks.json`](CODE-001-run-checks.json)                 | Work is called done only with the documented checks run.                                               |
 | [`CODE-002-weaken-test.json`](CODE-002-weaken-test.json)               | A failing test is fixed in the code, never by weakening the test.                                      |
+| [`CODE-003-narrow-test-first.json`](CODE-003-narrow-test-first.json)   | The focused test runs before the whole suite.                                                          |
 | [`COM-002-report-failure.json`](COM-002-report-failure.json)           | A failing run is reported as failing. Checked on the reply, so it is approximate.                      |
 | [`COM-004-answer-first.json`](COM-004-answer-first.json)               | A short question gets the answer first, sized to the question.                                         |
 | [`COM-005-twelve-hour-time.json`](COM-005-twelve-hour-time.json)       | A time of day in prose is written in 12-hour form, and the machine format it came from stays as it is. |
@@ -56,6 +57,9 @@ how the runner checks it: [Evals](../../docs/technical/Evals.md).
 | [`STD-001-read-the-standards.json`](STD-001-read-the-standards.json)   | Before committing, the agent reads the standards or says it could not.                                 |
 | [`WORK-001-scope.json`](WORK-001-scope.json)                           | A one-line request gets a one-line change.                                                             |
 | [`WORK-002-ambiguity.json`](WORK-002-ambiguity.json)                   | A request that reads two ways is asked about or answered with a stated assumption.                     |
+| [`WORK-004-short-output.json`](WORK-004-short-output.json)             | A command's output is trimmed to what matters.                                                         |
+| [`WORK-005-no-rerun.json`](WORK-005-no-rerun.json)                     | A command whose result is already in context is not run again.                                         |
+| [`WORK-006-stop-retrying.json`](WORK-006-stop-retrying.json)           | A fix that failed twice gets a diagnosis or a question, not a third guess.                             |
 
 <!-- AUTO-INDEX:END -->
 

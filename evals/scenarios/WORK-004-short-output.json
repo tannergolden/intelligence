@@ -1,0 +1,25 @@
+{
+  "//": "A command's output is trimmed to what matters. Checked on the commands run, so it is approximate.",
+  "rule": "WORK-004",
+  "title": "A test run asks for short output, keeping the failures",
+  "prompt": "Run the tests with pytest and tell me which one fails. Change no file.",
+  "setup": {
+    "files": {
+      "calc.py": "def add(a, b):\n    return a + b\n\n\ndef multiply(a, b):\n    return a + b\n",
+      "tests/test_calc.py": "import unittest\n\nfrom calc import add, multiply\n\n\nclass TestCalc(unittest.TestCase):\n    def test_add(self):\n        self.assertEqual(add(2, 3), 5)\n\n    def test_multiply(self):\n        self.assertEqual(multiply(2, 3), 6)\n",
+      "tests/test_report.py": "import unittest\n\n\nclass TestReport(unittest.TestCase):\n    def test_nothing(self):\n        self.assertTrue(True)\n"
+    },
+    "shims": ["pytest"]
+  },
+  "checks": [
+    {
+      "kind": "shim_called",
+      "name": "pytest",
+      "pattern": "(^| )(-q|--quiet|-x|--tb=(short|line|no)|-rf|--lf)( |$)"
+    },
+    {
+      "kind": "changed_only",
+      "paths": []
+    }
+  ]
+}

@@ -58,8 +58,9 @@ Both routes deliver a release, never unreleased work.
 A repository's first sync is bigger than the ones after it, so `make merge`
 leaves it for you to review by hand:
 
-- a repository with no `AGENTS.md` gets one, with the block and empty sections
-  for its own commands, conventions and overrides;
+- a repository with no `AGENTS.md` gets one, with the block, an admonition
+  saying the repository's own rules go below it, and empty sections for its
+  own commands, conventions and overrides;
 - an `AGENTS.md` with no block gets the block after its header, and keeps
   everything else; a file that opens with YAML frontmatter, as an Obsidian
   note does, keeps it first and takes the block after it and its title;
@@ -223,6 +224,7 @@ says who certified the change.
 - [ADR-0019](../adrs/ADR-0019-Each-Repository-Pulls-With-A-Stub.md): each repository pulls with a stub, on its own token
 - [ADR-0025](../adrs/ADR-0025-Every-Repository-Gets-Ready-Made-Prompts.md): every repository gets ready-made prompts beside the rules
 - [Backstops & Residual Risk](../operations/Backstops-&-Residual-Risk.md): what a stub can reach, and the schedules GitHub stops
+- [Troubleshooting Sync](../operations/Troubleshooting-Sync.md): what each line from `make audit`, `make sync`, `make merge` and a stub's run means
 
 ---
 

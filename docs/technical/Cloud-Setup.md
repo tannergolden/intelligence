@@ -63,6 +63,7 @@ install anything until they are filled.
 
 - [ADR-0010](../adrs/ADR-0010-Releases-Serve-Rendered-Files.md): a release tag serves the rendered files, checked against pins
 - [Releasing](../distribution/Releasing.md): where printing the setup script falls among the release steps
+- [Troubleshooting The Home Kit](../operations/Troubleshooting-The-Home-Kit.md): what each notice the script prints means
 
 ---
 

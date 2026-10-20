@@ -123,6 +123,7 @@ The cap rises from 4,000 characters to 5,000, with a target of 4,500, and each n
 - [ADR-0002](ADR-0002-One-Root-AGENTS-File.md): one root `AGENTS.md` per repository, now every repository but the hub
 - [ADR-0011](ADR-0011-The-Universal-Rule-Set.md): the nineteen rules this set grew from
 - [ADR-0004](ADR-0004-Precedence-Overrides-&-Hash-Marker.md): the precedence, the Overrides entries and the hash marker, unchanged
+- [ADR-0026](ADR-0026-The-Hub-Keeps-Its-Own-Rules-In-AGENTS.md): amends this record, moving the hub's own rules from `.github/CONTRIBUTING.md` into a root `AGENTS.md` without the block
 
 ### 🔗 See also
 

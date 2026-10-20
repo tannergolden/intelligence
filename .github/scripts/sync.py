@@ -273,6 +273,12 @@ _The universal rules first, then this repository's own._
 {region}
 ---
 
+> [!IMPORTANT]
+> **Write this repository's own rules from here down.** A sync replaces only the block between the
+> `INTELLIGENCE` markers above, so an edit inside it is lost, and keeps everything below. Put each
+> rule in the section it belongs to. To change how a Default applies here, add a line under
+> **Overrides** naming its rule ID; an Invariant cannot be overridden.
+
 ## Commands
 
 <!-- How to install, lint, test and build, exactly as CI runs them. -->

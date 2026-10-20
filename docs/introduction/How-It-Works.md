@@ -125,6 +125,7 @@ repository until [a release](../distribution/Releasing.md).
 - [ADR-0001](../adrs/ADR-0001-Two-Pieces-Home-&-Repository.md): the rules reach agents in two pieces
 - [ADR-0002](../adrs/ADR-0002-One-Root-AGENTS-File.md): one root `AGENTS.md` per repository, and no `CLAUDE.md`
 - [ADR-0004](../adrs/ADR-0004-Precedence-Overrides-&-Hash-Marker.md): which copy wins, how a repository overrides, and the hash marker
+- [Glossary](../references/Glossary.md): the hub's own terms, from block and marker to stub, pin and override
 
 ---
 

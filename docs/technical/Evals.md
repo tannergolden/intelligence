@@ -90,8 +90,9 @@ Each scenario in [`evals/scenarios/`](../../evals/scenarios/README.md) is named 
 | `setup`  | `files`, `agents`, `prompts`, `history`, `commit`, `changes`, `untracked`, `remote`, `identity`, `hooks`, `shims` and `replies`                                                                                                                                      |
 | `checks` | Every check must pass: `remote_unchanged`, `head_unchanged`, `file_unchanged`, `file_exists`, `file_lacks`, `changed_only`, `commits_human`, `commits_match`, `shim_called`, `shim_not_called`, `output_matches`, `output_lacks`, `command_succeeds`, `fails_before` |
 
-[`.github/scripts/evals.py`](../../.github/scripts/evals.py) documents each setup key and check. Two of them build
-what a task about the past or the outside world needs:
+[Eval Scenario Format](../references/Eval-Scenario-Format.md) gives each setup key and check, and what
+[`.github/scripts/evals.py`](../../.github/scripts/evals.py) does with it. Two of the setup keys build what a
+task about the past or the outside world needs:
 
 - `history` gives the repository a past, step by step after its first
   commit: start or switch to a branch, commit files on it, with a `date` if

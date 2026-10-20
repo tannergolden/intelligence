@@ -248,6 +248,12 @@ repository's Overrides entry for its ID says otherwise.
 
 - ci / Lint, Test & Build
 
+### CODE-003
+
+> Run the narrowest test that covers a change first, then the broader checks once before calling it done.
+
+**Why.** A focused test answers in seconds with little output, and the full suite still runs once, so CODE-001's verification is kept while the repeated full runs that fill the context are not. Anthropic's Claude Code guidance and the Codex repository's own AGENTS.md both run scoped tests first, and a study of context files found that blanket testing requirements raised cost without raising success.
+
 ### WORK-001
 
 > Change only what the task needs: no unrequested refactors, reformatting, features, files or dependencies; suggest them instead.
@@ -259,6 +265,24 @@ repository's Overrides entry for its ID says otherwise.
 > Ask first only if readings of the request lead to materially different work; otherwise, or if no one can answer, take the most conservative one and say so.
 
 **Why.** Asking helps on underspecified tasks, but over-asking stalls runs that nobody is there to answer.
+
+### WORK-004
+
+> Keep command output short with quiet flags, grep, head or tail, but keep every error and failure with the lines around it.
+
+**Why.** Tool output is most of what an agent carries from turn to turn, about 84% of each turn's tokens in one study of SWE-agent, and every later turn sends it again. Trimming it to what matters halved cost there with no loss in solved tasks, but output cut so hard that the failing line disappears makes the agent run the command again, so the failures always stay.
+
+### WORK-005
+
+> Batch independent reads, searches and commands in parallel, and don't re-read a file or rerun a command whose unchanged result is already in context.
+
+**Why.** Each round trip resends the whole context, and a second copy of an unchanged file or log is pure cost in every turn after it. Anthropic and OpenAI both advise parallel tool calls for independent steps. A file changed since it was read, by an edit or a tool, is read again, so nothing is acted on stale.
+
+### WORK-006
+
+> After two failed attempts at the same fix, stop retrying variants: re-diagnose from the evidence, or ask.
+
+**Why.** Retries that vary a guess add context without adding understanding, and Anthropic's guidance is to stop and start over once a session has been corrected more than twice. A fresh diagnosis, or one question to the person who knows, ends the loop sooner and more often correctly.
 
 ### COM-004
 

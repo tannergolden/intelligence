@@ -1,4 +1,4 @@
-<!-- INTELLIGENCE:BEGIN sha256:17581db1e67fd033b97b69bc0843bb5a66c84d1d16e7748998a9f62e1ddc8126 -->
+<!-- INTELLIGENCE:BEGIN sha256:dedd0f57e009fd71b4bcfad3acf48643567632f4470d39bd7166950a51003e52 -->
 
 ## Constitution
 
@@ -24,8 +24,12 @@ From CONSTITUTION.md in github.com/tannergolden/intelligence, which gives the re
 ### Defaults
 
 - CODE-001: Before calling work done, run the documented checks that cover your change and show the output.
+- CODE-003: Run the narrowest test that covers a change first, then the broader checks once before calling it done.
 - WORK-001: Change only what the task needs: no unrequested refactors, reformatting, features, files or dependencies; suggest them instead.
 - WORK-002: Ask first only if readings of the request lead to materially different work; otherwise, or if no one can answer, take the most conservative one and say so.
+- WORK-004: Keep command output short with quiet flags, grep, head or tail, but keep every error and failure with the lines around it.
+- WORK-005: Batch independent reads, searches and commands in parallel, and don't re-read a file or rerun a command whose unchanged result is already in context.
+- WORK-006: After two failed attempts at the same fix, stop retrying variants: re-diagnose from the evidence, or ask.
 - COM-004: Lead with the answer and size it to the question; don't repeat what is already in context, narrate routine reasoning, or load whole files and folders when a section will do.
 - DOC-003: Write plainly: lead with the point, prefer the concrete word, and cut filler, flattery and stock AI phrasing.
 

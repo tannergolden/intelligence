@@ -154,7 +154,7 @@ you use has one that passes, headless and by hand.
 ## 🔬 Its Own Tests
 
 ```bash
-python3 -m unittest discover -s probe -p 'test_*.py'
+python3 .github/scripts/test_loader_probe.py
 ```
 
 They run whole probes against a fake app and a throwaway home folder, and

@@ -128,6 +128,7 @@ reader.
 - [ADR-0012](../adrs/ADR-0012-One-Pinned-Kit-For-Every-Module.md): every module ships in one pinned kit beside the rules
 - [ADR-0013](../adrs/ADR-0013-The-Guard-Denies-Never-Allows.md): one guard behind every app's hook, which only ever denies
 - [ADR-0024](../adrs/ADR-0024-The-Hub-Keeps-Its-Template-Layout.md): the scripts in `.github/scripts/`, the kit's sources in `kit/`, and everything a machine downloads in `home/`
+- [Troubleshooting The Home Kit](../operations/Troubleshooting-The-Home-Kit.md): what each status of the installer, its check and the guard means
 
 ---
 
