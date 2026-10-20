@@ -288,6 +288,34 @@ class TestLint(unittest.TestCase):
         self.assertEqual(prompts.lint(changed(('{{WHAT_BROKE}}', '{{WHAT_MUST_WORK}}'))), [])
 
 
+class TestCompare(unittest.TestCase):
+    """What a newer block does to the universal prompts, named for the pull request that delivers it."""
+
+    def inner(self, text: str) -> str:
+        return prompts.find(prompts.seal(text).seed).inner
+
+    def test_each_prompt_added_reworded_and_dropped_is_named(self) -> None:
+        old = self.inner(changed((PROMPT, PROMPT + '\n' + PROMPT.replace('Fix A Bug', 'Explain This Code'))))
+        new = self.inner(changed((PROMPT, PROMPT + '\n' + PROMPT.replace('Fix A Bug', 'Plan A Change')),
+                                 ('Fix it.', 'Find the cause, and fix it.')))
+        self.assertEqual(prompts.compare(old, new),
+                         'adds Plan A Change, rewords Fix A Bug and drops Explain This Code')
+
+    def test_a_change_to_the_guide_alone_says_so(self) -> None:
+        old = self.inner(SOURCE)
+        self.assertEqual(prompts.compare(old, self.inner(changed(('Copy one.', 'Copy it.')))),
+                         'changes only the guide around the prompts')
+
+    def test_a_new_use_when_line_is_a_rewording(self) -> None:
+        old = self.inner(SOURCE)
+        self.assertEqual(prompts.compare(old, self.inner(changed(('it breaks.', 'it fails.')))),
+                         'rewords Fix A Bug')
+
+    def test_names_read_as_prose(self) -> None:
+        self.assertEqual([prompts.listed(names) for names in (['A'], ['A', 'B'], ['A', 'B', 'C'])],
+                         ['A', 'A and B', 'A, B and C'])
+
+
 @unittest.skipUnless(shutil.which('prettier'), 'Prettier is not installed')
 class TestPrettierAgrees(unittest.TestCase):
     """Where Prettier is installed: it leaves the real source as it is, and rewrites what each formatter rule finds."""

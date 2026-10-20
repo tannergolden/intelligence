@@ -411,6 +411,7 @@ class Change:
     adoption: list[str]  # what a first sync did, for the pull request; empty for a routine update
     prompts_file: str | None = None  # the new docs/Prompts.md; None leaves it as it is
     prompts_note: str | None = None  # what adding docs/Prompts.md did, for the pull request
+    prompts_delta: str | None = None  # what a newer block does to the prompts, such as "adds Plan A Change"
 
 
 def adopt(repo: str, agents: str | None, claude: str | None, region: str) -> Change:
@@ -443,7 +444,11 @@ def with_prompts(change: Change, current: str | None, release: prompts.Prompts |
     if release is None:
         return change
     text, note = prompts.change(current, release)
-    return change if text is None else dataclasses.replace(change, prompts_file=text, prompts_note=note)
+    if text is None:
+        return change
+    found = prompts.find(current) if current is not None else None
+    delta = prompts.compare(found.inner, prompts.find(release.region).inner) if found else None
+    return dataclasses.replace(change, prompts_file=text, prompts_note=note, prompts_delta=delta)
 
 
 Finder = Callable[[str], 'render.Found | None']
@@ -593,10 +598,11 @@ def messages(block_hash: str, ref: str, change: Change, signer: tuple[str, str] 
     prompts_hash = prompts.find(change.prompts_file).marker if change.prompts_file else ''
     title = (f'chore(agents): 🤖 sync the universal rules to {block_hash[:12]}' if rules
              else f'chore(agents): 🤖 sync the universal prompts to {prompts_hash[:12]}')
+    delta = f' The new prompts block {change.prompts_delta}.' if change.prompts_delta else ''
     also = ''
     if change.prompts_file and not change.prompts_note:
         also = (' It also brings the universal prompts in docs/Prompts.md up to date, and leaves '
-                "this repository's own prompts as they were.")
+                "this repository's own prompts as they were.") + delta
     if change.adoption or change.prompts_note:
         notes = change.adoption + ([change.prompts_note] if change.prompts_note else [])
         why = ('The intelligence hub delivers the universal rules to every repository its owner '
@@ -612,13 +618,13 @@ def messages(block_hash: str, ref: str, change: Change, signer: tuple[str, str] 
     else:
         why = ('The intelligence hub keeps the universal prompts in docs/Prompts.md current. This replaces '
                f'the part between its INTELLIGENCE:PROMPTS markers with the one from release {ref}, and '
-               "leaves this repository's own prompts as they were.")
+               "leaves this repository's own prompts as they were.") + delta
     body = textwrap.fill(why, 72) + (f'\n\nSigned-off-by: {signer[0]} <{signer[1]}>' if signer else '')
     review = (' This is a first sync, so review it by hand: `make merge` leaves it alone.' if change.adoption
               else ' It adds `docs/Prompts.md`, so review it by hand: `make merge` leaves it alone.'
               if change.prompts_note else '')
     impact = (f'Agents read the rules of release {ref} in this repository.' if rules
-              else f'Everyone copies the universal prompts of release {ref} from `docs/Prompts.md`.') + review
+              else f'Everyone copies the universal prompts of release {ref} from `docs/Prompts.md`.') + delta + review
     if signer is None:
         impact += " This repository's 🔁 Intelligence Sync opened it; merging it stays the owner's."
         impact += (' If its checks wait for approval, select **Approve workflows to run** here.' if review

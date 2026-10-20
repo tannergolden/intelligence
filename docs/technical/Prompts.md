@@ -51,7 +51,9 @@ by either route, the stub or `make sync`:
   by hand: `make merge` leaves a pull request that adds it alone;
 - after that, each sync replaces only the text between the markers, and
   leaves the rest of the file, the repository's own prompts included, as it
-  was;
+  was. Its pull request names the universal prompts the new block adds,
+  rewords and drops, so you can see what changed without reading a sealed
+  diff;
 - the BEGIN marker carries the SHA-256 of the block's text, so a release that
   leaves the prompts as they were touches no repository, and a hand edit
   inside the markers is caught, by `make audit`, by the standards' Machined

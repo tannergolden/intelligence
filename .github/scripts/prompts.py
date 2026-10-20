@@ -378,6 +378,27 @@ def placeholders(prompt: Prompt) -> list[tuple[int, str]]:
     return found
 
 
+def listed(names: list[str]) -> str:
+    """Names as prose: A; A and B; A, B and C."""
+    return names[0] if len(names) == 1 else ', '.join(names[:-1]) + ' and ' + names[-1]
+
+
+def compare(old: str, new: str) -> str:
+    """What a new block's text does to the universal prompts of an old one, as a phrase for a pull request.
+
+    A reviewer of a sync sees which prompts it adds, rewords and drops
+    without reading the diff of a sealed block.
+    """
+    before = {prompt.name: (prompt.lead, prompt.text) for prompt in parse(old)[0]}
+    after = {prompt.name: (prompt.lead, prompt.text) for prompt in parse(new)[0]}
+    added = [name for name in after if name not in before]
+    reworded = [name for name in after if name in before and after[name] != before[name]]
+    dropped = [name for name in before if name not in after]
+    parts = ([f'adds {listed(added)}'] if added else []) + ([f'rewords {listed(reworded)}'] if reworded else []) + (
+        [f'drops {listed(dropped)}'] if dropped else [])
+    return listed(parts) if parts else 'changes only the guide around the prompts'
+
+
 def lint(source: str) -> list[str]:
     """Every problem with the universal prompts in the source's one block, each with its line."""
     match = UNSEALED.search(source)

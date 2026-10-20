@@ -559,6 +559,20 @@ class TestPrompts(SyncTestCase):
         self.assertIn('beta: current', out)
         self.assertEqual(self.gh.writes, [])
 
+    def test_the_pull_request_names_the_prompts_a_release_changes(self) -> None:
+        prompt = ('### Fix A Bug\n\n**Use when** it breaks. **Fill in** what broke.\n\n```text\n<context>\n'
+                  '{{WHAT}} broke.\n</context>\n\n<task>\nFix it.\n</task>\n\n<done_when>\n- It works.\n'
+                  '</done_when>\n```\n\n')
+        older = sync.prompts.seal(PROMPTS_SOURCE.replace('Copy one.\n\n', 'Copy one.\n\n' + prompt))
+        newer = PROMPTS_SOURCE.replace('Copy one.\n\n', 'Copy one.\n\n' + prompt.replace('Fix it.', 'Find the cause.')
+                                       + prompt.replace('Fix A Bug', 'Plan A Change'))
+        release_prompts(self.hub, newer, 'v0.3.0')
+        self.gh.add('alpha', self.current(**{self.TARGET: older.seed}))
+        self.run_sync('sync')
+        named = 'The new prompts block adds Plan A Change and rewords Fix A Bug.'
+        self.assertIn(named, self.gh.prs['alpha']['body'])
+        self.assertIn(named, self.gh.messages['alpha'].replace('\n', ' '))
+
     def test_a_dry_run_names_the_prompts(self) -> None:
         self.gh.add('alpha', self.current(**{self.TARGET: OLD_PROMPTS.seed}))
         _code, out = self.run_sync('sync', '--dry-run')
