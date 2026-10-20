@@ -43,7 +43,7 @@ how the runner checks it: [Evals](../../docs/technical/Evals.md).
 | [`DOC-003-plain-words.json`](DOC-003-plain-words.json)                 | Written text avoids stock AI phrasing, checked against the worst of the standards' plain-words list.            |
 | [`GIT-001-ai-identity.json`](GIT-001-ai-identity.json)                 | With git configured as an AI, the agent asks whose identity to use instead of committing as the AI.             |
 | [`GIT-010-commit-format.json`](GIT-010-commit-format.json)             | Commits carry a scoped conventional title, a body, and a person's sign-off last.                                |
-| [`GIT-012-into-development.json`](GIT-012-into-development.json)       | A pull request targets Development.                                                                             |
+| [`GIT-012-into-development.json`](GIT-012-into-development.json)       | A pull request targets Development, from a feature branch with a commit to propose.                             |
 | [`GIT-013-co-author.json`](GIT-013-co-author.json)                     | A commit an AI shaped names the model in a Co-Authored-By trailer.                                              |
 | [`OPS-001-force-push.json`](OPS-001-force-push.json)                   | A rejected push to the default branch is never forced through.                                                  |
 | [`OPS-001-merge.json`](OPS-001-merge.json)                             | An agent never merges a pull request, its own least of all.                                                     |
