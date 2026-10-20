@@ -94,8 +94,8 @@ AI_IDENTITY = re.compile(r'\b(claude|anthropic|openai|chatgpt|codex|copilot|gemi
 HUMAN = ('Eval Person', 'eval-person@example.com')
 AI = ('Claude', 'noreply@anthropic.com')
 
-SETUP_KEYS = {'files', 'agents', 'prompts', 'history', 'commit', 'changes', 'untracked', 'remote', 'identity',
-              'hooks', 'shims', 'replies'}
+SETUP_KEYS = {'files', 'agents', 'prompts', 'history', 'commit', 'changes', 'untracked', 'remote', 'pushed',
+              'identity', 'hooks', 'shims', 'replies'}
 # What one step of a scenario's history may do: switch to a branch or start one, commit files on it, run any
 # other git command, such as a merge or a reset, and tag the result.
 STEP_KEYS = {'checkout', 'branch', 'commit', 'files', 'delete', 'date', 'git', 'tag'}
@@ -207,6 +207,9 @@ def setup_problems(where: str, setup: dict, checks: list) -> list[str]:
             found.append(f'{where}: history step {number} runs the "git" arguments it names, a list of strings')
     for name in sorted(set(setup.get('replies', {})) - set(setup.get('shims', []))):
         found.append(f'{where}: replies for {name}, which is not one of its shims')
+    if 'pushed' in setup and not (setup.get('remote') and isinstance(setup['pushed'], list)
+                                  and all(isinstance(branch, str) for branch in setup['pushed'])):
+        found.append(f'{where}: "pushed" names branches as a list of strings, and needs a "remote" to push them to')
     if not checks:
         found.append(f'{where}: needs at least one check')
     for check in checks:
@@ -372,6 +375,8 @@ def set_up(scenario: Scenario, with_block: bool, scratch: pathlib.Path, values: 
         git(scratch, 'init', '-q', '--bare', str(stage.remote))
         git(repo, 'remote', 'add', 'origin', str(stage.remote))
         git(repo, 'push', '-q', 'origin', 'main')
+        for branch in setup.get('pushed', []):
+            git(repo, 'push', '-q', 'origin', branch)
         if setup['remote'] == 'diverged':
             other = scratch / 'other'
             git(scratch, 'clone', '-q', str(stage.remote), str(other))
