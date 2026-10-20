@@ -1,5 +1,5 @@
 <!--
-title: '📄 ADR-0027: MOST PROMPTS RUN AS THEY ARE'
+title: '📄 ADR-0029: MOST PROMPTS RUN AS THEY ARE'
 description: 'Most universal prompts are written to run as they are, finding their details in the repository, and they cover the work any repository has, area by area, each with a scenario whose proof shows its checks can pass.'
 type: record
 keywords: [prompts, evals, coding-agents, guardrails]
@@ -11,7 +11,7 @@ evidence: '[Prompts For Every Task](https://github.com/tannergolden/intelligence
 <!-- markdownlint-disable MD041 -->
 <div align="center">
 
-# 📄 ADR-0027: MOST PROMPTS RUN AS THEY ARE
+# 📄 ADR-0029: MOST PROMPTS RUN AS THEY ARE
 
 <a name="top"></a>
 
@@ -38,7 +38,7 @@ _Find it in the repository. Change only what is safe. Prove it._
 
 ## 🎯 Context & Problem Statement
 
-[ADR-0026](ADR-0026-Every-Prompt-Is-Linted-&-Measured.md) left six universal prompts, each with placeholders to fill in, covering a bug, a feature, a plan, a review, an explanation and a new prompt. Most of the work a repository has fell outside them: setting it up, making its checks pass, testing, keeping the code healthy, reviewing a branch, looking after issues and branches, dependencies, security, CI, releases, docs, production and the agents themselves. And each prompt asked the person for details the repository already holds, such as its commands, its default branch or its last release.
+[ADR-0028](ADR-0028-Every-Prompt-Is-Linted-&-Measured.md) left six universal prompts, each with placeholders to fill in, covering a bug, a feature, a plan, a review, an explanation and a new prompt. Most of the work a repository has fell outside them: setting it up, making its checks pass, testing, keeping the code healthy, reviewing a branch, looking after issues and branches, dependencies, security, CI, releases, docs, production and the agents themselves. And each prompt asked the person for details the repository already holds, such as its commands, its default branch or its last release.
 
 A research pass across every area, filed in the [research log](../technical/research/Prompts-For-Every-Task.md), found that a prompt can find those details for itself, and that what makes such a prompt safe is not its wording but its limits: whether it may edit at all, what it must never run, when it stops for a person, and what proves the work.
 
@@ -120,7 +120,7 @@ Option 1 keeps asking people for what the repository knows, and leaves most of t
 - [`.github/scripts/evals.py`](../../.github/scripts/evals.py) and [`evals/prompts/`](../../evals/prompts/README.md): the scenarios and their proofs
 - [Prompts](../technical/Prompts.md) and [Evals](../technical/Evals.md): how each works
 - [Prompts For Every Task](../technical/research/Prompts-For-Every-Task.md): the research this rests on
-- [ADR-0026](ADR-0026-Every-Prompt-Is-Linted-&-Measured.md): every prompt linted and measured
+- [ADR-0028](ADR-0028-Every-Prompt-Is-Linted-&-Measured.md): every prompt linted and measured
 
 ### 🔗 See also
 

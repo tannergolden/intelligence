@@ -1,5 +1,5 @@
 <!--
-title: '📄 ADR-0026: EVERY PROMPT IS LINTED & MEASURED'
+title: '📄 ADR-0028: EVERY PROMPT IS LINTED & MEASURED'
 description: 'The universal prompts are rewritten to the practices current research supports, held to them by prompts.py --check, and each measured by an eval scenario against the one-line request it replaces.'
 type: record
 keywords: [prompts, evals, prompt-engineering, lint]
@@ -11,7 +11,7 @@ evidence: '[Prompt Engineering](https://github.com/tannergolden/intelligence/blo
 <!-- markdownlint-disable MD041 -->
 <div align="center">
 
-# 📄 ADR-0026: EVERY PROMPT IS LINTED & MEASURED
+# 📄 ADR-0028: EVERY PROMPT IS LINTED & MEASURED
 
 <a name="top"></a>
 

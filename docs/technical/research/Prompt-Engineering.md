@@ -5,7 +5,7 @@ type: record
 keywords: [prompts, prompt-engineering, evals, coding-agents]
 verified: '2026-10-20'
 focus: 'What makes a reusable, copy-paste task prompt for an AI coding agent work, and how should a library of them be checked, measured and kept current?'
-decision: '[ADR-0026](../../adrs/ADR-0026-Every-Prompt-Is-Linted-&-Measured.md)'
+decision: '[ADR-0028](../../adrs/ADR-0028-Every-Prompt-Is-Linted-&-Measured.md)'
 -->
 
 <div align="center">
@@ -39,7 +39,7 @@ _Every claim sourced. Every finding dated. Nothing trusted past its window._
 | **Confidence**          | Medium - the vendors agree and the main findings replicate, but most studies used benchmarks rather than agentic coding runs                              |
 | **Sources**             | About 125 cited in the full report; vendor documentation and repositories mostly fetched directly, most papers through abstracts and search excerpts only |
 | **Supersedes**          | N/A                                                                                                                                                       |
-| **Graduated to**        | [ADR-0026](../../adrs/ADR-0026-Every-Prompt-Is-Linted-&-Measured.md)                                                                                      |
+| **Graduated to**        | [ADR-0028](../../adrs/ADR-0028-Every-Prompt-Is-Linted-&-Measured.md)                                                                                      |
 
 ---
 
@@ -150,7 +150,7 @@ Learn what makes a reusable task prompt for an AI coding agent work in any app, 
 
 ### 🏁 Conclusion / Recommendation
 
-Rewrite the universal prompts to the five-part contract the vendors share, with pasted material marked as data, both halves of scope, a check the agent can run with a way out, and a report built from evidence. Drop the wording the evidence shows does nothing or harms. Hold every prompt to that shape with deterministic checks on each commit, and measure each prompt against the one-line request it replaces, three runs each way on a pinned model, before a release and again when a new model ships. Recorded in [ADR-0026](../../adrs/ADR-0026-Every-Prompt-Is-Linted-&-Measured.md).
+Rewrite the universal prompts to the five-part contract the vendors share, with pasted material marked as data, both halves of scope, a check the agent can run with a way out, and a report built from evidence. Drop the wording the evidence shows does nothing or harms. Hold every prompt to that shape with deterministic checks on each commit, and measure each prompt against the one-line request it replaces, three runs each way on a pinned model, before a release and again when a new model ships. Recorded in [ADR-0028](../../adrs/ADR-0028-Every-Prompt-Is-Linted-&-Measured.md).
 
 ### ✅ Confidence & Caveats
 

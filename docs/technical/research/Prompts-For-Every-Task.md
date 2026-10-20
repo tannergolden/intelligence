@@ -5,7 +5,7 @@ type: record
 keywords: [prompts, coding-agents, evals, guardrails]
 verified: '2026-10-20'
 focus: 'Which tasks should a library of ready-to-run, placeholder-free prompts for AI coding agents cover, and what must each hold to work unchanged in any repository?'
-decision: '[ADR-0027](../../adrs/ADR-0027-Most-Prompts-Run-As-They-Are.md)'
+decision: '[ADR-0029](../../adrs/ADR-0029-Most-Prompts-Run-As-They-Are.md)'
 -->
 
 <div align="center">
@@ -39,7 +39,7 @@ _Every claim sourced. Every finding dated. Nothing trusted past its window._
 | **Confidence**          | Medium - the vendors' own agent prompts agree, and most findings replicate, but several figures come from single studies or search summaries                             |
 | **Sources**             | About 245 cited in the full report; agent prompts, tool docs and standards mostly read from their source repositories, most papers through abstracts and search excerpts |
 | **Supersedes**          | N/A - builds on [Prompt Engineering](Prompt-Engineering.md), which still stands                                                                                          |
-| **Graduated to**        | [ADR-0027](../../adrs/ADR-0027-Most-Prompts-Run-As-They-Are.md)                                                                                                          |
+| **Graduated to**        | [ADR-0029](../../adrs/ADR-0029-Most-Prompts-Run-As-They-Are.md)                                                                                                          |
 
 ---
 
@@ -149,7 +149,7 @@ Learn which tasks, across every area of software development and repository mana
 
 ### 🏁 Conclusion / Recommendation
 
-Write most universal prompts to run as they are: each finds its commands, scope and history in the repository, says what it may change, stops where a person decides, offers the agent a way out, and ends with proof a stranger can re-run. Keep prompts to fill in for what only a person knows, such as a bug they saw or a feature they want. Cover the work any repository has, area by area, with each prompt carrying the guardrail against its area's signature failure, and measure each against the one-line request it replaces. Recorded in [ADR-0027](../../adrs/ADR-0027-Most-Prompts-Run-As-They-Are.md).
+Write most universal prompts to run as they are: each finds its commands, scope and history in the repository, says what it may change, stops where a person decides, offers the agent a way out, and ends with proof a stranger can re-run. Keep prompts to fill in for what only a person knows, such as a bug they saw or a feature they want. Cover the work any repository has, area by area, with each prompt carrying the guardrail against its area's signature failure, and measure each against the one-line request it replaces. Recorded in [ADR-0029](../../adrs/ADR-0029-Most-Prompts-Run-As-They-Are.md).
 
 ### ✅ Confidence & Caveats
 
