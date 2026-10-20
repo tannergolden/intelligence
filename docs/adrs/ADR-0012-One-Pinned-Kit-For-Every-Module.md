@@ -21,6 +21,11 @@ _Many sources, one bundle, one hash._
 
 </div>
 
+> [!IMPORTANT]
+> **Amended by [ADR-0023](ADR-0023-The-Kit-Carries-No-Facts.md).** The kit
+> carries three modules now, the guard hook, the skills and the subagents: the
+> knowledge facts are gone, and the kit's format is 2.
+
 ---
 
 ## 📋 Meta Information

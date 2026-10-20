@@ -25,8 +25,8 @@ WHAT IT BLOCKS, and the rule behind each:
 - GIT-001: a commit that git would author, or sign off, as an AI's identity;
   `git commit -s` passes whenever git's identity is your user's
 - SEC-001: a credential-shaped string in a command or in a file being written
-- the INTELLIGENCE and KNOWLEDGE blocks: a hand edit inside a block the hub
-  renders, which the next sync would overwrite anyway
+- the INTELLIGENCE block: a hand edit inside the block the hub renders,
+  which the next sync would overwrite anyway
 
 It is a seatbelt, not a sandbox. It reads a command the way a careful
 reviewer would and catches the honest mistake; a determined workaround gets
@@ -85,15 +85,15 @@ SECRETS = (
     ('a private key', re.compile(r'-----BEGIN (?:[A-Z0-9]+ )*PRIVATE KEY-----')),
 )
 
-# A block the hub renders, in the files that carry one. The pattern matches
-# render.py's for INTELLIGENCE, and also KNOWLEDGE's, which only homes carry.
+# The block the hub renders, in the files that carry one. The pattern matches
+# render.py's.
 REGION = re.compile(
-    r'^<!-- (?P<name>INTELLIGENCE|INTELLIGENCE:KNOWLEDGE):BEGIN sha256:[0-9a-f]{64} -->[ \t]*\r?\n'
+    r'^<!-- (?P<name>INTELLIGENCE):BEGIN sha256:[0-9a-f]{64} -->[ \t]*\r?\n'
     r'.*?'
     r'^<!-- (?P=name):END -->[ \t]*(?:\r?\n|\Z)',
     re.M | re.S,
 )
-MARKER = re.compile(r'^<!-- INTELLIGENCE(?::KNOWLEDGE)?:(?:BEGIN|END)\b', re.M)
+MARKER = re.compile(r'^<!-- INTELLIGENCE:(?:BEGIN|END)\b', re.M)
 BLOCK_SUFFIXES = ('.md', '.markdown', '.mdc')
 
 SHELL_TOOLS = {'bash', 'powershell', 'pwsh', 'shell', 'run_shell_command', 'exec_command', 'local_shell',

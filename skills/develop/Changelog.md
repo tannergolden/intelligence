@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**`4.0.1`**
+**`4.0.2`**
 
 Semantic versioning, `MAJOR.MINOR.PATCH`, with no leading zeros, as [SemVer 2.0.0](https://semver.org) requires. This value matches `metadata.version` in `SKILL.md`, and the validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
 
@@ -42,6 +42,10 @@ _None yet._
 ## Patch Updates
 
 > Fixes and clarifications. Most recent 4 entries.
+
+### `4.0.2` - 2026-10-20
+
+- A fact about the setup, not an instruction, goes in the repository's `AGENTS.md`, under Gotchas or Where things live: the hub's knowledge facts are gone.
 
 ### `4.0.1` - 2026-10-19
 

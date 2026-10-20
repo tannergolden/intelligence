@@ -3,7 +3,7 @@ title: '📄 ADR-0016: KNOWLEDGE STARTS AS PUBLIC FACTS'
 description: 'Knowledge begins as a short, public list of facts about how the owner''s setup works, rendered as its own marked block beside every home copy of the rules and in the cloud setup, and never personal context.'
 type: record
 keywords: [home-kit, privacy]
-status: 'Proposed'
+status: 'Superseded'
 date: '2026-10-18'
 evidence: 'N/A'
 -->
@@ -22,6 +22,11 @@ _Facts beside the rules. Nothing personal anywhere._
 </div>
 
 > [!IMPORTANT]
+> **Superseded by [ADR-0023](ADR-0023-The-Kit-Carries-No-Facts.md).** The kit
+> carries no facts: `knowledge/` is gone, and an install takes out the blocks
+> earlier releases wrote.
+
+> [!NOTE]
 > **Amended by [ADR-0020](ADR-0020-One-Constitution.md).** A private tier now
 > exists outside the hub: each person's knowledge vault, a private repository
 > generated from the public knowledge template, holds that person's context,
@@ -106,7 +111,7 @@ Rules say what to do; agents also lack facts about this setup that make the rule
 
 ## 🔗 Traceability & Links
 
-- [`knowledge/`](../../knowledge/README.md), explained in [Knowledge](../technical/Knowledge.md)
+- `knowledge/` and `docs/technical/Knowledge.md`, both removed by [ADR-0023](ADR-0023-The-Kit-Carries-No-Facts.md)
 - [ADR-0005](ADR-0005-Home-Copies-Not-Links.md): home copies, checked against the release
 
 ### 🔗 See also

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Tests for the kit renderer.
 
-WHY THIS EXISTS. `kit.py` is the last check a skill, a subagent or a fact
-passes before every machine installs it. A skill whose name breaks one
-app's rule loads nowhere and says nothing, a subagent written wrong for one
-app silently goes missing there, and a fact that names a private repository
+WHY THIS EXISTS. `kit.py` is the last check a skill or a subagent passes
+before every machine installs it. A skill whose name breaks one app's rule
+loads nowhere and says nothing, a subagent written wrong for one app
+silently goes missing there, and a file that names a private repository
 publishes it. These tests hold each source to those rules, and the rendered
 forms to what each app parses.
 
@@ -46,12 +46,10 @@ SKILL = ('---\nname: processing-invoices\ndescription: Extracts line items from 
          'Use when the user has invoices to read.\n---\n\n# Processing invoices\n')
 AGENT = ('---\nname: reviewer\ndescription: Reviews a change. Use after a change.\ntools: read, search, execute\n'
          '---\n\nYou review. Quote "this" and a \\ backslash.\n')
-FACTS = {'//': 'Facts.', 'heading': 'Facts about this setup', 'intro': 'Facts, not rules.',
-         'budget': {'target': 500, 'cap': 800}, 'facts': ['Every repository has one maintainer.']}
 
 
 class Hub(unittest.TestCase):
-    """A throwaway hub holding one skill, one subagent, the facts and a guard."""
+    """A throwaway hub holding one skill, one subagent and a guard."""
 
     def setUp(self) -> None:
         self.root = pathlib.Path(tempfile.mkdtemp(prefix='kit-test-'))
@@ -60,7 +58,6 @@ class Hub(unittest.TestCase):
         self.write('skills/processing-invoices/references/forms.md', 'Forms.\n')
         self.write('subagents/reviewer.md', AGENT)
         self.write('subagents/README.md', 'The folder log, which is not an agent.\n')
-        self.facts(FACTS)
 
     def tearDown(self) -> None:
         shutil.rmtree(self.root, ignore_errors=True)
@@ -70,9 +67,6 @@ class Hub(unittest.TestCase):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding='utf-8')
         return path
-
-    def facts(self, data: dict) -> None:
-        self.write('knowledge/public.json', json.dumps(data))
 
     def problems(self) -> list[str]:
         return kit.problems(self.root)
@@ -90,16 +84,10 @@ class TestSound(Hub):
         first = kit.render_kit(self.root)
         self.assertEqual(first, kit.render_kit(self.root))
         data = json.loads(first)
-        self.assertEqual(sorted(data), ['//', 'format', 'guard', 'knowledge', 'skills', 'subagents'])
+        self.assertEqual(sorted(data), ['//', 'format', 'guard', 'skills', 'subagents'])
+        self.assertEqual(data['format'], 2, 'the format without the knowledge facts')
         self.assertEqual(sorted(data['skills']['processing-invoices']), ['SKILL.md', 'references/forms.md'])
         self.assertEqual(list(data['subagents']), ['reviewer'], 'the README is not an agent')
-
-    def test_the_knowledge_block_is_marked_with_its_own_hash(self) -> None:
-        region = json.loads(kit.render_kit(self.root))['knowledge']
-        self.assertTrue(region.startswith('<!-- INTELLIGENCE:KNOWLEDGE:BEGIN sha256:'))
-        self.assertTrue(region.endswith('<!-- INTELLIGENCE:KNOWLEDGE:END -->\n'))
-        block = '## Facts about this setup\n\nFacts, not rules.\n\n- Every repository has one maintainer.\n'
-        self.assertEqual(region, kit.knowledge_region(block))
 
 
 class TestSkills(Hub):
@@ -184,24 +172,13 @@ class TestSubagents(Hub):
                 self.assertProblem(fragment)
 
 
-class TestKnowledge(Hub):
-    """Facts stay facts: short, plain, public, and inside their budget."""
-
-    def test_each_fact_is_one_plain_sentence(self) -> None:
-        for fact, fragment in (('No period', 'ending in a period'), ('Smart \u201cquotes\u201d here.', 'printable ASCII'),
-                               ('x' * 301 + '.', 'limit 300')):
-            with self.subTest(fragment=fragment):
-                self.facts({**FACTS, 'facts': [fact]})
-                self.assertProblem(fragment)
-
-    def test_the_facts_fit_their_cap(self) -> None:
-        self.facts({**FACTS, 'facts': ['A fact that is long enough to matter here.'] * 30})
-        self.assertProblem('over the cap')
+class TestEveryFile(Hub):
+    """What holds for every file the kit carries, whatever its source."""
 
     def test_a_private_repository_is_never_named(self) -> None:
-        self.facts({**FACTS, 'facts': ['The secrets live in tannergolden/vault.']})
+        self.write('skills/processing-invoices/references/forms.md', 'The secrets live in tannergolden/vault.\n')
         self.assertProblem('tannergolden/vault')
-        self.facts({**FACTS, 'facts': ['The rules live in tannergolden/intelligence.']})
+        self.write('skills/processing-invoices/references/forms.md', 'The rules live in tannergolden/intelligence.\n')
         self.assertEqual(self.problems(), [])
 
     def test_no_dash_the_standards_ban_reaches_any_file(self) -> None:

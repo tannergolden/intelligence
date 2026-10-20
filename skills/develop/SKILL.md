@@ -2,7 +2,7 @@
 name: develop
 description: Builds, updates and improves Agent Skills, and the agents and teams they dispatch, so a skill loads and works in every coding app. Decides first whether the need is a skill at all or belongs in a rule, a hook or a script; researches before writing; reuses an agent before creating one; gates every build with a deterministic validator and independent reviewers; and learns from a skill's mistakes. Use when the user asks to build, create, write, add, package, share, fix or improve a skill, an agent, a team of agents, a slash command or a reusable procedure, or says an agent keeps getting the same multi-step task wrong, even if they never say skill.
 license: MIT
-metadata: { 'team': 'Development', 'version': '4.0.1' }
+metadata: { 'team': 'Development', 'version': '4.0.2' }
 ---
 
 # 🏭 Develop - the skill and agent factory
@@ -37,7 +37,7 @@ Develop builds skills, the single-file agents they dispatch, and the team roster
    | Behaviour that must hold in every session       | A rule: `CONSTITUTION.md` in tannergolden/intelligence, or the repository's `AGENTS.md` |
    | Something that must never happen                | A hook or a CI check; prose alone is not enough                                         |
    | A deterministic transformation                  | A script, bundled in the skill that uses it, or the repository's own tooling            |
-   | A fact about the setup, not an instruction      | The knowledge facts in tannergolden/intelligence                                        |
+   | A fact about the setup, not an instruction      | The repository's `AGENTS.md`, under Gotchas or Where things live                        |
 
    In one published evaluation a skill was never invoked in 56% of cases, so never put anything that must always hold in a skill. If the user asked for a skill and the need is really a rule or a hook, say so and propose that instead.
 

@@ -58,7 +58,6 @@ per part. Start with How It Works.
 | [Repository Sync](docs/technical/Repository-Sync.md)                      | How a release reaches every repository: the stub, `make sync`, `make merge` and `make audit`      |
 | [Cloud Setup](docs/technical/Cloud-Setup.md)                              | The rules and the kit in every Claude Code cloud session                                          |
 | [Skills & Subagents](docs/technical/Skills-&-Subagents.md)                | The one skill, the Worker and the Reviewer, and where each app reads them                         |
-| [Knowledge](docs/technical/Knowledge.md)                                  | The public facts installed beside the rules, and what may go in                                   |
 | [The Loader Probe](docs/technical/The-Loader-Probe.md)                    | How the hub proves which files each app actually loads, and the results so far                    |
 | [Evals](docs/technical/Evals.md)                                          | How each rule is measured, with the block and without it                                          |
 | [Releasing](docs/operations/Releasing.md)                                 | Every step from a green `Development` to the rules on every machine and in every repository       |
@@ -92,7 +91,6 @@ and other people's repositories follow their own rules.
 | [`docs/`](docs/README.md)                   | Where this project keeps its own documents, and where the engineering standards it follows actually live.                                                            |
 | [`evals/`](evals/README.md)                 | Scenarios that tempt an agent to break each universal rule, run against real apps with the block and without it, and checked by code.                                |
 | [`home/`](home/README.md)                   | The rendered home file and kit the home kit installs, and the hashes a consumer pins, served from every release tag.                                                 |
-| [`knowledge/`](knowledge/README.md)         | The public facts about tannergolden's setup that the home kit installs beside the rules: facts, never rules, and never personal context.                             |
 | [`probe/`](probe/README.md)                 | Proves, on the machine that runs it, which instruction files each AI coding app actually loads.                                                                      |
 | [`scripts/`](scripts/README.md)             | The scripts that render the Constitution and the kit, install them on a machine, guard every tool call, and deliver the rules to every repository, with their tests. |
 | [`setup/`](setup/README.md)                 | What you copy out of the hub once: the setup script for every Claude Code cloud session, and the stub that keeps a repository's rules current.                       |

@@ -110,13 +110,9 @@ class Hub:
         (self.root / 'scripts' / 'install.py').write_text('# installer\n', encoding='utf-8')
         self.write(spec or SPEC)
 
-    def ship_kit(self, facts: list[str] | None = None) -> None:
-        """Give this hub the guard and the facts, so it renders the kit too."""
+    def ship_kit(self) -> None:
+        """Give this hub the guard, so it renders the kit too."""
         (self.root / 'scripts' / 'guard.py').write_text(f'# {render.kit.OWNED}\n', encoding='utf-8')
-        (self.root / 'knowledge').mkdir(exist_ok=True)
-        (self.root / 'knowledge' / 'public.json').write_text(json.dumps({
-            'heading': 'Facts', 'intro': 'Facts, not rules.', 'budget': {'target': 400, 'cap': 800},
-            'facts': facts or ['Every repository has one maintainer.']}), encoding='utf-8')
 
     def write(self, spec: dict) -> None:
         self.write_text(markdown(spec))
@@ -392,7 +388,7 @@ class TestCommandLine(HubTestCase):
         self.assertIn(f'kit_sha256={render.digest(kit_text)}', out)
         code, out = self.hub.run('--check')
         self.assertEqual(code, 0, out)
-        self.assertIn('kit: 0 skills, 0 subagents, 1 fact', out)
+        self.assertIn('kit: 0 skills, 0 subagents', out)
 
     def test_a_hub_without_the_modules_pins_no_kit(self) -> None:
         self.hub.run('--write')
@@ -402,10 +398,11 @@ class TestCommandLine(HubTestCase):
         self.assertIn('kit_sha256=\n', out)
 
     def test_a_broken_module_stops_the_render(self) -> None:
-        self.hub.ship_kit(facts=['No period'])
+        self.hub.ship_kit()
+        (self.hub.root / 'scripts' / 'guard.py').write_text('# a guard without the mark\n', encoding='utf-8')
         code, out = self.hub.run('--write')
         self.assertEqual(code, 1, out)
-        self.assertIn('ending in a period', out)
+        self.assertIn('must carry the line', out)
 
     def test_changing_the_installer_makes_the_sums_stale(self) -> None:
         self.hub.run('--write')

@@ -107,7 +107,6 @@ module has its own document:
 | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------- | :------------------------------------------ |
 | The guard hook                                             | Denies the few tool calls the Invariants forbid outright, before they run, in every app | [The Home Kit](The-Home-Kit.md)             |
 | The `develop` skill, and the Worker and Reviewer subagents | A procedure loaded when the task calls for it, and two agents a session hands work to   | [Skills & Subagents](Skills-&-Subagents.md) |
-| The knowledge facts                                        | Public facts about how this setup works, beside every home copy of the rules            | [Knowledge](Knowledge.md)                   |
 
 Two tools prove the whole thing works: [the loader probe](The-Loader-Probe.md)
 shows which files each app actually loads, and [evals](Evals.md) measure

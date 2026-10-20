@@ -5,8 +5,8 @@
 # nothing the home kit installed on your machines is there. Pasted into the
 # cloud environment's setup script, this downloads one pinned release's home
 # file, kit and installer, checks each against its pin, and writes
-# ~/.claude/CLAUDE.md with the rules and the knowledge facts, plus Claude
-# Code's share of the kit: the guard hook, the skills and the subagents.
+# ~/.claude/CLAUDE.md with the rules, plus Claude Code's share of the kit:
+# the guard hook, the skills and the subagents.
 # Copy it with its pins filled in: run `make cloud-setup VERSION=vX.Y.Z` in
 # the hub, which prints this file ready to paste.
 #

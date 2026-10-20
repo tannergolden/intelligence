@@ -55,7 +55,6 @@ The kit rides beside the rules in the same release, as one pinned file,
 | Guard hook, below                            | Denies force-pushes, merges, `--no-verify`, AI sign-offs and irreversible commands before they run | `~/.agents/hooks/`, registered in Claude Code's settings (read by Grok and Cursor), Codex's and Antigravity's `hooks.json`, and Copilot's `hooks/` |
 | [`develop`](Skills-&-Subagents.md)           | The one skill: builds, tests and ships every other skill, and the agents and teams they dispatch   | `~/.agents/skills/`, `~/.claude/skills/` and Antigravity's skills folder                                                                           |
 | [Worker and Reviewer](Skills-&-Subagents.md) | Subagents that make one change, and check one without editing                                      | `~/.claude/agents/`, `~/.copilot/agents/` and `~/.codex/agents/`                                                                                   |
-| [Knowledge facts](Knowledge.md)              | Public facts about how this setup works                                                            | Beside every home copy of the rules, between their own markers                                                                                     |
 
 Everything the kit writes carries its mark, so it replaces only its own files
 and `make agents-uninstall` takes back exactly what it added.
@@ -98,7 +97,7 @@ hand: `make render` rewrites it, and `make check` fails CI when it has drifted.
 | File              | What it is                                                                   |
 | :---------------- | :--------------------------------------------------------------------------- |
 | `intelligence.md` | The home file: the universal block between its `INTELLIGENCE` markers        |
-| `kit.json`        | The kit: the guard, the skills, the subagents and the knowledge facts        |
+| `kit.json`        | The kit: the guard, the skills and the subagents                             |
 | `SHA256SUMS`      | The SHA-256 of the home file, the kit and `scripts/install.py`, for a reader |
 
 A release is a tag, and each tag serves that folder and the installer as they

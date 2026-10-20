@@ -29,7 +29,7 @@ Kit](../docs/technical/The-Home-Kit.md).
 | File              | What it is                                                                   |
 | :---------------- | :--------------------------------------------------------------------------- |
 | `intelligence.md` | The home file: the universal block between its `INTELLIGENCE` markers        |
-| `kit.json`        | The kit: the guard, the skills, the subagents and the knowledge facts        |
+| `kit.json`        | The kit: the guard, the skills and the subagents                             |
 | `SHA256SUMS`      | The SHA-256 of the home file, the kit and `scripts/install.py`, for a reader |
 
 All three change with every render, so the file log below leaves them out and

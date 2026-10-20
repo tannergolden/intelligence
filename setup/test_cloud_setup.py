@@ -91,7 +91,7 @@ class CloudSetup(unittest.TestCase):
     def test_a_pinned_kit_brings_claude_codes_share_of_it(self) -> None:
         done = self.run_script(self.script(self.version, sha256(HOME_FILE), sha256(INSTALLER), sha256(KIT_FILE)))
         self.assertEqual(done.returncode, 0, done.stderr)
-        self.assertIn('INTELLIGENCE:KNOWLEDGE:BEGIN', self.claude_md().read_text(encoding='utf-8'))
+        self.assertEqual(self.claude_md().read_bytes(), HOME_FILE.read_bytes(), 'the rules, and no facts beside them')
         self.assertTrue(self.guard().is_file())
         self.assertTrue((self.home / '.claude' / 'skills' / 'develop' / 'SKILL.md').is_file())
         self.assertTrue((self.home / '.claude' / 'agents' / 'reviewer.md').is_file())

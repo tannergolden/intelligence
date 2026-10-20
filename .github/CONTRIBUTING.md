@@ -50,7 +50,7 @@ commit messages, sign-offs and pull requests.
 ## ✅ Definition Of Done
 
 - `make check` passes, and its output is in your report.
-- A change to `CONSTITUTION.md`, `scripts/install.py`, `scripts/guard.py`, `skills/`, `subagents/` or `knowledge/` is followed by `make render`, and the rendered files are committed with it.
+- A change to `CONSTITUTION.md`, `scripts/install.py`, `scripts/guard.py`, `skills/` or `subagents/` is followed by `make render`, and the rendered files are committed with it.
 - A new rule gets a scenario in `evals/scenarios/`, and a new skill a trigger test in `evals/skills/`.
 - Every new script has tests beside it, and every folder's `README.md` logs its files, except inside a skill's folder.
 - A change to how something works updates its document in `docs/technical/` or `docs/operations/` in the same commit.
@@ -76,7 +76,6 @@ commit messages, sign-offs and pull requests.
 | `home/`                                 | The rendered home file, kit and hashes, which every release tag serves              |
 | `skills/`                               | The one skill, `develop`, with its Development team                                 |
 | `subagents/`                            | The Worker and Reviewer subagents                                                   |
-| `knowledge/`                            | The public facts installed beside the rules                                         |
 | `evals/`                                | Scenarios for every rule, the skill trigger tests, and their runner                 |
 | `probe/`                                | The loader probe and the duplicate-skill canary                                     |
 | `setup/`                                | The Claude cloud setup script, and the stub a repository carries                    |

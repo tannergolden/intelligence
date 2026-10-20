@@ -18,6 +18,7 @@ Run it:
 from __future__ import annotations
 
 import contextlib
+import hashlib
 import importlib.util
 import io
 import json
@@ -300,7 +301,14 @@ class TestCheck(Home):
 
 
 FACTS = '## Facts about this setup\n\n- Every repository has one maintainer.\n'
-NEWER_FACTS = '## Facts about this setup\n\n- Every repository has one maintainer and one owner.\n'
+
+
+def old_knowledge(block: str) -> str:
+    """A facts block as releases before kit format 2 wrote it beside the rules."""
+    digest = hashlib.sha256(block.encode('utf-8')).hexdigest()
+    return f'<!-- INTELLIGENCE:KNOWLEDGE:BEGIN sha256:{digest} -->\n\n{block}\n<!-- INTELLIGENCE:KNOWLEDGE:END -->\n'
+
+
 GUARD = f'#!/usr/bin/env python3\n# {kit.OWNED}\nimport sys\nprint("blocked", file=sys.stderr)\nsys.exit(2)\n'
 SKILL = '---\nname: building-skills\ndescription: Builds skills. Use when asked.\n---\n\n# Building skills\n'
 AGENT = kit.render_subagent('worker', 'Does one change. Use for small tasks.', ['read', 'edit'], 'Work.\n')
@@ -309,13 +317,11 @@ KIT_LOCAL = [
     '.agents/hooks/intelligence-guard.py',
     '.agents/skills/building-skills/SKILL.md',
     '.claude/agents/worker.md',
-    '.claude/rules/intelligence-knowledge.md',
     '.claude/skills/building-skills/SKILL.md',
     '.codex/agents/worker.toml',
     '.codex/hooks.json',
     '.copilot/agents/worker.agent.md',
     '.copilot/hooks/intelligence.json',
-    '.copilot/instructions/intelligence-knowledge.instructions.md',
     '.gemini/antigravity-cli/skills/building-skills/SKILL.md',
     '.gemini/config/hooks.json',
 ]
@@ -326,10 +332,10 @@ class KitHome(Home):
 
     def setUp(self) -> None:
         super().setUp()
-        self.kit_file = self.make_kit(FACTS)
+        self.kit_file = self.make_kit()
 
-    def make_kit(self, facts: str, name: str = 'kit.json', **changes: object) -> pathlib.Path:
-        data = {'format': 1, 'guard': GUARD, 'knowledge': kit.knowledge_region(facts),
+    def make_kit(self, name: str = 'kit.json', **changes: object) -> pathlib.Path:
+        data = {'format': 2, 'guard': GUARD,
                 'skills': {'building-skills': {'SKILL.md': SKILL, 'references/notes.md': 'Notes.\n'}},
                 'subagents': {'worker': AGENT}}
         data.update(changes)
@@ -365,15 +371,6 @@ class TestKitInstall(KitHome):
         self.assertEqual(self.text('.codex/agents/worker.toml'), AGENT['codex'])
         self.assertTrue((self.home / '.claude/skills/building-skills' / install.SKILL_MARK).is_file())
         self.assertEqual(self.text('.claude/skills/building-skills/references/notes.md'), 'Notes.\n')
-
-    def test_knowledge_sits_beside_the_rules_in_every_copy(self) -> None:
-        self.personal('.codex/AGENTS.md', b'# My Codex notes\n')
-        self.install_kit()
-        region, facts = render.region(BLOCK), kit.knowledge_region(FACTS)
-        self.assertEqual(self.text('.codex/AGENTS.md'), f'# My Codex notes\n\n{region}\n{facts}')
-        self.assertEqual(self.text('.claude/rules/intelligence-knowledge.md'), facts)
-        self.assertEqual(self.text('.copilot/instructions/intelligence-knowledge.instructions.md'),
-                         install.COPILOT_PREFIX + facts)
 
     def test_the_guard_is_registered_for_every_app(self) -> None:
         self.install_kit()
@@ -434,9 +431,8 @@ class TestKitInstall(KitHome):
 
     def test_a_new_release_replaces_what_it_changed(self) -> None:
         self.install_kit()
-        self.kit_file = self.make_kit(NEWER_FACTS, 'newer.json', skills={'building-skills': {'SKILL.md': SKILL}})
+        self.kit_file = self.make_kit('newer.json', skills={'building-skills': {'SKILL.md': SKILL}})
         self.install_kit()
-        self.assertEqual(self.text('.claude/rules/intelligence-knowledge.md'), kit.knowledge_region(NEWER_FACTS))
         self.assertFalse((self.home / '.claude/skills/building-skills/references').exists(),
                          'a file the release dropped goes')
 
@@ -450,7 +446,7 @@ class TestKitInstall(KitHome):
     def test_a_cloud_session_gets_only_claude_codes_share(self) -> None:
         code, out = self.install_kit('--cloud')
         self.assertEqual(code, 0, out)
-        self.assertEqual(self.text('.claude/CLAUDE.md'), render.region(BLOCK) + '\n' + kit.knowledge_region(FACTS))
+        self.assertEqual(self.text('.claude/CLAUDE.md'), render.region(BLOCK))
         files = sorted(rel for rel, data in self.snapshot().items() if data is not None)
         self.assertEqual(files, ['.agents/hooks/intelligence-guard.py', '.claude/CLAUDE.md',
                                  '.claude/agents/worker.md', '.claude/settings.json',
@@ -483,18 +479,12 @@ class TestKitRefusals(KitHome):
         for change in ({'skills': {'x': {'../../.bashrc': 'evil'}}},
                        {'subagents': {'../worker': AGENT}},
                        {'guard': 'print("no mark")\n'},
-                       {'format': 2}):
+                       {'format': 1}):
             with self.subTest(change=list(change)):
-                self.kit_file = self.make_kit(FACTS, 'bad.json', **change)
+                self.kit_file = self.make_kit('bad.json', **change)
                 with self.assertRaises(SystemExit):
                     self.install_kit()
                 self.assertEqual(self.snapshot(), {})
-
-    def test_a_knowledge_block_edited_in_the_kit_is_refused(self) -> None:
-        region = kit.knowledge_region(FACTS).replace('one maintainer', 'two maintainers')
-        self.kit_file = self.make_kit(FACTS, 'edited.json', knowledge=region)
-        with self.assertRaises(SystemExit):
-            self.install_kit()
 
 
 class TestKitUninstall(KitHome):
@@ -519,7 +509,7 @@ class TestKitUninstall(KitHome):
         for rel, data in originals.items():
             self.personal(rel, data)
         self.install_kit()
-        self.kit_file = self.make_kit(NEWER_FACTS, 'newer.json')
+        self.kit_file = self.make_kit('newer.json', skills={'building-skills': {'SKILL.md': SKILL}})
         self.install_kit()
         code, out = self.run_kit('uninstall')
         self.assertEqual(code, 0, out)
@@ -584,12 +574,66 @@ class TestKitCheck(KitHome):
         self.assertEqual(code, 1, out)
         self.assertRegex(out, r'broken +Claude Code guard hook')
 
-    def test_an_older_knowledge_block_is_stale(self) -> None:
+
+
+class TestRetiredKnowledge(KitHome):
+    """The facts an earlier release wrote beside the rules come out at the next install."""
+
+    def plant(self) -> dict[str, pathlib.Path]:
+        """A home as an earlier release left it: its facts beside the rules, and its record of them."""
+        self.personal('.codex/AGENTS.md', b'# My Codex notes\n')
         self.install_kit()
-        self.kit_file = self.make_kit(NEWER_FACTS, 'newer.json')
+        facts = old_knowledge(FACTS)
+        codex = self.home / '.codex' / 'AGENTS.md'
+        codex.write_text(codex.read_text(encoding='utf-8') + '\n' + facts, encoding='utf-8')
+        claude = self.personal('.claude/rules/intelligence-knowledge.md', facts.encode())
+        copilot = self.personal('.copilot/instructions/intelligence-knowledge.instructions.md',
+                                (install.COPILOT_PREFIX + facts).encode())
+        spath = install.state_path(self.home, self.env)
+        state = json.loads(spath.read_text(encoding='utf-8'))
+        for path, mode in ((codex, 'block'), (claude, 'file'), (copilot, 'file')):
+            state['files'][f'{path}#knowledge'] = {
+                'path': str(path), 'piece': 'knowledge', 'mode': mode, 'created': mode == 'file',
+                'joiner': '\n' if mode == 'block' else '', 'dirs': []}
+        state['knowledge_hash'] = 'f' * 64
+        spath.write_text(json.dumps(state), encoding='utf-8')
+        return {'codex': codex, 'claude': claude, 'copilot': copilot}
+
+    def test_an_install_takes_out_every_block_and_file(self) -> None:
+        planted = self.plant()
+        code, out = self.install_kit()
+        self.assertEqual(code, 0, out)
+        self.assertRegex(out, r'retired +Codex knowledge')
+        self.assertEqual(self.text('.codex/AGENTS.md'), f'# My Codex notes\n\n{render.region(BLOCK)}')
+        self.assertFalse(planted['claude'].exists())
+        self.assertFalse(planted['copilot'].exists())
+        state = json.loads(install.state_path(self.home, self.env).read_text(encoding='utf-8'))
+        self.assertEqual([key for key in state['files'] if key.endswith('#knowledge')], [])
+        self.assertNotIn('knowledge_hash', state)
+
+    def test_a_dry_run_takes_nothing_out(self) -> None:
+        self.plant()
+        before = self.snapshot()
+        code, out = self.install_kit('--dry-run')
+        self.assertEqual(code, 0, out)
+        self.assertRegex(out, r'would retire +Codex knowledge')
+        self.assertEqual(self.snapshot(), before)
+
+    def test_check_calls_a_block_left_behind_stale_until_an_install(self) -> None:
+        self.plant()
         code, out = self.check_kit()
         self.assertEqual(code, 1, out)
         self.assertRegex(out, r'stale +Codex knowledge')
+        self.install_kit()
+        code, out = self.check_kit()
+        self.assertEqual(code, 0, out)
+
+    def test_an_uninstall_takes_them_out_too(self) -> None:
+        self.plant()
+        code, out = self.run_kit('uninstall')
+        self.assertEqual(code, 0, out)
+        self.assertEqual(self.text('.codex/AGENTS.md'), '# My Codex notes\n')
+        self.assertFalse((self.home / '.claude/rules/intelligence-knowledge.md').exists())
 
 
 if __name__ == '__main__':

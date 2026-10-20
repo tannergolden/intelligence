@@ -2,16 +2,14 @@
 """Render everything the home kit installs besides the rules into one bundle, `home/kit.json`.
 
 WHY THIS EXISTS. The rules are one block, but the modules around them are
-many files in four formats: the guard hook, the skills, the subagents written
-three ways, and the public knowledge facts. A release ships them as one JSON
-file, so a consumer pins one more hash instead of one per file, and the
+many files in three formats: the guard hook, the skills, and the subagents
+written three ways. A release ships them as one JSON file, so a consumer pins one more hash instead of one per file, and the
 installer writes strings it never has to convert. The sources stay readable
 and reviewable:
 
 - `scripts/guard.py`, the guard every app's pre-tool hook calls;
 - `skills/<name>/`, each a folder in the open Agent Skills format;
-- `subagents/<name>.md`, each rendered for Claude Code, Copilot and Codex;
-- `knowledge/public.json`, rendered as a marked block of facts.
+- `subagents/<name>.md`, each rendered for Claude Code, Copilot and Codex.
 
 It also holds each source to the strictest rule any target app enforces,
 because a skill with a bad name loads nowhere and says nothing. `render.py`
@@ -27,7 +25,6 @@ Run it:
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import pathlib
 import re
@@ -41,15 +38,11 @@ GUARD_FILE = 'scripts/guard.py'
 # replaces what carries it and refuses to touch what does not.
 OWNED = "Part of tannergolden/intelligence's home kit, which replaces this file on every install."
 
-KNOWLEDGE_BEGIN = '<!-- INTELLIGENCE:KNOWLEDGE:BEGIN sha256:{} -->'
-KNOWLEDGE_END = '<!-- INTELLIGENCE:KNOWLEDGE:END -->'
-
 SKILL_NAME = re.compile(r'^[a-z0-9]+(-[a-z0-9]+)*$')
 SKILL_KEYS = ('name', 'description', 'license', 'compatibility', 'metadata', 'allowed-tools')
 RESERVED = ('synced', 'anthropic-skills')
 MAX_DESCRIPTION = 1024
 MAX_SKILL_LINES = 500
-MAX_FACT = 300
 
 # The capabilities a subagent may hold, and each app's names for them.
 TOOLS = {
@@ -212,37 +205,6 @@ def render_subagent(name: str, description: str, tools: list[str], body: str) ->
     return {'claude': '\n'.join(claude), 'copilot': '\n'.join(copilot), 'codex': codex}
 
 
-def load_knowledge(root: pathlib.Path, found: list[str]) -> str:
-    """The public knowledge facts as a marked block, ready to place in a file."""
-    path = root / 'knowledge' / 'public.json'
-    try:
-        data = json.loads(path.read_text(encoding='utf-8'))
-        heading, intro, facts = data['heading'], data['intro'], data['facts']
-        cap = int(data['budget']['cap'])
-    except (OSError, ValueError, KeyError, TypeError) as error:
-        found.append(f'knowledge/public.json: {error}')
-        return ''
-    for index, fact in enumerate(facts, 1):
-        where = f'knowledge/public.json: fact {index}'
-        if not isinstance(fact, str) or not all(' ' <= char <= '~' for char in fact):
-            found.append(f'{where} must be printable ASCII on one line')
-            continue
-        if not fact.endswith('.'):
-            found.append(f'{where} is one sentence ending in a period')
-        if len(fact) > MAX_FACT:
-            found.append(f'{where} is {len(fact)} characters (limit {MAX_FACT})')
-    block = '\n'.join([f'## {heading}', '', intro, '', *(f'- {fact}' for fact in facts)]) + '\n'
-    if len(block.rstrip('\n')) > cap:
-        found.append(f'knowledge/public.json: the facts are {len(block.rstrip())} characters, over the cap of {cap}')
-    return knowledge_region(block)
-
-
-def knowledge_region(block: str) -> str:
-    """A knowledge block between its markers, laid out exactly as render.py lays out the rules."""
-    digest = hashlib.sha256(block.encode('utf-8')).hexdigest()
-    return f'{KNOWLEDGE_BEGIN.format(digest)}\n\n{block}\n{KNOWLEDGE_END}\n'
-
-
 def bundle(root: pathlib.Path) -> tuple[dict, list[str]]:
     """The bundle, and every problem with its sources."""
     found: list[str] = []
@@ -251,10 +213,10 @@ def bundle(root: pathlib.Path) -> tuple[dict, list[str]]:
         found.append(f'{GUARD_FILE}: must carry the line "# {OWNED}", which marks the installed copy')
     kit = {
         '//': 'Everything the home kit installs besides the rules, rendered by scripts/kit.py from '
-              'scripts/guard.py, skills/, subagents/ and knowledge/. Never edit this file by hand.',
-        'format': 1,
+              'scripts/guard.py, skills/ and subagents/. Never edit this file by hand.',
+        # 2 dropped the knowledge facts (ADR-0023); the installer reads this one format.
+        'format': 2,
         'guard': guard,
-        'knowledge': load_knowledge(root, found),
         'skills': load_skills(root, found),
         'subagents': load_subagents(root, found),
     }

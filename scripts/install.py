@@ -26,8 +26,6 @@ block and your text stays.
 THE KIT. Given a release's `kit.json` as well, it installs the modules around
 the rules, each only where that app reads it:
 
-- the public knowledge facts, as their own marked block beside every copy of
-  the rules
 - the guard hook, `~/.agents/hooks/intelligence-guard.py`, registered as a
   pre-tool hook in Claude Code's settings (which Grok Build and Cursor also
   read), in Codex's `hooks.json`, in a file of its own for Copilot, and in
@@ -67,7 +65,12 @@ import sys
 import tempfile
 from collections.abc import Callable, Mapping
 
+# `knowledge` marks the facts block earlier releases wrote beside each copy of
+# the rules. The kit carries no facts now (ADR-0023); the marker stays so an
+# install can find an old block and take it out.
 MARKERS = {'rules': 'INTELLIGENCE', 'knowledge': 'INTELLIGENCE:KNOWLEDGE'}
+# The kit format this installer reads: 2 dropped the knowledge facts.
+KIT_FORMAT = 2
 
 
 def pattern(name: str) -> re.Pattern:
@@ -110,7 +113,7 @@ class Target:
     mode: str  # 'file': the kit owns the file; 'block': a marked block in a personal file
     where: str  # 'local', 'cloud' or 'both'
     prefix: str = ''  # what precedes the block in a file the kit owns
-    piece: str = 'rules'  # 'rules', from the home file, or 'knowledge', from the kit
+    piece: str = 'rules'  # 'rules', from the home file, or 'knowledge', a retired block (RETIRED)
 
     def key(self, path: pathlib.Path) -> str:
         """The install record's name for this target; one file can hold both pieces."""
@@ -125,6 +128,12 @@ TARGETS = (
     Target('Antigravity CLI', '.gemini/AGENTS.md', 'block', 'local'),
     Target('Copilot', '.copilot/instructions/intelligence.instructions.md', 'file', 'local',
            COPILOT_PREFIX),
+)
+
+# Where earlier releases wrote the knowledge facts, beside each copy of the
+# rules. The kit carries none now (ADR-0023), so an install takes out what one
+# of those releases left, and so does an uninstall without a record.
+RETIRED = (
     Target('master copy', '.agents/AGENTS.md', 'block', 'local', piece='knowledge'),
     Target('Claude Code', '.claude/rules/intelligence-knowledge.md', 'file', 'local', piece='knowledge'),
     Target('Claude Code', '.claude/CLAUDE.md', 'block', 'cloud', piece='knowledge'),
@@ -205,11 +214,9 @@ def read_home_file(path: pathlib.Path) -> tuple[str, str]:
 
 @dataclasses.dataclass(frozen=True)
 class Kit:
-    """A release's kit.json: the guard, the knowledge block, the skills and the subagents."""
+    """A release's kit.json: the guard, the skills and the subagents."""
 
     guard: str
-    knowledge: str
-    knowledge_hash: str
     skills: dict[str, dict[str, str]]
     subagents: dict[str, dict[str, str]]
 
@@ -217,10 +224,10 @@ class Kit:
 def read_kit(path: pathlib.Path) -> Kit:
     try:
         data = json.loads(path.read_text(encoding='utf-8'))
-        if data.get('format') != 1:
-            raise SystemExit(f'{path} is a kit in format {data.get("format")}; this installer reads format 1')
+        if data.get('format') != KIT_FORMAT:
+            raise SystemExit(f'{path} is a kit in format {data.get("format")}; '
+                             f'this installer reads format {KIT_FORMAT}')
         guard, skills, subagents = data['guard'], data['skills'], data['subagents']
-        knowledge, knowledge_hash = exact_region(data['knowledge'], 'knowledge', f'{path}', 'kit')
     except (OSError, UnicodeDecodeError, ValueError, KeyError, TypeError, AttributeError) as error:
         raise SystemExit(f'cannot read the kit {path}: {error}') from error
     if OWNED not in guard:
@@ -233,7 +240,7 @@ def read_kit(path: pathlib.Path) -> Kit:
     for name in subagents:
         if not re.match(r'^[a-z0-9]+(-[a-z0-9]+)*$', name):
             raise SystemExit(f'{path} names a subagent that is not a plain name: {name}')
-    return Kit(guard, knowledge, knowledge_hash, skills, subagents)
+    return Kit(guard, skills, subagents)
 
 
 def codex_home(home: pathlib.Path, env: Mapping[str, str]) -> pathlib.Path:
@@ -246,9 +253,8 @@ def resolve(target: Target, home: pathlib.Path, env: Mapping[str, str]) -> pathl
     return home / target.rel
 
 
-def targets_for(cloud: bool, knowledge: bool = False) -> list[Target]:
-    return [t for t in TARGETS if t.where in ('both', 'cloud' if cloud else 'local')
-            and (knowledge or t.piece == 'rules')]
+def targets_for(cloud: bool, targets: tuple[Target, ...] = TARGETS) -> list[Target]:
+    return [t for t in targets if t.where in ('both', 'cloud' if cloud else 'local')]
 
 
 def read(path: pathlib.Path) -> str | None:
@@ -385,12 +391,12 @@ def install(home: pathlib.Path, home_file: pathlib.Path, cloud: bool, env: Mappi
     spath = state_path(home, env)
     state = load_state(spath)
     failures = 0
-    for target in targets_for(cloud, kit is not None):
+    for target in targets_for(cloud):
         path = resolve(target, home, env)
-        label = f'{target.app}{" knowledge" if target.piece == "knowledge" else ""}: {path}'
+        label = f'{target.app}: {path}'
         try:
             current = read(path)
-            text, joiner = placed(target, current, region if target.piece == 'rules' else kit.knowledge)
+            text, joiner = placed(target, current, region)
         except (Refused, UnicodeDecodeError) as error:
             report('refused', f'{label} {error}')
             failures += 1
@@ -411,20 +417,50 @@ def install(home: pathlib.Path, home_file: pathlib.Path, cloud: bool, env: Mappi
         if changed:
             make_dirs(path)
             write(path, text)
+    failures += retire(home, cloud, env, state, spath, dry_run)
     if not cloud:
         failures += install_setting(home, state, spath, dry_run)
     if kit is not None:
         failures += install_kit(home, kit, cloud, env, state, spath, dry_run)
     if not dry_run:
         state['hash'] = block_hash
-        if kit is not None:
-            state['knowledge_hash'] = kit.knowledge_hash
+        state.pop('knowledge_hash', None)
         save_state(spath, state)
     print('  manual   Cursor: paste the home file into Settings > Rules > User Rules, '
           'and again whenever the block changes')
     for line in shadows(home, env):
         print(f'  warning  {line}')
     return 1 if failures else 0
+
+
+def retire(home: pathlib.Path, cloud: bool, env: Mapping[str, str], state: dict, spath: pathlib.Path,
+           dry_run: bool) -> int:
+    """Take out the knowledge facts an earlier release wrote, and the record of them."""
+    failures = 0
+    for target in targets_for(cloud, RETIRED):
+        path = resolve(target, home, env)
+        key = target.key(path)
+        label = f'{target.app} knowledge: {path}'
+        try:
+            current = read(path)
+            found = None if current is None else find(current, target.piece)
+        except (Refused, UnicodeDecodeError) as error:
+            report('refused', f'{label} {error}')
+            failures += 1
+            continue
+        if found is not None:
+            report('would retire' if dry_run else 'retired', label)
+            if not dry_run:
+                if target.mode == 'file':
+                    path.unlink()
+                else:
+                    # The block went in after the rules, behind the separator the install recorded.
+                    joiner = state['files'].get(key, {}).get('joiner', '\n')
+                    write(path, removed(current, joiner, target.piece))
+        if key in state['files'] and not dry_run:
+            del state['files'][key]
+            save_state(spath, state)
+    return failures
 
 
 def install_setting(home: pathlib.Path, state: dict, spath: pathlib.Path, dry_run: bool) -> int:
@@ -705,16 +741,22 @@ def check(home: pathlib.Path, home_file: pathlib.Path, cloud: bool, env: Mapping
     region, block_hash = read_home_file(home_file)
     kit = read_kit(kit_file) if kit_file else None
     failures = 0
-    for target in targets_for(cloud, kit is not None):
+    for target in targets_for(cloud):
         path = resolve(target, home, env)
-        if target.piece == 'rules':
-            status = target_status(target, read(path), region, block_hash)
-        else:
-            status = target_status(target, read(path), kit.knowledge, kit.knowledge_hash)
+        status = target_status(target, read(path), region, block_hash)
         if status != 'current':
             failures += 1
-        piece = ' knowledge' if target.piece == 'knowledge' else ''
-        print(f'  {status:<8} {target.app}{piece}: {path}')
+        print(f'  {status:<8} {target.app}: {path}')
+    for target in targets_for(cloud, RETIRED):
+        path = resolve(target, home, env)
+        try:
+            current = read(path)
+            left = current is not None and find(current, target.piece) is not None
+        except (Refused, UnicodeDecodeError):
+            left = True
+        if left:
+            failures += 1
+            print(f'  {"stale":<8} {target.app} knowledge: {path}, retired; an install takes it out')
     if not cloud:
         path = home / SETTINGS
         try:
@@ -802,7 +844,7 @@ def uninstall(home: pathlib.Path, env: Mapping[str, str], dry_run: bool = False)
         records = {t.key(resolve(t, home, env)): {'path': str(resolve(t, home, env)), 'piece': t.piece,
                                                   'mode': t.mode, 'created': False, 'joiner': '\n',
                                                   'dirs': []}
-                   for t in TARGETS}
+                   for t in TARGETS + RETIRED}
         print("  note     no install record, so only marked blocks and the kit's own files go")
     by_path: dict[str, list[dict]] = {}
     for key, record in records.items():
@@ -839,7 +881,7 @@ def uninstall_path(path: pathlib.Path, pieces: list[dict], recorded: bool, dry_r
         return
     rest = current
     touched = False
-    # Knowledge went in after the rules, so it comes out first.
+    # An earlier release's knowledge went in after the rules, so it comes out first.
     for record in sorted(pieces, key=lambda r: r.get('piece', 'rules') == 'rules'):
         piece = record.get('piece', 'rules')
         try:
