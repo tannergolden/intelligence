@@ -27,7 +27,7 @@ _Built is not proven. A release and a probe run prove it._
 | **v0.1. The rules**       | The rules, in [the Constitution](../../CONSTITUTION.md); `render.py`; its tests                                | Two renders are byte-identical, and the block stays under its cap                                                 | Built                                                  |
 | **v0.2. The home kit**    | `install.py`; dotfiles' `make agents`, `make agents-check` and `make agents-uninstall`; the cloud setup script | The probe passes on macOS, Linux, a Codespace and a Claude cloud session, and uninstalling restores every file    | Built; proven on a machine after the first release     |
 | **v0.3. Repository sync** | `make audit`, `make sync` and `make merge`                                                                     | One release reaches every repository as one pull request each, merged by one command                              | Built; the first sync is yours to run                  |
-| **v0.4. Backstops**       | Rulesets through 🎯 Apply Standards, and the [risks that remain](Backstops-&-Residual-Risk.md)                 | A direct push and a force-push to `Development` are both refused                                                  | Written up; the rulesets need your `ADMIN_TOKEN`       |
+| **v0.4. Backstops**       | Rulesets through 🎯 Apply Standards, and the [risks that remain](../operations/Backstops-&-Residual-Risk.md)   | A direct push and a force-push to `Development` are both refused                                                  | Written up; the rulesets need your `ADMIN_TOKEN`       |
 | **v1.0. Freeze**          | Rule IDs, the marker format and file paths, frozen once two releases pass v0.2 to v0.4                         | One release ships with one review, one `make sync`, one `make merge` and a green probe                            | After two releases                                     |
 
 ---
@@ -52,7 +52,7 @@ passing tests and a record in [`docs/adrs/`](../adrs/README.md):
 
 ## 🔗 See Also
 
-- [Releasing](Releasing.md): the steps each release takes
+- [Releasing](../distribution/Releasing.md): the steps each release takes
 - [Decisions](../adrs/README.md): every decision behind the plan
 
 ---

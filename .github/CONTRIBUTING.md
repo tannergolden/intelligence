@@ -54,7 +54,7 @@ commit messages, sign-offs and pull requests.
 - A new rule gets a scenario in `evals/scenarios/`, and a new skill a trigger test in `evals/skills/`.
 - A change to `setup/Prompts.md` stays as Prettier writes it, with the standards' configuration, and passes `prompts.py --check`.
 - Every new script has tests beside it, and every folder's `README.md` logs its files, except inside a skill's folder.
-- A change to how something works updates its document in `docs/technical/` or `docs/operations/` in the same commit.
+- A change to how something works updates its document in `docs/` in the same commit, in the folder for its kind: `docs/technical/` for how a part works, `docs/distribution/` for how a release ships, `docs/operations/` for the controls and risks.
 
 ---
 
@@ -79,8 +79,11 @@ commit messages, sign-offs and pull requests.
 | `setup/`                                | The Claude cloud setup script, the stub a repository carries, and the prompts every repository gets                                             |
 | `.github/scripts/`                      | Every script, with its test beside it: `render.py`, `kit.py`, `install.py`, `sync.py`, `evals.py`, `loader-probe.py`, and the template's checks |
 | `.github/actions/`                      | The action a repository's stub runs, through `.github/workflows/sync.yml`                                                                       |
-| `docs/technical/`                       | How every part of the hub works, one document each, starting with `How-It-Works.md`                                                             |
-| `docs/operations/`                      | Releasing, the roadmap, and the controls and risks behind the rules                                                                             |
+| `docs/introduction/`                    | Where to start: `How-It-Works.md`, which shows how the pieces fit, and the roadmap                                                              |
+| `docs/distribution/`                    | Every step of a release, from a green `Development` to every machine and repository                                                             |
+| `docs/technical/`                       | How every part of the hub works, one document each                                                                                              |
+| `docs/operations/`                      | The controls and risks behind the rules                                                                                                         |
+| `docs/references/`, `docs/library/`     | Pages to look up, and material to learn from, as the standards keep them; empty so far                                                          |
 | `docs/adrs/`                            | Every decision behind the plan                                                                                                                  |
 
 ---

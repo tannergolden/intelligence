@@ -27,15 +27,15 @@ Codex, Antigravity CLI, Copilot (the CLI and VS Code), Cursor and Grok Build.
 The rules are written once, in [the Constitution](../../CONSTITUTION.md),
 rendered as one block, and reach the agents in two pieces:
 
-| Piece               | Where the rules land                           | How they get there                                         | Read more                             |
-| :------------------ | :--------------------------------------------- | :--------------------------------------------------------- | :------------------------------------ |
-| **🏠 Home**         | Each app's own home folder, on every machine   | Your dotfiles run `make agents`                            | [The Home Kit](The-Home-Kit.md)       |
-| **🗂️ Repositories** | One `AGENTS.md` at the root of each repository | A pull request from its stub or `make sync`, merged by you | [Repository Sync](Repository-Sync.md) |
+| Piece               | Where the rules land                           | How they get there                                         | Read more                                          |
+| :------------------ | :--------------------------------------------- | :--------------------------------------------------------- | :------------------------------------------------- |
+| **🏠 Home**         | Each app's own home folder, on every machine   | Your dotfiles run `make agents`                            | [The Home Kit](../technical/The-Home-Kit.md)       |
+| **🗂️ Repositories** | One `AGENTS.md` at the root of each repository | A pull request from its stub or `make sync`, merged by you | [Repository Sync](../technical/Repository-Sync.md) |
 
 The home copy reaches every session, including other people's repositories
 and scratch folders. The repository copy travels with the code, so cloud
 agents and collaborators get the same rules with nothing installed. A Claude
-Code cloud session starts empty, so [the cloud setup script](Cloud-Setup.md)
+Code cloud session starts empty, so [the cloud setup script](../technical/Cloud-Setup.md)
 installs the home copy there.
 
 ---
@@ -103,20 +103,20 @@ Invariant, because nothing waives one.
 The rules travel with a kit, one pinned file in the same release, and each
 module has its own document:
 
-| Module                                                     | What it is                                                                              | Read more                                   |
-| :--------------------------------------------------------- | :-------------------------------------------------------------------------------------- | :------------------------------------------ |
-| The guard hook                                             | Denies the few tool calls the Invariants forbid outright, before they run, in every app | [The Home Kit](The-Home-Kit.md)             |
-| The `develop` skill, and the Worker and Reviewer subagents | A procedure loaded when the task calls for it, and two agents a session hands work to   | [Skills & Subagents](Skills-&-Subagents.md) |
+| Module                                                     | What it is                                                                              | Read more                                                |
+| :--------------------------------------------------------- | :-------------------------------------------------------------------------------------- | :------------------------------------------------------- |
+| The guard hook                                             | Denies the few tool calls the Invariants forbid outright, before they run, in every app | [The Home Kit](../technical/The-Home-Kit.md)             |
+| The `develop` skill, and the Worker and Reviewer subagents | A procedure loaded when the task calls for it, and two agents a session hands work to   | [Skills & Subagents](../technical/Skills-&-Subagents.md) |
 
-Every repository also gets ready-made [prompts](Prompts.md) in
+Every repository also gets ready-made [prompts](../technical/Prompts.md) in
 `docs/Prompts.md`, in the same pull request as the rules: universal ones the
 hub keeps current between their markers, and a section for the repository's
 own.
 
-Two tools prove the whole thing works: [the loader probe](The-Loader-Probe.md)
-shows which files each app actually loads, and [evals](Evals.md) measure
+Two tools prove the whole thing works: [the loader probe](../technical/The-Loader-Probe.md)
+shows which files each app actually loads, and [evals](../technical/Evals.md) measure
 whether the agent then follows each rule. Nothing reaches a machine or a
-repository until [a release](../operations/Releasing.md).
+repository until [a release](../distribution/Releasing.md).
 
 ---
 

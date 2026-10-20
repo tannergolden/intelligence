@@ -397,7 +397,7 @@ To change the rules:
 4. A new rule also gets a scenario in `evals/scenarios/`, as
    [Evals](docs/technical/Evals.md) describes.
 5. Nothing leaves the hub until a release: cut one with 🏷️ Cut Release, as
-   [Releasing](docs/operations/Releasing.md) describes. Every repository's
+   [Releasing](docs/distribution/Releasing.md) describes. Every repository's
    stub picks it up on Monday, and `make sync` delivers it now.
 
 To retire a rule, delete its section and add its ID to the appendix below,

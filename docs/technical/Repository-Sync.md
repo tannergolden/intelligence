@@ -23,7 +23,7 @@ _The repository asks, or you push. Either way, you merge._
 
 Every repository carries the rules in one root `AGENTS.md`, between
 `INTELLIGENCE` markers, beside sections the repository owns, as
-[How It Works](How-It-Works.md) describes, and ready-made
+[How It Works](../introduction/How-It-Works.md) describes, and ready-made
 [prompts](Prompts.md) in `docs/Prompts.md`, whose `INTELLIGENCE:PROMPTS`
 block the hub keeps current beside the repository's own prompts. A release
 reaches it by either of two routes, through

@@ -43,7 +43,7 @@ into an AI app.
 > repository sync and the backstop notes are all here: phases v0.1 to v0.4.
 > Nothing reaches a machine or another repository until the first release is
 > cut, and phase 0 still needs the probe run on your own machine. See
-> [Releasing](docs/operations/Releasing.md).
+> [Releasing](docs/distribution/Releasing.md).
 
 ---
 
@@ -54,7 +54,7 @@ per part. Start with How It Works.
 
 | Document                                                                  | What it explains                                                                                  |
 | :------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------ |
-| [How It Works](docs/technical/How-It-Works.md)                            | The two pieces, the block every copy carries, which copy wins, and how a repository overrides one |
+| [How It Works](docs/introduction/How-It-Works.md)                         | The two pieces, the block every copy carries, which copy wins, and how a repository overrides one |
 | [The Constitution](CONSTITUTION.md)                                       | Every rule, why it exists, what enforces it, and how to change one                                |
 | [The Home Kit](docs/technical/The-Home-Kit.md)                            | What `make agents` installs into each app, the kit beside the rules, and the guard hook           |
 | [Repository Sync](docs/technical/Repository-Sync.md)                      | How a release reaches every repository: the stub, `make sync`, `make merge` and `make audit`      |
@@ -63,8 +63,8 @@ per part. Start with How It Works.
 | [Skills & Subagents](docs/technical/Skills-&-Subagents.md)                | The one skill, the Worker and the Reviewer, and where each app reads them                         |
 | [The Loader Probe](docs/technical/The-Loader-Probe.md)                    | How the hub proves which files each app actually loads, and the results so far                    |
 | [Evals](docs/technical/Evals.md)                                          | How each rule is measured, with the block and without it                                          |
-| [Releasing](docs/operations/Releasing.md)                                 | Every step from a green `Development` to the rules on every machine and in every repository       |
-| [Roadmap](docs/operations/Roadmap.md)                                     | Each phase and module, what finishes it, and where it stands                                      |
+| [Releasing](docs/distribution/Releasing.md)                               | Every step from a green `Development` to the rules on every machine and in every repository       |
+| [Roadmap](docs/introduction/Roadmap.md)                                   | Each phase and module, what finishes it, and where it stands                                      |
 | [Backstops & Residual Risk](docs/operations/Backstops-&-Residual-Risk.md) | The server-side controls behind the rules, and the risks that remain                              |
 | [Decisions](docs/adrs/README.md)                                          | Every decision behind the plan, with the options it was weighed against                           |
 

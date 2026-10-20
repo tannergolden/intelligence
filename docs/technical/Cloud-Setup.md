@@ -62,7 +62,7 @@ install anything until they are filled.
 ## 🔗 See Also
 
 - [ADR-0010](../adrs/ADR-0010-Releases-Serve-Rendered-Files.md): a release tag serves the rendered files, checked against pins
-- [Releasing](../operations/Releasing.md): where printing the setup script falls among the release steps
+- [Releasing](../distribution/Releasing.md): where printing the setup script falls among the release steps
 
 ---
 

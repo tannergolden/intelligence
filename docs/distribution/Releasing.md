@@ -67,7 +67,7 @@ resolving and `make audit` names old blocks by the release that shipped them.
 ## 🔗 See Also
 
 - [ADR-0010](../adrs/ADR-0010-Releases-Serve-Rendered-Files.md): a release tag serves the rendered files, checked against pins
-- [Roadmap](Roadmap.md): what the first releases have to prove
+- [Roadmap](../introduction/Roadmap.md): what the first releases have to prove
 
 ---
 

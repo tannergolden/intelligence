@@ -114,3 +114,15 @@
 # --- Your rules ---------------------------------------------------------------
 # keep mine: /.github/workflows/checks.yml
 # keep mine: /.github/workflows/release.yml
+# The hub's technical/ and operations/ folders keep READMEs that describe
+# the hub's own pages, so the template's, written for any project, never
+# replace them.
+!/docs/technical/README.md
+!/docs/operations/README.md
+# The hub is MIT, and the template's documents carry its proprietary
+# footer: these four folder READMEs keep the hub's own footer while every
+# other change the template makes to them still arrives.
+# keep mine: /docs/distribution/README.md
+# keep mine: /docs/introduction/README.md
+# keep mine: /docs/library/README.md
+# keep mine: /docs/references/README.md

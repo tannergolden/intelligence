@@ -1,13 +1,13 @@
 <!--
-title: '🔧 TECHNICAL'
-description: 'How every part of the hub works, one document each: the home kit, repository sync, cloud setup, skills and subagents, the loader probe and evals.'
+title: '🛠️ TECHNICAL'
+description: 'How every part of the hub works, one document each: the home kit, repository sync, the prompts, cloud setup, skills and subagents, the loader probe and evals.'
 type: index
 keywords: [docs, architecture]
 -->
 
 <div align="center">
 
-# 🔧 TECHNICAL
+# 🛠️ TECHNICAL
 
 <a name="top"></a>
 
@@ -21,9 +21,11 @@ _Start with How It Works._
 
 ## 💡 What This Folder Is For
 
-Every explanation of how the hub works lives here, and each folder's README in
-the hub links to the document for its part. Start with [How It
-Works](How-It-Works.md), which shows how the pieces fit, and follow its links.
+Every explanation of how a part of the hub works lives here, and each folder's
+README in the hub links to the document for its part. Start with [How It
+Works](../introduction/How-It-Works.md), in
+[`../introduction/`](../introduction/README.md), which shows how the pieces
+fit, and follow its links.
 
 ---
 
@@ -35,7 +37,6 @@ Works](How-It-Works.md), which shows how the pieces fit, and follow its links.
 | :----------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`Cloud-Setup.md`](Cloud-Setup.md)               | The setup script that installs the universal rules and the kit into every Claude Code cloud session, pinned to one release and unable to fail the session.                                                 |
 | [`Evals.md`](Evals.md)                           | How each universal rule is measured: scenarios that tempt an agent to break it, run against real apps with the block and without it, and checked by code.                                                  |
-| [`How-It-Works.md`](How-It-Works.md)             | How one set of rules reaches every AI coding agent: the two pieces, the block every copy carries, which copy wins, and where each module fits.                                                             |
 | [`Prompts.md`](Prompts.md)                       | The ready-made prompts every repository gets in docs/Prompts.md: the universal ones the hub keeps current between their markers, the section each repository fills with its own, and how to change either. |
 | [`README.md`](README.md)                         | This file.                                                                                                                                                                                                 |
 | [`Repository-Sync.md`](Repository-Sync.md)       | How each release reaches every repository: the stub a repository carries, make sync from the hub, what a first sync does, and how make merge lands the result.                                             |

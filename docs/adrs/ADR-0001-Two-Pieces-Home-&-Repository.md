@@ -111,7 +111,7 @@ The hierarchy, knowledge, evals, skills and hooks each return after 1.0 as a mod
 - [ADR-0002](ADR-0002-One-Root-AGENTS-File.md): the shape of the repository piece
 - [ADR-0004](ADR-0004-Precedence-Overrides-&-Hash-Marker.md): which copy wins when an agent loads both
 - [ADR-0005](ADR-0005-Home-Copies-Not-Links.md): how the home piece is installed
-- [How It Works](../technical/How-It-Works.md): the two pieces, side by side
+- [How It Works](../introduction/How-It-Works.md): the two pieces, side by side
 
 ### 🔗 See also
 
