@@ -16,7 +16,7 @@ written by hand:
   file, so a machine downloads everything it installs from `home/`;
 - `home/SHA256SUMS`, the hashes a consumer pins.
 
-The hub keeps no `AGENTS.md` of its own: it holds the source, not a copy.
+The hub's own `AGENTS.md` never carries the block: it holds the source, not a copy.
 
 A copy that drifts from the Constitution is a rule nobody wrote, so `--check`
 fails CI until `--write` has brought every copy back in line. It also holds

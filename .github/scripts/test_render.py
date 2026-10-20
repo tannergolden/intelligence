@@ -534,8 +534,13 @@ class TestTheRealConstitution(unittest.TestCase):
         self.assertTrue(render.has_kit(self.root))
         self.assertIn(render.KIT_FILE, render.renderings(self.root, render.load_constitution(self.root)))
 
-    def test_the_hub_keeps_no_agents_file(self) -> None:
-        self.assertFalse((self.root / 'AGENTS.md').exists())
+    def test_the_hub_keeps_no_copy_of_the_block(self) -> None:
+        # The hub's AGENTS.md holds its own rules only (ADR-0026): a block
+        # there would be a second source, and a CLAUDE.md would hide the file.
+        agents = (self.root / 'AGENTS.md').read_text(encoding='utf-8')
+        self.assertNotRegex(agents, r'(?m)^<!-- INTELLIGENCE')
+        self.assertIsNone(render.find(agents))
+        self.assertFalse((self.root / 'CLAUDE.md').exists())
         self.assertFalse((self.root / 'law').exists())
 
 

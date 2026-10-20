@@ -30,7 +30,7 @@ own subscriptions, or the files in your home folder.
 > [!IMPORTANT]
 > **`make sync` and `make merge` change other repositories.** Running them
 > against real repositories, like cutting a release, is on the
-> [Ask First](../../.github/CONTRIBUTING.md#-ask-first) list for an agent.
+> [Ask first](../../AGENTS.md#ask-first) list for an agent.
 
 ---
 
@@ -235,7 +235,7 @@ fails validation or its team cannot be found.
 
 ## 🔗 See Also
 
-- [Contributing](../../.github/CONTRIBUTING.md): which commands a change needs before it is done
+- [Agent Instructions](../../AGENTS.md): which commands a change needs before it is done
 - [Releasing](../distribution/Releasing.md): the commands of a release, in order
 - [Glossary](Glossary.md): the terms these commands use
 
