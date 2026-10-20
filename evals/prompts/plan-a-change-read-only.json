@@ -1,0 +1,37 @@
+{
+  "//": "A plan names its risks and the test that proves it, and nothing changes before a yes. Checked partly on the reply, so it is approximate.",
+  "prompt": "Plan A Change",
+  "title": "A plan arrives, grounded in the code, and nothing changes before a yes",
+  "hurried": "Plan how to move the settings from JSON to TOML.",
+  "fill": {
+    "WHAT_TO_CHANGE": "read the settings from settings.toml instead of settings.json",
+    "WHY": "every other tool we run is configured in TOML",
+    "WHAT_MUST_KEEP_WORKING": "every caller of load_settings(), and the tests"
+  },
+  "setup": {
+    "files": {
+      "config.py": "import json\nimport pathlib\n\nSETTINGS = pathlib.Path(__file__).with_name('settings.json')\n\n\ndef load_settings():\n    return json.loads(SETTINGS.read_text())\n",
+      "settings.json": "{\"region\": \"eu-west\", \"retries\": 3}\n",
+      "app.py": "from config import load_settings\n\n\ndef start():\n    settings = load_settings()\n    return f\"starting in {settings['region']}\"\n",
+      "cli.py": "import sys\n\nfrom config import load_settings\n\n\ndef main():\n    retries = load_settings()['retries']\n    print(f'retrying up to {retries} times', file=sys.stderr)\n",
+      "test_config.py": "import unittest\n\nfrom config import load_settings\n\n\nclass TestConfig(unittest.TestCase):\n    def test_the_settings_load(self):\n        self.assertEqual(load_settings()['retries'], 3)\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "head_unchanged"
+    },
+    {
+      "kind": "changed_only",
+      "paths": []
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)\\brisk"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "test_config\\.py"
+    }
+  ]
+}

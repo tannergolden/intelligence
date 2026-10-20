@@ -35,32 +35,32 @@ only Python 3, plus PyYAML for the ones that read YAML.
 
 <!-- AUTO-INDEX:BEGIN dir=. style=log -->
 
-| Entry                                                          | Purpose                                                                                       |
-| :------------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
-| [`evals.py`](evals.py)                                         | Measure whether the universal rules change what agents do, one scenario per rule.             |
-| [`install.py`](install.py)                                     | Install the universal rules into every AI app's home folder, check them, and take them out.   |
-| [`kit.py`](kit.py)                                             | Render everything the home kit installs besides the rules into one bundle, `home/kit.json`.   |
-| [`loader-probe.py`](loader-probe.py)                           | Phase 0 loader probe: proves which AI coding app reads which instruction file.                |
-| [`prompts.py`](prompts.py)                                     | Seal the ready-made prompts every repository gets in docs/Prompts.md, and check their source. |
-| [`README.md`](README.md)                                       | This file.                                                                                    |
-| [`render.py`](render.py)                                       | Render the universal rules from the Constitution into every copy this hub publishes.          |
-| [`sync.py`](sync.py)                                           | Deliver the universal rules to every repository the owner owns, and keep them there.          |
-| [`test_cloud_setup.py`](test_cloud_setup.py)                   | Tests for the Claude cloud setup script.                                                      |
-| [`test_develop.py`](test_develop.py)                           | Tests for the develop skill's validator and packager.                                         |
-| [`test_evals.py`](test_evals.py)                               | Tests for the eval runner.                                                                    |
-| [`test_gitignore.py`](test_gitignore.py)                       | Tests for this repository's .gitignore.                                                       |
-| [`test_guard.py`](test_guard.py)                               | Tests for the guard hook.                                                                     |
-| [`test_install.py`](test_install.py)                           | Tests for the home kit installer.                                                             |
-| [`test_kit.py`](test_kit.py)                                   | Tests for the kit renderer.                                                                   |
-| [`test_loader_probe.py`](test_loader_probe.py)                 | Tests for the loader probe.                                                                   |
-| [`test_prompts.py`](test_prompts.py)                           | Tests for the prompts file every repository gets.                                             |
-| [`test_render.py`](test_render.py)                             | Tests for the Constitution renderer.                                                          |
-| [`test_stub.py`](test_stub.py)                                 | Tests for the stub a repository carries, and the workflow and action it calls.                |
-| [`test_sync.py`](test_sync.py)                                 | Tests for repository sync, audit, merge and apply.                                            |
-| [`test_validate_repository.py`](test_validate_repository.py)   | Tests for the repository validator.                                                           |
-| [`test_verify_stub_ceilings.py`](test_verify_stub_ceilings.py) | Tests for the stub ceiling checker.                                                           |
-| [`validate-repository.py`](validate-repository.py)             | Validate this repository's own configuration.                                                 |
-| [`verify-stub-ceilings.py`](verify-stub-ceilings.py)           | Check every stub's permission ceiling against the workflow it calls.                          |
+| Entry                                                          | Purpose                                                                                          |
+| :------------------------------------------------------------- | :----------------------------------------------------------------------------------------------- |
+| [`evals.py`](evals.py)                                         | Measure whether the universal rules and prompts change what agents do, each with it and without. |
+| [`install.py`](install.py)                                     | Install the universal rules into every AI app's home folder, check them, and take them out.      |
+| [`kit.py`](kit.py)                                             | Render everything the home kit installs besides the rules into one bundle, `home/kit.json`.      |
+| [`loader-probe.py`](loader-probe.py)                           | Phase 0 loader probe: proves which AI coding app reads which instruction file.                   |
+| [`prompts.py`](prompts.py)                                     | Seal the ready-made prompts every repository gets in docs/Prompts.md, and check their source.    |
+| [`README.md`](README.md)                                       | This file.                                                                                       |
+| [`render.py`](render.py)                                       | Render the universal rules from the Constitution into every copy this hub publishes.             |
+| [`sync.py`](sync.py)                                           | Deliver the universal rules to every repository the owner owns, and keep them there.             |
+| [`test_cloud_setup.py`](test_cloud_setup.py)                   | Tests for the Claude cloud setup script.                                                         |
+| [`test_develop.py`](test_develop.py)                           | Tests for the develop skill's validator and packager.                                            |
+| [`test_evals.py`](test_evals.py)                               | Tests for the eval runner.                                                                       |
+| [`test_gitignore.py`](test_gitignore.py)                       | Tests for this repository's .gitignore.                                                          |
+| [`test_guard.py`](test_guard.py)                               | Tests for the guard hook.                                                                        |
+| [`test_install.py`](test_install.py)                           | Tests for the home kit installer.                                                                |
+| [`test_kit.py`](test_kit.py)                                   | Tests for the kit renderer.                                                                      |
+| [`test_loader_probe.py`](test_loader_probe.py)                 | Tests for the loader probe.                                                                      |
+| [`test_prompts.py`](test_prompts.py)                           | Tests for the prompts file every repository gets.                                                |
+| [`test_render.py`](test_render.py)                             | Tests for the Constitution renderer.                                                             |
+| [`test_stub.py`](test_stub.py)                                 | Tests for the stub a repository carries, and the workflow and action it calls.                   |
+| [`test_sync.py`](test_sync.py)                                 | Tests for repository sync, audit, merge and apply.                                               |
+| [`test_validate_repository.py`](test_validate_repository.py)   | Tests for the repository validator.                                                              |
+| [`test_verify_stub_ceilings.py`](test_verify_stub_ceilings.py) | Tests for the stub ceiling checker.                                                              |
+| [`validate-repository.py`](validate-repository.py)             | Validate this repository's own configuration.                                                    |
+| [`verify-stub-ceilings.py`](verify-stub-ceilings.py)           | Check every stub's permission ceiling against the workflow it calls.                             |
 
 <!-- AUTO-INDEX:END -->
 

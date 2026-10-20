@@ -99,14 +99,29 @@ what every repository can carry and to the shape its own practices describe.
 Where Prettier is installed, `make test` also runs it over the source with the
 standards' configuration, and fails on any line it would change.
 
-A prompt that only one repository needs goes in that repository's own section,
-never here.
+Every universal prompt also has a scenario in
+[`evals/prompts/`](../../evals/prompts/README.md) that measures it against the
+one-line request it replaces, as [Evals](Evals.md) describes. `make lint`
+fails while a prompt has none, or while a scenario fills a placeholder the
+prompt no longer holds, so a reworded prompt brings its scenario along. Before
+a release carries a changed prompt, run its scenario a few times:
+
+```bash
+make evals ARGS='--apps claude --prompts fix-a-bug --runs 3'
+```
+
+Keep a change only if the prompt does at least as well as before, and run
+the scenarios again when a new model ships, since advice that helps one model
+can hurt the next. A prompt
+that only one repository needs goes in that repository's own section, never
+here.
 
 ---
 
 ## 🔗 See Also
 
 - [ADR-0025](../adrs/ADR-0025-Every-Repository-Gets-Ready-Made-Prompts.md): why the prompts reach every repository, and how they are split
+- [Evals](Evals.md): how a prompt scenario measures a universal prompt
 - [Repository Sync](Repository-Sync.md): the pull request both blocks ride in
 - [The Home Kit](The-Home-Kit.md): the guard hook that keeps both blocks as the hub wrote them
 

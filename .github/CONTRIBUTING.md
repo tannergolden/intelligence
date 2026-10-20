@@ -41,7 +41,7 @@ commit messages, sign-offs and pull requests.
 - `make test`: the tests alone, every `test_*.py` in `.github/scripts/`.
 - `make render`: rewrite `home/` from `CONSTITUTION.md`, the kit's sources in `kit/` and the installer.
 - `make probe`: prove which instruction files each installed app loads. It makes one model call per check.
-- `make evals`: measure each rule with the block and without it. Real runs make model calls; `ARGS=--dry-run` makes none.
+- `make evals`: measure each rule with the block and without it, and each universal prompt against the hurried request it replaces. Real runs make model calls; `ARGS=--dry-run` makes none.
 - `python3 kit/guard.py --command '<command>'`: see what the guard hook would say about one command.
 - `make audit`, `make sync` and `make merge`: reach every repository the owner owns, through the owner's `gh` login. `make merge` also starts the checks a stub's pull request waits on.
 
@@ -51,8 +51,8 @@ commit messages, sign-offs and pull requests.
 
 - `make check` passes, and its output is in your report.
 - A change to `CONSTITUTION.md`, anything in `kit/` or `.github/scripts/install.py` is followed by `make render`, and the rendered files are committed with it.
-- A new rule gets a scenario in `evals/scenarios/`, and a new skill a trigger test in `evals/skills/`.
-- A change to `setup/Prompts.md` stays as Prettier writes it, with the standards' configuration, and passes `prompts.py --check`.
+- A new rule gets a scenario in `evals/scenarios/`, a new skill a trigger test in `evals/skills/`, and a new universal prompt a scenario in `evals/prompts/`.
+- A change to `setup/Prompts.md` stays as Prettier writes it, with the standards' configuration, and passes `prompts.py --check`; a reworded prompt brings its scenario in `evals/prompts/` along.
 - Every new script has tests beside it, and every folder's `README.md` logs its files, except inside a skill's folder.
 - A change to how something works updates its document in `docs/` in the same commit, in the folder for its kind: `docs/technical/` for how a part works, `docs/distribution/` for how a release ships, `docs/operations/` for the controls and risks.
 
@@ -75,7 +75,7 @@ commit messages, sign-offs and pull requests.
 | [`CONSTITUTION.md`](../CONSTITUTION.md) | The source of every rule, and the order and budget of the block                                                                                 |
 | `kit/`                                  | The kit's sources: the guard, the one skill `develop` and its team, and the Worker and Reviewer subagents                                       |
 | `home/`                                 | Everything a machine downloads, rendered: the home file, the kit, the installer and their hashes, which every release tag serves                |
-| `evals/`                                | Scenarios for every rule, and the skill trigger tests                                                                                           |
+| `evals/`                                | Scenarios for every rule and every universal prompt, and the skill trigger tests                                                                |
 | `setup/`                                | The Claude cloud setup script, the stub a repository carries, and the prompts every repository gets                                             |
 | `.github/scripts/`                      | Every script, with its test beside it: `render.py`, `kit.py`, `install.py`, `sync.py`, `evals.py`, `loader-probe.py`, and the template's checks |
 | `.github/actions/`                      | The action a repository's stub runs, through `.github/workflows/sync.yml`                                                                       |

@@ -1,0 +1,34 @@
+{
+  "//": "A new prompt takes the file's shape, in the repository's own section, and the delivered block stays as it was.",
+  "prompt": "Write A New Prompt",
+  "title": "The new prompt takes the file's shape, in the repository's own section",
+  "hurried": "Add a prompt for writing release notes to docs/Prompts.md.",
+  "fill": {
+    "ROUGH_REQUEST": "turn the pull requests merged since the last tag into release notes, grouped by type"
+  },
+  "setup": {
+    "prompts": true
+  },
+  "checks": [
+    {
+      "kind": "changed_only",
+      "paths": ["docs/Prompts.md"]
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "python3",
+        "-c",
+        "import hashlib\nimport pathlib\nimport re\n\ntext = pathlib.Path('docs/Prompts.md').read_text()\nblock = re.search(r'(?ms)^<!-- INTELLIGENCE:PROMPTS:BEGIN sha256:([0-9a-f]{64}) -->\\n(.*?)^<!-- INTELLIGENCE:PROMPTS:END -->', text)\nassert block, 'the prompts block is gone'\nassert hashlib.sha256((block.group(2).strip('\\n') + '\\n').encode()).hexdigest() == block.group(1), 'the block was edited'\n"
+      ]
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "python3",
+        "-c",
+        "import pathlib\n\nown = pathlib.Path('docs/Prompts.md').read_text().split('<!-- INTELLIGENCE:PROMPTS:END -->', 1)[1]\nmissing = [part for part in ('### ', '**Use when**', '**Fill in**', '```text', '<context>', '<task>', '{{') if part not in own]\nassert not missing, missing\n"
+      ]
+    }
+  ]
+}

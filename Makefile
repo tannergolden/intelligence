@@ -38,7 +38,7 @@ render: ## Rewrite home/ from CONSTITUTION.md, the kit and the installer
 probe: ## Prove which files each installed app loads, one model call per check
 	$(PYTHON) $(SCRIPTS)/loader-probe.py $(ARGS)
 
-evals: ## Measure each rule with the block and without; ARGS='--apps claude --dry-run'
+evals: ## Measure each rule and universal prompt, with it and without; ARGS='--apps claude --dry-run'
 	$(PYTHON) $(SCRIPTS)/evals.py $(ARGS)
 
 audit: ## Report what every repository carries, against the latest release
