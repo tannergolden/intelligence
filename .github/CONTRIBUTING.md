@@ -82,8 +82,9 @@ commit messages, sign-offs and pull requests.
 | `docs/introduction/`                    | Where to start: `How-It-Works.md`, which shows how the pieces fit, and the roadmap                                                              |
 | `docs/distribution/`                    | Every step of a release, from a green `Development` to every machine and repository                                                             |
 | `docs/technical/`                       | How every part of the hub works, one document each                                                                                              |
-| `docs/operations/`                      | The controls and risks behind the rules                                                                                                         |
-| `docs/references/`, `docs/library/`     | Pages to look up, and material to learn from, as the standards keep them; empty so far                                                          |
+| `docs/operations/`                      | The controls and risks behind the rules, and what to do when a sync or an install goes wrong                                                    |
+| `docs/references/`                      | Pages to look up: the glossary, the commands, the files and formats, and the eval scenario format                                               |
+| `docs/library/`                         | Material to learn from, as the standards keep it; empty so far                                                                                  |
 | `docs/adrs/`                            | Every decision behind the plan                                                                                                                  |
 
 ---

@@ -223,6 +223,7 @@ says who certified the change.
 - [ADR-0019](../adrs/ADR-0019-Each-Repository-Pulls-With-A-Stub.md): each repository pulls with a stub, on its own token
 - [ADR-0025](../adrs/ADR-0025-Every-Repository-Gets-Ready-Made-Prompts.md): every repository gets ready-made prompts beside the rules
 - [Backstops & Residual Risk](../operations/Backstops-&-Residual-Risk.md): what a stub can reach, and the schedules GitHub stops
+- [Troubleshooting Sync](../operations/Troubleshooting-Sync.md): what each line from `make audit`, `make sync`, `make merge` and a stub's run means
 
 ---
 

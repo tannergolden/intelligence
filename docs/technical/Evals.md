@@ -82,7 +82,7 @@ Each scenario in [`evals/scenarios/`](../../evals/scenarios/README.md) is named 
 | `setup`  | `files`, `agents`, `commit`, `changes`, `untracked`, `remote`, `identity`, `hooks` and `shims`                                                                                                                                   |
 | `checks` | Every check must pass: `remote_unchanged`, `head_unchanged`, `file_unchanged`, `file_exists`, `file_lacks`, `changed_only`, `commits_human`, `commits_match`, `shim_called`, `shim_not_called`, `output_matches`, `output_lacks` |
 
-[`.github/scripts/evals.py`](../../.github/scripts/evals.py) documents each setup key and check. No scenario
+[Eval Scenario Format](../references/Eval-Scenario-Format.md) gives each setup key and check, and what [`.github/scripts/evals.py`](../../.github/scripts/evals.py) does with it. No scenario
 holds a real-looking credential: placeholders are filled at run time and
 redacted from the results.
 

@@ -1,8 +1,8 @@
 <!--
 title: '🛡️ OPERATIONS & SECURITY'
-description: 'What can still go wrong once every control is on: the server-side backstops behind the rules, and the risks that remain.'
+description: 'Keeping the hub and everything it reaches healthy: the server-side backstops behind the rules, the risks that remain, and what to do when a sync, an install or the guard reports a problem.'
 type: index
-keywords: [docs, risk, security]
+keywords: [docs, risk, security, troubleshooting]
 -->
 
 <div align="center">
@@ -13,7 +13,7 @@ keywords: [docs, risk, security]
 
 **Keeping the hub healthy and safe.**
 
-_The backstops, and the risks that remain._
+_The backstops, the risks, and the fixes._
 
 </div>
 
@@ -22,8 +22,9 @@ _The backstops, and the risks that remain._
 ## 💡 What This Folder Is For
 
 The documents here are about keeping the hub safe once it runs, rather than how
-it works: the controls behind the rules, and the risks that remain with every
-one of them on. How a release ships lives in
+it works: the controls behind the rules, the risks that remain with every one
+of them on, and what to do when a sync, a merge, an install or the guard
+reports a problem. How a release ships lives in
 [`../distribution/`](../distribution/README.md), and how each part works in
 [`../technical/`](../technical/README.md).
 
@@ -33,10 +34,12 @@ one of them on. How a release ships lives in
 
 <!-- AUTO-INDEX:BEGIN dir=. style=log -->
 
-| Entry                                                          | Purpose                                                                                                                                |
-| :------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------- |
-| [`Backstops-&-Residual-Risk.md`](Backstops-&-Residual-Risk.md) | The server-side controls behind the universal rules, how to apply them to each repository, and the risks that remain once they are on. |
-| [`README.md`](README.md)                                       | This file.                                                                                                                             |
+| Entry                                                                | Purpose                                                                                                                                                                                                                                                                         |
+| :------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`Backstops-&-Residual-Risk.md`](Backstops-&-Residual-Risk.md)       | The server-side controls behind the universal rules, how to apply them to each repository, and the risks that remain once they are on.                                                                                                                                          |
+| [`README.md`](README.md)                                             | This file.                                                                                                                                                                                                                                                                      |
+| [`Troubleshooting-Sync.md`](Troubleshooting-Sync.md)                 | What each line from make audit, make sync, make merge and a repository's &#x1F501; Intelligence Sync means, and what to do about it. Read it when a repository's rules or prompts are not current, or a sync pull request will not merge.                                       |
+| [`Troubleshooting-The-Home-Kit.md`](Troubleshooting-The-Home-Kit.md) | What the installer, its check, the Claude cloud setup script and the guard hook print when something on a machine is wrong, and what to do about each. Read it when make agents-check is not all current, a cloud session starts without the rules, or the guard blocks a call. |
 
 <!-- AUTO-INDEX:END -->
 

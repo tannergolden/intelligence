@@ -52,21 +52,27 @@ into an AI app.
 Everything the hub does is explained in [`docs/`](docs/README.md), one document
 per part. Start with How It Works.
 
-| Document                                                                  | What it explains                                                                                  |
-| :------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------ |
-| [How It Works](docs/introduction/How-It-Works.md)                         | The two pieces, the block every copy carries, which copy wins, and how a repository overrides one |
-| [The Constitution](CONSTITUTION.md)                                       | Every rule, why it exists, what enforces it, and how to change one                                |
-| [The Home Kit](docs/technical/The-Home-Kit.md)                            | What `make agents` installs into each app, the kit beside the rules, and the guard hook           |
-| [Repository Sync](docs/technical/Repository-Sync.md)                      | How a release reaches every repository: the stub, `make sync`, `make merge` and `make audit`      |
-| [Cloud Setup](docs/technical/Cloud-Setup.md)                              | The rules and the kit in every Claude Code cloud session                                          |
-| [Prompts](docs/technical/Prompts.md)                                      | The ready-made prompts every repository gets in `docs/Prompts.md`, and how to change them         |
-| [Skills & Subagents](docs/technical/Skills-&-Subagents.md)                | The one skill, the Worker and the Reviewer, and where each app reads them                         |
-| [The Loader Probe](docs/technical/The-Loader-Probe.md)                    | How the hub proves which files each app actually loads, and the results so far                    |
-| [Evals](docs/technical/Evals.md)                                          | How each rule is measured, with the block and without it                                          |
-| [Releasing](docs/distribution/Releasing.md)                               | Every step from a green `Development` to the rules on every machine and in every repository       |
-| [Roadmap](docs/introduction/Roadmap.md)                                   | Each phase and module, what finishes it, and where it stands                                      |
-| [Backstops & Residual Risk](docs/operations/Backstops-&-Residual-Risk.md) | The server-side controls behind the rules, and the risks that remain                              |
-| [Decisions](docs/adrs/README.md)                                          | Every decision behind the plan, with the options it was weighed against                           |
+| Document                                                                        | What it explains                                                                                            |
+| :------------------------------------------------------------------------------ | :---------------------------------------------------------------------------------------------------------- |
+| [How It Works](docs/introduction/How-It-Works.md)                               | The two pieces, the block every copy carries, which copy wins, and how a repository overrides one           |
+| [The Constitution](CONSTITUTION.md)                                             | Every rule, why it exists, what enforces it, and how to change one                                          |
+| [The Home Kit](docs/technical/The-Home-Kit.md)                                  | What `make agents` installs into each app, the kit beside the rules, and the guard hook                     |
+| [Repository Sync](docs/technical/Repository-Sync.md)                            | How a release reaches every repository: the stub, `make sync`, `make merge` and `make audit`                |
+| [Cloud Setup](docs/technical/Cloud-Setup.md)                                    | The rules and the kit in every Claude Code cloud session                                                    |
+| [Prompts](docs/technical/Prompts.md)                                            | The ready-made prompts every repository gets in `docs/Prompts.md`, and how to change them                   |
+| [Skills & Subagents](docs/technical/Skills-&-Subagents.md)                      | The one skill, the Worker and the Reviewer, and where each app reads them                                   |
+| [The Loader Probe](docs/technical/The-Loader-Probe.md)                          | How the hub proves which files each app actually loads, and the results so far                              |
+| [Evals](docs/technical/Evals.md)                                                | How each rule is measured, with the block and without it                                                    |
+| [Releasing](docs/distribution/Releasing.md)                                     | Every step from a green `Development` to the rules on every machine and in every repository                 |
+| [Roadmap](docs/introduction/Roadmap.md)                                         | Each phase and module, what finishes it, and where it stands                                                |
+| [Backstops & Residual Risk](docs/operations/Backstops-&-Residual-Risk.md)       | The server-side controls behind the rules, and the risks that remain                                        |
+| [Troubleshooting Sync](docs/operations/Troubleshooting-Sync.md)                 | What each line from `make audit`, `make sync`, `make merge` and a stub's run means, and the fix             |
+| [Troubleshooting The Home Kit](docs/operations/Troubleshooting-The-Home-Kit.md) | What the installer, its check, the cloud setup script and the guard print, and the fix                      |
+| [Glossary](docs/references/Glossary.md)                                         | The hub's own terms, from block, marker and stub to pin and override                                        |
+| [Commands](docs/references/Commands.md)                                         | Every make target and script option, and what each one reaches                                              |
+| [Files & Formats](docs/references/Files-&-Formats.md)                           | The exact shape of the markers, the pins, the kit, an Overrides entry and what the tools leave on a machine |
+| [Eval Scenario Format](docs/references/Eval-Scenario-Format.md)                 | Every key a scenario and a trigger test can hold, and how to add a scenario                                 |
+| [Decisions](docs/adrs/README.md)                                                | Every decision behind the plan, with the options it was weighed against                                     |
 
 ---
 
