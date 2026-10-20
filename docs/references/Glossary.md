@@ -47,16 +47,17 @@ automation terms shared by every repository are in the standards'
 
 ## 📝 Blocks & Markers
 
-| Term                     | What it means here                                                                                                                                                                                                                              |
-| :----------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Block**                | The rules as every agent reads them: a `## Constitution` heading, a line naming the source, the precedence, then `### Invariants`, `### Defaults` and `### Owner-only Defaults`, one `- ID: sentence` line per rule. Capped at 5,000 characters |
-| **Prompts block**        | The universal prompts in a repository's `docs/Prompts.md`. Everything after it is the repository's own. [Prompts](../technical/Prompts.md)                                                                                                      |
-| **Marker**               | One of the two comment lines around a block, such as `<!-- INTELLIGENCE:BEGIN sha256:<hash> -->` and `<!-- INTELLIGENCE:END -->`. The hash in the BEGIN marker is the SHA-256 of the block's text. [Files & Formats](Files-&-Formats.md)        |
-| **Sealed, unsealed**     | A sealed BEGIN marker carries the hash; an unsealed one does not. `setup/Prompts.md` keeps its markers unsealed so it stays a file anyone can edit, and `prompts.py` seals them when sync delivers the file                                     |
-| **Edited block**         | A block whose text no longer matches the hash in its marker. `make audit` names it, the guard denies an agent's edit inside one, and the next sync puts the release's block back                                                                |
-| **Machined Block Check** | The standards' check, in every repository's CI, that each block's hash matches its text                                                                                                                                                         |
-| **Render**               | Rebuild a copy from its source. `make render` rewrites everything in `home/` from `CONSTITUTION.md`, `kit/` and `.github/scripts/install.py`, and nothing there is edited by hand                                                               |
-| **Stale**                | Behind its source: a file in `home/` that `make render` would change, which fails `make check`, or a copy of the block, in a repository or a home folder, from a release other than the one it is checked against                               |
+| Term                     | What it means here                                                                                                                                                                                                                                   |
+| :----------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
+| **Block**                | The rules as every agent reads them: a `## Constitution` heading, a line naming the source, the precedence, then `### Invariants`, `### Defaults` and `### Owner-only Defaults`, one `- ID: sentence` line per rule. Capped at 5,000 characters      |
+| **Prompts block**        | The universal prompts in a repository's `docs/Prompts.md`. Everything after it is the repository's own. [Prompts](../technical/Prompts.md)                                                                                                           |
+| **Ready-to-run prompt**  | A universal prompt with nothing to fill in: the agent finds what it needs, such as the commands, the default branch or the last release, in the repository. One with a **Fill in** line asks for what only a person knows, and the index marks it ✏️ |     |
+| **Marker**               | One of the two comment lines around a block, such as `<!-- INTELLIGENCE:BEGIN sha256:<hash> -->` and `<!-- INTELLIGENCE:END -->`. The hash in the BEGIN marker is the SHA-256 of the block's text. [Files & Formats](Files-&-Formats.md)             |
+| **Sealed, unsealed**     | A sealed BEGIN marker carries the hash; an unsealed one does not. `setup/Prompts.md` keeps its markers unsealed so it stays a file anyone can edit, and `prompts.py` seals them when sync delivers the file                                          |
+| **Edited block**         | A block whose text no longer matches the hash in its marker. `make audit` names it, the guard denies an agent's edit inside one, and the next sync puts the release's block back                                                                     |
+| **Machined Block Check** | The standards' check, in every repository's CI, that each block's hash matches its text                                                                                                                                                              |
+| **Render**               | Rebuild a copy from its source. `make render` rewrites everything in `home/` from `CONSTITUTION.md`, `kit/` and `.github/scripts/install.py`, and nothing there is edited by hand                                                                    |
+| **Stale**                | Behind its source: a file in `home/` that `make render` would change, which fails `make check`, or a copy of the block, in a repository or a home folder, from a release other than the one it is checked against                                    |
 
 ---
 
@@ -111,7 +112,7 @@ automation terms shared by every repository are in the standards'
 ## 🧪 Proof
 
 | Term                 | What it means here                                                                                                                                                                                                        |
-| :------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| :------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --- |
 | **Loader probe**     | `loader-probe.py`, which proves on one machine which instruction files each app loads: it plants a random code in each file and asks the app which codes it can see. [The Loader Probe](../technical/The-Loader-Probe.md) |
 | **Probe code**       | A random twelve-character code the probe plants: `PROBE_REPO` in a scratch repository's `AGENTS.md`, `PROBE_HOME` in each home copy, and `PROBE_MASTER` in the master copy                                                |
 | **Control**          | A probe check that expects an app to skip `AGENTS.md` in a documented case, such as Claude Code beside a `CLAUDE.md`                                                                                                      |
@@ -120,6 +121,9 @@ automation terms shared by every repository are in the standards'
 | **With and without** | The two conditions every scenario runs in: with the block in the scratch repository's `AGENTS.md`, and without it. The difference between the two pass rates is what the block is worth for that rule                     |
 | **Shim**             | A stand-in for a command such as `gh` or `curl`, first on a scenario's `PATH`, which logs its arguments and reaches nothing                                                                                               |
 | **Trigger test**     | A JSON file in `evals/skills/` holding prompts that should load a skill and near misses that should not. [Evals](../technical/Evals.md)                                                                                   |
+| **Prompt scenario**  | A JSON file in `evals/prompts/` that measures one universal prompt against the hurried request it replaces, in a scratch repository, with checks that decide each run. [Eval Scenario Format](Eval-Scenario-Format.md)    |
+| **Hurried request**  | The one-line request a person in a hurry would type in place of a universal prompt. Its scenario runs both, and the difference between the two pass rates is what the prompt is worth                                     |
+| **Proof**            | A prompt scenario's script that does the asked-for work. The tests run it, and then nothing, against a stand-in app, to show the scenario's checks pass the work and fail doing nothing                                   |     |
 
 ---
 

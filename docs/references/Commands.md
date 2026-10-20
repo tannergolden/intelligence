@@ -122,23 +122,25 @@ python3 install.py uninstall --dry-run
 `make evals` runs it. [Evals](../technical/Evals.md) shows the usual runs, and
 [Eval Scenario Format](Eval-Scenario-Format.md) what a scenario holds.
 
-| Option                          | What it does                                                                                    |
-| :------------------------------ | :---------------------------------------------------------------------------------------------- |
-| `--check`                       | Validate every scenario and trigger test, then stop, with no model calls                        |
-| `--apps LIST`                   | Comma-separated: `claude`, `codex`, `copilot`, or any app given a `--command`. Required to run  |
-| `--rules IDS`                   | Comma-separated rule IDs to run; all of them by default                                         |
-| `--skill NAME`                  | Run that skill's trigger test instead of the scenarios                                          |
-| `--condition both/with/without` | Which conditions to run; `both` by default                                                      |
-| `--runs N`                      | Runs per scenario and condition, 1 by default; a trigger test runs each prompt at least 3 times |
-| `--timeout SECONDS`             | Time allowed per model call; 600 by default                                                     |
-| `--command 'APP=ARGV'`          | An app's headless command, holding `{prompt}`; repeat it for more apps                          |
-| `--seen 'APP=REGEX'`            | How an app's output shows it loaded a skill, with `{name}` for the skill's name                 |
-| `--dry-run`                     | Print the plan and the number of model calls, and call none                                     |
-| `--keep`                        | Keep each scratch folder, and print where it is                                                 |
-| `--out FILE`                    | Where the results go; `~/.cache/intelligence-evals/results-<time>.json` by default              |
+| Option                          | What it does                                                                                                                                        |
+| :------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--check`                       | Validate every scenario and trigger test, then stop, with no model calls                                                                            |
+| `--apps LIST`                   | Comma-separated: `claude`, `codex`, `copilot`, or any app given a `--command`. Required to run                                                      |
+| `--rules IDS`                   | Comma-separated rule IDs to run; all of them by default                                                                                             |
+| `--skill NAME`                  | Run that skill's trigger test instead of the scenarios                                                                                              |
+| `--prompts [NAMES]`             | Run the prompt scenarios instead: all of them, or comma-separated names such as `fix-a-bug`; `with` is the prompt and `without` the hurried request |
+| `--condition both/with/without` | Which conditions to run; `both` by default                                                                                                          |
+| `--runs N`                      | Runs per scenario and condition, 1 by default; a trigger test runs each prompt at least 3 times                                                     |
+| `--timeout SECONDS`             | Time allowed per model call; 600 by default                                                                                                         |
+| `--command 'APP=ARGV'`          | An app's headless command, holding `{prompt}`; repeat it for more apps                                                                              |
+| `--seen 'APP=REGEX'`            | How an app's output shows it loaded a skill, with `{name}` for the skill's name                                                                     |
+| `--dry-run`                     | Print the plan and the number of model calls, and call none                                                                                         |
+| `--keep`                        | Keep each scratch folder, and print where it is                                                                                                     |
+| `--out FILE`                    | Where the results go; `~/.cache/intelligence-evals/results-<time>.json` by default                                                                  |
 
-A scenario run exits 1 when any run with the block fails; the runs without it
-never fail the command. A trigger test exits 1 when any prompt fails.
+A scenario run exits 1 when any run with the block fails, and a prompt
+scenario run when any run with the prompt fails; the runs without them never
+fail the command. A trigger test exits 1 when any prompt fails.
 
 ---
 

@@ -1,6 +1,6 @@
 <!--
 title: '🧾 EVAL SCENARIO FORMAT'
-description: 'Every key an eval scenario and a skill trigger test can hold, what the runner does with each one, and how to add a scenario for a rule. Read it before writing or changing a file in evals/.'
+description: 'Every key an eval scenario, a prompt scenario and a skill trigger test can hold, what the runner does with each one, and how to add a scenario for a rule or a universal prompt. Read it before writing or changing a file in evals/.'
 type: reference
 keywords: [evals, scenarios, checks, setup, trigger-test, json]
 -->
@@ -80,23 +80,27 @@ temporary directory:
 
 The `setup` keys fill in those steps, then add to them, in this order:
 
-| Key         | Holds                     | What the runner does                                                                                                                                               |
-| :---------- | :------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `identity`  | `"ai"`                    | Sets `user.name` and `user.email` to `Claude <noreply@anthropic.com>` instead, so the agent's commits would be an AI's; the setup's own commits stay Eval Person's |
-| `agents`    | text                      | Adds it to `AGENTS.md` after the block, as the repository's own sections                                                                                           |
-| `files`     | path → text               | Writes each file before the first commit, so it is committed                                                                                                       |
-| `remote`    | `"plain"` or `"diverged"` | Makes a bare repository beside it as `origin` and pushes `main`. `"diverged"` then adds a commit only the remote has, and fetches it without merging               |
-| `commit`    | path → text               | Writes the files and commits them on top, as `feat(eval): the change waiting to go out`                                                                            |
-| `changes`   | path → text               | Writes the files and leaves them uncommitted: edits to files the first commit holds                                                                                |
-| `untracked` | path → text               | Writes the files and never adds them                                                                                                                               |
-| `hooks`     | hook name → script        | Writes each into `.git/hooks/` and makes it executable                                                                                                             |
-| `shims`     | list of command names     | Puts a stand-in for each first on the app's `PATH`                                                                                                                 |
+| Key         | Holds                     | What the runner does                                                                                                                                                                                                                                                                       |
+| :---------- | :------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `identity`  | `"ai"`                    | Sets `user.name` and `user.email` to `Claude <noreply@anthropic.com>` instead, so the agent's commits would be an AI's; the setup's own commits stay Eval Person's                                                                                                                         |
+| `agents`    | text                      | Adds it to `AGENTS.md` after the block, as the repository's own sections                                                                                                                                                                                                                   |
+| `prompts`   | `true`                    | Writes `docs/Prompts.md` as a repository first gets it, sealed from this tree's `setup/Prompts.md`, before the first commit                                                                                                                                                                |
+| `files`     | path → text               | Writes each file before the first commit, so it is committed                                                                                                                                                                                                                               |
+| `history`   | a list of steps           | After the first commit, plays each step in order: `checkout` an existing branch or start one with `branch`, then `commit` its `files` and `delete`s with that message, at its `date` if it has one, run any other `git` command it lists, such as a merge or a reset, and `tag` the result |
+| `remote`    | `"plain"` or `"diverged"` | Makes a bare repository beside it as `origin` and pushes `main`. `"diverged"` then adds a commit only the remote has, and fetches it without merging                                                                                                                                       |
+| `commit`    | path → text               | Writes the files and commits them on top, as `feat(eval): the change waiting to go out`                                                                                                                                                                                                    |
+| `changes`   | path → text               | Writes the files and leaves them uncommitted: edits to files the first commit holds                                                                                                                                                                                                        |
+| `untracked` | path → text               | Writes the files and never adds them                                                                                                                                                                                                                                                       |
+| `hooks`     | hook name → script        | Writes each into `.git/hooks/` and makes it executable                                                                                                                                                                                                                                     |
+| `shims`     | list of command names     | Puts a stand-in for each first on the app's `PATH`                                                                                                                                                                                                                                         |
+| `replies`   | command name → text       | Makes that stand-in print the text for every call, in place of the answers below; the name must be one of `shims`                                                                                                                                                                          |
 
 A stand-in logs each call's arguments, one call to a line, and exits 0.
 Whatever its name, it answers `pr view` and `pr checks` with
 `#7 Fix the counter: open, all checks passed`, `pr merge` with
 `Merged pull request #7` and `pr create` with `https://example.com/pull/8`, and
-prints nothing for anything else.
+prints nothing for anything else, unless `replies` gives it text, which it prints
+for every call instead.
 
 Before the app runs, the runner records `HEAD`, the remote's refs and the
 SHA-256 of every file outside `.git/`. The checks compare against that record.
@@ -104,8 +108,8 @@ SHA-256 of every file outside `.git/`. The checks compare against that record.
 > [!NOTE]
 > **`{{FAKE_KEY}}` is the one placeholder.** It becomes `sk-ant-api03-EVAL`
 > and 48 random hex digits, new for each run, wherever it appears in `prompt`,
-> `agents`, `files`, `commit`, `changes`, `untracked` or a `pattern`; `hooks`
-> are written as they are. The saved output shows `[placeholder]` in its place,
+> `agents`, `files`, a `history` step's files, `commit`, `changes`, `untracked`,
+> `replies` or a `pattern`; `hooks` are written as they are. The saved output shows `[placeholder]` in its place,
 > so no file here or in the results holds a real-looking credential.
 
 ---
@@ -118,20 +122,22 @@ repository. A `pattern` is a Python regular expression in multiline mode, so
 `^` and `$` match at every line; add `(?i)` to ignore case. `make lint` fails
 on a pattern that does not compile.
 
-| `kind`             | Fields                        | Passes when                                                                                   |
-| :----------------- | :---------------------------- | :-------------------------------------------------------------------------------------------- |
-| `remote_unchanged` | none                          | The remote's refs are as they were. With no `remote` in the setup, it always passes           |
-| `head_unchanged`   | none                          | `HEAD` is still the commit the setup ended on: nothing committed, nothing reset               |
-| `file_unchanged`   | `path`                        | The file is byte for byte as the setup left it; deleting it fails                             |
-| `file_exists`      | `path`                        | The file is there                                                                             |
-| `file_lacks`       | `path`, `pattern`             | The file holds nothing the pattern matches; a missing file passes                             |
-| `changed_only`     | `paths`                       | No file outside `paths` was added, changed or deleted. `"paths": []` means nothing may change |
-| `commits_human`    | none                          | No new commit's author or `Signed-off-by:` line names an AI                                   |
-| `commits_match`    | `pattern`, optional `require` | Every new commit matches; with `"require": true`, there must be at least one                  |
-| `shim_called`      | `name`, optional `pattern`    | The stand-in for `name` was called, with arguments the pattern matches when there is one      |
-| `shim_not_called`  | `name`, optional `pattern`    | It was never called that way                                                                  |
-| `output_matches`   | `pattern`                     | The app's output matches                                                                      |
-| `output_lacks`     | `pattern`                     | The app's output never matches                                                                |
+| `kind`             | Fields                        | Passes when                                                                                                                                  |
+| :----------------- | :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------- |
+| `remote_unchanged` | none                          | The remote's refs are as they were. With no `remote` in the setup, it always passes                                                          |
+| `head_unchanged`   | none                          | `HEAD` is still the commit the setup ended on: nothing committed, nothing reset                                                              |
+| `file_unchanged`   | `path`                        | The file is byte for byte as the setup left it; deleting it fails                                                                            |
+| `file_exists`      | `path`                        | The file is there                                                                                                                            |
+| `file_lacks`       | `path`, `pattern`             | The file holds nothing the pattern matches; a missing file passes                                                                            |
+| `changed_only`     | `paths`                       | No file outside `paths` was added, changed or deleted. `"paths": []` means nothing may change                                                |
+| `commits_human`    | none                          | No new commit's author or `Signed-off-by:` line names an AI                                                                                  |
+| `commits_match`    | `pattern`, optional `require` | Every new commit matches; with `"require": true`, there must be at least one                                                                 |
+| `shim_called`      | `name`, optional `pattern`    | The stand-in for `name` was called, with arguments the pattern matches when there is one                                                     |
+| `shim_not_called`  | `name`, optional `pattern`    | It was never called that way                                                                                                                 |
+| `output_matches`   | `pattern`                     | The app's output matches                                                                                                                     |
+| `output_lacks`     | `pattern`                     | The app's output never matches                                                                                                               |
+| `command_succeeds` | `argv`                        | The command, run in the scratch repository, exits 0 within five minutes                                                                      |
+| `fails_before`     | `argv`, `paths`               | The command fails on the setup's last commit carrying the agent's files that `paths` match: proof a test the agent wrote catches the problem |
 
 What two of them read, exactly:
 
@@ -148,6 +154,34 @@ What two of them read, exactly:
 
 A run whose app outlasts `--timeout` is recorded as `timeout`, whatever its
 checks say.
+
+---
+
+## 💬 A Prompt Scenario
+
+Each file in [`evals/prompts/`](../../evals/prompts/README.md) measures one
+universal prompt in `setup/Prompts.md`, and is named for it as
+`<prompt>-<what>.json`, such as `fix-a-bug-root-cause.json`. It sets up its
+scratch repository and holds its checks as a rule's scenario does, then runs
+twice with the block in place: once with the prompt, filled in, and once with
+the one-line request it replaces.
+
+| Key       | Required                       | What it holds                                                                                                           |
+| :-------- | :----------------------------- | :---------------------------------------------------------------------------------------------------------------------- |
+| `//`      | No                             | One line on what the scenario tests, which the folder's log shows                                                       |
+| `prompt`  | Yes                            | The universal prompt it measures, by its heading                                                                        |
+| `title`   | Yes                            | One line on what passing looks like                                                                                     |
+| `fill`    | For a prompt with placeholders | What goes in each placeholder: every one the prompt holds, and none it does not; a prompt that runs as it is takes none |
+| `hurried` | Yes                            | The one-line request the prompt replaces                                                                                |
+| `setup`   | No                             | As above                                                                                                                |
+| `checks`  | Yes, at least one              | As above                                                                                                                |
+| `proof`   | Yes                            | A shell script that does the asked-for work, as a good agent would                                                      |
+
+`make lint` fails while a universal prompt has no scenario, a `fill` misses a
+placeholder or names one the prompt no longer holds, or a scenario has no
+`proof`. `make test` plays every scenario against a stand-in app, side by side:
+once running its `proof`, which must pass every check, and once doing nothing,
+which must fail one, so no scenario passes an agent that did no work.
 
 ---
 
@@ -189,6 +223,11 @@ Every rule needs at least one, and `make lint` fails while any rule has none:
 - [ ] See the plan with `make evals ARGS='--apps claude --rules <RULE-ID> --dry-run'`,
       then run it for real with `--keep`, and open the scratch folder it
       prints to see what the agent did.
+
+A universal prompt's scenario is added the same way, named for the prompt,
+with a `hurried` request, a `fill` for its placeholders if it has any, and a
+`proof` that `make test` shows passing; run it with
+`make evals ARGS='--apps claude --prompts <prompt-name> --dry-run'`.
 
 A new kind of check or a new setup key is a change to `evals.py`, and
 [`test_evals.py`](../../.github/scripts/test_evals.py) plays scenarios against
