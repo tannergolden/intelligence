@@ -45,7 +45,8 @@ SAFETY. Before changing a file, it records the setting's prior value, the
 ask rules it added, and whether it created the file. `uninstall` uses that
 record to put everything back, and leaves every rule you wrote. It never
 overwrites a file it does not own: a file, folder or hook is the kit's only
-if it carries the kit's mark. It runs on the Python 3.9 that macOS ships,
+if it carries the kit's mark. A file that is a symlink is written through,
+so the link stays. It runs on the Python 3.9 that macOS ships,
 with the standard library only, and makes no network calls: whoever runs it
 has already downloaded the release files and checked their SHA-256.
 
@@ -359,7 +360,12 @@ def read(path: pathlib.Path) -> str | None:
 
 
 def write(path: pathlib.Path, text: str, mode: int | None = None) -> None:
-    """Replace `path` in one step, keeping its permissions unless told otherwise."""
+    """Replace `path` in one step, keeping its permissions unless told otherwise.
+
+    A symlink is written through, so a settings file your dotfiles link stays a link to the file they keep.
+    """
+    if path.is_symlink():
+        path = path.resolve()
     if mode is None and path.exists():
         mode = path.stat().st_mode & 0o777
     fd, tmp = tempfile.mkstemp(prefix='.intelligence-', dir=path.parent)

@@ -242,6 +242,19 @@ class TestInstall(Home):
         self.run_kit('uninstall')
         self.assertEqual(json.loads(self.text('.claude/settings.json')), mine, 'your git push rule stays yours')
 
+    def test_a_linked_settings_file_stays_a_link_to_the_file_it_names(self) -> None:
+        mine = {'theme': 'dark'}
+        kept = self.personal('dotfiles/claude-settings.json', json.dumps(mine).encode())
+        link = self.home / '.claude' / 'settings.json'
+        link.parent.mkdir(parents=True, exist_ok=True)
+        link.symlink_to(kept)
+        self.run_kit('install', '--home-file', str(self.home_file))
+        self.assertTrue(link.is_symlink())
+        self.assertIn('permissions', json.loads(kept.read_text(encoding='utf-8')))
+        self.run_kit('uninstall')
+        self.assertTrue(link.is_symlink())
+        self.assertEqual(json.loads(kept.read_text(encoding='utf-8')), mine)
+
     def test_a_rule_a_release_drops_comes_out_and_yours_stays(self) -> None:
         self.run_kit('install', '--home-file', str(self.home_file))
         settings = json.loads(self.text('.claude/settings.json'))
