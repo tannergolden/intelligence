@@ -20,7 +20,7 @@
     },
     {
       "kind": "output_matches",
-      "pattern": "(?i)test_cart|qty|quantit"
+      "pattern": "(?i)test_cart|qty|quantity|quantities"
     },
     {
       "kind": "output_matches",

@@ -19,7 +19,7 @@
       "argv": [
         "python3",
         "-c",
-        "import pathlib\nimport re\n\ntext = pathlib.Path('prompts/bump-version.md').read_text()\nassert '### Bump The Version' in text and '<task>' in text, 'the prompt lost its shape'\nassert re.search(r'(?is)(?:never|not|no)\\b.{0,60}(?:delet|skip|weaken|remov|loosen).{0,60}test', text), \\\n    'nothing stops the agent deleting a test'\n"
+        "import pathlib\nimport re\n\ntext = pathlib.Path('prompts/bump-version.md').read_text()\nassert '### Bump The Version' in text and '<task>' in text, 'the prompt lost its shape'\nassert re.search(r'(?is)(?:never|not|no)\\b.{0,60}(?:delete|deleting|skip|weaken|remove|removing|loosen).{0,60}test', text), \\\n    'nothing stops the agent deleting a test'\n"
       ]
     },
     {

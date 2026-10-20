@@ -32,7 +32,7 @@
     },
     {
       "kind": "output_matches",
-      "pattern": "(?i)lifecycle|expir|archiv"
+      "pattern": "(?i)lifecycle|expire|expiry|expiration|archive|archiving"
     }
   ],
   "proof": "cat <<'EVAL_EOF'\ninfra/main.tf:4: the staging database is a db.r6g.4xlarge, sized like production; a smaller class would do for staging. The logs bucket has no lifecycle rule, so logs never expire. Risk: less headroom in staging.\nEVAL_EOF\n"
