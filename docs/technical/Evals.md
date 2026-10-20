@@ -49,14 +49,23 @@ the prompt is worth.
 ```bash
 make evals ARGS='--check'                                   # validate, no model calls
 make evals ARGS='--apps claude --dry-run'                   # the plan
-make evals ARGS='--apps claude --rules OPS-001 --runs 3'    # one rule, three runs each way
+make evals ARGS='--apps claude --rules OPS-001 --runs 7'    # one rule, seven runs each way
 make evals ARGS='--apps claude --skill develop'             # a skill's trigger test
 make evals ARGS='--apps claude --prompts'                   # every universal prompt, against its hurried request
-make evals ARGS='--apps claude --prompts fix-a-bug --runs 3'  # one prompt, three runs each way
+make evals ARGS='--apps claude --prompts fix-a-bug --runs 7'  # one prompt, seven runs each way
 ```
 
 Claude Code, Codex and Copilot CLI have commands built in; give any other
-app one with `--command 'APP=argv with {prompt}'`.
+app one with `--command 'APP=argv with {prompt}'`, and use the same flag to
+pin a model, such as `--model opus` for Claude Code, since an app's default
+model changes between releases.
+
+> [!NOTE]
+> **Three runs each way can only show whether a rule does anything.** Even
+> 0 of 3 against 3 of 3 is short of significance. Seven runs each way detect
+> a change from 0% to 68%, fourteen one from 10% to 60%, and about 42 one
+> from 40% to 70%, so run as many as the effect you claim needs, and record
+> the app, model and effort with each result.
 
 > [!WARNING]
 > **Agents run with the permissions their command gives them.** Scenarios
@@ -134,7 +143,7 @@ checks the outcome itself beside the suite. A check can be wrong too, so
 `make test` plays every scenario against a stand-in app twice, side by side:
 once doing what its `proof` does, which must pass, and once doing nothing,
 which must fail. A scenario whose checks a lazy agent would pass, or a good
-one fail, breaks the build. Run each scenario at least three
+one fail, breaks the build. Run each scenario at least seven
 times each way, and pin the model with `--command`, so a new model is never
 read as a better or worse prompt. `make lint` fails while a
 universal prompt has no scenario, or a scenario's `fill` misses a placeholder
