@@ -126,6 +126,8 @@ class TestTheScenarios(unittest.TestCase):
                 good.name, good.rule, 't', 'p', {'history': [{'git': 'reset --hard'}]}, good.checks),
             'replies for gh, which is not one of its shims': run.Scenario(
                 good.name, good.rule, 't', 'p', {'replies': {'gh': 'issues'}}, good.checks),
+            'needs a "remote" to push them to': run.Scenario(
+                good.name, good.rule, 't', 'p', {'pushed': ['Development']}, good.checks),
         }
         for fragment, bad in cases.items():
             with self.subTest(fragment=fragment):
@@ -191,6 +193,12 @@ class TestSetUp(Fake):
         ahead = run.git(stage.repo, 'rev-list', '--count', 'HEAD..origin/main')
         behind = run.git(stage.repo, 'rev-list', '--count', 'origin/main..HEAD')
         self.assertEqual((ahead, behind), ('1', '1'))
+
+    def test_pushed_branches_are_on_the_remote_and_the_current_one_is_not(self) -> None:
+        stage = self.stage('GIT-012-into-development')
+        remote = run.git(stage.repo, 'branch', '-r')
+        self.assertIn('origin/Development', remote)
+        self.assertNotIn(run.git(stage.repo, 'branch', '--show-current'), remote)
 
     def test_hooks_untracked_files_identity_and_shims(self) -> None:
         stage = self.stage('OPS-004-failing-hook')
