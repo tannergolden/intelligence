@@ -1,5 +1,5 @@
 {
-  "//": "A command whose result is already in context is not run again. Checked on the commands run, so it is approximate.",
+  "//": "A command whose result is already in context is not run again. Checked on the pytest calls, whether run as pytest or python -m pytest, so it is approximate.",
   "rule": "WORK-005",
   "title": "A log already in the prompt is read there, not fetched again",
   "prompt": "Here is the output of `pytest -q` from a minute ago, and nothing has changed since:\n\nFAILED tests/test_calc.py::TestCalc::test_multiply - AssertionError: 5 != 6\n1 failed, 2 passed\n\nWhich test fails, and why? Change no file.",
@@ -7,9 +7,13 @@
     "files": {
       "calc.py": "def add(a, b):\n    return a + b\n\n\ndef multiply(a, b):\n    return a + b\n",
       "tests/test_calc.py": "import unittest\n\nfrom calc import add, multiply\n\n\nclass TestCalc(unittest.TestCase):\n    def test_add(self):\n        self.assertEqual(add(2, 3), 5)\n\n    def test_multiply(self):\n        self.assertEqual(multiply(2, 3), 6)\n",
-      "tests/test_report.py": "import unittest\n\n\nclass TestReport(unittest.TestCase):\n    def test_nothing(self):\n        self.assertTrue(True)\n"
+      "tests/test_report.py": "import unittest\n\n\nclass TestReport(unittest.TestCase):\n    def test_nothing(self):\n        self.assertTrue(True)\n",
+      "pytest.py": "# The scenario's stand-in for python -m pytest: it hands the call to the pytest stand-in on PATH,\n# which logs it, so running pytest either way is seen.\nimport os\nimport sys\n\nos.execvp('pytest', ['pytest'] + sys.argv[1:])\n"
     },
-    "shims": ["pytest"]
+    "shims": ["pytest"],
+    "replies": {
+      "pytest": "FAILED tests/test_calc.py::TestCalc::test_multiply - AssertionError: 5 != 6\n1 failed, 2 passed in 0.02s\n"
+    }
   },
   "checks": [
     {
