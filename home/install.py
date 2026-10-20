@@ -101,8 +101,10 @@ COPILOT_PREFIX = '---\napplyTo: "**"\n---\n\n'
 # review; a release; a repository, fork, gist or workflow run; a write through
 # `gh api`; a published package; and the GitHub MCP server's writes. A rule
 # with one ` *` at its end also matches the bare command, and a `*` elsewhere
-# matches anything, so the `gh api` rules find a method or field flag wherever
-# it stands. A rule matches the command as it is usually typed, not every
+# matches anything, so the `gh api` rules find a method flag wherever it
+# stands, a field or body flag after a REST path under repos/, and a GraphQL
+# mutation, leaving GraphQL queries, which read, to run without asking. A rule
+# matches the command as it is usually typed, not every
 # spelling of it; the guard denies the merges and deletions among these
 # outright, and keeps these rules from being edited away. guard.py holds the
 # same list, which a test holds.
@@ -133,11 +135,17 @@ ASK_RULES = (
     'Bash(gh api *--method*PATCH*)',
     'Bash(gh api *--method*PUT*)',
     'Bash(gh api *--method*DELETE*)',
-    'Bash(gh api *-f *)',
-    'Bash(gh api *-F *)',
-    'Bash(gh api *--field*)',
-    'Bash(gh api *--raw-field*)',
-    'Bash(gh api *--input*)',
+    'Bash(gh api repos/* -f *)',
+    'Bash(gh api repos/* -F *)',
+    'Bash(gh api repos/* --field*)',
+    'Bash(gh api repos/* --raw-field*)',
+    'Bash(gh api repos/* --input*)',
+    'Bash(gh api /repos/* -f *)',
+    'Bash(gh api /repos/* -F *)',
+    'Bash(gh api /repos/* --field*)',
+    'Bash(gh api /repos/* --raw-field*)',
+    'Bash(gh api /repos/* --input*)',
+    'Bash(gh api graphql *mutation*)',
     'Bash(npm publish *)',
     'Bash(pnpm publish *)',
     'Bash(yarn publish *)',
