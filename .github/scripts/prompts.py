@@ -111,8 +111,8 @@ CAP = 1600
 INDEX_NAME = 'Find A Prompt'
 INDEX = re.compile(r'^## (?:\S+ )?' + re.escape(INDEX_NAME) + r'\s*$')
 # The mark the index puts after a prompt with details to fill in, so a reader knows before copying it.
-MARK = '✏️'
-LINK = re.compile(r'\[(?P<text>[^\]]+)\]\(#(?P<anchor>[^)\s]+)\)(?P<mark> ✏️?)?')
+MARK = '\u270f\ufe0f'
+LINK = re.compile(r'\[(?P<text>[^\]]+)\]\(#(?P<anchor>[^)\s]+)\)(?P<mark> \u270f\ufe0f?)?')
 
 OPEN = '```text'
 CLOSE = '```'
@@ -138,7 +138,7 @@ STALE = re.compile(r'(?i)\bthink (?:it through )?step by step\b|\bif in doubt\b|
 # The slots a tool fills by itself when a prompt is saved as its command or skill, which would eat the text.
 SLOTS = re.compile(r'\$ARGUMENTS|\$[0-9]|\$\{input:|\{\{args\}\}|!\{|@\{')
 # Characters that hide or reorder text, which no line between the header and the footer may carry.
-HIDDEN = re.compile('[​‌‎‏‪-‮⁠-⁤⁦-⁩﻿]')
+HIDDEN = re.compile('[\u200b\u200c\u200e\u200f\u202a-\u202e\u2060-\u2064\u2066-\u2069\ufeff]')
 
 
 # --- A repository's page ----------------------------------------------------------------------------
