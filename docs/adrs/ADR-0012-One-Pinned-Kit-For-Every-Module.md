@@ -2,7 +2,6 @@
 title: '📄 ADR-0012: ONE PINNED KIT FOR EVERY MODULE'
 description: 'Every module around the rules, the guard hook, the skills, the subagents and the knowledge facts, ships in one rendered file, home/kit.json, pinned by one SHA-256 beside the home file and the installer.'
 type: record
-keywords: [home-kit, release, modules]
 status: 'Proposed'
 date: '2026-10-18'
 evidence: 'N/A'

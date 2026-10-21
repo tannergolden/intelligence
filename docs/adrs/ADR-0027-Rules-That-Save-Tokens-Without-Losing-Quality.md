@@ -2,7 +2,6 @@
 title: '📄 ADR-0027: RULES THAT SAVE TOKENS WITHOUT LOSING QUALITY'
 description: 'Four Defaults that cut what an agent pulls into its context, CODE-003, WORK-004, WORK-005 and WORK-006, chosen because the research found input, not output, drives cost, and rejecting the brevity rules that trade accuracy away.'
 type: record
-keywords: [tokens, cost, context, efficiency, defaults]
 status: 'Proposed'
 date: '2026-10-20'
 evidence: 'N/A'

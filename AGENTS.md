@@ -2,7 +2,6 @@
 title: '🤖 Agent Instructions'
 description: 'How AI coding agents work in the intelligence hub: its commands, what done means, its conventions, where things live and what to ask first. The universal rules are not copied here, because this hub holds their source.'
 type: standard
-keywords: [agents-md, ai-agents, contributing, hub]
 -->
 
 <div align="center">

@@ -2,7 +2,6 @@
 title: '📄 ADR-0003: PUSH SYNC & OWNER MERGE'
 description: 'The hub delivers each release as one pull request per repository, opened under the owner''s own login, and the owner merges them, with no stub, secret or bot merge in any repository.'
 type: record
-keywords: [delivery, pull-requests, github]
 status: 'Proposed'
 date: '2026-10-17'
 evidence: 'N/A'

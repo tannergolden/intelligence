@@ -2,7 +2,6 @@
 title: '💬 PROMPT SCENARIOS'
 description: 'One JSON file per scenario that measures a universal prompt: the scratch repository it sets up, any details it fills in, the hurried request it is measured against, the checks that decide it, and a proof that those checks can pass.'
 type: index
-keywords: [evals, prompts, fixtures]
 -->
 
 <div align="center">

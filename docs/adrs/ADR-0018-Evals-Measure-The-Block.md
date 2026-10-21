@@ -2,7 +2,6 @@
 title: '📄 ADR-0018: EVALS MEASURE THE BLOCK'
 description: 'Each rule has at least one scenario that tempts an agent to break it, run headless against a real app with the block and without it and checked by code, so the difference shows what the block is worth.'
 type: record
-keywords: [measurement, rules]
 status: 'Proposed'
 date: '2026-10-18'
 evidence: 'N/A'

@@ -2,7 +2,6 @@
 title: '📘 GLOSSARY'
 description: 'What the hub''s own words mean: the rules and their kinds, blocks and markers, releases and pins, the home kit, sync, and the tools that prove it works. Read it when a term in another document here is unclear.'
 type: reference
-keywords: [terms, definitions, block, marker, stub, pin, override, vocabulary]
 -->
 
 <div align="center">

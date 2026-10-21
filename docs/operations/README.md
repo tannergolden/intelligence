@@ -2,7 +2,6 @@
 title: '🛡️ OPERATIONS & SECURITY'
 description: 'Keeping the hub and everything it reaches healthy: the server-side backstops behind the rules, the risks that remain, and what to do when a sync, an install or the guard reports a problem.'
 type: index
-keywords: [docs, risk, security, troubleshooting]
 -->
 
 <div align="center">

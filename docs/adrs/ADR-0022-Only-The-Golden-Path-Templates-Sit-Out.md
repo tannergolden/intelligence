@@ -2,7 +2,6 @@
 title: '📄 ADR-0022: ONLY THE GOLDEN PATH TEMPLATES SIT OUT'
 description: 'Sync skips only the two golden path templates, repo and path, by name, as the standards'' stubs do; a template of any other kind, such as the vault template, takes part, so the block its generated repositories inherit stays current.'
 type: record
-keywords: [sync, templates, workflow-stub]
 status: 'Proposed'
 date: '2026-10-19'
 evidence: 'N/A'

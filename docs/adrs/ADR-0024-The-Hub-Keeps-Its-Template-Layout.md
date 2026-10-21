@@ -2,7 +2,6 @@
 title: '📄 ADR-0024: THE HUB KEEPS ITS TEMPLATE''S LAYOUT'
 description: 'The hub follows the layout of the template it was generated from: every script and its test in .github/scripts/, the kit''s sources in kit/, and everything a machine downloads in home/, the installer included.'
 type: record
-keywords: [repository-layout, home-kit, release, migration]
 status: 'Proposed'
 date: '2026-10-20'
 evidence: 'N/A'

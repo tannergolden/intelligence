@@ -2,7 +2,6 @@
 title: '🎭 EVAL SCENARIOS'
 description: 'One JSON file per scenario: the rule it tests, the scratch repository it sets up, the prompt, and the checks that decide it.'
 type: index
-keywords: [evals, rules, fixtures]
 -->
 
 <div align="center">

@@ -2,7 +2,6 @@
 title: '📄 ADR-0026: THE HUB KEEPS ITS OWN RULES IN AGENTS.MD'
 description: 'The hub''s own commands and conventions move from .github/CONTRIBUTING.md into a root AGENTS.md that carries no copy of the universal rules, because the account now serves every derived repository its contributing guide from its .github repository.'
 type: record
-keywords: [agents-md, contributing, community-health, hub]
 status: 'Proposed'
 date: '2026-10-20'
 evidence: 'N/A'

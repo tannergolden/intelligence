@@ -2,7 +2,6 @@
 title: '🧾 EVAL SCENARIO FORMAT'
 description: 'Every key an eval scenario, a prompt scenario and a skill trigger test can hold, what the runner does with each one, and how to add a scenario for a rule or a universal prompt. Read it before writing or changing a file in evals/.'
 type: reference
-keywords: [evals, scenarios, checks, setup, trigger-test, json]
 -->
 
 <div align="center">

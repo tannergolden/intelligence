@@ -2,7 +2,6 @@
 title: '📄 ADR-0029: MOST PROMPTS RUN AS THEY ARE'
 description: 'Most universal prompts are written to run as they are, finding their details in the repository, and they cover the work any repository has, area by area, each with a scenario whose proof shows its checks can pass.'
 type: record
-keywords: [prompts, evals, coding-agents, guardrails]
 status: 'Proposed'
 date: '2026-10-20'
 evidence: '[Prompts For Every Task](https://github.com/tannergolden/intelligence/blob/bb916d0a6f5c977146642985a06aa6809cfc7b99/docs/technical/research/Prompts-For-Every-Task.md)'

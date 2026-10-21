@@ -2,7 +2,6 @@
 title: '📄 ADR-0017: UNATTENDED SYNC THROUGH AN APP'
 description: 'A GitHub App, with one token per repository and a key kept in a protected environment, opens each release''s sync pull requests unattended, while merging stays the owner''s, under the owner''s own login.'
 type: record
-keywords: [github-app, automation]
 status: 'Superseded'
 date: '2026-10-18'
 evidence: 'N/A'

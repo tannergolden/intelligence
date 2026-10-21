@@ -2,7 +2,6 @@
 title: '📄 ADR-0010: RELEASES SERVE RENDERED FILES'
 description: 'A release is a tag whose committed home file and installer every consumer downloads and checks against a pinned SHA-256, instead of assets built and attached after the tag.'
 type: record
-keywords: [pinning, supply-chain]
 status: 'Proposed'
 date: '2026-10-17'
 evidence: 'N/A'

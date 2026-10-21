@@ -2,7 +2,6 @@
 title: '💬 PROMPTS'
 description: 'The ready-made prompts every repository gets in docs/Prompts.md: the universal ones the hub keeps current between their markers, most ready to run as they are, the section each repository fills with its own, and how to change either.'
 type: guide
-keywords: [prompts, repository-sync, prompt-engineering]
 -->
 
 <div align="center">

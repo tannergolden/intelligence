@@ -2,7 +2,6 @@
 title: '🏠 THE HOME KIT'
 description: 'What make agents installs into each AI app''s home folder, the kit that rides beside the rules, the guard hook, and how a machine gets them from a release.'
 type: guide
-keywords: [install, guard, dotfiles]
 -->
 
 <div align="center">

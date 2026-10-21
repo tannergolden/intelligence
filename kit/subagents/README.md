@@ -2,7 +2,6 @@
 title: '👥 SUBAGENTS'
 description: 'The Worker and Reviewer subagents the home kit installs, each one source rendered for Claude Code, Copilot and Codex.'
 type: index
-keywords: [hierarchy, review, home-kit]
 -->
 
 <div align="center">

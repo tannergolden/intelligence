@@ -2,7 +2,6 @@
 title: '📄 ADR-0013: THE GUARD DENIES, NEVER ALLOWS'
 description: 'One standard-library script, called by every app''s pre-tool hook, denies the few tool calls the Invariants forbid outright with exit 2 and a reason, and never allows or asks.'
 type: record
-keywords: [hooks, enforcement]
 status: 'Proposed'
 date: '2026-10-18'
 evidence: 'N/A'

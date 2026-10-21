@@ -2,7 +2,6 @@
 title: '📄 ADR-0016: KNOWLEDGE STARTS AS PUBLIC FACTS'
 description: 'Knowledge begins as a short, public list of facts about how the owner''s setup works, rendered as its own marked block beside every home copy of the rules and in the cloud setup, and never personal context.'
 type: record
-keywords: [home-kit, privacy]
 status: 'Superseded'
 date: '2026-10-18'
 evidence: 'N/A'

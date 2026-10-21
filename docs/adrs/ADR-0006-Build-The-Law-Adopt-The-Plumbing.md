@@ -2,7 +2,6 @@
 title: '📄 ADR-0006: BUILD THE LAW, ADOPT THE PLUMBING'
 description: 'The hub builds its own renderer and installer in the Python standard library, and adopts existing tools for the plumbing around them, with set triggers to revisit.'
 type: record
-keywords: [tooling, build-vs-adopt, python]
 status: 'Proposed'
 date: '2026-10-17'
 evidence: 'N/A'

@@ -2,7 +2,6 @@
 title: '🛠️ TECHNICAL'
 description: 'How every part of the hub works, one document each: the home kit, repository sync, the prompts, cloud setup, skills and subagents, the loader probe and evals.'
 type: index
-keywords: [docs, architecture]
 -->
 
 <div align="center">

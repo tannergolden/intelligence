@@ -2,7 +2,6 @@
 title: '🩺 TROUBLESHOOTING THE HOME KIT'
 description: 'What the installer, its check, the Claude cloud setup script and the guard hook print when something on a machine is wrong, and what to do about each. Read it when make agents-check is not all current, a cloud session starts without the rules, or the guard blocks a call.'
 type: guide
-keywords: [install, agents-check, cloud-setup, guard, dotfiles, uninstall]
 -->
 
 <div align="center">

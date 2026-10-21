@@ -2,7 +2,6 @@
 title: '🏠 HOME FILE'
 description: 'Everything a machine downloads from a release, rendered: the home file, the kit and the installer the home kit runs, and the hashes a consumer pins.'
 type: index
-keywords: [home-kit, release, checksums, dotfiles]
 -->
 
 <div align="center">

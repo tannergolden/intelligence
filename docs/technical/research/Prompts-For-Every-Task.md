@@ -2,7 +2,6 @@
 title: '🔎 PROMPTS FOR EVERY TASK'
 description: 'Which tasks across every area of software and repository work a library of ready-to-run prompts for AI coding agents should cover, as of October 2026, and what each must hold to run unchanged in any repository: the research behind the ready-to-run prompts in setup/Prompts.md.'
 type: record
-keywords: [prompts, coding-agents, evals, guardrails]
 verified: '2026-10-20'
 focus: 'Which tasks should a library of ready-to-run, placeholder-free prompts for AI coding agents cover, and what must each hold to work unchanged in any repository?'
 decision: '[ADR-0029](../../adrs/ADR-0029-Most-Prompts-Run-As-They-Are.md)'

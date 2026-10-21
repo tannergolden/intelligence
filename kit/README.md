@@ -2,7 +2,6 @@
 title: '🧩 KIT'
 description: 'The sources of everything the home kit installs besides the rules: the guard hook, the skills and the subagents, rendered into home/kit.json.'
 type: index
-keywords: [home-kit, guard, agent-skills, subagents]
 -->
 
 <div align="center">

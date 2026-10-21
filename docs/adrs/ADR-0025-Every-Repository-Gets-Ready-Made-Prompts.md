@@ -2,7 +2,6 @@
 title: '📄 ADR-0025: EVERY REPOSITORY GETS READY-MADE PROMPTS'
 description: 'Sync gives every repository docs/Prompts.md: a sealed block of universal prompts and the practices behind them, which the hub keeps current, and a section of the repository''s own, which sync never touches.'
 type: record
-keywords: [prompts, repository-sync, prompt-engineering]
 status: 'Proposed'
 date: '2026-10-20'
 evidence: 'N/A'

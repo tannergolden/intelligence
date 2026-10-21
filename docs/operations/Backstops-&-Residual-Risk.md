@@ -2,7 +2,6 @@
 title: '🛡️ BACKSTOPS & RESIDUAL RISK'
 description: 'The server-side controls behind the universal rules, how to apply them to each repository, and the risks that remain once they are on.'
 type: guide
-keywords: [security, rulesets, github]
 -->
 
 <div align="center">

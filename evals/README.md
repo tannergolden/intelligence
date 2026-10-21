@@ -2,7 +2,6 @@
 title: '🧪 EVALS'
 description: 'Scenarios that tempt an agent to break each universal rule, or measure each universal prompt against the hurried request it replaces, run against real apps and checked by code.'
 type: index
-keywords: [rules, prompts, measurement, scenarios]
 -->
 
 <div align="center">

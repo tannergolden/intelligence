@@ -2,7 +2,6 @@
 title: '📄 ADR-0009: AGENTS FOLLOW THE STANDARDS'
 description: 'Every AI agent follows the engineering standards in tannergolden/standards in every repository the owner owns, new ones included, through an owner-only Default that points at them, while forks and other people''s repositories follow their own rules.'
 type: record
-keywords: [ai-agents, conventions]
 status: 'Proposed'
 date: '2026-10-17'
 evidence: 'N/A'

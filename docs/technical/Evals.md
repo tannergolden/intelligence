@@ -2,7 +2,6 @@
 title: '📏 EVALS'
 description: 'How each universal rule and prompt is measured: scenarios run against real apps, with the block and without it or with the prompt and the hurried request it replaces, and checked by code.'
 type: guide
-keywords: [rules, scenarios, skills, prompts]
 -->
 
 <div align="center">

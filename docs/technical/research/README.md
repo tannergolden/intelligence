@@ -2,7 +2,6 @@
 title: '🔎 RESEARCH'
 description: 'Filed research reports, one per question, each dated, sourced claim by claim, and linked to the decision it fed.'
 type: index
-keywords: [research, evidence, reports]
 -->
 
 <div align="center">

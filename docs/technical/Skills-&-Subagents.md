@@ -2,7 +2,6 @@
 title: '🧰 SKILLS & SUBAGENTS'
 description: 'The one skill and the Worker and Reviewer subagents the home kit installs, the rules every skill here follows, and where each app reads them.'
 type: guide
-keywords: [agent-skills, home-kit]
 -->
 
 <div align="center">

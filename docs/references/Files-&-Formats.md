@@ -2,7 +2,6 @@
 title: '🗃️ FILES & FORMATS'
 description: 'The exact shape of what the hub hands to something else: the markers and their hash, the pin lines, the kit and a subagent source, what a repository carries, and what the tools leave on a machine. Read it before writing a tool that reads one, or before changing the kit.'
 type: reference
-keywords: [markers, sha256, pins, kit-json, subagents, overrides, install-record]
 -->
 
 <div align="center">

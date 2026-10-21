@@ -2,7 +2,6 @@
 title: '🩺 TROUBLESHOOTING SYNC'
 description: 'What each line from make audit, make sync, make merge and a repository''s 🔁 Intelligence Sync means, and what to do about it. Read it when a repository''s rules or prompts are not current, or a sync pull request will not merge.'
 type: guide
-keywords: [audit, merge, stub, agents-md, pull-request, errors]
 -->
 
 <div align="center">

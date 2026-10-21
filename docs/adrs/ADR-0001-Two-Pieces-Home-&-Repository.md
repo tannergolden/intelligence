@@ -2,7 +2,6 @@
 title: '📄 ADR-0001: TWO PIECES, HOME & REPOSITORY'
 description: 'The universal rules reach agents in two pieces, a copy in each app''s home folder and a managed block in every repository, both rendered from one source.'
 type: record
-keywords: [ai-agents, delivery, instructions]
 status: 'Proposed'
 date: '2026-10-17'
 evidence: 'N/A'

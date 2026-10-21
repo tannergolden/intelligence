@@ -2,7 +2,6 @@
 title: '📄 ADR-0005: HOME COPIES, NOT LINKS'
 description: 'The home kit writes byte-identical copies of the rules into each app''s own home location, checked against the release, instead of linking every app to one shared file.'
 type: record
-keywords: [dotfiles, home-kit, instructions]
 status: 'Proposed'
 date: '2026-10-17'
 evidence: 'N/A'

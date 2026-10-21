@@ -2,7 +2,6 @@
 title: '🧰 SETUP'
 description: 'What leaves the hub for somewhere else: the setup script for every Claude Code cloud session, the stub that keeps a repository''s rules current, and the prompts every repository gets.'
 type: index
-keywords: [claude-code, cloud, setup-script, home-kit, github-actions, sync]
 -->
 
 <div align="center">

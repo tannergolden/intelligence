@@ -2,7 +2,6 @@
 title: '🔁 REPOSITORY SYNC'
 description: 'How each release reaches every repository: the stub a repository carries, make sync from the hub, what a first sync does, and how make merge lands the result.'
 type: guide
-keywords: [agents-md, github-actions, workflow-stub]
 -->
 
 <div align="center">

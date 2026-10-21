@@ -2,7 +2,6 @@
 title: '⌨️ COMMANDS'
 description: 'Every make target and script option, and what each one reaches: your gh login, model calls, your home folder or nothing beyond the checkout. Read it before running a command for the first time, or to find an option to pass through ARGS.'
 type: reference
-keywords: [makefile, scripts, options, flags, exit-codes, environment]
 -->
 
 <div align="center">

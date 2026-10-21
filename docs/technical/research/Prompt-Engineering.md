@@ -2,7 +2,6 @@
 title: '🔎 PROMPT ENGINEERING'
 description: 'What makes a reusable task prompt for an AI coding agent work as of October 2026, and how a library of them should be checked, measured and kept current: the research behind the universal prompts in setup/Prompts.md.'
 type: record
-keywords: [prompts, prompt-engineering, evals, coding-agents]
 verified: '2026-10-20'
 focus: 'What makes a reusable, copy-paste task prompt for an AI coding agent work, and how should a library of them be checked, measured and kept current?'
 decision: '[ADR-0028](../../adrs/ADR-0028-Every-Prompt-Is-Linted-&-Measured.md)'

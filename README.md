@@ -2,7 +2,6 @@
 title: '🧠 INTELLIGENCE'
 description: 'One set of rules for every AI coding agent, installed at home by dotfiles and delivered to every repository as one AGENTS.md.'
 type: index
-keywords: [ai-agents, agents-md, instructions, standards]
 -->
 
 <!-- markdownlint-disable MD041 -->

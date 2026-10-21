@@ -2,7 +2,6 @@
 title: '📄 ADR-0023: THE KIT CARRIES NO FACTS'
 description: 'The home kit no longer installs public facts beside the rules: knowledge/ is gone, the kit carries the guard, the skills and the subagents in format 2, and an install takes out the facts an earlier release wrote.'
 type: record
-keywords: [home-kit, installer, knowledge]
 status: 'Proposed'
 date: '2026-10-20'
 evidence: 'N/A'
