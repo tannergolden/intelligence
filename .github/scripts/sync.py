@@ -23,16 +23,14 @@ The commands:
 - `audit` reports what every repository carries now: no `AGENTS.md`, no
   block, a block edited by hand, a stale or unknown block, a `CLAUDE.md`
   that makes Claude Code skip `AGENTS.md`, an Overrides entry that names an
-  Invariant, a `docs/Prompts.md` that is missing or still holds the universal
-  prompts an earlier release delivered, and whether the stub is there.
+  Invariant, a missing `docs/Prompts.md`, and whether the stub is there.
 - `sync` opens or updates one pull request per repository. A first sync
   creates `AGENTS.md`, or inserts the block into one that has none, and
   folds any `CLAUDE.md` into it. A repository without `docs/Prompts.md` gets
-  the empty page, and one whose page still holds the universal prompts has
-  them taken out, unless it has the `no-intelligence-prompts` topic.
+  the empty page, unless it has the `no-intelligence-prompts` topic.
 - `merge` merges each sync pull request whose diff is exactly the rules block
-  and whose checks passed. Anything bigger, such as a first sync or a change
-  to `docs/Prompts.md`, waits for the owner to review it by hand. A pull request the default token opened has
+  and whose checks passed. Anything bigger, such as a first sync or a new
+  `docs/Prompts.md`, waits for the owner to review it by hand. A pull request the default token opened has
   checks that wait for approval: once the diff is proven to be the block
   alone, `merge` starts them, and merges on a later run.
 - `apply` writes the block into the repository checked out where it runs,
@@ -446,7 +444,7 @@ def adopt(repo: str, agents: str | None, claude: str | None, region: str) -> Cha
 
 
 def with_prompts(change: Change, current: str | None, page: str | None) -> Change:
-    """The change, with the empty `docs/Prompts.md` added, or the universal prompts taken out of one.
+    """The change, with the empty `docs/Prompts.md` added where there is none.
 
     A release from before the page, which has none to give, changes nothing.
     """
@@ -593,10 +591,8 @@ def messages(block_hash: str, ref: str, change: Change, signer: tuple[str, str] 
     whether AGENTS.md changes at all: a sync can bring only a change to
     `docs/Prompts.md`.
     """
-    added = change.prompts_note == prompts.ADDED
     title = (f'chore(agents): 🤖 sync the universal rules to {block_hash[:12]}' if rules
-             else "chore(agents): 🤖 add a page for this repository's own prompts" if added
-             else 'chore(agents): 🤖 leave the universal prompts to the hub')
+             else "chore(agents): 🤖 add a page for this repository's own prompts")
     if change.adoption or change.prompts_note:
         notes = change.adoption + ([change.prompts_note] if change.prompts_note else [])
         why = ('The intelligence hub delivers the universal rules to every repository its owner '
@@ -610,7 +606,7 @@ def messages(block_hash: str, ref: str, change: Change, signer: tuple[str, str] 
                f'leaves every section this repository owns as it was.')
     body = textwrap.fill(why, 72) + (f'\n\nSigned-off-by: {signer[0]} <{signer[1]}>' if signer else '')
     review = (' This is a first sync, so review it by hand: `make merge` leaves it alone.' if change.adoption
-              else ' It changes `docs/Prompts.md`, so review it by hand: `make merge` leaves it alone.'
+              else ' It adds `docs/Prompts.md`, so review it by hand: `make merge` leaves it alone.'
               if change.prompts_note else '')
     impact = (f'Agents read the rules of release {ref} in this repository.' if rules
               else 'This repository keeps its own prompts in `docs/Prompts.md`, and copies the universal '
@@ -625,9 +621,7 @@ def messages(block_hash: str, ref: str, change: Change, signer: tuple[str, str] 
                       'in the hub can prove it is unedited.')
         rollback = 'Revert this pull request. Nothing else in the repository depends on the block.'
     else:
-        validation = ('Once it merges, `make audit` in the hub finds the page in place, and never reads what it holds.'
-                      if added else
-                      'Once it merges, `make audit` in the hub finds no universal prompts left in `docs/Prompts.md`.')
+        validation = 'Once it merges, `make audit` in the hub finds the page in place, and never reads what it holds.'
         rollback = 'Revert this pull request. Nothing else in the repository depends on the page.'
     pr_body = f'## Impact\n\n{impact}\n\n## Validation\n\n{validation}\n\n## Rollback\n\n{rollback}\n'
     return title, body, pr_body
@@ -678,19 +672,6 @@ def sync_one(gh: GitHub, repo: dict, region: str, ref: str, signer: tuple[str, s
     return f'{name}: opened pull request #{created["number"]}'
 
 
-def prompts_findings(file: tuple[str, str] | None) -> list[str]:
-    """What is wrong with a repository's `docs/Prompts.md`, as short phrases; its own prompts never are."""
-    if file is None:
-        return ['no docs/Prompts.md']
-    try:
-        block = prompts.find(file[0])
-    except ValueError as error:
-        return [f'docs/Prompts.md: {error}']
-    if block is not None:
-        return ['docs/Prompts.md still holds the universal prompts, which the next sync takes out']
-    return []
-
-
 def audit_one(gh: GitHub, repo: dict, current: str, known: dict[str, str], invariants: set[str],
               page: str | None = None) -> list[str]:
     """What is wrong in one repository, as short phrases; empty when nothing is."""
@@ -699,8 +680,8 @@ def audit_one(gh: GitHub, repo: dict, current: str, known: dict[str, str], invar
     found: list[str] = []
     if gh.file(name, CLAUDE, base):
         found.append('a CLAUDE.md sits beside AGENTS.md, so Claude Code may skip AGENTS.md')
-    if page is not None and not prompts.opted_out(repo):
-        found += prompts_findings(gh.file(name, prompts.TARGET, base))
+    if page is not None and not prompts.opted_out(repo) and gh.file(name, prompts.TARGET, base) is None:
+        found.append('no docs/Prompts.md')
     if agents is None:
         return ['no AGENTS.md', *found]
     region = render.find(agents[0])
@@ -765,8 +746,8 @@ def merge_one(gh: GitHub, repo: dict, current: str, dry_run: bool) -> str:
     number = listed['number']
     pr = gh.pr(name, number)
     files = gh.pr_files(name, number)
-    # Each file a merge may land, with what finds its block and the block it must carry now. A change to
-    # docs/Prompts.md, which adds a page or takes the universal prompts out of one, waits for the owner.
+    # Each file a merge may land, with what finds its block and the block it must carry now. A pull request
+    # that adds docs/Prompts.md waits for the owner.
     blocks: dict[str, tuple[Finder, str]] = {AGENTS: (render.find, current)}
     if not files or any(f['filename'] not in blocks or f.get('status') != 'modified' for f in files):
         return f'{name}: #{number} changes more than the block; review it by hand'

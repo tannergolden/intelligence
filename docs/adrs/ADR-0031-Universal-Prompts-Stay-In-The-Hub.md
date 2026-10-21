@@ -1,6 +1,6 @@
 <!--
 title: '📄 ADR-0031: UNIVERSAL PROMPTS STAY IN THE HUB'
-description: 'The universal prompts move to the hub''s own docs/Prompts.md and reach no other repository; sync gives each repository an empty docs/Prompts.md of its own once, and takes out the block release v0.3.0 sealed into some.'
+description: 'The universal prompts move to the hub''s own docs/Prompts.md and reach no other repository; sync gives each repository an empty docs/Prompts.md of its own once, where its owner makes the sections and prompts.'
 type: record
 keywords: [prompts, repository-sync, prompt-engineering]
 status: 'Proposed'
@@ -39,7 +39,7 @@ _Copy the universal ones from the hub. Write your own where you work._
 
 ## 🎯 Context & Problem Statement
 
-[ADR-0025](ADR-0025-Every-Repository-Gets-Ready-Made-Prompts.md) sealed the universal prompts into every repository's `docs/Prompts.md`, beside a section of the repository's own, and release v0.3.0 delivered them. The owner decided the universal prompts belong in the hub alone. Each repository that carries the stub should instead get its own `docs/Prompts.md`, empty, where its owner writes the prompts that only make sense there: for using it, changing it and understanding it.
+[ADR-0025](ADR-0025-Every-Repository-Gets-Ready-Made-Prompts.md) sealed the universal prompts into every repository's `docs/Prompts.md`, beside a section of the repository's own, and release v0.3.0 shipped them, before any repository had taken a release through its stub. The owner decided the universal prompts belong in the hub alone. Each repository that carries the stub should instead get its own `docs/Prompts.md`, empty, where its owner writes the prompts that only make sense there, such as ones for using it, changing it or understanding it, in sections of the owner's own making.
 
 ---
 
@@ -47,7 +47,6 @@ _Copy the universal ones from the hub. Write your own where you work._
 
 - **One copy of the universal prompts**: nearly 90 prompts and their guide in every repository is a copy that adds nothing the hub cannot serve.
 - **A repository's page is its own**: after it arrives, no delivery ever changes it.
-- **Nothing is lost**: a repository that already took v0.3.0 keeps every prompt of its own.
 - **The layout rules hold**: the page sits where the standards keep a repository's documents, and passes their checks.
 
 ---
@@ -68,9 +67,9 @@ _Copy the universal ones from the hub. Write your own where you work._
 
 The universal prompts move from `setup/Prompts.md` to the hub's own [`docs/Prompts.md`](../Prompts.md), the same path every repository keeps its prompts at. Their markers go, since nothing seals or delivers them, and the guide and the **Use when** lines now speak to a reader who copies a prompt into another repository. Write A New Prompt adds a prompt to the repository's own page, creating it if there is none, and Improve A Prompt names a prompt from the hub as one to send back here. `prompts.py --check` holds the file to the same shape and lint as before.
 
-[`setup/Prompts.md`](../../setup/Prompts.md) becomes the page a repository first gets: the standard header and footer, a note on what goes there with a link to the universal prompts, and three empty sections, Use It, Change It and Understand It, the way a new `AGENTS.md` gets empty sections to fill. Sync adds it to a repository without `docs/Prompts.md`, in the same `chore/intelligence` pull request as the rules, and never changes it after that. The `no-intelligence-prompts` topic still keeps it out.
+[`setup/Prompts.md`](../../setup/Prompts.md) becomes the page a repository first gets: the standard header and footer, and a note on what goes there, such as prompts for using, changing or understanding the repository, with a link to the universal prompts. It holds no section and no prompt: the owner makes both. Sync adds it to a repository without `docs/Prompts.md`, in the same `chore/intelligence` pull request as the rules, and never changes it after that. The `no-intelligence-prompts` topic still keeps it out.
 
-Where v0.3.0 sealed the universal prompts into a repository's page, sync takes that block out and leaves everything else as it was. A file whose text outside the block is still exactly what v0.3.0 delivered becomes the empty page whole; elsewhere, one rule between the header and the repository's prompts stays, and the old note above them, where the repository kept it as written, points at the hub instead. `make audit` names a page that still holds the block, and `make merge` leaves every change to `docs/Prompts.md` for the owner to review. The guard no longer protects a prompts block, since a repository's page is all its own. A release from before the page, v0.3.0 among them, delivers no prompts at all.
+`make audit` names a repository with no page, and `make merge` leaves a pull request that adds one for the owner to review. The guard no longer protects a prompts block, since a repository's page is all its own. No repository took v0.3.0 through its stub, so none holds the universal prompts to take out, and a release from before the page, v0.3.0 among them, delivers no prompts at all.
 
 Option 1 keeps a second sealed block in every repository's sync, audit and merge, for prompts anyone can copy from one place. Option 3 leaves a repository's own prompts with no set place, so they end up in a README or nowhere.
 
@@ -81,7 +80,7 @@ Option 1 keeps a second sealed block in every repository's sync, audit and merge
 | Category         | Impact / Consequence                                                                                                                  |
 | :--------------- | :------------------------------------------------------------------------------------------------------------------------------------ |
 | **Positive (+)** | One copy of the universal prompts, current as soon as it lands; each repository has a set place for its own, and sync leaves it alone |
-| **Negative (-)** | Copying a universal prompt means opening the hub; a repository that took v0.3.0 gets one more pull request to review by hand          |
+| **Negative (-)** | Copying a universal prompt means opening the hub                                                                                      |
 | **Neutral (~)**  | The page a repository first gets changes only with a release; a repository that already has one keeps its own                         |
 
 ---
@@ -109,7 +108,7 @@ Option 1 keeps a second sealed block in every repository's sync, audit and merge
 
 - [`docs/Prompts.md`](../Prompts.md): the universal prompts
 - [`setup/Prompts.md`](../../setup/Prompts.md): the page a repository first gets
-- [`.github/scripts/prompts.py`](../../.github/scripts/prompts.py) and [`.github/scripts/sync.py`](../../.github/scripts/sync.py): the checks, and the delivery and the migration
+- [`.github/scripts/prompts.py`](../../.github/scripts/prompts.py) and [`.github/scripts/sync.py`](../../.github/scripts/sync.py): the checks and the delivery
 - [Prompts](../technical/Prompts.md): how both work, and how to change each
 - [ADR-0025](ADR-0025-Every-Repository-Gets-Ready-Made-Prompts.md): the decision this supersedes
 

@@ -49,9 +49,9 @@ every command below.
    release up by itself on Monday, so this step is for the rest, or for now
    rather than Monday. [Repository Sync](../technical/Repository-Sync.md)
    covers both routes.
-6. Review each first sync, and each pull request that adds `docs/Prompts.md`
-   or takes the universal prompts out of it, by hand. After that, `make merge`
-   lands every sync whose diff is only the block and whose checks passed.
+6. Review each first sync, and each pull request that adds `docs/Prompts.md`,
+   by hand. After that, `make merge` lands every sync whose diff is only the
+   block and whose checks passed.
 
 Every version stays: the stub passes `keep-versions: true`, so standards' Cut
 Release never prunes here, because a pin to a full version must keep

@@ -40,8 +40,8 @@ in the hub. A release reaches it by either of two routes, through
 - The marker carries a hash of its block, so a release that leaves the block
   unchanged opens no pull requests at all.
 - `make audit` reports any repository whose rules block was edited by hand,
-  whose `docs/Prompts.md` is missing or still holds the universal prompts, and
-  whether it carries the stub; the next sync repairs each.
+  whose `docs/Prompts.md` is missing, and whether it carries the stub; the next
+  sync repairs both.
 
 Every repository you own takes part, except the two golden path templates,
 `repo` and `path`, forks and archived ones, and the hub, which holds the
@@ -67,10 +67,9 @@ leaves it for you to review by hand:
 - a `CLAUDE.md` is folded into `AGENTS.md` under "Folded from CLAUDE.md" and
   deleted, or just deleted when all it does is point at `AGENTS.md`, because
   Claude Code skips `AGENTS.md` beside one;
-- a repository with no `docs/Prompts.md` gets the empty page, with a section
-  each for using, changing and understanding it; a `docs/Prompts.md` it
-  already has is its own and stays as it is, except that the universal
-  prompts release v0.3.0 sealed into it come out.
+- a repository with no `docs/Prompts.md` gets the empty page, where its owner
+  adds sections and prompts of its own; a `docs/Prompts.md` it already has is
+  its own, and stays as it is.
 
 After that, each sync replaces only the text between the markers.
 

@@ -19,7 +19,7 @@
       "argv": [
         "python3",
         "-c",
-        "import pathlib\n\ntext = pathlib.Path('docs/Prompts.md').read_text()\nfooter = text.rindex('\\n---\\n')\npage, end = text[:footer], text[footer:]\nfor part in ('# ', 'Use It', 'Change It', 'Understand It'):\n    assert part in page, f'the page lost {part!r}'\nassert 'A better prompt in, better work out.' in end, 'the footer is gone'\nmissing = [part for part in ('### ', '**Use when**', '```text', '<context>', '<task>') if part not in page]\nassert not missing, f'no new prompt above the footer: {missing}'\nassert ('{{' in page) == ('**Fill in**' in page), 'a prompt names its placeholders in a **Fill in** line, and only then'\n"
+        "import pathlib\n\ntext = pathlib.Path('docs/Prompts.md').read_text()\nfooter = text.rindex('\\n---\\n')\npage, end = text[:footer], text[footer:]\nfor part in ('# ', '[!TIP]'):\n    assert part in page, f'the page lost {part!r}'\nassert 'A better prompt in, better work out.' in end, 'the footer is gone'\nmissing = [part for part in ('### ', '**Use when**', '```text', '<context>', '<task>') if part not in page]\nassert not missing, f'no new prompt above the footer: {missing}'\nassert ('{{' in page) == ('**Fill in**' in page), 'a prompt names its placeholders in a **Fill in** line, and only then'\n"
       ]
     }
   ],

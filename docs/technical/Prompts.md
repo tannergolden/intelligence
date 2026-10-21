@@ -26,10 +26,10 @@ keeps ready-made prompts anyone can copy into any AI app, the owner and every
 collaborator alike, and every repository keeps the prompts only it needs.
 Each prompt sits in its own fenced block, so GitHub shows a copy button on it.
 
-| Where                                                        | Whose                     | What it holds                                                                                                                |
-| :----------------------------------------------------------- | :------------------------ | :--------------------------------------------------------------------------------------------------------------------------- |
-| [`docs/Prompts.md`](../Prompts.md) in the hub                | The hub's                 | How to use a prompt; an index of every prompt; the universal prompts, grouped by the kind of work they do; and the practices |
-| `docs/Prompts.md` in each repository that takes part in sync | The repository's, its own | The prompts its owner writes for that repository alone: for using it, changing it and understanding it                       |
+| Where                                                        | Whose                     | What it holds                                                                                                                           |
+| :----------------------------------------------------------- | :------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------- |
+| [`docs/Prompts.md`](../Prompts.md) in the hub                | The hub's                 | How to use a prompt; an index of every prompt; the universal prompts, grouped by the kind of work they do; and the practices            |
+| `docs/Prompts.md` in each repository that takes part in sync | The repository's, its own | The prompts its owner writes for that repository alone, such as for using, changing or understanding it, under sections the owner makes |
 
 The universal prompts stay in the hub. A repository gets its own page once,
 empty, from [`setup/Prompts.md`](../../setup/Prompts.md), and sync never
@@ -111,19 +111,13 @@ safe where it does not fit, as the research behind it found agents need:
 The page rides in the same `chore/intelligence` pull request as the rules, by
 either route, the stub or `make sync`:
 
-- a repository without `docs/Prompts.md` gets the empty page, with a section
-  each for using, changing and understanding the repository and a link to the
-  universal prompts. You review it by hand: `make merge` leaves any change to
-  `docs/Prompts.md` alone;
+- a repository without `docs/Prompts.md` gets the empty page: a note on what
+  goes there, with a link to the universal prompts, and no section or prompt,
+  since its owner makes both. You review it by hand: `make merge` leaves a
+  pull request that adds `docs/Prompts.md` alone;
 - after that the page is the repository's own, and sync never touches it;
-- release v0.3.0 delivered the universal prompts into each repository's
-  `docs/Prompts.md`, between sealed `INTELLIGENCE:PROMPTS` markers. Sync takes
-  that block out again, in the same pull request, and leaves everything
-  else in the file, the repository's own prompts included. A file nobody
-  touched since that release becomes the empty page, and `make audit` names
-  each repository whose page still holds the block;
-- a `no-intelligence-prompts` topic keeps sync from adding or changing the
-  page in a repository that still takes the rules.
+- a `no-intelligence-prompts` topic keeps sync from adding the page to a
+  repository that still takes the rules.
 
 Only a release delivers the page, as with the rules. A release from before
 it, v0.3.0 among them, delivers no prompts at all.
@@ -138,8 +132,7 @@ no release. [`.github/scripts/prompts.py`](../../.github/scripts/prompts.py)
 holds the file to the shape its own practices describe, and `make check`
 fails on any problem. `prompts.py --check` names each with its line:
 
-- no `INTELLIGENCE:PROMPTS` marker, since nothing seals or delivers them now,
-  and no private repository named or en or em dash;
+- no private repository named, and no en or em dash;
 - text a formatter leaves as it is, between the header and the footer: no
   trailing whitespace, tab or second blank line, a blank line around each
   heading, list and block of code, `-` bullets, and every block of code fenced
@@ -186,11 +179,12 @@ repository's own `docs/Prompts.md`, never here.
 ## 📄 Changing The Page A Repository Gets
 
 [`setup/Prompts.md`](../../setup/Prompts.md) is the page a repository first
-gets, exactly as it lands. `prompts.py --check` holds it to what any
-repository can carry: no prompt, since the page is the repository's to fill,
-no `INTELLIGENCE:PROMPTS` marker, no private repository named and no en or em
-dash. A change reaches only the repositories that get a page after the next
-release; one that already has a page keeps its own.
+gets, exactly as it lands. `prompts.py --check` holds it to what any repository
+can carry: no section or prompt, since the repository's owner makes both, no
+`INTELLIGENCE:PROMPTS` marker, which marks a release from before the page, no
+private repository named and no en or em dash. A change reaches only the
+repositories that get a page after the next release; one that already has a page
+keeps its own.
 
 ---
 

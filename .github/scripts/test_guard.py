@@ -46,7 +46,6 @@ def load(name: str, path: pathlib.Path):
 
 guard = load('guard', ROOT / 'kit' / 'guard.py')
 render = load('render', HERE / 'render.py')
-prompts = load('prompts', HERE / 'prompts.py')
 install = load('install', HERE / 'install.py')
 
 HUMAN = 'Tanner Golden <24684994+tannergolden@users.noreply.github.com>'
@@ -804,30 +803,20 @@ class TestBlocks(Sandbox):
 
 
 class TestPromptsPage(Sandbox):
-    """A repository's docs/Prompts.md is its own, even while it still holds the block an earlier release sealed."""
+    """A repository's docs/Prompts.md is its own: the guard leaves every edit to it alone."""
 
     def setUp(self) -> None:
         super().setUp()
         self.file = self.repo / 'docs' / 'Prompts.md'
         self.file.parent.mkdir()
-        inner = '## Fix A Bug\n\nFind the cause.\n'
-        self.old = (f'# Prompts\n\n<!-- INTELLIGENCE:PROMPTS:BEGIN sha256:{render.digest(inner)} -->\n\n{inner}\n'
-                    '<!-- INTELLIGENCE:PROMPTS:END -->\n\n## Prompts For This Repository\n\n_Yours._\n')
-        self.file.write_text(self.old, encoding='utf-8')
+        self.file.write_text('# Prompts\n\n> Yours.\n', encoding='utf-8')
 
     def test_a_prompt_of_its_own_can_be_added(self) -> None:
-        self.assertIsNone(self.edit('Edit', file_path=str(self.file), old_string='_Yours._',
-                                    new_string='### Ship A Release\n\nOurs.'))
+        self.assertIsNone(self.edit('Edit', file_path=str(self.file), old_string='> Yours.',
+                                    new_string='## Release\n\n### Ship A Release\n\nOurs.'))
 
-    def test_the_old_universal_block_can_be_taken_out(self) -> None:
-        self.assertIsNone(self.edit('Edit', file_path=str(self.file), old_string='Find the cause.',
-                                    new_string='Patch it quickly.'))
+    def test_the_page_can_be_written_whole(self) -> None:
         self.assertIsNone(self.edit('Write', file_path=str(self.file), content='# Prompts\n\nNone.\n'))
-
-    def test_only_the_rules_block_is_the_hubs(self) -> None:
-        self.assertIsNone(guard.REGION.search(self.old))
-        self.assertTrue(prompts.SEALED.search(self.old))
-        self.assertTrue(guard.REGION.search(render.region('## Working rules\n\n- X: Y.\n')))
 
 
 class TestSelfProtection(Sandbox):
