@@ -40,9 +40,9 @@ WHAT IT BLOCKS, and the rule behind each:
   whose every remote is on github.com under tannergolden, so never a fork
   whose `upstream` is someone else's; a DOC-002 entry under `## Overrides`
   in the repository's `AGENTS.md` turns it off there
-- the hub's blocks: a hand edit inside the rules block of `AGENTS.md` or
-  the prompts block of `docs/Prompts.md`, which the next sync would
-  overwrite anyway
+- the hub's block: a hand edit inside the rules block of `AGENTS.md`, which
+  the next sync would overwrite anyway; a repository's `docs/Prompts.md` is
+  its own
 
 It is a seatbelt, not a sandbox. It reads a command the way a careful
 reviewer would and catches the honest mistake; a determined workaround gets
@@ -108,16 +108,15 @@ SECRETS = (
     ('a private key', re.compile(r'-----BEGIN (?:[A-Z0-9]+ )*PRIVATE KEY-----')),
 )
 
-# The blocks the hub renders, in the files that carry one: the rules, and the
-# prompts. The pattern matches render.py's for the one and prompts.py's for the
-# other.
+# The block the hub renders into a repository's AGENTS.md, the rules. The
+# pattern matches render.py's.
 REGION = re.compile(
-    r'^<!-- (?P<name>INTELLIGENCE(?::PROMPTS)?):BEGIN sha256:[0-9a-f]{64} -->[ \t]*\r?\n'
+    r'^<!-- (?P<name>INTELLIGENCE):BEGIN sha256:[0-9a-f]{64} -->[ \t]*\r?\n'
     r'.*?'
     r'^<!-- (?P=name):END -->[ \t]*(?:\r?\n|\Z)',
     re.M | re.S,
 )
-MARKER = re.compile(r'^<!-- INTELLIGENCE(?::PROMPTS)?:(?:BEGIN|END)\b', re.M)
+MARKER = re.compile(r'^<!-- INTELLIGENCE:(?:BEGIN|END)\b', re.M)
 BLOCK_SUFFIXES = ('.md', '.markdown', '.mdc')
 
 SHELL_TOOLS = {'bash', 'powershell', 'pwsh', 'shell', 'run_shell_command', 'exec_command', 'local_shell',

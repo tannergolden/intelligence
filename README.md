@@ -33,10 +33,12 @@ The rules are written once, as one block, and reach the agents in two pieces:
 
 The home copy reaches every session, including other people's repositories and
 scratch folders. The repository copy travels with the code, so cloud agents and
-collaborators get the same rules with nothing installed, and beside it each
-repository gets ready-made prompts in `docs/Prompts.md`, for anyone to copy
-into an AI agent: one for each kind of work, from a first look at the code to
-a release, most of them ready to run as they are.
+collaborators get the same rules with nothing installed. Ready-made prompts
+for any repository stay here, in [`docs/Prompts.md`](docs/Prompts.md), for
+anyone to copy into an AI agent: one for each kind of work, from a first look
+at the code to a release, most of them ready to run as they are. Each
+repository gets a `docs/Prompts.md` of its own, empty, for the prompts only it
+needs.
 
 > [!IMPORTANT]
 > **Status: built, not yet released.** The Constitution, the renderer, the home kit,
@@ -59,7 +61,7 @@ per part. Start with How It Works.
 | [The Home Kit](docs/technical/The-Home-Kit.md)                                  | What `make agents` installs into each app, the kit beside the rules, and the guard hook                     |
 | [Repository Sync](docs/technical/Repository-Sync.md)                            | How a release reaches every repository: the stub, `make sync`, `make merge` and `make audit`                |
 | [Cloud Setup](docs/technical/Cloud-Setup.md)                                    | The rules and the kit in every Claude Code cloud session                                                    |
-| [Prompts](docs/technical/Prompts.md)                                            | The ready-made prompts every repository gets in `docs/Prompts.md`, and how to change them                   |
+| [Prompts](docs/technical/Prompts.md)                                            | The universal prompts the hub keeps, the empty page each repository gets, and how to change each            |
 | [Skills & Subagents](docs/technical/Skills-&-Subagents.md)                      | The one skill, the Worker and the Reviewer, and where each app reads them                                   |
 | [The Loader Probe](docs/technical/The-Loader-Probe.md)                          | How the hub proves which files each app actually loads, and the results so far                              |
 | [Evals](docs/technical/Evals.md)                                                | How each rule is measured, with the block and without it                                                    |
@@ -102,7 +104,7 @@ and other people's repositories follow their own rules.
 | [`evals/`](evals/README.md)                 | Scenarios that tempt an agent to break each universal rule, or measure each universal prompt against the hurried request it replaces, run against real apps and checked by code.                                          |
 | [`home/`](home/README.md)                   | Everything a machine downloads from a release, rendered: the home file, the kit and the installer the home kit runs, and the hashes a consumer pins.                                                                      |
 | [`kit/`](kit/README.md)                     | The sources of everything the home kit installs besides the rules: the guard hook, the skills and the subagents, rendered into home/kit.json.                                                                             |
-| [`setup/`](setup/README.md)                 | What leaves the hub for somewhere else: the setup script for every Claude Code cloud session, the stub that keeps a repository's rules current, and the prompts every repository gets.                                    |
+| [`setup/`](setup/README.md)                 | What leaves the hub for somewhere else: the setup script for every Claude Code cloud session, the stub that keeps a repository's rules current, and the empty prompts page every repository gets.                         |
 | [`.editorconfig`](.editorconfig)            | Editor defaults every editor honours: UTF-8, LF, a final newline, and indentation per language                                                                                                                            |
 | [`.env.example`](.env.example)              | Environment variable template for this project.                                                                                                                                                                           |
 | [`.gitattributes`](.gitattributes)          | Git attributes - line endings, diffs, and what counts as binary                                                                                                                                                           |

@@ -20,8 +20,8 @@ _One prompt, one task, two requests, one verdict each._
 
 ## 💡 What This Folder Is For
 
-At least one scenario per universal prompt in
-[`setup/Prompts.md`](../../setup/Prompts.md), named `<prompt>-<what>.json`, such
+At least one scenario per universal prompt in the hub's
+[`docs/Prompts.md`](../../docs/Prompts.md), named `<prompt>-<what>.json`, such
 as `fix-a-bug-root-cause.json`. Each runs twice with the rules in place: once
 with the prompt, its details filled in where it asks for any, and once with the
 one-line request it replaces. Each carries a `proof`, a script that does the
@@ -119,7 +119,7 @@ fails them. What a scenario holds and how to run them:
 | [`update-the-dependencies-hold-major.json`](update-the-dependencies-hold-major.json)                                   | Updates stay within their major versions, and the major update is listed rather than made.                                                            |
 | [`update-this-branch-keep-both-sides.json`](update-this-branch-keep-both-sides.json)                                   | A branch behind the default branch takes it in by a merge, keeping both sides of the conflict, and pushes nothing.                                    |
 | [`write-a-handoff-note-decision.json`](write-a-handoff-note-decision.json)                                             | A handoff note carries the decision and the open question the work left, and changes nothing.                                                         |
-| [`write-a-new-prompt-shape.json`](write-a-new-prompt-shape.json)                                                       | A new prompt takes the file's shape, in the repository's own section, and the delivered block stays as it was.                                        |
+| [`write-a-new-prompt-shape.json`](write-a-new-prompt-shape.json)                                                       | A new prompt takes the shape every prompt has, in a section of the repository's own page, above its footer.                                           |
 | [`write-a-threat-model-admin-export.json`](write-a-threat-model-admin-export.json)                                     | A threat model draws the system and finds the admin route nothing guards, and changes nothing.                                                        |
 | [`write-an-architecture-overview-file.json`](write-an-architecture-overview-file.json)                                 | An overview with a diagram and links that resolve is written, and no other file changes.                                                              |
 | [`write-the-agent-instructions-verified-commands.json`](write-the-agent-instructions-verified-commands.json)           | AGENTS.md gains the real commands, stays short, and the managed block in it is untouched.                                                             |

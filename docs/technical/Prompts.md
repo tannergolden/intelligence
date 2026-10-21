@@ -1,6 +1,6 @@
 <!--
 title: '💬 PROMPTS'
-description: 'The ready-made prompts every repository gets in docs/Prompts.md: the universal ones the hub keeps current between their markers, most ready to run as they are, the section each repository fills with its own, and how to change either.'
+description: 'The universal prompts the hub keeps in its own docs/Prompts.md for anyone to copy, most ready to run as they are, and the empty docs/Prompts.md each repository gets for prompts of its own: how each works, and how to change it.'
 type: guide
 -->
 
@@ -10,7 +10,7 @@ type: guide
 
 <a name="top"></a>
 
-**Ready-made prompts in every repository, so nobody has to write a good one from scratch.**
+**Universal prompts in the hub, and a page of its own in every repository.**
 
 _Find one. Copy it. Paste it._
 
@@ -18,27 +18,28 @@ _Find one. Copy it. Paste it._
 
 ---
 
-## 💡 What A Repository Gets
+## 💡 Two Places For Prompts
 
 A prompt typed in a hurry leaves out what an agent needs: the goal, the
-context it cannot see, the limits, and how to tell when it is done. So every
-repository that takes part in [sync](Repository-Sync.md) gets
-`docs/Prompts.md`, a page of prompts anyone can copy into any AI app, the
-owner and every collaborator alike. Each prompt sits in its own fenced block,
-so GitHub shows a copy button on it.
+context it cannot see, the limits, and how to tell when it is done. So the hub
+keeps ready-made prompts anyone can copy into any AI app, the owner and every
+collaborator alike, and every repository keeps the prompts only it needs.
+Each prompt sits in its own fenced block, so GitHub shows a copy button on it.
+
+| Where                                                        | Whose                     | What it holds                                                                                                                |
+| :----------------------------------------------------------- | :------------------------ | :--------------------------------------------------------------------------------------------------------------------------- |
+| [`docs/Prompts.md`](../Prompts.md) in the hub                | The hub's                 | How to use a prompt; an index of every prompt; the universal prompts, grouped by the kind of work they do; and the practices |
+| `docs/Prompts.md` in each repository that takes part in sync | The repository's, its own | The prompts its owner writes for that repository alone: for using it, changing it and understanding it                       |
+
+The universal prompts stay in the hub. A repository gets its own page once,
+empty, from [`setup/Prompts.md`](../../setup/Prompts.md), and sync never
+changes it after that.
 
 Most of the universal prompts run as they are: the agent finds what changes
 from one repository to the next, such as its commands, its default branch or
 its last release, in the repository itself. The few that need what only a
 person knows, such as the bug they saw, mark it with a placeholder in double
 braces, such as `{{ERROR_OUTPUT}}`, and name it in a **Fill in** line.
-
-The file has two parts, split the way `AGENTS.md` is:
-
-| Part                                             | Whose                     | What it holds                                                                                                                |
-| :----------------------------------------------- | :------------------------ | :--------------------------------------------------------------------------------------------------------------------------- |
-| Between the `INTELLIGENCE:PROMPTS` markers       | The hub's, kept current   | How to use a prompt; an index of every prompt; the universal prompts, grouped by the kind of work they do; and the practices |
-| "Prompts For This Repository", after the markers | The repository's, its own | The prompts its owner writes for the work that repository does                                                               |
 
 The universal prompts cover the work any repository has, in 17 areas, from a
 first look at the code to a release:
@@ -68,8 +69,8 @@ that can open its files and run its commands; a prompt to fill in also works in
 an app that sees only what is pasted into it. A line added after a prompt, such
 as "Only the billing module.", points it at part of the repository. Write A New
 Prompt turns a rough request into a new prompt in the same shape and adds it to
-the repository's own section, so writing a good prompt needs no study first,
-and Improve A Prompt fixes one that went wrong.
+the repository's own `docs/Prompts.md`, so writing a good prompt needs no study
+first, and Improve A Prompt fixes one that went wrong.
 
 ---
 
@@ -105,49 +106,44 @@ safe where it does not fit, as the research behind it found agents need:
 
 ---
 
-## 🔁 How It Arrives And Stays Current
+## 🔁 How A Repository Gets Its Page
 
-The prompts ride in the same `chore/intelligence` pull request as the rules,
-by either route, the stub or `make sync`:
+The page rides in the same `chore/intelligence` pull request as the rules, by
+either route, the stub or `make sync`:
 
-- a repository without `docs/Prompts.md` gets the whole file, which you review
-  by hand: `make merge` leaves a pull request that adds it alone;
-- after that, each sync replaces only the text between the markers, and
-  leaves the rest of the file, the repository's own prompts included, as it
-  was. Its pull request names the universal prompts the new block adds,
-  rewords and drops, so you can see what changed without reading a sealed
-  diff;
-- the BEGIN marker carries the SHA-256 of the block's text, so a release that
-  leaves the prompts as they were touches no repository, and a hand edit
-  inside the markers is caught, by `make audit`, by the standards' Machined
-  Block Check in each repository's CI, and by the guard hook, and repaired by
-  the next sync;
-- a `docs/Prompts.md` with no prompts block is the repository's own file, and
-  sync never touches it;
-- a `no-intelligence-prompts` topic keeps the prompts out of a repository that
-  still takes the rules.
+- a repository without `docs/Prompts.md` gets the empty page, with a section
+  each for using, changing and understanding the repository and a link to the
+  universal prompts. You review it by hand: `make merge` leaves any change to
+  `docs/Prompts.md` alone;
+- after that the page is the repository's own, and sync never touches it;
+- release v0.3.0 delivered the universal prompts into each repository's
+  `docs/Prompts.md`, between sealed `INTELLIGENCE:PROMPTS` markers. Sync takes
+  that block out again, in the same pull request, and leaves everything
+  else in the file, the repository's own prompts included. A file nobody
+  touched since that release becomes the empty page, and `make audit` names
+  each repository whose page still holds the block;
+- a `no-intelligence-prompts` topic keeps sync from adding or changing the
+  page in a repository that still takes the rules.
 
-Only a release delivers them, as with the rules. A release from before the
-prompts delivers none.
+Only a release delivers the page, as with the rules. A release from before
+it, v0.3.0 among them, delivers no prompts at all.
 
 ---
 
 ## ✍️ Changing The Universal Prompts
 
-The source is [`setup/Prompts.md`](../../setup/Prompts.md): the file exactly as
-a repository first gets it, with its markers unsealed, so it stays a file
-anyone can edit. [`.github/scripts/prompts.py`](../../.github/scripts/prompts.py)
-seals the block when sync delivers it, and `make check` holds the source to
-what every repository can carry and to the shape its own practices describe.
-`prompts.py --check` names each problem with its line:
+They live in the hub's [`docs/Prompts.md`](../Prompts.md), and everyone
+copies them from there, so a change reaches people as soon as it lands, with
+no release. [`.github/scripts/prompts.py`](../../.github/scripts/prompts.py)
+holds the file to the shape its own practices describe, and `make check`
+fails on any problem. `prompts.py --check` names each with its line:
 
-- one `INTELLIGENCE:PROMPTS` block, with markers that carry no hash, and no
-  private repository named or en or em dash;
-- text a formatter leaves as it is: no trailing whitespace, tab or second
-  blank line, a blank line around each heading, list and block of code, `-`
-  bullets, and every block of code fenced as `text` and closed, with no fence
-  inside it. Each repository formats what a push touched, so a block a
-  formatter would rewrite reads as edited there;
+- no `INTELLIGENCE:PROMPTS` marker, since nothing seals or delivers them now,
+  and no private repository named or en or em dash;
+- text a formatter leaves as it is, between the header and the footer: no
+  trailing whitespace, tab or second blank line, a blank line around each
+  heading, list and block of code, `-` bullets, and every block of code fenced
+  as `text` and closed, with no fence inside it;
 - every universal prompt under its own `###` heading, with a **Use when**
   line, and a **Fill in** line exactly when it holds a placeholder, before one
   block of text that holds `<context>` and then `<task>`, any `<constraints>`,
@@ -163,8 +159,8 @@ what every repository can carry and to the shape its own practices describe.
 - a "Find A Prompt" index that links every prompt once, by its name, and marks
   with ✏️ each one that has details to fill in.
 
-Where Prettier is installed, `make test` also runs it over the source with the
-standards' configuration, and fails on any line it would change.
+Where Prettier is installed, `make test` also runs it over both prompts files
+with the standards' configuration, and fails on any line it would change.
 
 Every universal prompt also has a scenario in
 [`evals/prompts/`](../../evals/prompts/README.md) that measures it against the
@@ -182,22 +178,32 @@ make evals ARGS='--apps claude --prompts fix-a-bug --runs 7'
 
 Keep a change only if the prompt does at least as well as before, and run
 the scenarios again when a new model ships, since advice that helps one model
-can hurt the next. A prompt
-that only one repository needs goes in that repository's own section, never
-here.
+can hurt the next. A prompt that only one repository needs goes in that
+repository's own `docs/Prompts.md`, never here.
+
+---
+
+## 📄 Changing The Page A Repository Gets
+
+[`setup/Prompts.md`](../../setup/Prompts.md) is the page a repository first
+gets, exactly as it lands. `prompts.py --check` holds it to what any
+repository can carry: no prompt, since the page is the repository's to fill,
+no `INTELLIGENCE:PROMPTS` marker, no private repository named and no en or em
+dash. A change reaches only the repositories that get a page after the next
+release; one that already has a page keeps its own.
 
 ---
 
 ## 🔗 See Also
 
-- [ADR-0025](../adrs/ADR-0025-Every-Repository-Gets-Ready-Made-Prompts.md): why the prompts reach every repository, and how they are split
+- [ADR-0031](../adrs/ADR-0031-Universal-Prompts-Stay-In-The-Hub.md): why the universal prompts stay in the hub, and each repository gets an empty page of its own
+- [ADR-0025](../adrs/ADR-0025-Every-Repository-Gets-Ready-Made-Prompts.md): the earlier decision to seal the universal prompts into every repository, which ADR-0031 supersedes
 - [ADR-0028](../adrs/ADR-0028-Every-Prompt-Is-Linted-&-Measured.md): why each universal prompt is checked by `make check` and measured by evals
 - [ADR-0029](../adrs/ADR-0029-Most-Prompts-Run-As-They-Are.md): why most universal prompts need nothing filled in, and how they cover every kind of work
 - [Prompt Engineering](research/Prompt-Engineering.md): the research the prompts and their practices rest on
 - [Prompts For Every Task](research/Prompts-For-Every-Task.md): the research behind the areas the prompts cover and what each must hold
 - [Evals](Evals.md): how a prompt scenario measures a universal prompt
-- [Repository Sync](Repository-Sync.md): the pull request both blocks ride in
-- [The Home Kit](The-Home-Kit.md): the guard hook that keeps both blocks as the hub wrote them
+- [Repository Sync](Repository-Sync.md): the pull request the rules and the page ride in
 
 ---
 

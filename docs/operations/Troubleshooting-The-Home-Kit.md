@@ -152,8 +152,8 @@ inside a block the hub renders. The sentence after it says what to do instead.
   command you type in your own terminal never reaches it, so when it stops
   something you do want, such as a merge, run it yourself.
 - **A block edit it denies** is one the next sync would overwrite anyway.
-  Change the rule in `CONSTITUTION.md`, or the prompt in `setup/Prompts.md`,
-  and release it; a repository's own text goes outside the markers.
+  Change the rule in `CONSTITUTION.md` and release it; a repository's own text
+  goes outside the markers, and its `docs/Prompts.md` is all its own.
 - **A DOC-002 denial** comes only in a repository tannergolden owns, and only
   for an em dash the change adds to Markdown, a commit message or a pull
   request; code and data never draw one. Use a comma, colon, parentheses or a

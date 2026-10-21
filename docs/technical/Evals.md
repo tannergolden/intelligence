@@ -122,11 +122,11 @@ Each scenario in [`evals/prompts/`](../../evals/prompts/README.md) is named for 
 
 | Key       | What it says                                                                                                      |
 | :-------- | :---------------------------------------------------------------------------------------------------------------- |
-| `prompt`  | The universal prompt it measures, by its heading in `setup/Prompts.md`                                            |
+| `prompt`  | The universal prompt it measures, by its heading in the hub's `docs/Prompts.md`                                   |
 | `title`   | One line on what passing looks like                                                                               |
 | `fill`    | What goes in each of the prompt's placeholders: every one, and nothing more; none for a prompt that runs as it is |
 | `hurried` | The one-line request the prompt replaces, which the same task runs with as well                                   |
-| `setup`   | As a rule's scenario sets it up; `prompts` adds `docs/Prompts.md` as a repository first gets it                   |
+| `setup`   | As a rule's scenario sets it up; `prompts` adds the empty `docs/Prompts.md` a repository first gets               |
 | `checks`  | As a rule's scenario checks it, and two checks that run a command of their own                                    |
 | `proof`   | A shell script that does the asked-for work, as a good agent would, so the tests show the checks can pass         |
 

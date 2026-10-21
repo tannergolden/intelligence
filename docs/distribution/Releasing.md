@@ -32,11 +32,7 @@ every command below.
 
 ## 🚀 The Steps
 
-1. On `Development`, `make check` passes. The first release that ships the
-   [prompts](../technical/Prompts.md) also needs a release of the standards
-   whose Machined Block Check hashes the code fences inside a block: every
-   repository's CI runs that check at the standards' `v1`, and an earlier one
-   reads the prompts block as edited.
+1. On `Development`, `make check` passes.
 2. Run 🏷️ Cut Release with the next version, such as `v0.1.0`. It runs
    `make check` again, and refuses a release whose rendered files have
    drifted from the Constitution, or that is missing a file a consumer or a stub
@@ -53,9 +49,9 @@ every command below.
    release up by itself on Monday, so this step is for the rest, or for now
    rather than Monday. [Repository Sync](../technical/Repository-Sync.md)
    covers both routes.
-6. Review each first sync, and each pull request that adds `docs/Prompts.md`,
-   by hand. After that, `make merge` lands every sync whose diff is only the
-   blocks and whose checks passed.
+6. Review each first sync, and each pull request that adds `docs/Prompts.md`
+   or takes the universal prompts out of it, by hand. After that, `make merge`
+   lands every sync whose diff is only the block and whose checks passed.
 
 Every version stays: the stub passes `keep-versions: true`, so standards' Cut
 Release never prunes here, because a pin to a full version must keep

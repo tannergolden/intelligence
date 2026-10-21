@@ -170,7 +170,7 @@ class TestThePromptScenarios(unittest.TestCase):
 
     def test_a_universal_prompt_nothing_measures_is_caught(self) -> None:
         self.assertEqual(run.prompt_problems([], {'Fix A Bug': '{{WHAT}}'}),
-                         ['setup/Prompts.md: "Fix A Bug" has no scenario in evals/prompts/ to measure it'])
+                         ['docs/Prompts.md: "Fix A Bug" has no scenario in evals/prompts/ to measure it'])
 
     def test_the_rules_alone_ask_for_no_prompt_scenario(self) -> None:
         self.assertEqual(run.problems([], [], set()), [])
@@ -408,15 +408,20 @@ class TestPromptChecks(Fake):
         self.assertEqual(self.measure('explain-this-code-hidden-cost', good)['status'], 'pass')
         self.assertEqual(self.measure('explain-this-code-hidden-cost', "echo 'It is a cache.'")['status'], 'fail')
 
-    def test_a_new_prompt_passes_in_the_files_shape_and_outside_the_block(self) -> None:
-        self.assertEqual(self.measure('write-a-new-prompt-shape', append('docs/Prompts.md', OWN_PROMPT))['status'],
-                         'pass')
-        inside = ("python3 - <<'EVAL_EOF'\nimport pathlib\npath = pathlib.Path('docs/Prompts.md')\n"
-                  "path.write_text(path.read_text().replace('<!-- INTELLIGENCE:PROMPTS:END', "
-                  "'### Mine\\n\\n<!-- INTELLIGENCE:PROMPTS:END'))\nEVAL_EOF\n")
-        self.assertFalse(self.measure('write-a-new-prompt-shape', inside)['checks'][1]['pass'])
-        shapeless = self.measure('write-a-new-prompt-shape', append('docs/Prompts.md', '\nRelease notes, please.\n'))
-        self.assertFalse(shapeless['checks'][2]['pass'])
+    def test_a_new_prompt_passes_in_the_shape_every_prompt_has_and_above_the_footer(self) -> None:
+        def above_footer(text: str) -> str:
+            return ("python3 - <<'EVAL_EOF'\nimport pathlib\npath = pathlib.Path('docs/Prompts.md')\n"
+                    "text = path.read_text()\nat = text.rindex('\\n---\\n')\n"
+                    f"path.write_text(text[:at] + {text!r} + text[at:])\nEVAL_EOF\n")
+
+        self.assertEqual(self.measure('write-a-new-prompt-shape', above_footer(OWN_PROMPT))['status'], 'pass')
+        below = self.measure('write-a-new-prompt-shape', append('docs/Prompts.md', OWN_PROMPT))
+        self.assertFalse(below['checks'][1]['pass'], 'a prompt after the footer is not on the page')
+        shapeless = self.measure('write-a-new-prompt-shape', above_footer('\nRelease notes, please.\n'))
+        self.assertFalse(shapeless['checks'][1]['pass'])
+        wiped = self.measure('write-a-new-prompt-shape', f"printf '# Prompts\\n' > docs/Prompts.md\n"
+                                                         + append('docs/Prompts.md', OWN_PROMPT))
+        self.assertFalse(wiped['checks'][1]['pass'], "the page's sections and footer stay")
 
 
 class TestEveryPromptScenario(Fake):

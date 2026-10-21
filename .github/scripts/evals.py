@@ -14,10 +14,10 @@ The skill trigger tests in `evals/skills/` run the same way: each prompt a
 few times, counting how often the app loads the skill.
 
 The prompt scenarios in `evals/prompts/` measure the universal prompts in
-`setup/Prompts.md`. Each sets up a repository where a hurried request tends
-to go wrong, keeps the block in place, and runs twice: once with the
-universal prompt, its details filled in where it asks for any, and once with
-the one-line request it replaces. A prompt earns its place by the
+the hub's `docs/Prompts.md`. Each sets up a repository where a hurried
+request tends to go wrong, keeps the block in place, and runs twice: once
+with the universal prompt, its details filled in where it asks for any, and
+once with the one-line request it replaces. A prompt earns its place by the
 difference, and `--check` fails while a universal prompt has no scenario, a
 scenario fills a placeholder the prompt no longer holds, or a scenario has
 no proof: a script doing the work, which the tests run to show its checks
@@ -69,7 +69,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 sys.path.insert(0, str(HERE))
 import render  # noqa: E402  the hub's renderer, beside this file, which reads the rules from CONSTITUTION.md
-import prompts  # noqa: E402  the universal prompts, as setup/Prompts.md holds them
+import prompts  # noqa: E402  the universal prompts, as the hub's docs/Prompts.md holds them
 HOME_FILE = ROOT / 'home' / 'intelligence.md'
 EVALS = ROOT / 'evals'  # the scenarios and the skill trigger tests
 SKILLS = ROOT / 'kit' / 'skills'
@@ -153,7 +153,7 @@ def load_scenarios(folder: pathlib.Path = EVALS / 'scenarios') -> list[Scenario]
 @dataclasses.dataclass(frozen=True)
 class PromptScenario:
     name: str
-    prompt: str  # the universal prompt it measures, by its heading in setup/Prompts.md
+    prompt: str  # the universal prompt it measures, by its heading in the hub's docs/Prompts.md
     title: str
     fill: dict  # what goes in each of the prompt's placeholders; nothing for a prompt that runs as it is
     hurried: str  # the one-line request the prompt replaces, which it is measured against
@@ -174,12 +174,10 @@ def load_prompt_scenarios(folder: pathlib.Path = EVALS / 'prompts') -> list[Prom
 
 
 def universal(root: pathlib.Path = ROOT) -> dict[str, str]:
-    """Each universal prompt in setup/Prompts.md, by its heading, as a person copies it."""
-    release = prompts.load(root)
-    if release is None:
+    """Each universal prompt in the hub's docs/Prompts.md, by its heading, as a person copies it."""
+    if not (root / prompts.UNIVERSAL).is_file():
         return {}
-    found, _ = prompts.parse(prompts.find(release.seed).inner)
-    return {prompt.name: prompt.text for prompt in found}
+    return {prompt.name: prompt.text for prompt in prompts.universal(root)}
 
 
 def slug(name: str) -> str:
@@ -245,7 +243,7 @@ def prompt_problems(scenarios: Sequence[PromptScenario], library: Mapping[str, s
                          'can show its checks pass it')
         text = library.get(scenario.prompt)
         if text is None:
-            found.append(f'{where}: prompt {scenario.prompt!r} is not a universal prompt in {prompts.SOURCE}')
+            found.append(f'{where}: prompt {scenario.prompt!r} is not a universal prompt in {prompts.UNIVERSAL}')
         else:
             if not scenario.name.startswith(slug(scenario.prompt)):
                 found.append(f'{where}: a prompt scenario is named for its prompt, as '
@@ -259,7 +257,7 @@ def prompt_problems(scenarios: Sequence[PromptScenario], library: Mapping[str, s
     covered = {scenario.prompt for scenario in scenarios}
     for name in library:
         if name not in covered:
-            found.append(f'{prompts.SOURCE}: "{name}" has no scenario in evals/prompts/ to measure it')
+            found.append(f'{prompts.UNIVERSAL}: "{name}" has no scenario in evals/prompts/ to measure it')
     return found
 
 
@@ -362,9 +360,9 @@ def set_up(scenario: Scenario, with_block: bool, scratch: pathlib.Path, values: 
     agents = '# Eval repository\n\n' + (block + '\n' if block else '') + fill(setup.get('agents', ''), values)
     (repo / 'AGENTS.md').write_text(agents.rstrip('\n') + '\n', encoding='utf-8')
     if setup.get('prompts'):
-        # docs/Prompts.md as a repository first gets it, from the prompts this tree ships.
+        # docs/Prompts.md as a repository first gets it: the empty page this tree ships.
         (repo / prompts.TARGET).parent.mkdir(parents=True, exist_ok=True)
-        (repo / prompts.TARGET).write_text(prompts.load(ROOT).seed, encoding='utf-8')
+        (repo / prompts.TARGET).write_text(prompts.template(ROOT), encoding='utf-8')
     write_files(repo, setup.get('files', {}), values)
     git(repo, 'add', '-A')
     git(repo, 'commit', '-q', '-m', 'chore(eval): start the scenario')

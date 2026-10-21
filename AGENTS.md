@@ -53,7 +53,7 @@ serves to this repository from its `.github` repository.
 - `make check` passes, and its output is in your report.
 - A change to `CONSTITUTION.md`, anything in `kit/` or `.github/scripts/install.py` is followed by `make render`, and the rendered files are committed with it.
 - A new rule gets a scenario in `evals/scenarios/`, a new skill a trigger test in `evals/skills/`, and a new universal prompt a scenario in `evals/prompts/`, with a `proof` its checks pass and doing nothing fails.
-- A change to `setup/Prompts.md` stays as Prettier writes it, with the standards' configuration, and passes `prompts.py --check`; a reworded prompt brings its scenario in `evals/prompts/` along, and a new one gets a link in the "Find A Prompt" index.
+- A change to the universal prompts in `docs/Prompts.md`, or to the empty page in `setup/Prompts.md`, stays as Prettier writes it, with the standards' configuration, and passes `prompts.py --check`; a reworded prompt brings its scenario in `evals/prompts/` along, and a new one gets a link in the "Find A Prompt" index.
 - Every new script has tests beside it, and every folder's `README.md` logs its files, except inside a skill's folder.
 - A change to how something works updates its document in `docs/` in the same commit, in the folder for its kind: `docs/technical/` for how a part works, `docs/distribution/` for how a release ships, `docs/operations/` for the controls and risks.
 
@@ -73,7 +73,8 @@ serves to this repository from its `.github` repository.
 | `kit/`                               | The kit's sources: the guard, the one skill `develop` and its team, and the Worker and Reviewer subagents                                                     |
 | `home/`                              | Everything a machine downloads, rendered: the home file, the kit, the installer and their hashes, which every release tag serves                              |
 | `evals/`                             | Scenarios for every rule and every universal prompt, and the skill trigger tests                                                                              |
-| `setup/`                             | The Claude cloud setup script, the stub a repository carries, and the prompts every repository gets                                                           |
+| `setup/`                             | The Claude cloud setup script, the stub a repository carries, and the empty prompts page every repository gets                                                |
+| `docs/Prompts.md`                    | The universal prompts, which stay in the hub: anyone copies one from here into any agent                                                                      |
 | `.github/scripts/`                   | Every script, with its test beside it: `render.py`, `kit.py`, `install.py`, `sync.py`, `prompts.py`, `evals.py`, `loader-probe.py`, and the template's checks |
 | `.github/actions/`                   | The action a repository's stub runs, through `.github/workflows/sync.yml`                                                                                     |
 | `docs/introduction/`                 | Where to start: `How-It-Works.md`, which shows how the pieces fit, and the roadmap                                                                            |
@@ -90,7 +91,7 @@ serves to this repository from its `.github` repository.
 - The guard hook denies a commit git would author as an AI. In a cloud session, pass `--author` and `--trailer 'Signed-off-by: ...'` with your user's identity, never `-s`.
 - Changing `CONSTITUTION.md` changes nothing elsewhere until a release: other repositories receive the rules only through one, which their stub or `make sync` delivers.
 - `sync.py`, `render.py`, `kit.py` and `prompts.py`, and `setup/Prompts.md`, also run or are read inside every repository that carries the stub, at the hub's latest release, from the archive GitHub serves. Cut Release refuses a tag without them, `.gitattributes` keeps `.github/scripts/` in that archive, and `test_stub.py` holds both.
-- `setup/Prompts.md` keeps its `INTELLIGENCE:PROMPTS` markers unsealed: sync seals them as it delivers the file, and a hash in the source fails `make check`.
+- The universal prompts live in `docs/Prompts.md` and reach no other repository. `setup/Prompts.md` is the empty page a repository gets once; after that sync never changes a repository's page, except to take out the universal prompts v0.3.0 sealed into it.
 - Never put the `INTELLIGENCE` block in this file, and never add a `CLAUDE.md`. The hub holds the source of the rules, so a copy beside it would be a second source, and a `CLAUDE.md` would make Claude Code skip this file.
 
 ## Ask first
@@ -98,7 +99,7 @@ serves to this repository from its `.github` repository.
 - Cutting a release, running `make sync` or `make merge` against real repositories, or running a repository's 🔁 Intelligence Sync.
 - Adding a universal skill: the owner keeps one, `develop`. A skill one repository needs lives in that repository.
 - Changing a rule's wording, its kind or its ID.
-- Adding, removing or rewording a universal prompt: it reaches every repository at the next release.
+- Adding, removing or rewording a universal prompt, which everyone copies from the hub, or changing the empty page in `setup/Prompts.md`, which every repository without one gets at the next release.
 
 ---
 

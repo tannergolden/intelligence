@@ -1,33 +1,33 @@
 #!/usr/bin/env python3
-"""Seal the ready-made prompts every repository gets in docs/Prompts.md, and check their source.
+"""Check the universal prompts the hub keeps, and give each repository a prompts page of its own.
 
 WHY THIS EXISTS. A prompt typed in a hurry leaves out what an agent needs:
-the goal, the context, the limits, and how to tell when it is done. So
-every repository that takes part in sync gets `docs/Prompts.md`, a page of
-ready-made prompts anyone can copy into an AI app. The hub keeps the part
-between its `INTELLIGENCE:PROMPTS` markers current, the way it keeps the
-rules current in `AGENTS.md`: how to use a prompt, the universal prompts,
-and how to write a new one. Everything outside the markers is the
-repository's own, its own prompts included, and sync never changes it.
+the goal, the context, the limits, and how to tell when it is done. So the
+hub keeps universal prompts, written the way a good prompt is written, in
+its own `docs/Prompts.md`, for anyone to copy into any AI app in any
+repository. They stay in the hub. Every repository that takes part in sync
+gets `docs/Prompts.md` once, from `setup/Prompts.md`: an empty page for its
+own prompts, the ones that only make sense there, for using it, changing it
+and understanding it. Sync never changes that page again.
 
-The source is `setup/Prompts.md`: the file exactly as a repository first
-gets it, with its markers unsealed, so it stays a file anyone can edit.
-Sealing writes the SHA-256 of the block's text into the BEGIN marker, so a
-release that leaves the prompts as they were touches no repository, and a
-hand edit inside the markers is caught and repaired.
+An earlier release delivered the universal prompts into each repository's
+`docs/Prompts.md`, between sealed `INTELLIGENCE:PROMPTS` markers. Sync takes
+that block out again and leaves everything else in the file, the
+repository's own prompts included; a file nobody touched since that release
+becomes the empty page.
 
-WHAT --check HOLDS THE SOURCE TO. The block reaches every repository before
-anyone there reads it, so `--check` names each problem a reader would miss,
-with its line:
+WHAT --check HOLDS THE HUB TO. Everyone copies the universal prompts from
+here, so `--check` names each problem a reader would miss, with its line:
 
-- one unsealed block, no private repository named, and no en or em dash;
+- no private repository named, no en or em dash, and no INTELLIGENCE:PROMPTS
+  marker, in either file, since nothing seals or delivers the prompts now;
+- a page a repository first gets that holds no prompt of its own;
 - text a formatter leaves exactly as it is: no trailing whitespace or tab,
   no two blank lines in a row, `## ` and `### ` headings with a blank line
   around each, `-` bullets, and every block of code a ```text fence that
-  closes, with no other fence inside it. A repository that formats its
-  Markdown would otherwise rewrite the block and break its hash, and the
-  standards' Machined Block Check finds the markers by skipping fences;
-- no character that hides or reorders text, anywhere in the block;
+  closes, with no other fence inside it;
+- no character that hides or reorders text, anywhere between the header and
+  the footer;
 - every universal prompt under its own `###` heading, with a **Use when**
   line before one block of text, and a **Fill in** line exactly when the
   prompt holds a placeholder: a prompt ready to run has nothing to fill in;
@@ -49,37 +49,55 @@ with its line:
 
 Run it:
 
-    python3 .github/scripts/prompts.py            # print the file a repository first gets
-    python3 .github/scripts/prompts.py --check    # fail on a broken source
+    python3 .github/scripts/prompts.py            # print the page a repository first gets
+    python3 .github/scripts/prompts.py --check    # fail on a broken file
 """
 
 from __future__ import annotations
 
 import argparse
 import dataclasses
+import hashlib
 import pathlib
 import re
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import kit  # noqa: E402  the names a public file may carry, and the dash it may not
-import render  # noqa: E402  the hash a block is sealed with, and its shape
+import render  # noqa: E402  the shape of a block an earlier release sealed
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-SOURCE = 'setup/Prompts.md'
-TARGET = 'docs/Prompts.md'
+UNIVERSAL = 'docs/Prompts.md'  # the universal prompts, in the hub
+TEMPLATE = 'setup/Prompts.md'  # the page a repository first gets
+TARGET = 'docs/Prompts.md'  # where a repository keeps its own prompts
 OPT_OUT = 'no-intelligence-prompts'
+HUB_PROMPTS = 'https://github.com/tannergolden/intelligence/blob/Development/docs/Prompts.md'
 
-BEGIN = '<!-- INTELLIGENCE:PROMPTS:BEGIN sha256:{} -->'
-END = '<!-- INTELLIGENCE:PROMPTS:END -->'
-BLOCK = (r'^<!-- INTELLIGENCE:PROMPTS:BEGIN{} -->[ \t]*\r?\n'
-         r'(?P<inner>.*?)'
-         r'^<!-- INTELLIGENCE:PROMPTS:END -->[ \t]*(?:\r?\n|\Z)')
-SEALED = re.compile(BLOCK.format(r' sha256:(?P<hash>[0-9a-f]{64})'), re.M | re.S)
-UNSEALED = re.compile(BLOCK.format(''), re.M | re.S)
+# The block an earlier release sealed into a repository's docs/Prompts.md,
+# which sync takes out; and any of its markers, sealed or not, which neither
+# file in the hub may carry.
+SEALED = re.compile(r'^<!-- INTELLIGENCE:PROMPTS:BEGIN sha256:(?P<hash>[0-9a-f]{64}) -->[ \t]*\r?\n'
+                    r'(?P<inner>.*?)'
+                    r'^<!-- INTELLIGENCE:PROMPTS:END -->[ \t]*(?:\r?\n|\Z)', re.M | re.S)
+MARKER = re.compile(r'^<!-- INTELLIGENCE:PROMPTS:(?:BEGIN|END)\b', re.M)
+# What a file a release delivered holds outside its block, as SHA-256 of its
+# text with LF line endings, for every release that delivered one: v0.3.0,
+# which v0 also pointed at. A file that still holds exactly that is untouched
+# since, and becomes the empty page whole.
+DELIVERED = frozenset({'f9c3b26638b8940b35ac9af8084161952d8dde3ec18399e6233d0335f1523aac'})
+# The note that release put above a repository's own prompts, and what
+# replaces it where the repository kept the note as it was.
+OLD_NOTE = ("_This repository's own prompts go here, in the shape above. \U0001f501 Intelligence Sync keeps the guide "
+            "and the universal prompts above current, and never changes this section._")
+NEW_NOTE = ("_This repository's own prompts go here, each with a `###` heading, a **Use when** line and one `text` "
+            "block. Prompts that work in any repository, and how to write a good one, are in the "
+            f"[universal prompts]({HUB_PROMPTS})._")
+ADDED = "adds `docs/Prompts.md`, an empty page for this repository's own prompts"
+TAKEN_OUT = ("takes the universal prompts out of `docs/Prompts.md`, since they now stay in the hub, and leaves this "
+             "repository's own prompts as they were")
 
 # The sections a universal prompt is built from, in the order it holds them,
-# as the practices in the block describe them to a person. Each appears at
+# as the practices in the file describe them to a person. Each appears at
 # most once; every prompt has the first two and at least one way to tell it
 # is done.
 SECTIONS = ('context', 'task', 'constraints', 'done_when', 'output')
@@ -93,12 +111,13 @@ CAP = 1600
 INDEX_NAME = 'Find A Prompt'
 INDEX = re.compile(r'^## (?:\S+ )?' + re.escape(INDEX_NAME) + r'\s*$')
 # The mark the index puts after a prompt with details to fill in, so a reader knows before copying it.
-MARK = '\u270f\ufe0f'
-LINK = re.compile(r'\[(?P<text>[^\]]+)\]\(#(?P<anchor>[^)\s]+)\)(?P<mark> \u270f\ufe0f?)?')
+MARK = '✏️'
+LINK = re.compile(r'\[(?P<text>[^\]]+)\]\(#(?P<anchor>[^)\s]+)\)(?P<mark> ✏️?)?')
 
 OPEN = '```text'
 CLOSE = '```'
 FENCE = re.compile(r'^\s*(?:```|~~~)')
+RULE = re.compile(r'^---[ \t]*$', re.M)  # the line that sets the header and the footer apart
 HEADING = re.compile(r'^#{1,6}(?:[ \t]|$)')
 TITLE = re.compile(r'^(?P<level>#{2,3}) (?P<name>\S(?:.*\S)?)$')
 BULLET = re.compile(r'^\s*[*+][ \t]')
@@ -118,83 +137,92 @@ STALE = re.compile(r'(?i)\bthink (?:it through )?step by step\b|\bif in doubt\b|
                    r'|\byou are (?:an?|the) (?:expert|senior|world-class|helpful)\b')
 # The slots a tool fills by itself when a prompt is saved as its command or skill, which would eat the text.
 SLOTS = re.compile(r'\$ARGUMENTS|\$[0-9]|\$\{input:|\{\{args\}\}|!\{|@\{')
-# Characters that hide or reorder text, which no line of the block may carry.
-HIDDEN = re.compile('[\u200b\u200c\u200e\u200f\u202a-\u202e\u2060-\u2064\u2066-\u2069\ufeff]')
+# Characters that hide or reorder text, which no line between the header and the footer may carry.
+HIDDEN = re.compile('[​‌‎‏‪-‮⁠-⁤⁦-⁩﻿]')
 
 
-def inner(match: re.Match) -> str:
-    """A block's text, without the blank lines around it, ending in a newline."""
-    return match.group('inner').replace('\r\n', '\n').strip('\n') + '\n'
-
-
-def region(text: str) -> str:
-    """The prompts between their sealed markers, as they sit in a file."""
-    return f'{BEGIN.format(render.digest(text))}\n\n{text}\n{END}\n'
+# --- A repository's page ----------------------------------------------------------------------------
 
 
 def find(text: str) -> render.Found | None:
-    """The sealed prompts block in `text`, or None. More than one is an error."""
+    """The block an earlier release sealed into `text`, or None. More than one is an error."""
     matches = list(SEALED.finditer(text))
     if len(matches) > 1:
         raise ValueError('more than one INTELLIGENCE:PROMPTS block')
     if not matches:
         return None
     match = matches[0]
-    return render.Found(match.start(), match.end(), match.group('hash'), inner(match))
+    inner = match.group('inner').replace('\r\n', '\n').strip('\n') + '\n'
+    return render.Found(match.start(), match.end(), match.group('hash'), inner)
 
 
-@dataclasses.dataclass(frozen=True)
-class Prompts:
-    """What one release delivers: the file a repository without one gets, and its sealed block."""
+def page(text: str) -> str | None:
+    """The page a repository first gets, from the text of a hub's `setup/Prompts.md`.
 
-    seed: str
-    region: str
-
-    @property
-    def marker(self) -> str:
-        return find(self.region).marker
+    None for a hub from before the page, whose file of that name held the
+    universal prompts between markers for sync to seal.
+    """
+    return None if MARKER.search(text) else text
 
 
-def seal(source: str) -> Prompts:
-    """The release's prompts, from the text of `setup/Prompts.md`."""
-    matches = list(UNSEALED.finditer(source))
-    if len(matches) != 1:
-        raise ValueError(f'{SOURCE} must hold exactly one unsealed INTELLIGENCE:PROMPTS block')
-    match = matches[0]
-    sealed = region(inner(match))
-    return Prompts(source[:match.start()] + sealed + source[match.end():], sealed)
-
-
-def load(root: pathlib.Path = ROOT) -> Prompts | None:
-    """The prompts of the hub tree at `root`, or None for a hub from before them."""
-    path = root / SOURCE
-    return seal(path.read_text(encoding='utf-8')) if path.is_file() else None
+def template(root: pathlib.Path = ROOT) -> str | None:
+    """The page a repository first gets, from the hub tree at `root`, or None for a hub from before it."""
+    path = root / TEMPLATE
+    return page(path.read_text(encoding='utf-8')) if path.is_file() else None
 
 
 def opted_out(repo: dict) -> bool:
-    """Whether a repository's settings keep the prompts out, with the `no-intelligence-prompts` topic."""
+    """Whether a repository's settings keep the page out, with the `no-intelligence-prompts` topic."""
     return OPT_OUT in (repo.get('topics') or [])
 
 
-def change(current: str | None, prompts: Prompts) -> tuple[str | None, str | None]:
-    """What `docs/Prompts.md` becomes, and a note when sync adds it; None leaves it as it is.
+def untouched(rest: str) -> bool:
+    """Whether what a file holds outside its block is exactly what a release delivered."""
+    return hashlib.sha256(rest.replace('\r\n', '\n').encode('utf-8')).hexdigest() in DELIVERED
 
-    A file of that name without the block is the repository's own, and sync
-    never touches it.
+
+def without_block(current: str, empty: str) -> str:
+    """`current` with the block an earlier release delivered taken out, and everything else as it was.
+
+    A file nobody touched since that release becomes the empty page. Where the
+    block sat between two `---` lines, one stays, and the note that release put
+    above the repository's own prompts, where it is still as written, points
+    at the hub instead.
     """
-    if current is None:
-        return prompts.seed, ("adds `docs/Prompts.md`, with ready-made prompts to copy and a section for this "
-                              "repository's own")
     found = find(current)
     if found is None:
+        return current
+    before, after = current[:found.start], current[found.end:]
+    if untouched(before + after):
+        return empty
+    before, after = before.rstrip('\n'), after.lstrip('\n')
+    if before.rsplit('\n', 1)[-1].strip() == '---' and after.split('\n', 1)[0].strip() == '---':
+        after = after.split('\n', 1)[1].lstrip('\n') if '\n' in after else ''
+    text = f'{before}\n\n{after}' if before and after else before + after
+    text = text if text.endswith('\n') else text + '\n'
+    return text.replace(OLD_NOTE, NEW_NOTE)
+
+
+def change(current: str | None, empty: str) -> tuple[str | None, str | None]:
+    """What `docs/Prompts.md` becomes, and a note for the pull request; (None, None) leaves it as it is.
+
+    A repository without the file gets the empty page. A file without the
+    block an earlier release delivered is the repository's own, and sync never
+    touches it.
+    """
+    if current is None:
+        return empty, ADDED
+    if find(current) is None:
         return None, None
-    new = current[:found.start] + prompts.region + current[found.end:]
-    return (None if new == current else new), None
+    return without_block(current, empty), TAKEN_OUT
+
+
+# --- The universal prompts ---------------------------------------------------------------------------
 
 
 @dataclasses.dataclass
 class Prompt:
-    """One universal prompt, as the block holds it."""
+    """One universal prompt, as the file holds it."""
 
     name: str
     line: int  # where its heading sits in the file
@@ -210,10 +238,11 @@ class Prompt:
 
 
 def parse(inner: str, first: int = 1) -> tuple[list[Prompt], list[tuple[int, str]]]:
-    """The universal prompts in a block's text, and each line a formatter or a fence reader would take otherwise.
+    """The universal prompts in a file's text, and each line a formatter or a fence reader would take otherwise.
 
-    `inner` is the text between the markers as the file holds it, and `first`
-    the line it starts on, so each problem names a line of the file.
+    `inner` is the text between the header and the footer as the file holds
+    it, and `first` the line it starts on, so each problem names a line of the
+    file.
     """
     text = inner.replace('\r\n', '\n')
     rows = (text[:-1] if text.endswith('\n') else text).split('\n')
@@ -261,7 +290,7 @@ def parse(inner: str, first: int = 1) -> tuple[list[Prompt], list[tuple[int, str
             kinds.append('heading')
             title = TITLE.match(line)
             if title is None:
-                found.append((number, 'a heading in the block is "## " for a part or "### " for a prompt, '
+                found.append((number, 'a heading here is "## " for a part or "### " for a prompt, '
                                       'then its name'))
                 current = None
                 continue
@@ -411,7 +440,7 @@ def index(inner: str, first: int, prompts: list[Prompt]) -> list[tuple[int, str]
     rows = inner.replace('\r\n', '\n').split('\n')
     start = next((at for at, row in enumerate(rows) if INDEX.match(row)), None)
     if start is None:
-        return [(first, f'the block has no "## {INDEX_NAME}" part, the index that links every prompt')]
+        return [(first, f'the file has no "## {INDEX_NAME}" part, the index that links every prompt')]
     found: list[tuple[int, str]] = []
     targets: dict[str, Prompt] = {}
     for prompt in prompts:
@@ -447,75 +476,74 @@ def index(inner: str, first: int, prompts: list[Prompt]) -> list[tuple[int, str]
     return found
 
 
-def listed(names: list[str]) -> str:
-    """Names as prose: A; A and B; A, B and C."""
-    return names[0] if len(names) == 1 else ', '.join(names[:-1]) + ' and ' + names[-1]
+def body(text: str) -> tuple[int, str] | None:
+    """The part between a file's header and its footer, each set off by a `---` line, and the line it starts on."""
+    rules = list(RULE.finditer(text))
+    if len(rules) < 2:
+        return None
+    start, end = rules[0].end() + 1, rules[-1].start()
+    return text.count('\n', 0, start) + 1, text[start:end]
 
 
-# The most prompts a pull request names in one breath; past it, it counts them and names the first few.
-MOST_NAMED = 6
-
-
-def named(verb: str, names: list[str]) -> str:
-    """What a change does to some prompts: "adds Plan A Change", or "adds 9 prompts (A, B, C and 6 more)"."""
-    if len(names) <= MOST_NAMED:
-        return f'{verb} {listed(names)}'
-    return f'{verb} {len(names)} prompts ({", ".join(names[:3])} and {len(names) - 3} more)'
-
-
-def compare(old: str, new: str) -> str:
-    """What a new block's text does to the universal prompts of an old one, as a phrase for a pull request.
-
-    A reviewer of a sync sees which prompts it adds, rewords and drops
-    without reading the diff of a sealed block.
-    """
-    before = {prompt.name: (prompt.lead, prompt.text) for prompt in parse(old)[0]}
-    after = {prompt.name: (prompt.lead, prompt.text) for prompt in parse(new)[0]}
-    added = [name for name in after if name not in before]
-    reworded = [name for name in after if name in before and after[name] != before[name]]
-    dropped = [name for name in before if name not in after]
-    parts = [named(verb, names) for verb, names in (('adds', added), ('rewords', reworded), ('drops', dropped))
-             if names]
-    return listed(parts) if parts else 'changes only the guide around the prompts'
-
-
-def lint(source: str) -> list[str]:
-    """Every problem with the universal prompts in the source's one block, each with its line."""
-    match = UNSEALED.search(source)
-    if match is None:
-        return []
-    first = source.count('\n', 0, match.start('inner')) + 1
-    prompts, found = parse(match.group('inner'), first)
+def lint(text: str) -> list[str]:
+    """Every problem with the universal prompts in `text`, each with its line."""
+    part = body(text)
+    if part is None:
+        return [f'{UNIVERSAL}: the file needs its header and its footer, each set off by a --- line']
+    first, inner = part
+    prompts, found = parse(inner, first)
     if not prompts:
-        found.append((first, 'the block holds no universal prompt under a "### " heading'))
+        found.append((first, 'the file holds no universal prompt under a "### " heading'))
     for prompt in prompts:
         found += check(prompt)
-    found += index(match.group('inner'), first, prompts)
-    return [f'{SOURCE}:{number}: {message}' for number, message in sorted(found)]
+    found += index(inner, first, prompts)
+    return [f'{UNIVERSAL}:{number}: {message}' for number, message in sorted(found)]
+
+
+def public(name: str, text: str) -> list[str]:
+    """What keeps a file from being read in public: a private repository named, or a dash the standards ban."""
+    found = [f'{name} names tannergolden/{repo}, which is not a public repository'
+             for repo in sorted(set(kit.NAMED.findall(text)) - set(kit.NAMEABLE))]
+    if kit.DASHES.search(text):
+        found.append(f'{name} holds an en or em dash; use a comma, colon, parentheses or a spaced hyphen')
+    return found
 
 
 def problems(root: pathlib.Path = ROOT) -> list[str]:
-    """Everything wrong with `setup/Prompts.md`, which reaches every public repository."""
-    path = root / SOURCE
-    if not path.is_file():
-        return [f'{SOURCE} is missing']
-    text = path.read_text(encoding='utf-8')
+    """Everything wrong with the universal prompts and with the page a repository first gets."""
     found = []
-    if SEALED.search(text):
-        found.append(f'{SOURCE}: a sealed marker; the source keeps its markers unsealed, and sync seals them')
-    count = len(UNSEALED.findall(text))
-    if count != 1:
-        found.append(f'{SOURCE} holds {count} INTELLIGENCE:PROMPTS blocks, where it needs exactly one')
-    for name in sorted(set(kit.NAMED.findall(text)) - set(kit.NAMEABLE)):
-        found.append(f'{SOURCE} names tannergolden/{name}, which is not a public repository')
-    if kit.DASHES.search(text):
-        found.append(f'{SOURCE} holds an en or em dash; use a comma, colon, parentheses or a spaced hyphen')
-    return found + (lint(text) if count == 1 else [])
+    path = root / UNIVERSAL
+    if not path.is_file():
+        found.append(f'{UNIVERSAL} is missing')
+    else:
+        text = path.read_text(encoding='utf-8')
+        found += public(UNIVERSAL, text)
+        if MARKER.search(text):
+            found.append(f'{UNIVERSAL}: an INTELLIGENCE:PROMPTS marker; the universal prompts stay in the hub, and '
+                         'nothing seals them')
+        found += lint(text)
+    path = root / TEMPLATE
+    if not path.is_file():
+        found.append(f'{TEMPLATE} is missing')
+    else:
+        text = path.read_text(encoding='utf-8')
+        found += public(TEMPLATE, text)
+        if MARKER.search(text):
+            found.append(f'{TEMPLATE}: an INTELLIGENCE:PROMPTS marker; the page a repository gets is all its own')
+        if re.search(r'(?m)^### |^```', text):
+            found.append(f'{TEMPLATE} holds a prompt; the page a repository first gets is empty, for its own')
+    return found
+
+
+def universal(root: pathlib.Path = ROOT) -> list[Prompt]:
+    """The universal prompts in the hub tree at `root`."""
+    part = body((root / UNIVERSAL).read_text(encoding='utf-8'))
+    return parse(part[1], part[0])[0] if part else []
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=(__doc__ or '').split('\n', 1)[0])
-    parser.add_argument('--check', action='store_true', help='fail on a broken source')
+    parser.add_argument('--check', action='store_true', help='fail on a broken file')
     parser.add_argument('--root', type=pathlib.Path, default=ROOT, help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
     found = problems(args.root)
@@ -523,16 +551,15 @@ def main(argv: list[str] | None = None) -> int:
         print(f'error: {line}', file=sys.stderr)
     if found:
         return 1
-    release = load(args.root)
     if args.check:
-        universal, _ = parse(find(release.seed).inner)
-        ready = sum(prompt.ready for prompt in universal)
-        longest = max(universal, key=lambda prompt: len(prompt.text))
-        print(f'prompts: {len(universal)} universal prompts, {ready} ready to run and {len(universal) - ready} '
-              f'to fill in; the longest "{longest.name}" at {len(longest.text)} of {CAP} characters; '
-              f'sha256 {release.marker[:12]}')
+        prompts = universal(args.root)
+        ready = sum(prompt.ready for prompt in prompts)
+        longest = max(prompts, key=lambda prompt: len(prompt.text))
+        print(f'prompts: {len(prompts)} universal prompts in {UNIVERSAL}, {ready} ready to run and '
+              f'{len(prompts) - ready} to fill in; the longest "{longest.name}" at {len(longest.text)} of {CAP} '
+              f'characters; {TEMPLATE} is the page a repository first gets')
         return 0
-    print(release.seed, end='')
+    print(template(args.root), end='')
     return 0
 
 

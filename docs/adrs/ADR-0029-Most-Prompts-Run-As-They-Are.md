@@ -114,7 +114,7 @@ Option 1 keeps asking people for what the repository knows, and leaves most of t
 
 ## 🔗 Traceability & Links
 
-- [`setup/Prompts.md`](../../setup/Prompts.md): the universal prompts, their index and their practices
+- [`docs/Prompts.md`](../Prompts.md): the universal prompts, their index and their practices, which moved there from `setup/Prompts.md` with [ADR-0031](ADR-0031-Universal-Prompts-Stay-In-The-Hub.md)
 - [`.github/scripts/prompts.py`](../../.github/scripts/prompts.py): the checks
 - [`.github/scripts/evals.py`](../../.github/scripts/evals.py) and [`evals/prompts/`](../../evals/prompts/README.md): the scenarios and their proofs
 - [Prompts](../technical/Prompts.md) and [Evals](../technical/Evals.md): how each works

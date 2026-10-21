@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""Tests for the prompts file every repository gets.
+"""Tests for the universal prompts the hub keeps, and the page each repository gets.
 
-WHY THIS EXISTS. `docs/Prompts.md` reaches every repository that takes part
-in sync, beside the prompts its owner writes, so three promises matter: the
-block between its markers is sealed the same way every time, nothing
-outside the block is ever touched, and every universal prompt keeps the
-shape its practices describe, in text no formatter would rewrite. These
-hold the sealing, the change sync makes to a repository's copy, each rule
-`--check` holds the source to, and the real source to all three.
+WHY THIS EXISTS. The universal prompts stay in the hub's `docs/Prompts.md`,
+and every repository that takes part in sync gets `docs/Prompts.md` once, as
+an empty page of its own. Three promises matter: a repository's own page is
+never touched, the universal prompts an earlier release sealed into a
+repository come out again with nothing else lost, and every universal prompt
+keeps the shape its practices describe, in text no formatter would rewrite.
+These hold the change sync makes to a repository's page, each rule `--check`
+holds the hub's two files to, and the real files to all three.
 
 Run it:
 
@@ -27,6 +28,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
@@ -50,118 +52,151 @@ PROMPT = ('### Fix A Bug\n\n**Use when** it breaks. **Fill in** what broke.\n\n`
 INNER = f'## How\n\nCopy one.\n\n## Find A Prompt\n\n- [Fix A Bug](#fix-a-bug) {prompts.MARK}\n\n{PROMPT}'
 READY = ('### Tour The Code\n\n**Use when** you are new here.\n\n```text\n<context>\nI am new to this '
          'repository.\n</context>\n\n<task>\nShow me around it.\n</task>\n\n<output>\nA short tour.\n</output>\n```\n')
-SOURCE = ('<!--\ntitle: x\n-->\n\n# Prompts\n\n---\n\n<!-- INTELLIGENCE:PROMPTS:BEGIN -->\n\n' + INNER +
-          '\n<!-- INTELLIGENCE:PROMPTS:END -->\n\n---\n\n## Prompts For This Repository\n\n_Yours._\n')
+# The hub's universal prompts: a header, the prompts, and a footer, each part set off by a --- line.
+SOURCE = '<!--\ntitle: x\n-->\n\n# Prompts\n\n---\n\n' + INNER + '\n---\n\nThe end.\n'
+# The page a repository first gets.
+EMPTY = '<!--\ntitle: x\n-->\n\n# Prompts\n\n---\n\n## Use It\n\n<!-- Yours. -->\n\n---\n\nThe end.\n'
+# A repository's page as an earlier release delivered it, with the universal prompts sealed in.
+OLD_INNER = '## How\n\nCopy one.\n'
+OLD = ('# Prompts\n\n---\n\n'
+       f'<!-- INTELLIGENCE:PROMPTS:BEGIN sha256:{render.digest(OLD_INNER)} -->\n\n{OLD_INNER}\n'
+       '<!-- INTELLIGENCE:PROMPTS:END -->\n\n---\n\n## Prompts For This Repository\n\n'
+       f'{prompts.OLD_NOTE}\n\n---\n\nThe end.\n')
+# What an earlier release's setup/Prompts.md held: the universal prompts, between markers for sync to seal.
+OLD_SOURCE = '<!-- INTELLIGENCE:PROMPTS:BEGIN -->\n\nOld.\n\n<!-- INTELLIGENCE:PROMPTS:END -->\n'
 
 
-class TestSealing(unittest.TestCase):
-    """The block is sealed with the hash of its text, and nothing else changes."""
-
-    def test_the_block_is_sealed_with_the_hash_of_its_text(self) -> None:
-        release = prompts.seal(SOURCE)
-        found = prompts.find(release.seed)
-        self.assertEqual(found.marker, render.digest(INNER))
-        self.assertFalse(found.edited)
-        self.assertEqual(release.seed[found.start:found.end], release.region)
-        self.assertEqual(release.marker, found.marker)
-
-    def test_sealing_changes_nothing_but_the_marker(self) -> None:
-        sealed = prompts.seal(SOURCE).seed
-        self.assertEqual(re.sub(r' sha256:[0-9a-f]{64}', '', sealed), SOURCE)
-        self.assertEqual(prompts.seal(SOURCE), prompts.seal(SOURCE))
-
-    def test_a_source_without_exactly_one_block_is_refused(self) -> None:
-        for text in (SOURCE.replace('<!-- INTELLIGENCE:PROMPTS:END -->\n', ''), SOURCE + SOURCE):
-            with self.subTest(text=text[-40:]), self.assertRaises(ValueError):
-                prompts.seal(text)
-
-    def test_the_rules_block_and_the_prompts_block_are_never_confused(self) -> None:
-        self.assertIsNone(prompts.find(render.region('## Working rules\n\n- X: Y.\n')))
-        self.assertIsNone(render.find(prompts.seal(SOURCE).seed))
-
-
-class TestChange(unittest.TestCase):
+class TestPage(unittest.TestCase):
     """What sync does to a repository's `docs/Prompts.md`."""
 
-    def setUp(self) -> None:
-        self.release = prompts.seal(SOURCE)
-        self.old = prompts.seal(SOURCE.replace('Copy one.', 'An older guide.'))
+    def test_a_repository_without_the_file_gets_the_empty_page(self) -> None:
+        self.assertEqual(prompts.change(None, EMPTY), (EMPTY, prompts.ADDED))
 
-    def test_a_repository_without_the_file_gets_all_of_it(self) -> None:
-        text, note = prompts.change(None, self.release)
-        self.assertEqual(text, self.release.seed)
-        self.assertIn('adds `docs/Prompts.md`', note)
+    def test_a_page_of_its_own_is_never_touched(self) -> None:
+        for own in ('# Our prompts\n', EMPTY, EMPTY.replace('<!-- Yours. -->', '### Ship It\n\nOurs.')):
+            with self.subTest(own=own[-30:]):
+                self.assertEqual(prompts.change(own, EMPTY), (None, None))
 
-    def test_an_older_block_is_replaced_and_everything_else_stays(self) -> None:
-        mine = self.old.seed.replace('_Yours._', '### Ship A Release\n\nOurs.')
-        text, note = prompts.change(mine, self.release)
-        self.assertIsNone(note)
-        self.assertEqual(text, mine.replace(self.old.region, self.release.region))
-        self.assertIn('### Ship A Release\n\nOurs.', text)
+    def test_the_universal_prompts_come_out_and_its_own_stay(self) -> None:
+        mine = OLD.replace(prompts.OLD_NOTE, prompts.OLD_NOTE + '\n\n### Ship A Release\n\nOurs.')
+        text, note = prompts.change(mine, EMPTY)
+        self.assertEqual(note, prompts.TAKEN_OUT)
+        self.assertEqual(text, '# Prompts\n\n---\n\n## Prompts For This Repository\n\n'
+                               f'{prompts.NEW_NOTE}\n\n### Ship A Release\n\nOurs.\n\n---\n\nThe end.\n')
 
-    def test_a_current_file_is_left_as_it_is(self) -> None:
-        self.assertEqual(prompts.change(self.release.seed, self.release), (None, None))
+    def test_a_note_the_repository_reworded_stays_its_own(self) -> None:
+        text, _note = prompts.change(OLD.replace(prompts.OLD_NOTE, '_Ours._'), EMPTY)
+        self.assertIn('_Ours._', text)
+        self.assertNotIn('INTELLIGENCE:PROMPTS', text)
 
-    def test_a_hand_edit_inside_the_block_is_repaired(self) -> None:
-        text, _note = prompts.change(self.release.seed.replace('Copy one.', 'Copy two.'), self.release)
-        self.assertEqual(text, self.release.seed)
+    def test_a_block_at_either_end_comes_out_cleanly(self) -> None:
+        block = OLD[OLD.index('<!-- INTELLIGENCE'):OLD.index('\n\n---\n\n## Prompts') + 1]
+        for text, left in ((block + '\n# Ours\n', '# Ours\n'), ('# Ours\n\n' + block, '# Ours\n')):
+            with self.subTest(text=text[:20]):
+                self.assertEqual(prompts.change(text, EMPTY)[0], left)
 
-    def test_a_file_of_the_repositorys_own_is_never_touched(self) -> None:
-        self.assertEqual(prompts.change('# Our prompts\n', self.release), (None, None))
+    def test_a_file_untouched_since_its_release_becomes_the_empty_page(self) -> None:
+        found = prompts.find(OLD)
+        rest = OLD[:found.start] + OLD[found.end:]
+        with mock.patch.object(prompts, 'DELIVERED', frozenset({prompts.hashlib.sha256(rest.encode()).hexdigest()})):
+            self.assertEqual(prompts.change(OLD, EMPTY), (EMPTY, prompts.TAKEN_OUT))
+            self.assertEqual(prompts.change(OLD.replace('\n', '\r\n'), EMPTY)[0], EMPTY)
+
+    def test_the_file_the_release_delivered_becomes_the_empty_page(self) -> None:
+        # v0.3.0 delivered the universal prompts; its file, sealed as sync sealed it, is the one DELIVERED knows.
+        done = subprocess.run(['git', 'show', 'v0.3.0:setup/Prompts.md'], cwd=ROOT, capture_output=True, text=True,
+                              check=False)
+        if done.returncode != 0:
+            self.skipTest('the v0.3.0 tag is not fetched here')
+        source = done.stdout
+        inner = re.search(r'<!-- INTELLIGENCE:PROMPTS:BEGIN -->\n(.*?)<!-- INTELLIGENCE:PROMPTS:END -->', source,
+                          re.S).group(1).strip('\n') + '\n'
+        seed = source.replace('<!-- INTELLIGENCE:PROMPTS:BEGIN -->',
+                              f'<!-- INTELLIGENCE:PROMPTS:BEGIN sha256:{render.digest(inner)} -->')
+        self.assertEqual(prompts.change(seed, EMPTY), (EMPTY, prompts.TAKEN_OUT))
 
     def test_two_blocks_are_refused(self) -> None:
+        found = prompts.find(OLD)
         with self.assertRaises(ValueError):
-            prompts.change(self.release.seed + self.release.region, self.release)
+            prompts.change(OLD + OLD[found.start:found.end], EMPTY)
 
-    def test_only_the_topic_keeps_the_prompts_out(self) -> None:
+    def test_only_the_topic_keeps_the_page_out(self) -> None:
         self.assertTrue(prompts.opted_out({'topics': ['no-intelligence-prompts']}))
         self.assertFalse(prompts.opted_out({'topics': ['no-intelligence']}))
         self.assertFalse(prompts.opted_out({}))
 
+    def test_a_hub_from_before_the_page_gives_none(self) -> None:
+        # Its setup/Prompts.md held the universal prompts between markers, for sync to seal.
+        self.assertIsNone(prompts.page(OLD_SOURCE))
+        self.assertEqual(prompts.page(EMPTY), EMPTY)
+        with tempfile.TemporaryDirectory() as folder:
+            self.assertIsNone(prompts.template(pathlib.Path(folder)))
+
+    def test_the_rules_block_is_never_taken_for_the_prompts(self) -> None:
+        self.assertIsNone(prompts.find(render.region('## Working rules\n\n- X: Y.\n')))
+        self.assertIsNone(render.find(OLD))
+
 
 class TestProblems(unittest.TestCase):
-    """`--check` holds the source to what every public repository can carry."""
+    """`--check` holds the hub's two files to what everyone copies from them."""
 
     def setUp(self) -> None:
         self.root = pathlib.Path(tempfile.mkdtemp(prefix='prompts-test-'))
         self.addCleanup(shutil.rmtree, self.root, True)
+        (self.root / 'docs').mkdir()
         (self.root / 'setup').mkdir()
+        self.write(SOURCE)
+        self.write(EMPTY, prompts.TEMPLATE)
 
-    def write(self, text: str) -> None:
-        (self.root / prompts.SOURCE).write_text(text, encoding='utf-8')
+    def write(self, text: str, name: str = prompts.UNIVERSAL) -> None:
+        (self.root / name).write_text(text, encoding='utf-8')
 
     def check(self) -> int:
         with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
             return prompts.main(['--check', '--root', str(self.root)])
 
-    def test_a_sound_source_passes(self) -> None:
-        self.write(SOURCE)
+    def test_sound_files_pass(self) -> None:
         self.assertEqual(prompts.problems(self.root), [])
         self.assertEqual(self.check(), 0)
 
     def test_each_problem_is_named(self) -> None:
         cases = {
-            'sealed marker': prompts.seal(SOURCE).seed,
-            'needs exactly one': SOURCE.replace('<!-- INTELLIGENCE:PROMPTS:BEGIN -->\n', ''),
-            'tannergolden/vault': SOURCE.replace('Copy one.', 'See tannergolden/vault.'),
-            'en or em dash': SOURCE.replace('Copy one.', 'Copy one \u2014 then paste it.'),
+            'the universal prompts stay in the hub': (prompts.UNIVERSAL, SOURCE.replace(
+                '## How', '<!-- INTELLIGENCE:PROMPTS:BEGIN -->\n\n## How')),
+            'tannergolden/vault': (prompts.UNIVERSAL, SOURCE.replace('Copy one.', 'See tannergolden/vault.')),
+            'en or em dash': (prompts.UNIVERSAL, SOURCE.replace('Copy one.', 'Copy one \u2014 then paste it.')),
+            'its header and its footer': (prompts.UNIVERSAL, SOURCE.replace('---\n', '', 1)),
+            'the page a repository gets is all its own': (prompts.TEMPLATE, EMPTY + OLD_SOURCE),
+            'holds a prompt': (prompts.TEMPLATE, EMPTY.replace('<!-- Yours. -->', PROMPT)),
+            'setup/Prompts.md names tannergolden/vault': (prompts.TEMPLATE,
+                                                          EMPTY.replace('Yours.', 'tannergolden/vault')),
         }
-        for fragment, text in cases.items():
+        for fragment, (name, text) in cases.items():
             with self.subTest(fragment=fragment):
-                self.write(text)
+                self.setUp()
+                self.write(text, name)
                 found = prompts.problems(self.root)
                 self.assertTrue(any(fragment in line for line in found), found)
                 self.assertEqual(self.check(), 1)
 
-    def test_a_missing_source_is_named(self) -> None:
-        self.assertEqual(prompts.problems(self.root), [f'{prompts.SOURCE} is missing'])
+    def test_a_missing_file_is_named(self) -> None:
+        (self.root / prompts.UNIVERSAL).unlink()
+        (self.root / prompts.TEMPLATE).unlink()
+        self.assertEqual(prompts.problems(self.root),
+                         [f'{prompts.UNIVERSAL} is missing', f'{prompts.TEMPLATE} is missing'])
 
     def test_a_broken_prompt_fails_the_check_with_its_line(self) -> None:
         self.write(SOURCE.replace('<task>\n', '<task>\n<constraints>\n', 1))
         found = prompts.problems(self.root)
         line = SOURCE.splitlines().index('<task>') + 2
-        self.assertIn(f'{prompts.SOURCE}:{line}: "Fix A Bug": <constraints> is never closed', found)
+        self.assertIn(f'{prompts.UNIVERSAL}:{line}: "Fix A Bug": <constraints> is never closed', found)
         self.assertEqual(self.check(), 1)
+
+    def test_without_check_it_prints_the_page_a_repository_first_gets(self) -> None:
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(prompts.main(['--root', str(self.root)]), 0)
+        self.assertEqual(out.getvalue(), EMPTY)
 
 
 def changed(*pairs: tuple[str, str]) -> str:
@@ -195,13 +230,13 @@ class TestLint(unittest.TestCase):
         found = prompts.lint(text)
         self.assertTrue(any(fragment in line for line in found), found)
 
-    def test_a_sound_block_passes(self) -> None:
+    def test_a_sound_file_passes(self) -> None:
         self.assertEqual(prompts.lint(SOURCE), [])
 
     def test_each_problem_names_its_line(self) -> None:
         line = SOURCE.splitlines().index('Fix it.') + 1
         self.assertEqual(prompts.lint(changed(('Fix it.\n', 'Fix it. \n'))), [
-            f'{prompts.SOURCE}:{line}: trailing whitespace, which a formatter strips or reads as a line break'])
+            f'{prompts.UNIVERSAL}:{line}: trailing whitespace, which a formatter strips or reads as a line break'])
 
     def test_text_a_formatter_would_rewrite_is_caught(self) -> None:
         for fragment, text in FORMATTER_CASES.items():
@@ -237,7 +272,7 @@ class TestLint(unittest.TestCase):
             'is not a tag this file writes': changed(('<task>', '<Task>'), ('</task>', '</Task>')),
             'over the cap': changed(('Fix it.', 'Fix it. ' + 'Then check it. ' * (prompts.CAP // 15))),
             'a second heading "Fix A Bug"': changed((PROMPT, f'{PROMPT}\n{PROMPT}')),
-            'a heading in the block is': changed(('### Fix A Bug', '#### Fix A Bug')),
+            'a heading here is': changed(('### Fix A Bug', '#### Fix A Bug')),
             'holds no universal prompt': changed((PROMPT, 'No prompt here.\n')),
         }
         for fragment, text in cases.items():
@@ -297,7 +332,7 @@ class TestLint(unittest.TestCase):
 
     def test_the_index_links_every_prompt_once_by_its_name(self) -> None:
         cases = {
-            'the block has no "## Find A Prompt" part': changed(('## Find A Prompt', '## Prompts')),
+            'the file has no "## Find A Prompt" part': changed(('## Find A Prompt', '## Prompts')),
             '"Fix A Bug" is missing from the "Find A Prompt" index': changed(('- [Fix A Bug](#fix-a-bug)', '- None.')),
             'the index links #fix-it, which no prompt heading makes': changed(('(#fix-a-bug)', '(#fix-it)')),
             'the index calls "Fix A Bug" "Bug Fixing"': changed(('[Fix A Bug]', '[Bug Fixing]')),
@@ -317,42 +352,9 @@ class TestLint(unittest.TestCase):
         self.assertEqual(prompts.lint(changed(('{{WHAT_BROKE}}', '{{WHAT_MUST_WORK}}'))), [])
 
 
-class TestCompare(unittest.TestCase):
-    """What a newer block does to the universal prompts, named for the pull request that delivers it."""
-
-    def inner(self, text: str) -> str:
-        return prompts.find(prompts.seal(text).seed).inner
-
-    def test_each_prompt_added_reworded_and_dropped_is_named(self) -> None:
-        old = self.inner(changed((PROMPT, PROMPT + '\n' + PROMPT.replace('Fix A Bug', 'Explain This Code'))))
-        new = self.inner(changed((PROMPT, PROMPT + '\n' + PROMPT.replace('Fix A Bug', 'Plan A Change')),
-                                 ('Fix it.', 'Find the cause, and fix it.')))
-        self.assertEqual(prompts.compare(old, new),
-                         'adds Plan A Change, rewords Fix A Bug and drops Explain This Code')
-
-    def test_a_change_to_the_guide_alone_says_so(self) -> None:
-        old = self.inner(SOURCE)
-        self.assertEqual(prompts.compare(old, self.inner(changed(('Copy one.', 'Copy it.')))),
-                         'changes only the guide around the prompts')
-
-    def test_a_new_use_when_line_is_a_rewording(self) -> None:
-        old = self.inner(SOURCE)
-        self.assertEqual(prompts.compare(old, self.inner(changed(('it breaks.', 'it fails.')))),
-                         'rewords Fix A Bug')
-
-    def test_names_read_as_prose(self) -> None:
-        self.assertEqual([prompts.listed(names) for names in (['A'], ['A', 'B'], ['A', 'B', 'C'])],
-                         ['A', 'A and B', 'A, B and C'])
-
-    def test_a_long_list_is_counted_with_its_first_names(self) -> None:
-        many = [f'Prompt {number}' for number in range(1, 10)]
-        self.assertEqual(prompts.named('adds', many[:6]), 'adds ' + prompts.listed(many[:6]))
-        self.assertEqual(prompts.named('adds', many), 'adds 9 prompts (Prompt 1, Prompt 2, Prompt 3 and 6 more)')
-
-
 @unittest.skipUnless(shutil.which('prettier'), 'Prettier is not installed')
 class TestPrettierAgrees(unittest.TestCase):
-    """Where Prettier is installed: it leaves the real source as it is, and rewrites what each formatter rule finds."""
+    """Where Prettier is installed: it leaves the real files as they are, and rewrites what each rule finds."""
 
     # The standards' config/prettierrc.json, which their auto-format workflow formats every repository with.
     CONFIG = {'singleQuote': True, 'tabWidth': 2, 'printWidth': 80, 'trailingComma': 'es5'}
@@ -365,9 +367,11 @@ class TestPrettierAgrees(unittest.TestCase):
                                   capture_output=True, text=True, check=True)
         return done.stdout
 
-    def test_the_real_source_is_as_prettier_writes_it(self) -> None:
-        text = (ROOT / prompts.SOURCE).read_text(encoding='utf-8')
-        self.assertEqual(self.formatted(text), text)
+    def test_the_real_files_are_as_prettier_writes_them(self) -> None:
+        for name in (prompts.UNIVERSAL, prompts.TEMPLATE):
+            with self.subTest(name=name):
+                text = (ROOT / name).read_text(encoding='utf-8')
+                self.assertEqual(self.formatted(text), text)
 
     def test_each_formatter_rule_catches_a_change_prettier_would_make(self) -> None:
         self.assertEqual(self.formatted(SOURCE), SOURCE)
@@ -377,23 +381,24 @@ class TestPrettierAgrees(unittest.TestCase):
 
 
 class TestTheRealPrompts(unittest.TestCase):
-    """`setup/Prompts.md` in this repository."""
+    """The universal prompts in this hub's `docs/Prompts.md`, and the page in `setup/Prompts.md`."""
 
     def setUp(self) -> None:
-        self.text = (ROOT / prompts.SOURCE).read_text(encoding='utf-8')
-        self.release = prompts.load(ROOT)
+        self.text = (ROOT / prompts.UNIVERSAL).read_text(encoding='utf-8')
+        self.page = (ROOT / prompts.TEMPLATE).read_text(encoding='utf-8')
 
-    def test_it_breaks_no_rule(self) -> None:
+    def test_they_break_no_rule(self) -> None:
         self.assertEqual(prompts.problems(ROOT), [])
 
-    def test_it_opens_with_the_frontmatter_the_standards_require(self) -> None:
-        self.assertTrue(self.text.startswith('<!--\ntitle: '))
-        head = self.text.split('-->', 1)[0]
-        for key in ('description', 'type', 'keywords'):
-            self.assertRegex(head, rf'(?m)^{key}: ')
+    def test_each_opens_with_the_frontmatter_the_standards_require(self) -> None:
+        for text in (self.text, self.page):
+            self.assertTrue(text.startswith('<!--\ntitle: '))
+            head = text.split('-->', 1)[0]
+            for key in ('description', 'type', 'keywords'):
+                self.assertRegex(head, rf'(?m)^{key}: ')
 
-    def test_it_holds_the_universal_prompts(self) -> None:
-        universal, _ = prompts.parse(prompts.find(self.release.seed).inner)
+    def test_the_hub_holds_the_universal_prompts(self) -> None:
+        universal = prompts.universal(ROOT)
         self.assertGreaterEqual(len(universal), 5)
         self.assertTrue(all(prompt.blocks == 1 for prompt in universal))
 
@@ -406,9 +411,15 @@ class TestTheRealPrompts(unittest.TestCase):
         for name in names:
             self.assertRegex(name, r'^[A-Z][A-Z_]*$')
 
-    def test_the_repositorys_own_section_sits_outside_the_block(self) -> None:
-        found = prompts.find(self.release.seed)
-        self.assertGreater(self.release.seed.index('## 📌 Prompts For This Repository'), found.end)
+    def test_the_page_a_repository_gets_is_empty_and_points_here(self) -> None:
+        self.assertEqual(prompts.template(ROOT), self.page)
+        for section in ('Use It', 'Change It', 'Understand It'):
+            self.assertRegex(self.page, rf'(?m)^## \S+ {section}$')
+        self.assertIn(f']({prompts.HUB_PROMPTS})', self.page)
+        self.assertNotRegex(self.page, r'(?m)^### |^```')
+
+    def test_the_note_that_replaces_the_old_one_points_here_too(self) -> None:
+        self.assertIn(f']({prompts.HUB_PROMPTS})', prompts.NEW_NOTE)
 
 
 if __name__ == '__main__':
