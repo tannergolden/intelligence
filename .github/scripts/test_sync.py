@@ -57,13 +57,9 @@ GREEN = ([{'name': 'ci', 'status': 'completed', 'conclusion': 'success'}], {'sta
 GIT = ['git', '-c', 'user.name=Test', '-c', 'user.email=test@example.com', '-c', 'commit.gpgsign=false',
        '-c', 'tag.gpgsign=false']
 
-# The empty page a release gives a repository; the page an earlier release delivered, with the universal
-# prompts sealed in; and what that release's setup/Prompts.md held, the universal prompts for sync to seal.
-PAGE = '<!--\ntitle: x\n-->\n\n# Prompts\n\n---\n\n## Use It\n\n<!-- Yours. -->\n\n---\n\nThe end.\n'
-OLD_INNER = '## How\n\nCopy one.\n'
-OLD_PAGE = ('# Prompts\n\n---\n\n'
-            f'<!-- INTELLIGENCE:PROMPTS:BEGIN sha256:{render.digest(OLD_INNER)} -->\n\n{OLD_INNER}\n'
-            '<!-- INTELLIGENCE:PROMPTS:END -->\n\n---\n\n## Prompts For This Repository\n\n_Yours._\n')
+# The empty page a release gives a repository, and what an earlier release's setup/Prompts.md held: the universal
+# prompts, between markers for sync to seal.
+PAGE = '<!--\ntitle: x\n-->\n\n# Prompts\n\n---\n\n> Yours.\n\n---\n\nThe end.\n'
 OLD_SOURCE = '<!-- INTELLIGENCE:PROMPTS:BEGIN -->\n\n## How\n\nCopy one.\n\n<!-- INTELLIGENCE:PROMPTS:END -->\n'
 
 
@@ -542,17 +538,6 @@ class TestPromptsPage(SyncTestCase):
         self.assertTrue(all(len(line) <= 72 for line in body.splitlines() if not line.startswith('Signed-off-by:')))
         self.assertIn('review it by hand', self.gh.prs['alpha']['body'])
 
-    def test_the_universal_prompts_come_out_and_its_own_prompts_stay(self) -> None:
-        mine = OLD_PAGE.replace('_Yours._', '### Ship A Release\n\nOurs.')
-        self.gh.add('alpha', self.current(**{self.TARGET: mine}))
-        self.run_sync('sync')
-        page = self.branch('alpha')[self.TARGET]
-        self.assertEqual(page, '# Prompts\n\n---\n\n## Prompts For This Repository\n\n### Ship A Release\n\nOurs.\n')
-        title, body = self.gh.messages['alpha'].split('\n\n', 1)
-        self.assertEqual(title, 'chore(agents): 🤖 leave the universal prompts to the hub')
-        self.assertIn("leaves this repository's own prompts as they were", body.replace('\n', ' '))
-        self.assertIn('finds no universal prompts left', self.gh.prs['alpha']['body'])
-
     def test_a_page_of_its_own_and_the_topic_keep_sync_out(self) -> None:
         self.gh.add('alpha', self.current(**{self.TARGET: '# Our own prompts\n'}))
         self.gh.add('beta', self.current(), topics=['no-intelligence-prompts'])
@@ -562,21 +547,18 @@ class TestPromptsPage(SyncTestCase):
             self.assertIn(f'{name}: current', out)
         self.assertEqual(self.gh.writes, [])
 
-    def test_a_dry_run_names_the_change_to_the_page(self) -> None:
-        self.gh.add('alpha', self.current(**{self.TARGET: OLD_PAGE}))
+    def test_a_dry_run_names_the_page(self) -> None:
+        self.gh.add('alpha', self.current())
         _code, out = self.run_sync('sync', '--dry-run')
-        self.assertIn('alpha: would update (takes the universal prompts out of `docs/Prompts.md`', out)
+        self.assertIn('alpha: would update (adds `docs/Prompts.md`', out)
         self.assertEqual(self.gh.writes, [])
 
-    def test_a_change_to_the_page_waits_for_review_by_hand(self) -> None:
-        for files in ({}, {self.TARGET: OLD_PAGE}):
-            with self.subTest(files=list(files)):
-                self.gh = FakeGitHub()
-                self.gh.add('alpha', {'AGENTS.md': '# Alpha\n\n' + OLD, **files})
-                self.run_sync('sync')
-                _code, out = self.run_sync('merge')
-                self.assertIn('review it by hand', out)
-                self.assertEqual(self.gh.merged, [])
+    def test_adding_the_page_waits_for_review_by_hand(self) -> None:
+        self.gh.add('alpha', {'AGENTS.md': '# Alpha\n\n' + OLD})
+        self.run_sync('sync')
+        _code, out = self.run_sync('merge')
+        self.assertIn('review it by hand', out)
+        self.assertEqual(self.gh.merged, [])
 
     def test_a_release_from_before_the_page_brings_none(self) -> None:
         # Its setup/Prompts.md held the universal prompts for sync to seal; this sync delivers no prompts at all.
@@ -586,19 +568,11 @@ class TestPromptsPage(SyncTestCase):
         self.assertIn('alpha: current', out)
         self.assertEqual(self.gh.writes, [])
 
-    def test_audit_names_what_sync_has_left_to_do(self) -> None:
-        cases = {
-            'no docs/Prompts.md': {},
-            'docs/Prompts.md still holds the universal prompts, which the next sync takes out':
-                {self.TARGET: OLD_PAGE},
-        }
-        for expected, files in cases.items():
-            with self.subTest(expected=expected):
-                self.gh = FakeGitHub()
-                self.gh.add('alpha', self.current(**files))
-                code, out = self.run_sync('audit')
-                self.assertEqual(code, 1, out)
-                self.assertIn(expected, out)
+    def test_audit_names_a_repository_without_its_page(self) -> None:
+        self.gh.add('alpha', self.current())
+        code, out = self.run_sync('audit')
+        self.assertEqual(code, 1, out)
+        self.assertIn('alpha: no docs/Prompts.md', out)
         self.gh = FakeGitHub()
         self.gh.add('alpha', self.current(**{self.TARGET: PAGE}))
         self.gh.add('beta', self.current(**{self.TARGET: '# Ours\n'}))
@@ -833,17 +807,14 @@ class TestApply(unittest.TestCase):
         self.assertIn('Approve workflows to run', values['pr-body'])
         self.assertEqual((self.checkout / 'AGENTS.md').read_text(encoding='utf-8'), '# Alpha\n\n' + CURRENT)
 
-    def test_the_universal_prompts_are_taken_out_in_place(self) -> None:
+    def test_a_page_of_its_own_is_left_alone_in_the_checkout(self) -> None:
         self.ship_page()
-        (self.checkout / 'AGENTS.md').write_text('# Alpha\n\n' + OLD, encoding='utf-8')
+        (self.checkout / 'AGENTS.md').write_text('# Alpha\n\n' + CURRENT, encoding='utf-8')
         (self.checkout / 'docs').mkdir()
-        (self.checkout / sync.prompts.TARGET).write_text(OLD_PAGE, encoding='utf-8')
-        code, out = self.run_apply()
-        self.assertEqual(code, 0, out)
-        self.assertIn('updates the block, to', out)
-        self.assertIn('takes the universal prompts out of `docs/Prompts.md`', out)
-        self.assertEqual((self.checkout / sync.prompts.TARGET).read_text(encoding='utf-8'),
-                         '# Prompts\n\n---\n\n## Prompts For This Repository\n\n_Yours._\n')
+        (self.checkout / sync.prompts.TARGET).write_text('# Ours\n', encoding='utf-8')
+        _code, out = self.run_apply()
+        self.assertIn('alpha: current', out)
+        self.assertEqual((self.checkout / sync.prompts.TARGET).read_text(encoding='utf-8'), '# Ours\n')
 
     def test_the_topic_keeps_the_page_out_of_the_checkout(self) -> None:
         self.ship_page()

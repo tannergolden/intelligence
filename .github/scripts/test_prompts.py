@@ -3,12 +3,11 @@
 
 WHY THIS EXISTS. The universal prompts stay in the hub's `docs/Prompts.md`,
 and every repository that takes part in sync gets `docs/Prompts.md` once, as
-an empty page of its own. Three promises matter: a repository's own page is
-never touched, the universal prompts an earlier release sealed into a
-repository come out again with nothing else lost, and every universal prompt
-keeps the shape its practices describe, in text no formatter would rewrite.
-These hold the change sync makes to a repository's page, each rule `--check`
-holds the hub's two files to, and the real files to all three.
+an empty page of its own. Two promises matter: a repository's own page is
+never touched, and every universal prompt keeps the shape its practices
+describe, in text no formatter would rewrite. These hold the change sync
+makes to a repository's page, each rule `--check` holds the hub's two files
+to, and the real files to both.
 
 Run it:
 
@@ -28,7 +27,6 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from unittest import mock
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
@@ -54,15 +52,9 @@ READY = ('### Tour The Code\n\n**Use when** you are new here.\n\n```text\n<conte
          'repository.\n</context>\n\n<task>\nShow me around it.\n</task>\n\n<output>\nA short tour.\n</output>\n```\n')
 # The hub's universal prompts: a header, the prompts, and a footer, each part set off by a --- line.
 SOURCE = '<!--\ntitle: x\n-->\n\n# Prompts\n\n---\n\n' + INNER + '\n---\n\nThe end.\n'
-# The page a repository first gets.
-EMPTY = '<!--\ntitle: x\n-->\n\n# Prompts\n\n---\n\n## Use It\n\n<!-- Yours. -->\n\n---\n\nThe end.\n'
-# A repository's page as an earlier release delivered it, with the universal prompts sealed in.
-OLD_INNER = '## How\n\nCopy one.\n'
-OLD = ('# Prompts\n\n---\n\n'
-       f'<!-- INTELLIGENCE:PROMPTS:BEGIN sha256:{render.digest(OLD_INNER)} -->\n\n{OLD_INNER}\n'
-       '<!-- INTELLIGENCE:PROMPTS:END -->\n\n---\n\n## Prompts For This Repository\n\n'
-       f'{prompts.OLD_NOTE}\n\n---\n\nThe end.\n')
-# What an earlier release's setup/Prompts.md held: the universal prompts, between markers for sync to seal.
+# The page a repository first gets, and what an earlier release's setup/Prompts.md held: the universal prompts,
+# between markers for sync to seal.
+EMPTY = '<!--\ntitle: x\n-->\n\n# Prompts\n\n---\n\n> Yours.\n\n---\n\nThe end.\n'
 OLD_SOURCE = '<!-- INTELLIGENCE:PROMPTS:BEGIN -->\n\nOld.\n\n<!-- INTELLIGENCE:PROMPTS:END -->\n'
 
 
@@ -73,52 +65,10 @@ class TestPage(unittest.TestCase):
         self.assertEqual(prompts.change(None, EMPTY), (EMPTY, prompts.ADDED))
 
     def test_a_page_of_its_own_is_never_touched(self) -> None:
-        for own in ('# Our prompts\n', EMPTY, EMPTY.replace('<!-- Yours. -->', '### Ship It\n\nOurs.')):
+        for own in ('# Our prompts\n', EMPTY, EMPTY.replace('> Yours.', '## Release\n\n### Ship It\n\nOurs.'),
+                    OLD_SOURCE):
             with self.subTest(own=own[-30:]):
                 self.assertEqual(prompts.change(own, EMPTY), (None, None))
-
-    def test_the_universal_prompts_come_out_and_its_own_stay(self) -> None:
-        mine = OLD.replace(prompts.OLD_NOTE, prompts.OLD_NOTE + '\n\n### Ship A Release\n\nOurs.')
-        text, note = prompts.change(mine, EMPTY)
-        self.assertEqual(note, prompts.TAKEN_OUT)
-        self.assertEqual(text, '# Prompts\n\n---\n\n## Prompts For This Repository\n\n'
-                               f'{prompts.NEW_NOTE}\n\n### Ship A Release\n\nOurs.\n\n---\n\nThe end.\n')
-
-    def test_a_note_the_repository_reworded_stays_its_own(self) -> None:
-        text, _note = prompts.change(OLD.replace(prompts.OLD_NOTE, '_Ours._'), EMPTY)
-        self.assertIn('_Ours._', text)
-        self.assertNotIn('INTELLIGENCE:PROMPTS', text)
-
-    def test_a_block_at_either_end_comes_out_cleanly(self) -> None:
-        block = OLD[OLD.index('<!-- INTELLIGENCE'):OLD.index('\n\n---\n\n## Prompts') + 1]
-        for text, left in ((block + '\n# Ours\n', '# Ours\n'), ('# Ours\n\n' + block, '# Ours\n')):
-            with self.subTest(text=text[:20]):
-                self.assertEqual(prompts.change(text, EMPTY)[0], left)
-
-    def test_a_file_untouched_since_its_release_becomes_the_empty_page(self) -> None:
-        found = prompts.find(OLD)
-        rest = OLD[:found.start] + OLD[found.end:]
-        with mock.patch.object(prompts, 'DELIVERED', frozenset({prompts.hashlib.sha256(rest.encode()).hexdigest()})):
-            self.assertEqual(prompts.change(OLD, EMPTY), (EMPTY, prompts.TAKEN_OUT))
-            self.assertEqual(prompts.change(OLD.replace('\n', '\r\n'), EMPTY)[0], EMPTY)
-
-    def test_the_file_the_release_delivered_becomes_the_empty_page(self) -> None:
-        # v0.3.0 delivered the universal prompts; its file, sealed as sync sealed it, is the one DELIVERED knows.
-        done = subprocess.run(['git', 'show', 'v0.3.0:setup/Prompts.md'], cwd=ROOT, capture_output=True, text=True,
-                              check=False)
-        if done.returncode != 0:
-            self.skipTest('the v0.3.0 tag is not fetched here')
-        source = done.stdout
-        inner = re.search(r'<!-- INTELLIGENCE:PROMPTS:BEGIN -->\n(.*?)<!-- INTELLIGENCE:PROMPTS:END -->', source,
-                          re.S).group(1).strip('\n') + '\n'
-        seed = source.replace('<!-- INTELLIGENCE:PROMPTS:BEGIN -->',
-                              f'<!-- INTELLIGENCE:PROMPTS:BEGIN sha256:{render.digest(inner)} -->')
-        self.assertEqual(prompts.change(seed, EMPTY), (EMPTY, prompts.TAKEN_OUT))
-
-    def test_two_blocks_are_refused(self) -> None:
-        found = prompts.find(OLD)
-        with self.assertRaises(ValueError):
-            prompts.change(OLD + OLD[found.start:found.end], EMPTY)
 
     def test_only_the_topic_keeps_the_page_out(self) -> None:
         self.assertTrue(prompts.opted_out({'topics': ['no-intelligence-prompts']}))
@@ -131,10 +81,6 @@ class TestPage(unittest.TestCase):
         self.assertEqual(prompts.page(EMPTY), EMPTY)
         with tempfile.TemporaryDirectory() as folder:
             self.assertIsNone(prompts.template(pathlib.Path(folder)))
-
-    def test_the_rules_block_is_never_taken_for_the_prompts(self) -> None:
-        self.assertIsNone(prompts.find(render.region('## Working rules\n\n- X: Y.\n')))
-        self.assertIsNone(render.find(OLD))
 
 
 class TestProblems(unittest.TestCase):
@@ -161,13 +107,12 @@ class TestProblems(unittest.TestCase):
 
     def test_each_problem_is_named(self) -> None:
         cases = {
-            'the universal prompts stay in the hub': (prompts.UNIVERSAL, SOURCE.replace(
-                '## How', '<!-- INTELLIGENCE:PROMPTS:BEGIN -->\n\n## How')),
             'tannergolden/vault': (prompts.UNIVERSAL, SOURCE.replace('Copy one.', 'See tannergolden/vault.')),
             'en or em dash': (prompts.UNIVERSAL, SOURCE.replace('Copy one.', 'Copy one \u2014 then paste it.')),
             'its header and its footer': (prompts.UNIVERSAL, SOURCE.replace('---\n', '', 1)),
             'the page a repository gets is all its own': (prompts.TEMPLATE, EMPTY + OLD_SOURCE),
-            'holds a prompt': (prompts.TEMPLATE, EMPTY.replace('<!-- Yours. -->', PROMPT)),
+            'holds a section or a prompt': (prompts.TEMPLATE, EMPTY.replace('> Yours.', PROMPT)),
+            'its owner makes both': (prompts.TEMPLATE, EMPTY.replace('> Yours.', '## Use It')),
             'setup/Prompts.md names tannergolden/vault': (prompts.TEMPLATE,
                                                           EMPTY.replace('Yours.', 'tannergolden/vault')),
         }
@@ -413,13 +358,8 @@ class TestTheRealPrompts(unittest.TestCase):
 
     def test_the_page_a_repository_gets_is_empty_and_points_here(self) -> None:
         self.assertEqual(prompts.template(ROOT), self.page)
-        for section in ('Use It', 'Change It', 'Understand It'):
-            self.assertRegex(self.page, rf'(?m)^## \S+ {section}$')
-        self.assertIn(f']({prompts.HUB_PROMPTS})', self.page)
-        self.assertNotRegex(self.page, r'(?m)^### |^```')
-
-    def test_the_note_that_replaces_the_old_one_points_here_too(self) -> None:
-        self.assertIn(f']({prompts.HUB_PROMPTS})', prompts.NEW_NOTE)
+        self.assertNotRegex(self.page, r'(?m)^##|^```', 'its owner makes every section and prompt')
+        self.assertIn('](https://github.com/tannergolden/intelligence/blob/Development/docs/Prompts.md)', self.page)
 
 
 if __name__ == '__main__':

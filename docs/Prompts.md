@@ -2172,7 +2172,7 @@ Write the prompt; do not do the task it describes. Give it a ### heading, a **Us
 </constraints>
 
 <done_when>
-- The prompt sits in docs/Prompts.md, in the section it fits, in a new file if there is none, and nothing else in the file changed.
+- The prompt sits in docs/Prompts.md, under the section it fits or a new one, creating the file if needed, and nothing else in it changed.
 - You show me the prompt as an agent would receive it, filled in once with a real example if it has placeholders, so I can see how it reads.
 </done_when>
 ```

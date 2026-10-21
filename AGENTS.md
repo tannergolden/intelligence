@@ -92,7 +92,7 @@ serves to this repository from its `.github` repository.
 - The guard hook denies a commit git would author as an AI. In a cloud session, pass `--author` and `--trailer 'Signed-off-by: ...'` with your user's identity, never `-s`.
 - Changing `CONSTITUTION.md` changes nothing elsewhere until a release: other repositories receive the rules only through one, which their stub or `make sync` delivers.
 - `sync.py`, `render.py`, `kit.py` and `prompts.py`, and `setup/Prompts.md`, also run or are read inside every repository that carries the stub, at the hub's latest release, from the archive GitHub serves. Cut Release refuses a tag without them, `.gitattributes` keeps `.github/scripts/` in that archive, and `test_stub.py` holds both.
-- The universal prompts live in `docs/Prompts.md` and reach no other repository. `setup/Prompts.md` is the empty page a repository gets once; after that sync never changes a repository's page, except to take out the universal prompts v0.3.0 sealed into it.
+- The universal prompts live in `docs/Prompts.md` and reach no other repository. `setup/Prompts.md` is the empty page a repository gets once; after that sync never changes a repository's page.
 - Never put the `INTELLIGENCE` block in this file, and never add a `CLAUDE.md`. The hub holds the source of the rules, so a copy beside it would be a second source, and a `CLAUDE.md` would make Claude Code skip this file.
 
 ## Ask first

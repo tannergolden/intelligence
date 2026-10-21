@@ -35,7 +35,6 @@ line, with one blank line between each marker and the block:
 | Block              | Markers                                                                    | Where it sits                                                                             |
 | :----------------- | :------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------- |
 | The rules          | `INTELLIGENCE:BEGIN sha256:<hash>`, `INTELLIGENCE:END`                     | `home/intelligence.md`, every home copy, and every repository's root `AGENTS.md`          |
-| Prompts, retired   | `INTELLIGENCE:PROMPTS:BEGIN sha256:<hash>`, `INTELLIGENCE:PROMPTS:END`     | A repository's `docs/Prompts.md`, where release v0.3.0 wrote it; sync takes it out        |
 | Knowledge, retired | `INTELLIGENCE:KNOWLEDGE:BEGIN sha256:<hash>`, `INTELLIGENCE:KNOWLEDGE:END` | Beside a home copy, where a release before kit format 2 wrote it; an install takes it out |
 
 **The hash is the SHA-256 of the block's text**: everything between the two
@@ -149,7 +148,7 @@ comment at its top, so the installer can tell it is the kit's.
 | What                                      | Shape                                                                                                                                                                                                                                                                                                                                                          |
 | :---------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `AGENTS.md`                               | The rules block and the sections the repository owns. One a first sync creates has hidden frontmatter, a masthead, the block, an `[!IMPORTANT]` admonition saying the repository's own rules go below it, then `## Commands`, `## Definition of done`, `## Conventions`, `## Where things live`, `## Gotchas`, `## Ask first` and `## Overrides`, and a footer |
-| `docs/Prompts.md`                         | The repository's own page. One sync adds has hidden frontmatter, a masthead, a `[!TIP]` note saying what goes there with a link to the hub's universal prompts, then `## 🧭 Use It`, `## 🛠️ Change It` and `## 🔍 Understand It`, each empty, and a footer                                                                                                     |
+| `docs/Prompts.md`                         | The repository's own page. One sync adds has hidden frontmatter, a masthead, a `[!TIP]` note saying what goes there, with a link to the hub's universal prompts, and a footer: no section or prompt, which its owner makes                                                                                                                                     |
 | `.github/workflows/intelligence-sync.yml` | The stub, at exactly that path, which is where `make audit` looks for it                                                                                                                                                                                                                                                                                       |
 | Topics                                    | `no-intelligence` keeps the repository out of sync; `no-intelligence-prompts` keeps only the prompts page out                                                                                                                                                                                                                                                  |
 
@@ -166,10 +165,8 @@ repository's root: a `DOC-002` entry turns its em dash check off there.
 `chore(agents): 🤖 sync the universal rules to <hash>`, ending in the first
 twelve hex digits of the block's hash. When the rules are current and only
 `docs/Prompts.md` changes, it is
-`chore(agents): 🤖 add a page for this repository's own prompts`, or
-`chore(agents): 🤖 leave the universal prompts to the hub` where it takes out
-the block v0.3.0 delivered. Its body has `## Impact`, `## Validation` and
-`## Rollback` sections.
+`chore(agents): 🤖 add a page for this repository's own prompts`. Its body has
+`## Impact`, `## Validation` and `## Rollback` sections.
 
 ---
 

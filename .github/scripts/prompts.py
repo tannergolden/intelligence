@@ -7,21 +7,17 @@ hub keeps universal prompts, written the way a good prompt is written, in
 its own `docs/Prompts.md`, for anyone to copy into any AI app in any
 repository. They stay in the hub. Every repository that takes part in sync
 gets `docs/Prompts.md` once, from `setup/Prompts.md`: an empty page for its
-own prompts, the ones that only make sense there, for using it, changing it
-and understanding it. Sync never changes that page again.
-
-An earlier release delivered the universal prompts into each repository's
-`docs/Prompts.md`, between sealed `INTELLIGENCE:PROMPTS` markers. Sync takes
-that block out again and leaves everything else in the file, the
-repository's own prompts included; a file nobody touched since that release
-becomes the empty page.
+own prompts, the ones that only make sense there, such as ones for using it,
+changing it or understanding it, under sections its owner makes. Sync never
+changes that page again.
 
 WHAT --check HOLDS THE HUB TO. Everyone copies the universal prompts from
 here, so `--check` names each problem a reader would miss, with its line:
 
-- no private repository named, no en or em dash, and no INTELLIGENCE:PROMPTS
-  marker, in either file, since nothing seals or delivers the prompts now;
-- a page a repository first gets that holds no prompt of its own;
+- no private repository named and no en or em dash, in either file;
+- a page a repository first gets that holds no section or prompt, which its
+  owner makes, and no INTELLIGENCE:PROMPTS marker, which marks a release
+  from before the page;
 - text a formatter leaves exactly as it is: no trailing whitespace or tab,
   no two blank lines in a row, `## ` and `### ` headings with a blank line
   around each, `-` bullets, and every block of code a ```text fence that
@@ -57,44 +53,23 @@ from __future__ import annotations
 
 import argparse
 import dataclasses
-import hashlib
 import pathlib
 import re
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import kit  # noqa: E402  the names a public file may carry, and the dash it may not
-import render  # noqa: E402  the shape of a block an earlier release sealed
+import render  # noqa: E402  the plain text a rule is held to, which a prompt is held to as well
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 UNIVERSAL = 'docs/Prompts.md'  # the universal prompts, in the hub
 TEMPLATE = 'setup/Prompts.md'  # the page a repository first gets
 TARGET = 'docs/Prompts.md'  # where a repository keeps its own prompts
 OPT_OUT = 'no-intelligence-prompts'
-HUB_PROMPTS = 'https://github.com/tannergolden/intelligence/blob/Development/docs/Prompts.md'
-
-# The block an earlier release sealed into a repository's docs/Prompts.md,
-# which sync takes out; and any of its markers, sealed or not, which neither
-# file in the hub may carry.
-SEALED = re.compile(r'^<!-- INTELLIGENCE:PROMPTS:BEGIN sha256:(?P<hash>[0-9a-f]{64}) -->[ \t]*\r?\n'
-                    r'(?P<inner>.*?)'
-                    r'^<!-- INTELLIGENCE:PROMPTS:END -->[ \t]*(?:\r?\n|\Z)', re.M | re.S)
+# The marker a release from before the page used, when its setup/Prompts.md
+# held the universal prompts for sync to seal into each repository.
 MARKER = re.compile(r'^<!-- INTELLIGENCE:PROMPTS:(?:BEGIN|END)\b', re.M)
-# What a file a release delivered holds outside its block, as SHA-256 of its
-# text with LF line endings, for every release that delivered one: v0.3.0,
-# which v0 also pointed at. A file that still holds exactly that is untouched
-# since, and becomes the empty page whole.
-DELIVERED = frozenset({'f9c3b26638b8940b35ac9af8084161952d8dde3ec18399e6233d0335f1523aac'})
-# The note that release put above a repository's own prompts, and what
-# replaces it where the repository kept the note as it was.
-OLD_NOTE = ("_This repository's own prompts go here, in the shape above. \U0001f501 Intelligence Sync keeps the guide "
-            "and the universal prompts above current, and never changes this section._")
-NEW_NOTE = ("_This repository's own prompts go here, each with a `###` heading, a **Use when** line and one `text` "
-            "block. Prompts that work in any repository, and how to write a good one, are in the "
-            f"[universal prompts]({HUB_PROMPTS})._")
 ADDED = "adds `docs/Prompts.md`, an empty page for this repository's own prompts"
-TAKEN_OUT = ("takes the universal prompts out of `docs/Prompts.md`, since they now stay in the hub, and leaves this "
-             "repository's own prompts as they were")
 
 # The sections a universal prompt is built from, in the order it holds them,
 # as the practices in the file describe them to a person. Each appears at
@@ -144,18 +119,6 @@ HIDDEN = re.compile('[\u200b\u200c\u200e\u200f\u202a-\u202e\u2060-\u2064\u2066-\
 # --- A repository's page ----------------------------------------------------------------------------
 
 
-def find(text: str) -> render.Found | None:
-    """The block an earlier release sealed into `text`, or None. More than one is an error."""
-    matches = list(SEALED.finditer(text))
-    if len(matches) > 1:
-        raise ValueError('more than one INTELLIGENCE:PROMPTS block')
-    if not matches:
-        return None
-    match = matches[0]
-    inner = match.group('inner').replace('\r\n', '\n').strip('\n') + '\n'
-    return render.Found(match.start(), match.end(), match.group('hash'), inner)
-
-
 def page(text: str) -> str | None:
     """The page a repository first gets, from the text of a hub's `setup/Prompts.md`.
 
@@ -176,45 +139,13 @@ def opted_out(repo: dict) -> bool:
     return OPT_OUT in (repo.get('topics') or [])
 
 
-def untouched(rest: str) -> bool:
-    """Whether what a file holds outside its block is exactly what a release delivered."""
-    return hashlib.sha256(rest.replace('\r\n', '\n').encode('utf-8')).hexdigest() in DELIVERED
-
-
-def without_block(current: str, empty: str) -> str:
-    """`current` with the block an earlier release delivered taken out, and everything else as it was.
-
-    A file nobody touched since that release becomes the empty page. Where the
-    block sat between two `---` lines, one stays, and the note that release put
-    above the repository's own prompts, where it is still as written, points
-    at the hub instead.
-    """
-    found = find(current)
-    if found is None:
-        return current
-    before, after = current[:found.start], current[found.end:]
-    if untouched(before + after):
-        return empty
-    before, after = before.rstrip('\n'), after.lstrip('\n')
-    if before.rsplit('\n', 1)[-1].strip() == '---' and after.split('\n', 1)[0].strip() == '---':
-        after = after.split('\n', 1)[1].lstrip('\n') if '\n' in after else ''
-    text = f'{before}\n\n{after}' if before and after else before + after
-    text = text if text.endswith('\n') else text + '\n'
-    return text.replace(OLD_NOTE, NEW_NOTE)
-
-
 def change(current: str | None, empty: str) -> tuple[str | None, str | None]:
     """What `docs/Prompts.md` becomes, and a note for the pull request; (None, None) leaves it as it is.
 
-    A repository without the file gets the empty page. A file without the
-    block an earlier release delivered is the repository's own, and sync never
-    touches it.
+    A repository without the file gets the empty page. A file that is there
+    is the repository's own, and sync never touches it.
     """
-    if current is None:
-        return empty, ADDED
-    if find(current) is None:
-        return None, None
-    return without_block(current, empty), TAKEN_OUT
+    return (empty, ADDED) if current is None else (None, None)
 
 
 # --- The universal prompts ---------------------------------------------------------------------------
@@ -517,11 +448,7 @@ def problems(root: pathlib.Path = ROOT) -> list[str]:
         found.append(f'{UNIVERSAL} is missing')
     else:
         text = path.read_text(encoding='utf-8')
-        found += public(UNIVERSAL, text)
-        if MARKER.search(text):
-            found.append(f'{UNIVERSAL}: an INTELLIGENCE:PROMPTS marker; the universal prompts stay in the hub, and '
-                         'nothing seals them')
-        found += lint(text)
+        found += public(UNIVERSAL, text) + lint(text)
     path = root / TEMPLATE
     if not path.is_file():
         found.append(f'{TEMPLATE} is missing')
@@ -529,9 +456,11 @@ def problems(root: pathlib.Path = ROOT) -> list[str]:
         text = path.read_text(encoding='utf-8')
         found += public(TEMPLATE, text)
         if MARKER.search(text):
-            found.append(f'{TEMPLATE}: an INTELLIGENCE:PROMPTS marker; the page a repository gets is all its own')
-        if re.search(r'(?m)^### |^```', text):
-            found.append(f'{TEMPLATE} holds a prompt; the page a repository first gets is empty, for its own')
+            found.append(f'{TEMPLATE}: an INTELLIGENCE:PROMPTS marker, which marks a release from before the page; '
+                         'the page a repository gets is all its own')
+        if re.search(r'(?m)^##|^```', text):
+            found.append(f'{TEMPLATE} holds a section or a prompt; the page a repository first gets is empty, and '
+                         'its owner makes both')
     return found
 
 

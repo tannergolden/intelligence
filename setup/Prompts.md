@@ -1,6 +1,6 @@
 <!--
 title: '💬 PROMPTS'
-description: 'Prompts for working in this repository with an AI agent: using it, changing it and understanding it. Copy one, fill in any details it asks for, and paste it into your agent.'
+description: 'Prompts for working in this repository with an AI agent, written for it. Copy one, fill in any details it asks for, and paste it into your agent.'
 type: reference
 keywords: [prompts, ai-agents]
 -->
@@ -21,24 +21,13 @@ _Written for this repository. Copied whole._
 ---
 
 > [!TIP]
-> **Write this repository's own prompts here**: ones that only make sense in
-> it, for using it, changing it and understanding it. Give each a `###`
-> heading, a **Use when** line and one `text` block, in the section it fits.
-> Prompts that work in any repository, and how to write a good one, are in the
+> **Write this repository's own prompts here**, under sections of your own:
+> prompts that only make sense in it, such as ones for using it, making
+> changes to it or understanding how it works. Give each a `###` heading, a
+> **Use when** line and one `text` block. Prompts that work in any repository,
+> and how to write a good one, are in the
 > [universal prompts](https://github.com/tannergolden/intelligence/blob/Development/docs/Prompts.md).
 > 🔁 Intelligence Sync added this page, and never changes it.
-
-## 🧭 Use It
-
-<!-- Prompts for running, configuring or operating what this repository makes. -->
-
-## 🛠️ Change It
-
-<!-- Prompts for the changes people make here most, such as a new endpoint or a migration. -->
-
-## 🔍 Understand It
-
-<!-- Prompts for learning how a part of this repository works, or why it was built that way. -->
 
 ---
 
