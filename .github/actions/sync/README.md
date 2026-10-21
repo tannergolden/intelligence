@@ -32,10 +32,10 @@ working tree and nothing else. Its inputs and outputs, and how the workflow uses
 
 <!-- AUTO-INDEX:BEGIN dir=. style=log -->
 
-| Entry                      | Purpose                                                                                                                      |
-| :------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
-| [`action.yml`](action.yml) | Writes the universal rules and prompts of this action's release into the calling repository's AGENTS.md and docs/Prompts.md. |
-| [`README.md`](README.md)   | This file.                                                                                                                   |
+| Entry                      | Purpose                                                                                                                                                             |
+| :------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`action.yml`](action.yml) | Writes the universal rules of this action's release into the calling repository's AGENTS.md, and the empty prompts page into its docs/Prompts.md where it has none. |
+| [`README.md`](README.md)   | This file.                                                                                                                                                          |
 
 <!-- AUTO-INDEX:END -->
 

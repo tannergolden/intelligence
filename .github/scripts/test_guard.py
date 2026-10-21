@@ -803,47 +803,31 @@ class TestBlocks(Sandbox):
         self.assertEqual(verdict.rule, 'machine-written block')
 
 
-class TestPromptsBlock(Sandbox):
-    """The prompts block in docs/Prompts.md is the hub's; the prompts after it are the repository's."""
-
-    SOURCE = ('# Prompts\n\n<!-- INTELLIGENCE:PROMPTS:BEGIN -->\n\n## Fix A Bug\n\nFind the cause.\n\n'
-              '<!-- INTELLIGENCE:PROMPTS:END -->\n\n## Prompts For This Repository\n\n_Yours._\n')
+class TestPromptsPage(Sandbox):
+    """A repository's docs/Prompts.md is its own, even while it still holds the block an earlier release sealed."""
 
     def setUp(self) -> None:
         super().setUp()
         self.file = self.repo / 'docs' / 'Prompts.md'
         self.file.parent.mkdir()
-        self.file.write_text(prompts.seal(self.SOURCE).seed, encoding='utf-8')
+        inner = '## Fix A Bug\n\nFind the cause.\n'
+        self.old = (f'# Prompts\n\n<!-- INTELLIGENCE:PROMPTS:BEGIN sha256:{render.digest(inner)} -->\n\n{inner}\n'
+                    '<!-- INTELLIGENCE:PROMPTS:END -->\n\n## Prompts For This Repository\n\n_Yours._\n')
+        self.file.write_text(self.old, encoding='utf-8')
 
-    def test_a_prompt_of_the_repositorys_own_can_be_added(self) -> None:
+    def test_a_prompt_of_its_own_can_be_added(self) -> None:
         self.assertIsNone(self.edit('Edit', file_path=str(self.file), old_string='_Yours._',
                                     new_string='### Ship A Release\n\nOurs.'))
 
-    def test_the_hubs_prompts_are_never_edited_by_hand(self) -> None:
-        verdict = self.edit('Edit', file_path=str(self.file), old_string='Find the cause.',
-                            new_string='Patch it quickly.')
-        self.assertEqual(verdict.rule, 'machine-written block')
-        verdict = self.edit('Write', file_path=str(self.file), content='# Prompts\n\nNone.\n')
-        self.assertEqual(verdict.rule, 'machine-written block')
+    def test_the_old_universal_block_can_be_taken_out(self) -> None:
+        self.assertIsNone(self.edit('Edit', file_path=str(self.file), old_string='Find the cause.',
+                                    new_string='Patch it quickly.'))
+        self.assertIsNone(self.edit('Write', file_path=str(self.file), content='# Prompts\n\nNone.\n'))
 
-    def test_the_hubs_unsealed_source_stays_editable(self) -> None:
-        # Its markers carry no hash: make check holds them, and the guard only
-        # refuses a block made by hand.
-        source = self.repo / 'setup' / 'Prompts.md'
-        source.parent.mkdir()
-        source.write_text(self.SOURCE, encoding='utf-8')
-        self.assertIsNone(self.edit('Edit', file_path=str(source), old_string='Find the cause.',
-                                    new_string='Find the root cause.'))
-        verdict = self.edit('Edit', file_path=str(source), old_string='_Yours._',
-                            new_string='<!-- INTELLIGENCE:PROMPTS:BEGIN -->\n\nMore.\n')
-        self.assertEqual(verdict.rule, 'machine-written block')
-
-    def test_the_region_pattern_agrees_with_the_sealers(self) -> None:
-        sealed = prompts.seal(self.SOURCE).seed
-        for text in (sealed, sealed.replace('PROMPTS:END', 'PROMPTS:ENDED'), self.SOURCE,
-                     sealed.replace('\n', '\r\n')):
-            with self.subTest(text=text[-60:]):
-                self.assertEqual(bool(guard.REGION.search(text)), bool(prompts.SEALED.search(text)))
+    def test_only_the_rules_block_is_the_hubs(self) -> None:
+        self.assertIsNone(guard.REGION.search(self.old))
+        self.assertTrue(prompts.SEALED.search(self.old))
+        self.assertTrue(guard.REGION.search(render.region('## Working rules\n\n- X: Y.\n')))
 
 
 class TestSelfProtection(Sandbox):

@@ -114,7 +114,7 @@ Option 1 trusts the eye that missed two headings a reader could not tell apart i
 
 ## 🔗 Traceability & Links
 
-- [`setup/Prompts.md`](../../setup/Prompts.md): the universal prompts and their practices
+- [`docs/Prompts.md`](../Prompts.md): the universal prompts and their practices, which moved there from `setup/Prompts.md` with [ADR-0031](ADR-0031-Universal-Prompts-Stay-In-The-Hub.md)
 - [`.github/scripts/prompts.py`](../../.github/scripts/prompts.py): the checks
 - [`.github/scripts/evals.py`](../../.github/scripts/evals.py) and [`evals/prompts/`](../../evals/prompts/README.md): the measurement
 - [Prompts](../technical/Prompts.md) and [Evals](../technical/Evals.md): how each works

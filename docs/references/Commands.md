@@ -181,8 +181,8 @@ The scripts that build what the hub ships. `make render` runs
 | `render.py --setup REF`  | Print the cloud setup script with the pins of that tag filled in                                                                    |
 | `kit.py`                 | Print the bundle `home/kit.json` would hold                                                                                         |
 | `kit.py --check`         | List every problem in `kit/`                                                                                                        |
-| `prompts.py`             | Print `docs/Prompts.md` as a repository first gets it, sealed                                                                       |
-| `prompts.py --check`     | Fail on a broken `setup/Prompts.md`                                                                                                 |
+| `prompts.py`             | Print `setup/Prompts.md`, the page a repository first gets                                                                          |
+| `prompts.py --check`     | Fail on a broken universal prompt in `docs/Prompts.md`, or a broken `setup/Prompts.md`                                              |
 
 Each is `python3 .github/scripts/<name>`, and each exits 1 on a problem.
 

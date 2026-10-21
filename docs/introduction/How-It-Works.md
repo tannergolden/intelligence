@@ -108,10 +108,10 @@ module has its own document:
 | The guard hook                                             | Denies the few tool calls the Invariants forbid outright, before they run, in every app | [The Home Kit](../technical/The-Home-Kit.md)             |
 | The `develop` skill, and the Worker and Reviewer subagents | A procedure loaded when the task calls for it, and two agents a session hands work to   | [Skills & Subagents](../technical/Skills-&-Subagents.md) |
 
-Every repository also gets ready-made [prompts](../technical/Prompts.md) in
-`docs/Prompts.md`, in the same pull request as the rules: universal ones the
-hub keeps current between their markers, and a section for the repository's
-own.
+The universal [prompts](../technical/Prompts.md) stay in the hub, in
+[`docs/Prompts.md`](../Prompts.md), for anyone to copy. Every repository gets
+an empty `docs/Prompts.md` of its own once, in the same pull request as the
+rules, for the prompts only it needs, and sync never changes it after that.
 
 Two tools prove the whole thing works: [the loader probe](../technical/The-Loader-Probe.md)
 shows which files each app actually loads, and [evals](../technical/Evals.md) measure

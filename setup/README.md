@@ -1,6 +1,6 @@
 <!--
 title: '🧰 SETUP'
-description: 'What leaves the hub for somewhere else: the setup script for every Claude Code cloud session, the stub that keeps a repository''s rules current, and the prompts every repository gets.'
+description: 'What leaves the hub for somewhere else: the setup script for every Claude Code cloud session, the stub that keeps a repository''s rules current, and the empty prompts page every repository gets.'
 type: index
 keywords: [claude-code, cloud, setup-script, home-kit, github-actions, sync]
 -->
@@ -28,7 +28,7 @@ once, and one sync delivers:
 | :----------------------------------------------- | :---------------------------------------------------------------------- | :------------------------------------------------------ |
 | [`claude-cloud-setup.sh`](claude-cloud-setup.sh) | A Claude Code cloud environment's setup script, copied by you           | [Cloud Setup](../docs/technical/Cloud-Setup.md)         |
 | [`intelligence-sync.yml`](intelligence-sync.yml) | A repository's `.github/workflows/`, as `intelligence-sync.yml`, by you | [Repository Sync](../docs/technical/Repository-Sync.md) |
-| [`Prompts.md`](Prompts.md)                       | Every repository's `docs/`, written and kept current by sync            | [Prompts](../docs/technical/Prompts.md)                 |
+| [`Prompts.md`](Prompts.md)                       | Every repository's `docs/`, written once by sync, then the repository's | [Prompts](../docs/technical/Prompts.md)                 |
 
 ---
 
@@ -40,7 +40,7 @@ once, and one sync delivers:
 | :----------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`claude-cloud-setup.sh`](claude-cloud-setup.sh) | Install the universal rules into a Claude Code cloud session.                                                                                                                                 |
 | [`intelligence-sync.yml`](intelligence-sync.yml) | Keeps the universal rules for AI coding agents current in this repository's root AGENTS.md: the block between the INTELLIGENCE markers, which tannergolden/intelligence renders and releases. |
-| [`Prompts.md`](Prompts.md)                       | Ready-made prompts for working in this repository with an AI agent: find one for your task, copy it, fill in any details it asks for, and paste it into your agent.                           |
+| [`Prompts.md`](Prompts.md)                       | Prompts for working in this repository with an AI agent: using it, changing it and understanding it. Copy one, fill in any details it asks for, and paste it into your agent.                 |
 | [`README.md`](README.md)                         | This file.                                                                                                                                                                                    |
 
 <!-- AUTO-INDEX:END -->

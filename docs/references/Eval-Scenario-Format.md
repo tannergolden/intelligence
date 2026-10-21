@@ -84,7 +84,7 @@ The `setup` keys fill in those steps, then add to them, in this order:
 | :---------- | :------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `identity`  | `"ai"`                    | Sets `user.name` and `user.email` to `Claude <noreply@anthropic.com>` instead, so the agent's commits would be an AI's; the setup's own commits stay Eval Person's                                                                                                                         |
 | `agents`    | text                      | Adds it to `AGENTS.md` after the block, as the repository's own sections                                                                                                                                                                                                                   |
-| `prompts`   | `true`                    | Writes `docs/Prompts.md` as a repository first gets it, sealed from this tree's `setup/Prompts.md`, before the first commit                                                                                                                                                                |
+| `prompts`   | `true`                    | Writes `docs/Prompts.md` as a repository first gets it, the empty page in this tree's `setup/Prompts.md`, before the first commit                                                                                                                                                          |
 | `files`     | path → text               | Writes each file before the first commit, so it is committed                                                                                                                                                                                                                               |
 | `history`   | a list of steps           | After the first commit, plays each step in order: `checkout` an existing branch or start one with `branch`, then `commit` its `files` and `delete`s with that message, at its `date` if it has one, run any other `git` command it lists, such as a merge or a reset, and `tag` the result |
 | `remote`    | `"plain"` or `"diverged"` | Makes a bare repository beside it as `origin` and pushes `main`. `"diverged"` then adds a commit only the remote has, and fetches it without merging                                                                                                                                       |
@@ -161,7 +161,7 @@ checks say.
 ## 💬 A Prompt Scenario
 
 Each file in [`evals/prompts/`](../../evals/prompts/README.md) measures one
-universal prompt in `setup/Prompts.md`, and is named for it as
+universal prompt in the hub's `docs/Prompts.md`, and is named for it as
 `<prompt>-<what>.json`, such as `fix-a-bug-root-cause.json`. It sets up its
 scratch repository and holds its checks as a rule's scenario does, then runs
 twice with the block in place: once with the prompt, filled in, and once with
