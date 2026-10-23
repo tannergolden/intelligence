@@ -2,7 +2,6 @@
 title: '🔎 RULES FOR CURRENT MODELS'
 description: 'What the universal rules for AI coding agents should say, and what must back them outside the text, judged only on evidence about the mainstream models of October 2026: the research behind the rule set in CONSTITUTION.md.'
 type: record
-keywords: [rules, constitution, coding-agents, evals, guardrails]
 verified: '2026-10-20'
 focus: 'Judged only on evidence about the mainstream models of October 2026, what should the universal rules in an agent instruction file say, how should they be written, and what must be enforced outside the text?'
 decision: '[ADR-0030](../../adrs/ADR-0030-Rules-Written-For-Current-Models.md)'

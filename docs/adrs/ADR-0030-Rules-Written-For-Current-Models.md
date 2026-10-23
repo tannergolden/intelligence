@@ -2,7 +2,6 @@
 title: '📄 ADR-0030: RULES WRITTEN FOR CURRENT MODELS'
 description: 'The universal rules are revised on evidence about the mainstream models of October 2026: fifteen sentences reworded, three Defaults retired and one moved, an Invariant for installing packages added, and the mechanisms the restraint rules depend on built into the home kit.'
 type: record
-keywords: [rules, constitution, coding-agents, guardrails, evals]
 status: 'Proposed'
 date: '2026-10-20'
 evidence: '[Rules For Current Models](https://github.com/tannergolden/intelligence/blob/23d2b3525059f8d6ae11182a7f11eae376859922/docs/technical/research/Rules-For-Current-Models.md)'

@@ -2,7 +2,6 @@
 title: '📄 ADR-0031: UNIVERSAL PROMPTS STAY IN THE HUB'
 description: 'The universal prompts move to the hub''s own docs/Prompts.md and reach no other repository; sync gives each repository an empty docs/Prompts.md of its own once, where its owner makes the sections and prompts.'
 type: record
-keywords: [prompts, repository-sync, prompt-engineering]
 status: 'Proposed'
 date: '2026-10-21'
 evidence: 'N/A'
