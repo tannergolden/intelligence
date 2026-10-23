@@ -24,12 +24,12 @@ Every practice the hub follows when it writes for an agent, in one place, with w
 
 An agent reads four kinds of text here, and each costs something different:
 
-| What      | When it is read                       | Where it lives                                                                                         | How it is written                                        |
-| :-------- | :------------------------------------ | :----------------------------------------------------------------------------------------------------- | :------------------------------------------------------- |
-| A request | Once, when you type it                | Your agent's chat                                                                                      | These practices, shortened                               |
-| A prompt  | Once, when someone pastes it          | `docs/Prompts.md` in each repository, from [`setup/Prompts.md`](../../setup/Prompts.md)                | The five-part shape below                                |
-| A rule    | On every turn of every session        | [`CONSTITUTION.md`](../../CONSTITUTION.md), delivered into each `AGENTS.md` and each app's home folder | One sentence under an ID, with its reason in the source  |
-| A skill   | When its description matches the task | [`kit/skills/`](../../kit/skills/README.md)                                                            | A description that says when to use it, then a procedure |
+| What      | When it is read                       | Where it lives                                                                                                   | How it is written                                        |
+| :-------- | :------------------------------------ | :--------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------- |
+| A request | Once, when you type it                | Your agent's chat                                                                                                | These practices, shortened                               |
+| A prompt  | Once, when someone pastes it          | The hub's [`docs/Prompts.md`](../Prompts.md) for the universal ones, and each repository's own `docs/Prompts.md` | The five-part shape below                                |
+| A rule    | On every turn of every session        | [`CONSTITUTION.md`](../../CONSTITUTION.md), delivered into each `AGENTS.md` and each app's home folder           | One sentence under an ID, with its reason in the source  |
+| A skill   | When its description matches the task | [`kit/skills/`](../../kit/skills/README.md)                                                                      | A description that says when to use it, then a procedure |
 
 A rule is paid for everywhere, all the time, so it has to earn its place. A prompt is paid for once, so it can carry the detail one task needs.
 
@@ -199,7 +199,7 @@ Each was read directly for the research record:
 
 - [Prompt Engineering](../technical/research/Prompt-Engineering.md): the dated research behind every practice here, F1 to F18
 - [Prompts](../technical/Prompts.md): the universal prompts every repository gets, and how they arrive and stay current
-- [`setup/Prompts.md`](../../setup/Prompts.md): the prompts themselves, and the short guide every repository gets
+- [`docs/Prompts.md`](../Prompts.md): the universal prompts themselves, and the short guide to how a good one is written
 - [Evals](../technical/Evals.md): how a rule or a prompt is measured
 - [Skills & Subagents](../technical/Skills-&-Subagents.md): the rules every skill here follows
 - [Constitution](../../CONSTITUTION.md): the rules every agent reads, and the form each one takes
