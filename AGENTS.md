@@ -81,7 +81,7 @@ serves to this repository from its `.github` repository.
 | `docs/technical/`                    | How every part of the hub works, one document each                                                                                                            |
 | `docs/operations/`                   | The controls and risks behind the rules, and what to do when a sync or an install goes wrong                                                                  |
 | `docs/references/`                   | Pages to look up: the glossary, the commands, the files and formats, and the eval scenario format                                                             |
-| `docs/library/`                      | Material to learn from, as the standards keep it; empty so far                                                                                                |
+| `docs/library/`                      | Material to learn from, as the standards keep it: the prompt engineering best practices                                                                       |
 | `docs/adrs/`                         | Every decision behind the plan                                                                                                                                |
 
 ## Gotchas

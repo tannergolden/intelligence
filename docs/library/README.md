@@ -40,9 +40,10 @@ the folder holds.
 
 <!-- AUTO-INDEX:BEGIN dir=. style=log -->
 
-| Entry                    | Purpose    |
-| :----------------------- | :--------- |
-| [`README.md`](README.md) | This file. |
+| Entry                                                                          | Purpose                                                                                                                                                                                 |
+| :----------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`Prompt-Engineering-Best-Practices.md`](Prompt-Engineering-Best-Practices.md) | How to write anything an AI agent reads, from a one-off request to a reusable prompt, a rule or a skill description, and how to prove it works. Read it before you write or change one. |
+| [`README.md`](README.md)                                                       | This file.                                                                                                                                                                              |
 
 <!-- AUTO-INDEX:END -->
 

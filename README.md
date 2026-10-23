@@ -72,6 +72,7 @@ per part. Start with How It Works.
 | [Commands](docs/references/Commands.md)                                         | Every make target and script option, and what each one reaches                                              |
 | [Files & Formats](docs/references/Files-&-Formats.md)                           | The exact shape of the markers, the pins, the kit, an Overrides entry and what the tools leave on a machine |
 | [Eval Scenario Format](docs/references/Eval-Scenario-Format.md)                 | Every key a scenario and a trigger test can hold, and how to add a scenario                                 |
+| [Prompt Engineering](docs/library/Prompt-Engineering-Best-Practices.md)         | How to write a prompt, a rule or a skill an agent follows, and how to prove it works                        |
 | [Decisions](docs/adrs/README.md)                                                | Every decision behind the plan, with the options it was weighed against                                     |
 
 ---
