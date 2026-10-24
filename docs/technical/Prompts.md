@@ -119,8 +119,11 @@ either route, the stub or `make sync`:
 - a `no-intelligence-prompts` topic keeps sync from adding the page to a
   repository that still takes the rules.
 
-Only a release delivers the page, as with the rules. A release from before
-it, v0.3.0 among them, delivers no prompts at all.
+Only a release delivers the page, as with the rules, and the releases before
+it differ. v0.1.0 and v0.2.0 deliver no prompts at all. v0.3.0 still seals five
+of the universal prompts into the `docs/Prompts.md` it adds, and a repository
+that merged that page keeps them, since sync never touches the page again: delete
+the block between its `INTELLIGENCE:PROMPTS` markers by hand.
 
 ---
 
