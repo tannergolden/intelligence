@@ -137,7 +137,7 @@ the hub does not have that tag: run `git fetch --tags` there first.
 The app shows one line, from the guard:
 
 ```text
-intelligence guard blocked this (OPS-001): `git push --force` can overwrite commits on the remote. Use --force-with-lease on a branch you created, or ask your user
+intelligence guard blocked this (OPS-001): `git push --force` can overwrite commits on the remote. Use --force-with-lease on a branch you created, or ask your user; in a repository they own, your user can lift OPS-001 for this session by typing `override OPS-001`
 ```
 
 The word in parentheses is the rule it upholds, in the
@@ -151,6 +151,10 @@ inside a block the hub renders. The sentence after it says what to do instead.
 - **It reads only an agent's tool calls**, through each app's pre-tool hook. A
   command you type in your own terminal never reaches it, so when it stops
   something you do want, such as a merge, run it yourself.
+- **An OPS-001 denial** lifts for the rest of a Claude Code session when the
+  owner types `override OPS-001` in it, in a repository tannergolden owns. The
+  guard reads only what the user typed, and still denies a command that breaks
+  another rule. In other apps it never lifts, so run the push or merge yourself.
 - **A block edit it denies** is one the next sync would overwrite anyway.
   Change the rule in `CONSTITUTION.md` and release it; a repository's own text
   goes outside the markers, and its `docs/Prompts.md` is all its own.

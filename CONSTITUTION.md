@@ -54,7 +54,8 @@ repository alone.
 
 ## 🛡️ Article II: Invariants
 
-Nothing waives an Invariant. Each one reaches every repository, and each names
+Nothing waives an Invariant except the one exception OPS-001's own sentence
+gives its owner. Each one reaches every repository, and each names
 what enforces it outside the prompt, today or still to build, because prose
 alone cannot make an agent stop. On a machine's own Claude Code install, the
 kit also restates the Invariants after a conversation is compacted, so they sit
@@ -173,7 +174,7 @@ as a pipe.
 
 ### OPS-001
 
-> Never push to a default or protected branch, force-push except `--force-with-lease` on a branch you created, delete remote branches or tags, or merge a PR.
+> Unless your user owns the repository and types `override OPS-001` in this session, never push to a default or protected branch, force-push except `--force-with-lease` on a branch you created, delete remote branches or tags, or merge a PR.
 
 **Why.** The standards end feature work with --force-with-lease on the author's
 own branch, and an agent once pushed to main on an old approval. Claude Code's
@@ -182,7 +183,13 @@ is no enforcer here. An agent cannot tell its own pull request from its user's,
 so it merges none, as the guard and the eval expect, and a local branch is left
 to OPS-003. In the hub's own scenarios, Claude Opus 5.5 and Sonnet 5.5 left a
 rejected push unforced and a green pull request unmerged in 7 of 7 runs with the
-block, and in none without (October 2026).
+block, and in none without (October 2026). The owner can lift it for the session
+they are in, because they sometimes want the agent to land work on the default
+branch itself (October 2026). The words name the rule, so a hurried "just push
+it" lifts nothing, and they count only in a repository the owner owns and only
+until the session ends. The guard reads them from what the user typed, never
+from a file, a tool's output or a summary
+([ADR-0032](docs/adrs/ADR-0032-The-Owner-Can-Lift-OPS-001-For-A-Session.md)).
 
 **Enforced by:**
 
@@ -191,7 +198,7 @@ block, and in none without (October 2026).
 - Copilot's cloud agent, which cannot merge
 - Codex auto-review, when it reviews approvals, which rates a push to a
   protected branch as high risk
-- the guard hook, which denies plain --force, pushes to a protected branch, remote deletions, tag pushes, and merging a pull request by gh, the REST API or a GitHub MCP tool
+- the guard hook, which denies plain --force, pushes to a protected branch, remote deletions, tag pushes, and merging a pull request by gh, the REST API or a GitHub MCP tool, until the owner types `override OPS-001` in a Claude Code session in a repository tannergolden owns
 
 **To add:**
 
@@ -594,7 +601,7 @@ What the renderer builds from Articles I to IV, and how large it may grow:
 
 - **Heading:** Constitution
 - **Target:** 4500 characters
-- **Cap:** 5000 characters
+- **Cap:** 5100 characters
 
 Every app reads the whole block on every turn, before the task, so each
 sentence costs attention everywhere. `render.py --check` reports the size on

@@ -14,7 +14,10 @@ WHAT IT BLOCKS, and the rule behind each:
 
 - OPS-001: pushing to a default or protected branch, force-pushing without
   `--force-with-lease`, deleting or pruning remote refs, pushing tags, and
-  merging a pull request, through `git`, `gh` or a GitHub MCP tool
+  merging a pull request, through `git`, `gh` or a GitHub MCP tool; its
+  owner lifts it for a Claude Code session by typing `override OPS-001` in
+  a repository tannergolden owns, which the guard reads from the session's
+  transcript
 - OPS-003: what git cannot undo, when there is something to lose: `git
   reset --hard` or a whole-tree checkout over uncommitted work, `git clean
   -f`, dropped stashes, `git branch -D`, history rewrites, a recursive
@@ -287,6 +290,15 @@ OWNER_REMOTE = re.compile(r'(?:(?:https?|ssh|git)://(?:[^@/]+@)?github\.com(?::\
 OVERRIDES = re.compile(r'^## Overrides[ \t]*\n(?P<body>.*?)(?=^## |^---[ \t]*$|\Z)', re.M | re.S)
 OVERRIDE = re.compile(r'^\s*[-*]\s+`?(?P<id>[A-Z]{2,5}-\d{3})`?\s*:?\s*(?P<reason>.*)$')
 
+# OPS-001's one exception: the owner lifts it for the session they are in by
+# typing these words, in a repository tannergolden owns. Only what the user
+# typed counts, read from the session's transcript, so no file, tool output,
+# summary or line an app adds itself can lift it.
+LIFT = re.compile(r'\boverride\s+OPS-001\b', re.I)
+LIFT_WAY = 'in a repository they own, your user can lift OPS-001 for this session by typing `override OPS-001`'
+# The rules lifted while one call is decided again: OPS-001 alone, and only inside main.
+LIFTED: set[str] = set()
+
 # The ask rules the installer adds to Claude Code's settings (OPS-005), which
 # an edit must not drop (OPS-004). They match install.py's ASK_RULES, which a
 # test holds.
@@ -376,7 +388,12 @@ class Verdict:
     instead: str
 
     def line(self) -> str:
-        return f'intelligence guard blocked this ({self.rule}): {self.reason}. {self.instead}'
+        way = f'; {LIFT_WAY}' if self.rule == 'OPS-001' else ''
+        return f'intelligence guard blocked this ({self.rule}): {self.reason}. {self.instead}{way}'
+
+    def __bool__(self) -> bool:
+        # A lifted rule's verdict is false, so every `if verdict` and `or` passes over it to the checks after it.
+        return self.rule not in LIFTED
 
 
 @dataclasses.dataclass(frozen=True)
@@ -2312,6 +2329,41 @@ def remind(home: pathlib.Path, stdin: str | None) -> int:
     return 0
 
 
+def lifted(transcript: object, call: Call) -> bool:
+    """Whether OPS-001 is lifted for this call: the user typed `override OPS-001` into the session the transcript
+    records, and the repository is tannergolden's. A GitHub tool names its repository; a command acts on the one
+    it runs in."""
+    owner = call.args.get('owner')
+    mine = owner.lower() == 'tannergolden' if isinstance(owner, str) and owner else owner_repository(str(call.cwd))
+    if not mine or not isinstance(transcript, str) or not transcript:
+        return False
+    try:
+        with open(transcript, encoding='utf-8', errors='replace') as lines:
+            return any(LIFT.search(typed(line)) for line in lines if 'OPS-001' in line)
+    except OSError:
+        return False
+
+
+def typed(line: str) -> str:
+    """What the user typed, from one line of a Claude Code transcript; nothing for a tool's result, a summary or a
+    line the app adds itself."""
+    try:
+        entry = json.loads(line)
+    except ValueError:
+        return ''
+    if (not isinstance(entry, dict) or entry.get('type') != 'user' or entry.get('isMeta')
+            or entry.get('isCompactSummary') or 'toolUseResult' in entry):
+        return ''
+    message = entry.get('message')
+    content = message.get('content') if isinstance(message, dict) else None
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list) and all(isinstance(part, dict) and part.get('type') in ('text', 'image')
+                                         for part in content):
+        return '\n'.join(str(part.get('text', '')) for part in content if part.get('type') == 'text')
+    return ''
+
+
 def main(argv: list[str] | None = None, stdin: str | None = None) -> int:
     parser = argparse.ArgumentParser(description=(__doc__ or '').split('\n', 1)[0])
     parser.add_argument('--app', default='unknown',
@@ -2323,6 +2375,7 @@ def main(argv: list[str] | None = None, stdin: str | None = None) -> int:
     home = pathlib.Path(os.environ.get('HOME') or pathlib.Path.home())
     if args.remind:
         return remind(home, stdin)
+    transcript = None
     if args.command is not None:
         call = Call('Bash', {'command': args.command}, pathlib.Path.cwd())
     else:
@@ -2334,8 +2387,16 @@ def main(argv: list[str] | None = None, stdin: str | None = None) -> int:
         if not isinstance(payload, dict):
             return 0
         call = normalize(payload)
+        transcript = payload.get('transcript_path')
     try:
         verdict = decide(call, home)
+        if verdict is not None and verdict.rule == 'OPS-001' and lifted(transcript, call):
+            # Its owner lifted it for this session: decide again without it, since the call may break another rule.
+            LIFTED.add('OPS-001')
+            try:
+                verdict = decide(call, home) or None
+            finally:
+                LIFTED.clear()
     except Exception as error:  # a bug here must never stop every tool call
         print(f'intelligence guard: internal error, call allowed: {error!r}', file=sys.stderr)
         return 0
