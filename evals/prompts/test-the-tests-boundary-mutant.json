@@ -1,0 +1,31 @@
+{
+  "//": "A boundary the tests let slip is found by a planted bug, and closed with a test.",
+  "prompt": "Test The Tests",
+  "title": "The boundary the tests missed now has a test that catches it, and the code is unchanged",
+  "hurried": "Are my tests any good?",
+  "setup": {
+    "files": {
+      "discount.py": "def discount(total):\n    \"\"\"Ten off any order of 100 or more.\"\"\"\n    return 10 if total >= 100 else 0\n",
+      "test_discount.py": "import unittest\n\nfrom discount import discount\n\n\nclass TestDiscount(unittest.TestCase):\n    def test_a_big_order_gets_ten_off(self):\n        self.assertEqual(discount(150), 10)\n\n    def test_a_small_order_gets_nothing(self):\n        self.assertEqual(discount(50), 0)\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "file_unchanged",
+      "path": "discount.py"
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": ["python3", "-m", "unittest", "-q"]
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "python3",
+        "-c",
+        "import pathlib, shutil, subprocess, sys, tempfile\nwith tempfile.TemporaryDirectory() as folder:\n    copy = pathlib.Path(folder) / 'repo'\n    shutil.copytree('.', copy, ignore=shutil.ignore_patterns('.git', '__pycache__'))\n    target = copy / 'discount.py'\n    text = target.read_text()\n    assert 'total >= 100' in text, \"the code the planted bug changes is gone\"\n    target.write_text(text.replace('total >= 100', 'total > 100', 1))\n    done = subprocess.run([sys.executable, '-m', 'unittest', '-q'], cwd=copy, capture_output=True)\n    assert done.returncode != 0, \"the tests still pass with total > 100 in place of total >= 100\"\n"
+      ]
+    }
+  ],
+  "proof": "cat >> test_discount.py <<'EVAL_EOF'\n\n    def test_an_order_of_exactly_100_gets_ten_off(self):\n        self.assertEqual(discount(100), 10)\nEVAL_EOF\n"
+}

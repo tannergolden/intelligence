@@ -1,0 +1,52 @@
+{
+  "//": "A split plan puts the rename the rest builds on first, and creates no branch.",
+  "prompt": "Split This Branch",
+  "title": "The plan splits the rename from the feature, and no branch or file changes",
+  "hurried": "Split this PR.",
+  "setup": {
+    "files": {
+      "text.py": "def clean(value):\n    return value.strip().lower()\n",
+      "test_text.py": "import unittest\n\nfrom text import clean\n\n\nclass TestText(unittest.TestCase):\n    def test_it_trims_and_lowers(self):\n        self.assertEqual(clean('  Ada '), 'ada')\n"
+    },
+    "history": [
+      {
+        "branch": "feature/search",
+        "commit": "feat(search): add search, rename the cleaner, and document it",
+        "files": {
+          "text.py": "def normalise(value):\n    return value.strip().lower()\n",
+          "test_text.py": "import unittest\n\nfrom text import normalise\n\n\nclass TestText(unittest.TestCase):\n    def test_it_trims_and_lowers(self):\n        self.assertEqual(normalise('  Ada '), 'ada')\n",
+          "search.py": "from text import normalise\n\n\ndef search(items, query):\n    wanted = normalise(query)\n    return [item for item in items if wanted in normalise(item)]\n",
+          "test_search.py": "import unittest\n\nfrom search import search\n\n\nclass TestSearch(unittest.TestCase):\n    def test_it_matches_any_case(self):\n        self.assertEqual(search(['Ada Lovelace', 'Alan Turing'], 'ada'), ['Ada Lovelace'])\n",
+          "docs/search.md": "# Search\n\nsearch() matches any case.\n"
+        }
+      }
+    ],
+    "remote": true
+  },
+  "checks": [
+    {
+      "kind": "head_unchanged"
+    },
+    {
+      "kind": "changed_only",
+      "paths": []
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "sh",
+        "-c",
+        "test \"$(git branch --format=x | wc -l | tr -d \" \")\" = 2"
+      ]
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "text\\.py"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "search\\.py"
+    }
+  ],
+  "proof": "cat <<'EVAL_EOF'\n1. refactor(text): rename clean() to normalise() in text.py, with test_text.py. 2. feat(search): search.py and test_search.py. 3. docs: docs/search.md. Build the first with git switch -c split/rename main && git checkout feature/search -- text.py test_text.py.\nEVAL_EOF\n"
+}

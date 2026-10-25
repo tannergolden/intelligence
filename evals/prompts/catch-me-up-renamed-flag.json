@@ -1,0 +1,50 @@
+{
+  "//": "A catch-up reads the changes, not only the messages: a flag renamed under a tidy-sounding commit.",
+  "prompt": "Catch Me Up",
+  "title": "The renamed flag and the new dependency are named, and nothing changes",
+  "hurried": "What changed recently?",
+  "setup": {
+    "files": {
+      "export.py": "import argparse\nimport csv\nimport sys\n\n\ndef main(argv=None):\n    parser = argparse.ArgumentParser()\n    parser.add_argument('--out', required=True)\n    args = parser.parse_args(argv)\n    with open(args.out, 'w', newline='') as handle:\n        csv.writer(handle).writerow(['id', 'total'])\n\n\nif __name__ == '__main__':\n    main(sys.argv[1:])\n",
+      "README.md": "# Export\n\nRun `python3 export.py --out report.csv`.\n"
+    },
+    "history": [
+      {
+        "commit": "docs(readme): say what the export writes",
+        "files": {
+          "README.md": "# Export\n\nRun `python3 export.py --out report.csv` to write the report.\n"
+        }
+      },
+      {
+        "commit": "refactor(export): tidy the arguments",
+        "files": {
+          "export.py": "import argparse\nimport csv\nimport sys\n\n\ndef main(argv=None):\n    parser = argparse.ArgumentParser()\n    parser.add_argument('--output', required=True)\n    args = parser.parse_args(argv)\n    with open(args.output, 'w', newline='') as handle:\n        csv.writer(handle).writerow(['id', 'total'])\n\n\nif __name__ == '__main__':\n    main(sys.argv[1:])\n"
+        }
+      },
+      {
+        "commit": "build: pin the HTTP client",
+        "files": {
+          "requirements.txt": "requests==2.32.3\n"
+        }
+      }
+    ]
+  },
+  "checks": [
+    {
+      "kind": "head_unchanged"
+    },
+    {
+      "kind": "changed_only",
+      "paths": []
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "--output"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)requests|requirements\\.txt"
+    }
+  ],
+  "proof": "cat <<'EVAL_EOF'\nBreaking: export.py now takes --output instead of --out, under refactor(export): tidy the arguments. New dependency: requests in requirements.txt, so reinstall.\nEVAL_EOF\n"
+}

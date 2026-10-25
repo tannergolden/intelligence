@@ -1,0 +1,106 @@
+{
+  "skill": "develop",
+  "note": "develop's own trigger fixture: queries that should invoke develop and near-miss negatives that should not. Used by the light trigger check and, at Publish, the full smoke test. Activation is proven by observing a skill tool call in a real run, never by a description read alone. This file is the worked example every skill carries; near misses are genuine neighbours, not obviously irrelevant queries. In tannergolden/intelligence the same cases also run from evals/skills/develop.json.",
+  "cases": [
+    {
+      "id": "t01",
+      "should_trigger": true,
+      "prompt": "build me a skill that turns meeting notes into action items"
+    },
+    {
+      "id": "t02",
+      "should_trigger": true,
+      "prompt": "create an agent that reviews pull requests for security issues"
+    },
+    {
+      "id": "t03",
+      "should_trigger": true,
+      "prompt": "make a team of agents for competitive analysis"
+    },
+    {
+      "id": "t04",
+      "should_trigger": true,
+      "prompt": "turn this workflow into a reusable skill"
+    },
+    {
+      "id": "t05",
+      "should_trigger": true,
+      "prompt": "the changelog skill keeps dropping the version header, fix what it got wrong"
+    },
+    {
+      "id": "t06",
+      "should_trigger": true,
+      "prompt": "improve the research skill so it triggers more reliably"
+    },
+    {
+      "id": "t07",
+      "should_trigger": true,
+      "prompt": "scaffold a new skill called invoice-parser"
+    },
+    {
+      "id": "t08",
+      "should_trigger": true,
+      "prompt": "I need a subagent that fact-checks claims against sources"
+    },
+    {
+      "id": "t09",
+      "should_trigger": true,
+      "prompt": "make the develop skill learn from that mistake so it never happens again"
+    },
+    {
+      "id": "t10",
+      "should_trigger": true,
+      "prompt": "package the release skill so I can upload it to the Claude app"
+    },
+    {
+      "id": "t11",
+      "should_trigger": true,
+      "prompt": "our agents keep getting the database migration steps wrong; capture the right way so they stop"
+    },
+    {
+      "id": "t12",
+      "should_trigger": true,
+      "prompt": "add a new mode to the onboarding skill"
+    },
+    {
+      "id": "n01",
+      "should_trigger": false,
+      "prompt": "develop the login page for the dashboard"
+    },
+    {
+      "id": "n02",
+      "should_trigger": false,
+      "prompt": "merge the Development branch into main"
+    },
+    {
+      "id": "n03",
+      "should_trigger": false,
+      "prompt": "research the best local-first sync engines"
+    },
+    {
+      "id": "n04",
+      "should_trigger": false,
+      "prompt": "write a README for this repository"
+    },
+    {
+      "id": "n05",
+      "should_trigger": false,
+      "prompt": "what skills do I have installed right now?"
+    },
+    {
+      "id": "n06",
+      "should_trigger": false,
+      "prompt": "add a rule that agents must never push to main"
+    },
+    {
+      "id": "n07",
+      "should_trigger": false,
+      "prompt": "zip this folder and email it to me"
+    },
+    {
+      "id": "n08",
+      "should_trigger": false,
+      "prompt": "what skills does a junior developer need most?"
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+# --- Reusable Workflow ---
+#
+# 🔁 Intelligence Sync
+#
+# Purpose: keeps the universal rules current in the repository that calls
+# it. It writes the INTELLIGENCE block of the hub's latest release into
+# that repository's root AGENTS.md, and the empty prompts page into its
+# docs/Prompts.md where it has none, and proposes the change as one pull
+# request on `chore/intelligence`, the same one `make sync` opens by hand.
+#
+# THE REPOSITORY PULLS; NOTHING PUSHES IN. A repository that wants the rules
+# carries the stub, setup/intelligence-sync.yml in this hub, as
+# .github/workflows/intelligence-sync.yml, and this runs on that
+# repository's own GITHUB_TOKEN. No App, no key, and no credential in the
+# hub that reaches another repository. A repository without the stub still
+# gets the block from `make sync`.
+#
+# MERGING STAYS YOURS. Nothing here merges. GitHub holds the checks of a
+# pull request the default GITHUB_TOKEN opened until someone with write
+# access approves them; `make merge` in the hub approves them once it has
+# proven the diff is the block alone, and merges it on its next run. Where a
+# repository has a BOT_ACCESS_TOKEN secret, the pull request is opened as
+# that token's owner and its checks start at once.
+#
+# Skipped in a golden path template, a fork, an archived repository, one
+# with the `no-intelligence` topic, and the hub itself, which renders its
+# own copy. A template of any other kind takes part (ADR-0022).
+#
+# ⚠️ `@v0` IS WRITTEN OUT BELOW, AND MOVES WITH THE STUB'S. A reusable
+# workflow cannot name the ref it was called at, so the action is called at
+# the hub's moving major, as every stub calls this workflow. Moving `v0`
+# delivers a release to both at once, and the code that writes into a
+# repository is always a released one. A stub pinned to a full version
+# still runs the action at the moving major: a release is the unit of trust.
+#
+# ---
+
+name: '🔁 Intelligence Sync'
+
+on:
+  workflow_call:
+    inputs:
+      base:
+        description: "The branch the pull request targets. Empty uses the repository's default branch."
+        required: false
+        type: string
+        default: ''
+      dry-run:
+        description: 'Print what would change, and change nothing'
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      BOT_ACCESS_TOKEN:
+        description: >-
+          Optional. A PAT with repo scope opens the pull request as its owner,
+          so its checks start at once. Without it, the default GITHUB_TOKEN
+          opens it and its checks wait for approval.
+        required: false
+
+permissions: {}
+
+jobs:
+  sync:
+    name: '🔁 Sync The Universal Rules'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write # push the sync branch (PR-only flow)
+      pull-requests: write # open or update the sync pull request
+    steps:
+      - name: '🛡️ Harden Runner'
+        uses: tannergolden/standards/.github/actions/harden@v1
+        with:
+          egress-policy: audit
+          notice: "🔁 Intelligence Sync: bringing this repository's AGENTS.md up to the latest release, and adding its own docs/Prompts.md where it has none."
+
+      - name: '📂 Checkout Calling Repository'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The base, never the branch a dispatch ran from, so the pull
+          # request carries the block and nothing else. A scheduled run
+          # carries no repository in its event and checks out the default
+          # branch anyway.
+          ref: ${{ inputs.base || github.event.repository.default_branch }}
+          persist-credentials: false
+
+      - name: "🔁 Write The Release's Block"
+        id: block
+        uses: tannergolden/intelligence/.github/actions/sync@v0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          dry-run: ${{ inputs.dry-run }}
+
+      - name: '🚀 Open Or Update The Pull Request'
+        if: ${{ steps.block.outputs.changed == 'true' }}
+        uses: tannergolden/standards/.github/actions/open-pr@v1
+        with:
+          token: ${{ secrets.BOT_ACCESS_TOKEN || secrets.GITHUB_TOKEN }}
+          branch: chore/intelligence
+          commit-title: ${{ steps.block.outputs.commit-title }}
+          commit-body: ${{ steps.block.outputs.commit-body }}
+          pr-title: ${{ steps.block.outputs.pr-title }}
+          pr-body: ${{ steps.block.outputs.pr-body }}
+          base: ${{ inputs.base }}

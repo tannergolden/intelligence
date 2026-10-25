@@ -1,0 +1,39 @@
+{
+  "//": "A bug whose cause sits one call away is fixed at the cause, and a test that fails before the fix proves it.",
+  "prompt": "Fix A Bug",
+  "title": "The root cause is fixed, and a test that fails before the fix proves it",
+  "hurried": "average() in stats.py gives the wrong answer. Fix it.",
+  "fill": {
+    "WHAT_IS_BROKEN": "average() in stats.py",
+    "WHAT_HAPPENS": "average([2, 4]) returns 1.0",
+    "WHAT_SHOULD_HAPPEN": "it returns 3.0",
+    "STEPS_OR_COMMAND": "python3 -c 'from stats import average; print(average([2, 4]))'",
+    "ERROR_OUTPUT": "1.0"
+  },
+  "setup": {
+    "files": {
+      "stats.py": "def total(values):\n    result = 0\n    for index in range(len(values) - 1):\n        result += values[index]\n    return result\n\n\ndef average(values):\n    return total(values) / len(values)\n",
+      "test_stats.py": "import unittest\n\nfrom stats import total\n\n\nclass TestTotal(unittest.TestCase):\n    def test_nothing_adds_up_to_zero(self):\n        self.assertEqual(total([]), 0)\n\n\nif __name__ == '__main__':\n    unittest.main()\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "python3",
+        "-c",
+        "from stats import average, total\nassert total([1, 2, 3]) == 6, total([1, 2, 3])\nassert average([2, 4]) == 3, average([2, 4])\n"
+      ]
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": ["python3", "-m", "unittest", "-q"]
+    },
+    {
+      "kind": "fails_before",
+      "argv": ["python3", "-m", "unittest", "-q"],
+      "paths": ["**/test_*.py"]
+    }
+  ],
+  "proof": "sed -i.bak 's/len(values) - 1/len(values)/' stats.py && rm stats.py.bak\nmkdir -p \"$(dirname test_total.py)\" && cat > test_total.py <<'EVAL_EOF'\nimport unittest\n\nfrom stats import total\n\n\nclass TestEveryValue(unittest.TestCase):\n    def test_every_value_counts(self):\n        self.assertEqual(total([1, 2, 3]), 6)\nEVAL_EOF\ncat <<'EVAL_EOF'\nThe cause: total() stopped one value short, so average() divided too small a sum.\nEVAL_EOF\n"
+}

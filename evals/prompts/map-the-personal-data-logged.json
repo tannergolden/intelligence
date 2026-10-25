@@ -1,0 +1,33 @@
+{
+  "//": "A data map finds personal data in a log line and sent to analytics, and changes nothing.",
+  "prompt": "Map The Personal Data",
+  "title": "The logged and shared personal data is mapped, and nothing changes",
+  "hurried": "What personal data do we handle?",
+  "setup": {
+    "files": {
+      "signup.py": "import logging\n\nimport requests\n\nlog = logging.getLogger(__name__)\n\n\ndef sign_up(db, name, email, birth_date):\n    log.info('new user %s %s born %s', name, email, birth_date)\n    db.insert('users', {'name': name, 'email': email, 'birth_date': birth_date})\n    requests.post('https://analytics.example.com/events', json={'event': 'sign_up', 'email': email}, timeout=5)\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "head_unchanged"
+    },
+    {
+      "kind": "changed_only",
+      "paths": []
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)\\blog"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)analytics"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)birth"
+    }
+  ],
+  "proof": "cat <<'EVAL_EOF'\nsignup.py:9 logs the name, email and birth date; signup.py:11 sends the email to analytics.example.com; the users table keeps birth_date with no way to delete it.\nEVAL_EOF\n"
+}

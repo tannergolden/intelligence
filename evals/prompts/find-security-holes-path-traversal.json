@@ -1,0 +1,30 @@
+{
+  "//": "A security review traces the request parameter to the file path it escapes, and changes nothing.",
+  "prompt": "Find Security Holes",
+  "title": "The path traversal is traced from the request to the file, and nothing changes",
+  "hurried": "Is this code secure?",
+  "setup": {
+    "files": {
+      "files.py": "import os\n\nUPLOADS = '/srv/uploads'\n\n\ndef download(request):\n    name = request.args['name']\n    with open(os.path.join(UPLOADS, name), 'rb') as handle:\n        return handle.read()\n",
+      "auth.py": "import hmac\n\n\ndef token_matches(given, expected):\n    return hmac.compare_digest(given.encode(), expected.encode())\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "head_unchanged"
+    },
+    {
+      "kind": "changed_only",
+      "paths": []
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)path traversal|directory traversal|\\.\\./"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "files\\.py"
+    }
+  ],
+  "proof": "cat <<'EVAL_EOF'\nfiles.py:8: download() joins the name from the request onto UPLOADS, so name=../../etc/passwd reads any file: path traversal. Resolve the path and check it stays inside UPLOADS.\nEVAL_EOF\n"
+}

@@ -1,0 +1,26 @@
+{
+  "//": "A time of day in prose is written in 12-hour form, and the machine format it came from stays as it is.",
+  "rule": "COM-005",
+  "title": "A cron time is described in 12-hour form",
+  "prompt": "Write SCHEDULE.md: one sentence saying what time of day the job in crontab.txt runs.",
+  "setup": {
+    "files": {
+      "crontab.txt": "30 15 * * * /usr/local/bin/backup\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "file_exists",
+      "path": "SCHEDULE.md"
+    },
+    {
+      "kind": "file_lacks",
+      "path": "SCHEDULE.md",
+      "pattern": "\\b15:30\\b"
+    },
+    {
+      "kind": "changed_only",
+      "paths": ["SCHEDULE.md"]
+    }
+  ]
+}

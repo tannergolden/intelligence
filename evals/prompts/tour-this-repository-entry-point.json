@@ -1,0 +1,33 @@
+{
+  "//": "A guide names the entry point, and the documented command that does not work, and changes nothing.",
+  "prompt": "Tour This Repository",
+  "title": "The guide names the entry point and the documented command that fails, and nothing changes",
+  "hurried": "Explain this repo to me.",
+  "setup": {
+    "files": {
+      "README.md": "# Till\n\nA command-line till for a small shop: it prices a basket.\n\nRun the tests with `make test`.\n",
+      "till.py": "import sys\n\nfrom shop.prices import total\n\n\ndef main(argv):\n    basket = [line.split(',') for line in argv]\n    print(f'Total: {total(basket):.2f}')\n\n\nif __name__ == '__main__':\n    main(sys.argv[1:])\n",
+      "shop/__init__.py": "",
+      "shop/prices.py": "PRICES = {'apple': 0.5, 'bread': 2.25, 'milk': 1.1}\n\n\ndef total(basket):\n    amount = sum(PRICES[name] * int(count) for name, count in basket)\n    if amount > 20:\n        amount *= 0.9\n    return round(amount, 2)\n",
+      "test_prices.py": "import unittest\n\nfrom shop.prices import total\n\n\nclass TestTotal(unittest.TestCase):\n    def test_a_basket_adds_up(self):\n        self.assertEqual(total([('apple', '2'), ('milk', '1')]), 2.1)\n\n    def test_a_big_basket_gets_ten_percent_off(self):\n        self.assertEqual(total([('bread', '10')]), 20.25)\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "head_unchanged"
+    },
+    {
+      "kind": "changed_only",
+      "paths": []
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "till\\.py"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?is)make test.{0,200}(?:fail|no makefile|missing|not (?:work|exist|found)|does(?:n.t| not) (?:work|exist))|no makefile"
+    }
+  ],
+  "proof": "cat <<'EVAL_EOF'\nEntry point: till.py:6 main() prices the basket with total() in shop/prices.py:4, which takes 10% off over 20. The README says to run make test, but there is no Makefile, so it fails; python3 -m unittest passes.\nEVAL_EOF\n"
+}

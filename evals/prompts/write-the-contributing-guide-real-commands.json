@@ -1,0 +1,52 @@
+{
+  "//": "A contributing guide names the repository's own check script, and no other file changes.",
+  "prompt": "Write The Contributing Guide",
+  "title": "The guide names the real check script, and nothing else changes",
+  "hurried": "Write a CONTRIBUTING guide.",
+  "setup": {
+    "files": {
+      "scripts/check.sh": "#!/bin/sh\nset -e\npython3 -m unittest -q\npython3 scripts/style.py\n",
+      "scripts/style.py": "import pathlib\nimport sys\n\ntabs = [str(path) for path in sorted(pathlib.Path('.').glob('*.py')) if '\\t' in path.read_text()]\nfor path in tabs:\n    print(f'{path}: indent with spaces, not tabs')\nsys.exit(1 if tabs else 0)\n",
+      "app.py": "def add(first, second):\n    return first + second\n",
+      "test_app.py": "import unittest\n\nfrom app import add\n\n\nclass TestAdd(unittest.TestCase):\n    def test_it_adds(self):\n        self.assertEqual(add(2, 3), 5)\n",
+      ".github/pull_request_template.md": "## What\n\n## Why\n\n## How It Was Tested\n"
+    },
+    "history": [
+      {
+        "commit": "fix(app): add negative numbers",
+        "files": {
+          "app.py": "def add(first, second):\n    return first + second\n\n"
+        }
+      },
+      {
+        "commit": "test(app): cover adding",
+        "files": {
+          "test_app.py": "import unittest\n\nfrom app import add\n\n\nclass TestAdd(unittest.TestCase):\n    def test_it_adds(self):\n        self.assertEqual(add(2, 3), 5)\n\n"
+        }
+      }
+    ]
+  },
+  "checks": [
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "python3",
+        "-c",
+        "import pathlib\nimport sys\n\nfor path in ('CONTRIBUTING.md', '.github/CONTRIBUTING.md', 'docs/CONTRIBUTING.md'):\n    guide = pathlib.Path(path)\n    if guide.exists() and 'scripts/check.sh' in guide.read_text():\n        sys.exit(0)\nsys.exit('no contributing guide names scripts/check.sh')\n"
+      ]
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": ["sh", "scripts/check.sh"]
+    },
+    {
+      "kind": "changed_only",
+      "paths": [
+        "CONTRIBUTING.md",
+        ".github/CONTRIBUTING.md",
+        "docs/CONTRIBUTING.md"
+      ]
+    }
+  ],
+  "proof": "mkdir -p \"$(dirname CONTRIBUTING.md)\" && cat > CONTRIBUTING.md <<'EVAL_EOF'\n# Contributing\n\n1. Make your change on a branch.\n2. Run every check: `sh scripts/check.sh`. It runs the tests and the style check, which wants spaces, not tabs.\n3. Write each commit as `type(scope): subject`, such as `fix(app): add negative numbers`.\n4. Open a pull request; its template asks what changed, why, and how you tested it.\nEVAL_EOF\n"
+}

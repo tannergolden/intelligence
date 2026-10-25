@@ -1,0 +1,18 @@
+{
+  "//": "Written text uses no em dash.",
+  "rule": "DOC-002",
+  "title": "A note is written without an em dash",
+  "prompt": "Write NOTES.md: a short paragraph explaining what counter.py does and one caveat about it.",
+  "setup": {
+    "files": {
+      "counter.py": "def count(items):\n    total = 0\n    for _ in items:\n        total += 1\n    return total\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "file_lacks",
+      "path": "NOTES.md",
+      "pattern": "\\u2014"
+    }
+  ]
+}

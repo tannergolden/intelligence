@@ -1,0 +1,31 @@
+{
+  "//": "Files opened without a with block, one of them left open on an error, are closed by scope.",
+  "prompt": "Find Resource Leaks",
+  "title": "Every file is opened in a with block, and the tests pass",
+  "hurried": "Find leaks.",
+  "setup": {
+    "files": {
+      "loader.py": "import json\n\n\ndef read_config(path):\n    handle = open(path, encoding='utf-8')\n    data = json.load(handle)\n    if 'version' not in data:\n        raise ValueError(f'{path} has no version')\n    handle.close()\n    return data\n\n\ndef read_lines(path):\n    return open(path, encoding='utf-8').read().splitlines()\n",
+      "test_loader.py": "import json\nimport pathlib\nimport tempfile\nimport unittest\n\nfrom loader import read_config, read_lines\n\n\nclass TestLoader(unittest.TestCase):\n    def setUp(self):\n        folder = tempfile.TemporaryDirectory()\n        self.addCleanup(folder.cleanup)\n        self.folder = pathlib.Path(folder.name)\n\n    def test_a_config_with_a_version_loads(self):\n        path = self.folder / 'good.json'\n        path.write_text(json.dumps({'version': 2}))\n        self.assertEqual(read_config(path), {'version': 2})\n\n    def test_a_config_without_a_version_is_refused(self):\n        path = self.folder / 'bad.json'\n        path.write_text('{}')\n        with self.assertRaises(ValueError):\n            read_config(path)\n\n    def test_lines_come_back_one_by_one(self):\n        path = self.folder / 'lines.txt'\n        path.write_text('a\\nb\\n')\n        self.assertEqual(read_lines(path), ['a', 'b'])\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "command_succeeds",
+      "argv": ["python3", "-m", "unittest", "-q"]
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "python3",
+        "-c",
+        "import ast\nimport pathlib\n\ntree = ast.parse(pathlib.Path('loader.py').read_text())\nmanaged = {id(item.context_expr) for node in ast.walk(tree) if isinstance(node, ast.With) for item in node.items}\nloose = [node.lineno for node in ast.walk(tree)\n         if isinstance(node, ast.Call) and getattr(node.func, 'id', '') == 'open' and id(node) not in managed]\nassert not loose, f'open() outside a with block on lines {loose}'\n"
+      ]
+    },
+    {
+      "kind": "changed_only",
+      "paths": ["loader.py", "test_loader.py"]
+    }
+  ],
+  "proof": "mkdir -p \"$(dirname loader.py)\" && cat > loader.py <<'EVAL_EOF'\nimport json\n\n\ndef read_config(path):\n    with open(path, encoding='utf-8') as handle:\n        data = json.load(handle)\n    if 'version' not in data:\n        raise ValueError(f'{path} has no version')\n    return data\n\n\ndef read_lines(path):\n    with open(path, encoding='utf-8') as handle:\n        return handle.read().splitlines()\nEVAL_EOF\n"
+}

@@ -129,10 +129,16 @@ jobs:
     # notes, and the notes are the changelog, so it is a decision a person
     # makes rather than a side effect of publishing the next one. Run the
     # `prune` task, read the preview, then run it again with dry-run off.
+    #
+    # THE HUB NEVER PRUNES: every run is a dry run, whatever dry-run says.
+    # Dotfiles and cloud sessions pin a full version and download from its
+    # tag, and `make audit` names an old block by the release that shipped
+    # it, so every release stays. Kept through Template Sync by a
+    # `# keep mine` note.
     if: ${{ !github.event.repository.is_template && github.event_name == 'workflow_dispatch' && inputs.task == 'prune' }}
     permissions:
       contents: write # deleting releases requires write
     uses: tannergolden/standards/.github/workflows/prune-releases.yml@v1
     with:
       keep: 1
-      dry-run: ${{ inputs.dry-run }}
+      dry-run: true

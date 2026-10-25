@@ -1,0 +1,31 @@
+{
+  "//": "A bug hunt finds the batch a range drops, proves it with an input, and changes nothing.",
+  "prompt": "Hunt For Bugs",
+  "title": "The dropped last batch is found and shown, and nothing changes",
+  "hurried": "Find bugs in this code.",
+  "setup": {
+    "files": {
+      "batches.py": "def batches(items, size):\n    return [items[start:start + size] for start in range(0, len(items) - size + 1, size)]\n",
+      "test_batches.py": "import unittest\n\nfrom batches import batches\n\n\nclass TestBatches(unittest.TestCase):\n    def test_even_batches(self):\n        self.assertEqual(batches([1, 2, 3, 4], 2), [[1, 2], [3, 4]])\n",
+      "totals.py": "def total(prices):\n    return round(sum(prices), 2)\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "head_unchanged"
+    },
+    {
+      "kind": "changed_only",
+      "paths": []
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "batches\\.py"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)last (?:batch|chunk|items?|elements?)|partial|remainder|leftover|drops?|dropped|lost"
+    }
+  ],
+  "proof": "cat <<'EVAL_EOF'\nBug, batches.py:2: batches([1, 2, 3], 2) returns [[1, 2]] and drops the last, partial batch [3]; the range stops too early. Use range(0, len(items), size).\nEVAL_EOF\n"
+}

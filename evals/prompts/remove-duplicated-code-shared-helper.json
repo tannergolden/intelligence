@@ -1,0 +1,33 @@
+{
+  "//": "Two copies of the same money format become one, and a look-alike with another purpose stays apart.",
+  "prompt": "Remove Duplicated Code",
+  "title": "The money format lives in one place, and the weight format is left alone",
+  "hurried": "Remove the duplicate code.",
+  "setup": {
+    "files": {
+      "invoice.py": "def format_money(cents):\n    sign = '-' if cents < 0 else ''\n    cents = abs(cents)\n    return f'{sign}${cents // 100:,}.{cents % 100:02d}'\n\n\ndef invoice_line(name, cents):\n    return f'{name}: {format_money(cents)}'\n",
+      "receipt.py": "def money(cents):\n    sign = '-' if cents < 0 else ''\n    cents = abs(cents)\n    return f'{sign}${cents // 100:,}.{cents % 100:02d}'\n\n\ndef receipt_total(cents):\n    return f'TOTAL {money(cents)}'\n",
+      "labels.py": "def weight(grams):\n    sign = '-' if grams < 0 else ''\n    grams = abs(grams)\n    return f'{sign}{grams // 1000:,}.{grams % 1000:03d} kg'\n",
+      "test_formats.py": "import unittest\n\nfrom invoice import invoice_line\nfrom labels import weight\nfrom receipt import receipt_total\n\n\nclass TestFormats(unittest.TestCase):\n    def test_an_invoice_line(self):\n        self.assertEqual(invoice_line('Tea', 123456), 'Tea: $1,234.56')\n\n    def test_a_receipt_total(self):\n        self.assertEqual(receipt_total(5), 'TOTAL $0.05')\n\n    def test_a_weight(self):\n        self.assertEqual(weight(1500), '1.500 kg')\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "command_succeeds",
+      "argv": ["python3", "-m", "unittest", "-q"]
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "python3",
+        "-c",
+        "import pathlib\n\nfrom invoice import invoice_line\nfrom receipt import receipt_total\n\ncopies = sum(path.read_text().count('cents // 100') for path in pathlib.Path('.').glob('*.py')\n             if not path.name.startswith('test_'))\nassert copies == 1, f'the money format is written out {copies} times'\nassert invoice_line('Refund', -123456) == 'Refund: -$1,234.56'\nassert receipt_total(7) == 'TOTAL $0.07'\n"
+      ]
+    },
+    {
+      "kind": "file_unchanged",
+      "path": "labels.py"
+    }
+  ],
+  "proof": "mkdir -p \"$(dirname money.py)\" && cat > money.py <<'EVAL_EOF'\ndef format_money(cents):\n    sign = '-' if cents < 0 else ''\n    cents = abs(cents)\n    return f'{sign}${cents // 100:,}.{cents % 100:02d}'\nEVAL_EOF\nmkdir -p \"$(dirname invoice.py)\" && cat > invoice.py <<'EVAL_EOF'\nfrom money import format_money\n\n\ndef invoice_line(name, cents):\n    return f'{name}: {format_money(cents)}'\nEVAL_EOF\nmkdir -p \"$(dirname receipt.py)\" && cat > receipt.py <<'EVAL_EOF'\nfrom money import format_money\n\n\ndef receipt_total(cents):\n    return f'TOTAL {format_money(cents)}'\nEVAL_EOF\n"
+}

@@ -1,0 +1,21 @@
+{
+  "//": "Commits carry a scoped conventional title, a body, and a person's sign-off last.",
+  "rule": "GIT-010",
+  "title": "A commit follows the commit standard",
+  "prompt": "My name is Eval Person, email eval-person@example.com. Commit the change in counter.py.",
+  "setup": {
+    "files": {
+      "counter.py": "def count(items):\n    total = 0\n    for _ in items:\n        total += 1\n    return total\n"
+    },
+    "changes": {
+      "counter.py": "def count(items):\n    total = 0\n    for _ in items:\n        total += 1\n    return total\n\n\ndef reset():\n    return 0\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "commits_match",
+      "require": true,
+      "pattern": "\\A[^\\n]*\\n[a-z]+\\([a-z0-9-]+\\): .+\\n\\n[\\s\\S]+\\nSigned-off-by: Eval Person <eval-person@example\\.com>\\s*\\Z"
+    }
+  ]
+}

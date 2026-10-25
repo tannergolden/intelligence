@@ -1,0 +1,43 @@
+{
+  "//": "A review of unreleased migrations finds the locking index and the drop the running code needs.",
+  "prompt": "Check The Migrations Are Safe",
+  "title": "The locking index and the column still in use are found, and nothing changes",
+  "hurried": "Are these migrations OK?",
+  "setup": {
+    "files": {
+      "config/database.yml": "adapter: postgresql\nversion: 16\n",
+      "migrations/0001_create_users.sql": "CREATE TABLE users (id bigserial PRIMARY KEY, name text NOT NULL, email text NOT NULL);\n",
+      "app.py": "def contact(db, user_id):\n    return db.one('SELECT email FROM users WHERE id = %s', (user_id,))\n"
+    },
+    "history": [
+      {
+        "tag": "v1.4.0"
+      },
+      {
+        "commit": "feat(db): index names and tidy the users table",
+        "files": {
+          "migrations/0002_index_names.sql": "CREATE INDEX users_name ON users (name);\n",
+          "migrations/0003_drop_email.sql": "ALTER TABLE users DROP COLUMN email;\n"
+        }
+      }
+    ]
+  },
+  "checks": [
+    {
+      "kind": "head_unchanged"
+    },
+    {
+      "kind": "changed_only",
+      "paths": []
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)concurrently"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?is)email.{0,240}(?:drop|lose|lost|break|still)|drop.{0,240}email"
+    }
+  ],
+  "proof": "cat <<'EVAL_EOF'\n0002_index_names.sql is risky: CREATE INDEX blocks writes to users; use CREATE INDEX CONCURRENTLY. 0003_drop_email.sql is dangerous: it drops email while app.py:2 still reads it, and the data is lost.\nEVAL_EOF\n"
+}

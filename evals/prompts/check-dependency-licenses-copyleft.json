@@ -1,0 +1,33 @@
+{
+  "//": "A license check flags the copyleft package and the one with no license, and changes nothing.",
+  "prompt": "Check Dependency Licenses",
+  "title": "The copyleft package and the unlicensed one are flagged, and nothing changes",
+  "hurried": "Check our licenses.",
+  "setup": {
+    "files": {
+      "LICENSE": "MIT License\n\nCopyright (c) 2026 Shop\n",
+      "package.json": "{\n  \"name\": \"shop\",\n  \"license\": \"MIT\",\n  \"dependencies\": {\n    \"gpl-widget\": \"^2.0.1\",\n    \"left-pad\": \"^1.3.0\",\n    \"mystery-lib\": \"^0.4.0\"\n  }\n}\n",
+      "node_modules/left-pad/package.json": "{\"name\": \"left-pad\", \"version\": \"1.3.0\", \"license\": \"WTFPL\"}\n",
+      "node_modules/gpl-widget/package.json": "{\"name\": \"gpl-widget\", \"version\": \"2.0.1\", \"license\": \"GPL-3.0-only\"}\n",
+      "node_modules/mystery-lib/package.json": "{\"name\": \"mystery-lib\", \"version\": \"0.4.0\"}\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "head_unchanged"
+    },
+    {
+      "kind": "changed_only",
+      "paths": []
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?is)gpl-widget.{0,200}GPL|GPL.{0,200}gpl-widget"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?is)mystery-lib.{0,200}(?:no licen|unknown|missing|none|not declared|undeclared)"
+    }
+  ],
+  "proof": "cat <<'EVAL_EOF'\nFlagged: gpl-widget 2.0.1 is GPL-3.0-only, a copyleft license; mystery-lib 0.4.0 declares no license. left-pad 1.3.0 is WTFPL.\nEVAL_EOF\n"
+}

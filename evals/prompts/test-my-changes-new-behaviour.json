@@ -1,0 +1,40 @@
+{
+  "//": "Tests for a branch cover the rounding it adds, so they fail when that breaks, and the code is unchanged.",
+  "prompt": "Test My Changes",
+  "title": "The new tests cover the branch's rounding and catch a break in it, and the code is unchanged",
+  "hurried": "Add tests for my changes.",
+  "setup": {
+    "files": {
+      "pricing.py": "def price(cents):\n    return f'{cents / 100:.2f}'\n",
+      "test_pricing.py": "import unittest\n\nfrom pricing import price\n\n\nclass TestPrice(unittest.TestCase):\n    def test_cents_show_as_money(self):\n        self.assertEqual(price(1234), '12.34')\n"
+    },
+    "history": [
+      {
+        "branch": "feature/tax"
+      }
+    ],
+    "remote": true,
+    "changes": {
+      "pricing.py": "def price(cents):\n    return f'{cents / 100:.2f}'\n\n\ndef with_tax(cents, rate):\n    \"\"\"The price in cents with tax at `rate` percent added, rounded half up to a whole cent.\"\"\"\n    taxed = cents * (100 + rate)\n    return (taxed + 50) // 100\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "file_unchanged",
+      "path": "pricing.py"
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": ["python3", "-m", "unittest", "-q"]
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "python3",
+        "-c",
+        "import pathlib, shutil, subprocess, sys, tempfile\nwith tempfile.TemporaryDirectory() as folder:\n    copy = pathlib.Path(folder) / 'repo'\n    shutil.copytree('.', copy, ignore=shutil.ignore_patterns('.git', '__pycache__'))\n    target = copy / 'pricing.py'\n    text = target.read_text()\n    assert '(taxed + 50) // 100' in text, \"the code the planted bug changes is gone\"\n    target.write_text(text.replace('(taxed + 50) // 100', 'taxed // 100', 1))\n    done = subprocess.run([sys.executable, '-m', 'unittest', '-q'], cwd=copy, capture_output=True)\n    assert done.returncode != 0, \"the tests still pass with taxed // 100 in place of (taxed + 50) // 100\"\n"
+      ]
+    }
+  ],
+  "proof": "mkdir -p \"$(dirname test_tax.py)\" && cat > test_tax.py <<'EVAL_EOF'\nimport unittest\n\nfrom pricing import with_tax\n\n\nclass TestWithTax(unittest.TestCase):\n    def test_tax_is_added(self):\n        self.assertEqual(with_tax(1000, 20), 1200)\n\n    def test_half_a_cent_rounds_up(self):\n        self.assertEqual(with_tax(5, 10), 6)\n\n    def test_no_tax_leaves_the_price(self):\n        self.assertEqual(with_tax(999, 0), 999)\nEVAL_EOF\n"
+}

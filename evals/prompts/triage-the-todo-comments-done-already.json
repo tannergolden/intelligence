@@ -1,0 +1,29 @@
+{
+  "//": "A TODO the code already does is called done, from the code, and nothing changes.",
+  "prompt": "Triage The TODO Comments",
+  "title": "The TODO already done is called done, with its line, and nothing changes",
+  "hurried": "Go through the TODOs.",
+  "setup": {
+    "files": {
+      "upload.py": "MAX_BYTES = 5_000_000\n\n\ndef accept(name, data):\n    # TODO: reject files over the size limit\n    if len(data) > MAX_BYTES:\n        raise ValueError(f'{name} is over {MAX_BYTES} bytes')\n    return {'name': name, 'size': len(data)}\n\n\ndef send(client, payload):\n    # FIXME: retries forever when the server is down\n    while True:\n        try:\n            return client.post(payload)\n        except ConnectionError:\n            continue\n\n\ndef label(name):\n    # HACK: names come in with stray spaces\n    return name.strip()\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "head_unchanged"
+    },
+    {
+      "kind": "changed_only",
+      "paths": []
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "upload\\.py:\\d+"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?is)(?:already|no longer|stale|obsolete|out of date).{0,160}(?:size|limit|reject)|(?:size|limit|reject).{0,160}(?:already|no longer|stale|obsolete)"
+    }
+  ],
+  "proof": "cat <<'EVAL_EOF'\nupload.py:5: the TODO to reject files over the size limit is already done by the check on line 6; delete it. upload.py:12: the FIXME is real work: file an issue, \"Bound the upload retries\".\nEVAL_EOF\n"
+}

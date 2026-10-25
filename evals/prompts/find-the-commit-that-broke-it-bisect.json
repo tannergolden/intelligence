@@ -1,0 +1,60 @@
+{
+  "//": "The first bad commit is found among later ones, and the bisect leaves the repository as it was.",
+  "prompt": "Find The Commit That Broke It",
+  "title": "The breaking commit is named, and the repository is back where it started",
+  "hurried": "The tests broke. What happened?",
+  "setup": {
+    "files": {
+      "calc.py": "def mean(values):\n    return sum(values) / len(values)\n",
+      "test_calc.py": "import unittest\n\nfrom calc import mean\n\n\nclass TestMean(unittest.TestCase):\n    def test_a_mean_can_fall_between_whole_numbers(self):\n        self.assertEqual(mean([1, 2]), 1.5)\n"
+    },
+    "history": [
+      {
+        "commit": "docs: say what calc does",
+        "files": {
+          "README.md": "# Calc\n\nSmall statistics helpers.\n"
+        }
+      },
+      {
+        "commit": "refactor(calc): use integer division",
+        "files": {
+          "calc.py": "def mean(values):\n    return sum(values) // len(values)\n"
+        }
+      },
+      {
+        "commit": "feat(calc): add median",
+        "files": {
+          "calc.py": "def mean(values):\n    return sum(values) // len(values)\n\n\ndef median(values):\n    ordered = sorted(values)\n    middle = len(ordered) // 2\n    return ordered[middle]\n"
+        }
+      },
+      {
+        "commit": "docs: mention median",
+        "files": {
+          "README.md": "# Calc\n\nSmall statistics helpers: mean and median.\n"
+        }
+      }
+    ]
+  },
+  "checks": [
+    {
+      "kind": "head_unchanged"
+    },
+    {
+      "kind": "changed_only",
+      "paths": []
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "sh",
+        "-c",
+        "test ! -e .git/BISECT_START && test \"$(git rev-parse --abbrev-ref HEAD)\" = main"
+      ]
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)use integer division"
+    }
+  ],
+  "proof": "cat <<'EVAL_EOF'\nFirst bad commit: refactor(calc): use integer division. mean() now uses //, so mean([1, 2]) is 1, not 1.5; use / again. The repository is back on main.\nEVAL_EOF\n"
+}

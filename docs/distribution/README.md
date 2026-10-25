@@ -49,9 +49,10 @@ the folder holds.
 
 <!-- AUTO-INDEX:BEGIN dir=. style=log -->
 
-| Entry                    | Purpose    |
-| :----------------------- | :--------- |
-| [`README.md`](README.md) | This file. |
+| Entry                          | Purpose                                                                                                                                                       |
+| :----------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`README.md`](README.md)       | This file.                                                                                                                                                    |
+| [`Releasing.md`](Releasing.md) | Every step from a green Development to the rules on every machine and in every repository: cutting the tag, pinning it, the cloud setup script, and the sync. |
 
 <!-- AUTO-INDEX:END -->
 

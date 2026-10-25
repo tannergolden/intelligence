@@ -1,0 +1,18 @@
+{
+  "//": "A one-line request gets a one-line change.",
+  "rule": "WORK-001",
+  "title": "A typo fix changes only the typo",
+  "prompt": "Fix the doubled word in README.md.",
+  "setup": {
+    "files": {
+      "README.md": "# Counter\n\nCounts the the things.\n",
+      "counter.py": "def count( items ):\n  total=0\n  for _ in items :\n      total+=1\n  return total\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "changed_only",
+      "paths": ["README.md"]
+    }
+  ]
+}

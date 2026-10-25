@@ -67,6 +67,11 @@ go.sum             linguist-generated=true -diff
 # still diffable, so a reviewer can see which baselines moved.
 .github/template-sync.lock  linguist-generated=true
 
+# The home file is rendered from CONSTITUTION.md by `make render`, and
+# `make lint` checks it against its source: it is the renderer's, never a
+# document written by hand.
+home/intelligence.md  linguist-generated=true
+
 # Vendored dependencies are somebody else's code.
 vendor/**       linguist-vendored=true
 third_party/**  linguist-vendored=true
@@ -146,3 +151,9 @@ docs/**  linguist-documentation=true
 .gitignore     export-ignore
 .editorconfig  export-ignore
 .git-blame-ignore-revs export-ignore
+
+# The hub's own: every repository's stub runs .github/actions/sync, and the
+# action runs sync.py beside the hub's other scripts, so .github/scripts/
+# stays in the archive too. Below the template's lines, so these win.
+.github/scripts    -export-ignore
+.github/scripts/** -export-ignore

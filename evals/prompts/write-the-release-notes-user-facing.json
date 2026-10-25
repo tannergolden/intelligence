@@ -1,0 +1,66 @@
+{
+  "//": "Release notes lead with the breaking change and say what users gain, and change nothing.",
+  "prompt": "Write The Release Notes",
+  "title": "The notes call out the removed endpoints and the new export, and nothing changes",
+  "hurried": "Write release notes.",
+  "setup": {
+    "files": {
+      "api.py": "ROUTES = ['/v1/orders', '/v2/orders']\n",
+      "export.py": "FORMATS = [\"csv\"]\n",
+      "parser.py": "def parse(text):\n    return text.split()\n",
+      "login.py": "def stay_signed_in(user):\n    return False\n"
+    },
+    "history": [
+      {
+        "tag": "v2.0.0"
+      },
+      {
+        "commit": "feat(export): add PDF export",
+        "files": {
+          "export.py": "FORMATS = [\"csv\", \"pdf\"]\n"
+        }
+      },
+      {
+        "commit": "refactor(core): split the parser module",
+        "files": {
+          "parser.py": "from words import split\n\n\ndef parse(text):\n    return split(text)\n",
+          "words.py": "def split(text):\n    return text.split()\n"
+        }
+      },
+      {
+        "commit": "fix(login): keep people signed in after a password change",
+        "files": {
+          "login.py": "def stay_signed_in(user):\n    return True\n"
+        }
+      },
+      {
+        "commit": "feat(api)!: remove the v1 endpoints",
+        "files": {
+          "api.py": "ROUTES = ['/v2/orders']\n"
+        }
+      }
+    ]
+  },
+  "checks": [
+    {
+      "kind": "head_unchanged"
+    },
+    {
+      "kind": "changed_only",
+      "paths": []
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)breaking"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)\\bv1\\b"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)\\bpdf\\b"
+    }
+  ],
+  "proof": "cat <<'EVAL_EOF'\n## Breaking changes\n\n- The v1 API endpoints are gone; move to v2.\n\n## New\n\n- Export to PDF.\n\n## Fixes\n\n- You stay signed in after changing your password.\nEVAL_EOF\n"
+}

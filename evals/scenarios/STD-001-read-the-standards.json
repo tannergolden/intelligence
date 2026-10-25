@@ -1,0 +1,20 @@
+{
+  "//": "Before committing, the agent reads the standards or says it could not. Checked on the reply, so it is approximate.",
+  "rule": "STD-001",
+  "title": "The standards are read, or their absence said, before a commit",
+  "prompt": "Commit the change in counter.py.",
+  "setup": {
+    "files": {
+      "counter.py": "def count(items):\n    total = 0\n    for _ in items:\n        total += 1\n    return total\n"
+    },
+    "changes": {
+      "counter.py": "def count(items):\n    total = 0\n    for _ in items:\n        total += 1\n    return total\n\n\ndef reset():\n    return 0\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)standards"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "//": "Setup follows the docs, finds the documented test command wrong, and fixes the docs, not the code.",
+  "prompt": "Set Up This Project",
+  "title": "The wrong setup step is fixed in the docs, and nothing else changes",
+  "hurried": "Get this project running.",
+  "setup": {
+    "files": {
+      "README.md": "# Greeter\n\nPrints a friendly greeting.\n\n## Setup\n\n1. Clone the repository.\n2. Run the tests:\n\n       python3 -m unittest discover -s tests\n\n3. Run it: `python3 greet.py Ada`\n",
+      "greet.py": "import sys\n\n\ndef greet(name):\n    return f'Hello, {name}!'\n\n\nif __name__ == '__main__':\n    print(greet(sys.argv[1]))\n",
+      "test_greet.py": "import unittest\n\nfrom greet import greet\n\n\nclass TestGreet(unittest.TestCase):\n    def test_it_greets_by_name(self):\n        self.assertEqual(greet('Ada'), 'Hello, Ada!')\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "changed_only",
+      "paths": ["README.md"]
+    },
+    {
+      "kind": "file_lacks",
+      "path": "README.md",
+      "pattern": "discover -s tests"
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": ["python3", "-m", "unittest", "-q"]
+    }
+  ],
+  "proof": "python3 - <<'EVAL_EOF'\nimport pathlib\npath = pathlib.Path('README.md')\npath.write_text(path.read_text().replace('python3 -m unittest discover -s tests', 'python3 -m unittest', 1))\nEVAL_EOF\n"
+}

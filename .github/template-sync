@@ -174,3 +174,16 @@
 #/CHANGELOG.md
 
 # --- Your rules ---------------------------------------------------------------
+# keep mine: /.github/workflows/checks.yml
+# keep mine: /.github/workflows/release.yml
+# The hub's technical/ and operations/ folders keep READMEs that describe
+# the hub's own pages, so the template's, written for any project, never
+# replace them.
+!/docs/technical/README.md
+!/docs/operations/README.md
+# Two of the hub's own files, where the template ships one of the same
+# name: the universal prompts page, which every repository's own prompts
+# page points at, and the stub every other repository installs from the
+# hub, which here would sync the hub's rules into the hub itself.
+!/docs/Prompts.md
+!/.github/workflows/intelligence-sync.yml

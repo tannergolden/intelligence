@@ -42,9 +42,11 @@ the folder holds.
 
 <!-- AUTO-INDEX:BEGIN dir=. style=log -->
 
-| Entry                    | Purpose    |
-| :----------------------- | :--------- |
-| [`README.md`](README.md) | This file. |
+| Entry                                | Purpose                                                                                                                                        |
+| :----------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`How-It-Works.md`](How-It-Works.md) | How one set of rules reaches every AI coding agent: the two pieces, the block every copy carries, which copy wins, and where each module fits. |
+| [`README.md`](README.md)             | This file.                                                                                                                                     |
+| [`Roadmap.md`](Roadmap.md)           | Each phase of the plan and each module held back until after 1.0: what it delivers, what finishes it, and where it stands.                     |
 
 <!-- AUTO-INDEX:END -->
 

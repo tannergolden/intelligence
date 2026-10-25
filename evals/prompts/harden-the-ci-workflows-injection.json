@@ -1,0 +1,28 @@
+{
+  "//": "An issue title written into a script moves to an environment variable, and write-all goes.",
+  "prompt": "Harden The CI Workflows",
+  "title": "The issue title no longer reaches the script, and the token is read-only",
+  "hurried": "Secure our GitHub Actions.",
+  "setup": {
+    "files": {
+      ".github/workflows/triage.yml": "name: Triage\n\non:\n  issues:\n    types: [opened]\n\npermissions: write-all\n\njobs:\n  log:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: echo \"New issue: ${{ github.event.issue.title }}\" >> triage.log\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "file_lacks",
+      "path": ".github/workflows/triage.yml",
+      "pattern": "(?m)^(?!\\s*[A-Za-z_][\\w-]*:\\s*\\$\\{\\{).*\\$\\{\\{\\s*github\\.event\\.issue\\.title"
+    },
+    {
+      "kind": "file_lacks",
+      "path": ".github/workflows/triage.yml",
+      "pattern": "write-all"
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": ["sh", "-c", "grep -q \"issues:\" .github/workflows/triage.yml"]
+    }
+  ],
+  "proof": "mkdir -p \"$(dirname .github/workflows/triage.yml)\" && cat > .github/workflows/triage.yml <<'EVAL_EOF'\nname: Triage\n\non:\n  issues:\n    types: [opened]\n\npermissions:\n  contents: read\n\njobs:\n  log:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n        with:\n          persist-credentials: false\n      - env:\n          TITLE: ${{ github.event.issue.title }}\n        run: echo \"New issue: $TITLE\" >> triage.log\nEVAL_EOF\n"
+}

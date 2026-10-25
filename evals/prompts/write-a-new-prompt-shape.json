@@ -1,0 +1,27 @@
+{
+  "//": "A new prompt takes the shape every prompt has, in a section of the repository's own page, above its footer.",
+  "prompt": "Write A New Prompt",
+  "title": "The new prompt takes the shape every prompt has, in the repository's own page",
+  "hurried": "Add a prompt for writing release notes to docs/Prompts.md.",
+  "fill": {
+    "ROUGH_REQUEST": "turn the pull requests merged since the last tag into release notes, grouped by type"
+  },
+  "setup": {
+    "prompts": true
+  },
+  "checks": [
+    {
+      "kind": "changed_only",
+      "paths": ["docs/Prompts.md"]
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "python3",
+        "-c",
+        "import pathlib\n\ntext = pathlib.Path('docs/Prompts.md').read_text()\nfooter = text.rindex('\\n---\\n')\npage, end = text[:footer], text[footer:]\nfor part in ('# ', '[!TIP]'):\n    assert part in page, f'the page lost {part!r}'\nassert 'A better prompt in, better work out.' in end, 'the footer is gone'\nmissing = [part for part in ('### ', '**Use when**', '```text', '<context>', '<task>') if part not in page]\nassert not missing, f'no new prompt above the footer: {missing}'\nassert ('{{' in page) == ('**Fill in**' in page), 'a prompt names its placeholders in a **Fill in** line, and only then'\n"
+      ]
+    }
+  ],
+  "proof": "python3 - <<'EVAL_EOF'\nimport pathlib\n\npath = pathlib.Path('docs/Prompts.md')\ntext = path.read_text()\nprompt = \"\"\"### Write Release Notes\n\n**Use when** a release is due. **Fill in** the last tag.\n\n```text\n<context>\nThe last release is {{LAST_TAG}}.\n</context>\n\n<task>\nWrite release notes for every pull request merged since then, grouped by type.\n</task>\n\n<done_when>\n- The notes cover every merged pull request.\n</done_when>\n```\n\"\"\"\nfooter = text.rindex('\\n---\\n')\npath.write_text(text[:footer] + '\\n\\n' + prompt + text[footer:])\nEVAL_EOF\n"
+}

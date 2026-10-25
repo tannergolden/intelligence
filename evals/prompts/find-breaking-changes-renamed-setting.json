@@ -1,0 +1,46 @@
+{
+  "//": "A setting renamed under a refactor is found as breaking, with the major version it calls for.",
+  "prompt": "Find Breaking Changes",
+  "title": "The renamed setting is found as breaking, and a major version is called for",
+  "hurried": "Anything breaking since the last release?",
+  "setup": {
+    "files": {
+      "config.py": "import json\n\n\ndef load(path):\n    with open(path, encoding='utf-8') as handle:\n        raw = json.load(handle)\n    return {'timeout': raw.get('timeout', 30)}\n"
+    },
+    "history": [
+      {
+        "tag": "v1.0.0"
+      },
+      {
+        "commit": "refactor(config): tidy the option names",
+        "files": {
+          "config.py": "import json\n\n\ndef load(path):\n    with open(path, encoding='utf-8') as handle:\n        raw = json.load(handle)\n    return {'timeout': raw.get('timeout_seconds', 30)}\n"
+        }
+      },
+      {
+        "commit": "feat(config): add retries",
+        "files": {
+          "config.py": "import json\n\n\ndef load(path):\n    with open(path, encoding='utf-8') as handle:\n        raw = json.load(handle)\n    return {'timeout': raw.get('timeout_seconds', 30), 'retries': raw.get('retries', 0)}\n"
+        }
+      }
+    ]
+  },
+  "checks": [
+    {
+      "kind": "head_unchanged"
+    },
+    {
+      "kind": "changed_only",
+      "paths": []
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "timeout_seconds"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)\\bmajor\\b|2\\.0\\.0"
+    }
+  ],
+  "proof": "cat <<'EVAL_EOF'\nBreaking: config.py reads timeout_seconds instead of timeout since refactor(config): tidy the option names, so a timeout in an existing file is ignored. This calls for a major version, 2.0.0.\nEVAL_EOF\n"
+}

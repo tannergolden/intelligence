@@ -1,6 +1,6 @@
 <!--
 title: '🛠️ TECHNICAL'
-description: 'How this project is built: its architecture, stack and source, one document for each part that needs one, and the designs, plans and research behind them.'
+description: 'How every part of the hub works, one document each: the home kit, repository sync, the prompts, cloud setup, skills and subagents, the loader probe and evals.'
 type: index
 -->
 
@@ -10,9 +10,9 @@ type: index
 
 <a name="top"></a>
 
-**How this project is built.**
+**How every part of the hub works, one document each.**
 
-_Written down where the code cannot say it._
+_Start with How It Works._
 
 </div>
 
@@ -20,30 +20,11 @@ _Written down where the code cannot say it._
 
 ## 💡 What This Folder Is For
 
-How this project is built: its architecture and how its parts fit, the stack it
-runs on and where its source lives, and one document for each part that needs
-one.
-
-- **The architecture**: the system as it stands, its actors, building blocks,
-  interfaces and trust boundaries, from the
-  [Architecture Overview](../templates/technical/Architecture-Overview.md) seed.
-- **The stack and the source**: what the project is built with, and where each
-  part of it lives.
-- **One folder per area**: `backend/`, `benchmarks/`, `database/`,
-  `infrastructure/`, `interface/` and `testing/`, as the fill-in standards lay
-  them out.
-- **Designs, plans and research**: `designs/`, `plans/` and `research/`, from
-  the Technical Design, Implementation Plan and Research Log templates.
-
-The fill-in standards in [`templates/technical/`](../templates/technical/README.md)
-copy out to the same path here, without `templates/`:
-`docs/templates/technical/backend/API-Design-Standards.md` becomes
-`docs/technical/backend/API-Design-Standards.md`.
-
-Its documents are **yours from the first commit**: nothing upstream ever
-writes, moves or removes one. Only this README is ever updated from the
-template, when you run 🔄 Template Sync, and its log is redrawn from the files
-the folder holds.
+Every explanation of how a part of the hub works lives here, and each folder's
+README in the hub links to the document for its part. Start with [How It
+Works](../introduction/How-It-Works.md), in
+[`../introduction/`](../introduction/README.md), which shows how the pieces
+fit, and follow its links.
 
 ---
 
@@ -51,27 +32,25 @@ the folder holds.
 
 <!-- AUTO-INDEX:BEGIN dir=. style=log -->
 
-| Entry                    | Purpose    |
-| :----------------------- | :--------- |
-| [`README.md`](README.md) | This file. |
+| Entry                                            | Purpose                                                                                                                                                                                                                            |
+| :----------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`research/`](research/README.md)                | Filed research reports, one per question, each dated, sourced claim by claim, and linked to the decision it fed.                                                                                                                   |
+| [`Cloud-Setup.md`](Cloud-Setup.md)               | The setup script that installs the universal rules and the kit into every Claude Code cloud session, pinned to one release and unable to fail the session.                                                                         |
+| [`Evals.md`](Evals.md)                           | How each universal rule and prompt is measured: scenarios run against real apps, with the block and without it or with the prompt and the hurried request it replaces, and checked by code.                                        |
+| [`Prompts.md`](Prompts.md)                       | The universal prompts the hub keeps in its own docs/Prompts.md for anyone to copy, most ready to run as they are, and the empty docs/Prompts.md each repository gets for prompts of its own: how each works, and how to change it. |
+| [`README.md`](README.md)                         | This file.                                                                                                                                                                                                                         |
+| [`Repository-Sync.md`](Repository-Sync.md)       | How each release reaches every repository: the stub a repository carries, make sync from the hub, what a first sync does, and how make merge lands the result.                                                                     |
+| [`Skills-&-Subagents.md`](Skills-&-Subagents.md) | The one skill and the Worker and Reviewer subagents the home kit installs, the rules every skill here follows, and where each app reads them.                                                                                      |
+| [`The-Home-Kit.md`](The-Home-Kit.md)             | What make agents installs into each AI app's home folder, the kit that rides beside the rules, the guard hook, and how a machine gets them from a release.                                                                         |
+| [`The-Loader-Probe.md`](The-Loader-Probe.md)     | How the hub proves, on the machine that runs it, which instruction files each AI coding app actually loads, what it touches, and the results so far.                                                                               |
 
 <!-- AUTO-INDEX:END -->
-
-🗂️ Machined Indexes redraws this log after every push to the default branch,
-from each document's own frontmatter.
-
----
-
-## 🔗 See also
-
-- [Documentation index](../README.md) - every document this project keeps
-- [Template catalogue](../templates/README.md) - every seed, and where each one is copied to
 
 ---
 
 <div align="center">
 
-**Write down what the code cannot say.**
+**One document per part, and every part explained.**
 
 [↑ Back to Top](#top)
 

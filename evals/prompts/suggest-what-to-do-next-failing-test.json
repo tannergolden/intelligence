@@ -1,0 +1,31 @@
+{
+  "//": "The failing test comes first among the candidates, with a prompt ready for it, and nothing changes.",
+  "prompt": "Suggest What To Do Next",
+  "title": "The failing test is the first suggestion, with a prompt for it, and nothing changes",
+  "hurried": "What should I work on?",
+  "setup": {
+    "files": {
+      "cart.py": "def total(items):\n    return sum(item['price'] for item in items)\n",
+      "test_cart.py": "import unittest\n\nfrom cart import total\n\n\nclass TestTotal(unittest.TestCase):\n    def test_quantities_count(self):\n        self.assertEqual(total([{'price': 2, 'qty': 3}]), 6)\n",
+      "ROADMAP.md": "# Roadmap\n\n- Gift cards\n- Wish lists\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "head_unchanged"
+    },
+    {
+      "kind": "changed_only",
+      "paths": []
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)test_cart|qty|quantity|quantities"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?is)context.{0,2000}task"
+    }
+  ],
+  "proof": "cat <<'EVAL_EOF'\n1. Fix the failing test_cart.py: total() ignores qty. Prompt to paste:\n<context>\ncart.py total() ignores quantities, so test_cart fails.\n</context>\n<task>\nFix total().\n</task>\nEVAL_EOF\n"
+}

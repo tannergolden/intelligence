@@ -1,0 +1,38 @@
+{
+  "//": "Text written into the code moves into the translation file, built as one message, word for word.",
+  "prompt": "Prepare For Translation",
+  "title": "The text lives in the translation file and reads exactly as before",
+  "hurried": "Make the app translatable.",
+  "setup": {
+    "files": {
+      "locales/en.json": "{\n  \"welcome\": \"Welcome back\"\n}\n",
+      "i18n.py": "import json\nimport pathlib\n\nMESSAGES = json.loads((pathlib.Path(__file__).parent / 'locales' / 'en.json').read_text(encoding='utf-8'))\n\n\ndef t(key, **values):\n    return MESSAGES[key].format(**values)\n",
+      "views.py": "from i18n import t\n\n\ndef header():\n    return t('welcome')\n\n\ndef inbox(count):\n    return 'You have ' + str(count) + ' new messages'\n\n\ndef settings_title():\n    return 'Settings'\n",
+      "test_views.py": "import unittest\n\nfrom views import header, inbox, settings_title\n\n\nclass TestViews(unittest.TestCase):\n    def test_the_header(self):\n        self.assertEqual(header(), 'Welcome back')\n\n    def test_the_inbox(self):\n        self.assertEqual(inbox(3), 'You have 3 new messages')\n\n    def test_the_settings_title(self):\n        self.assertEqual(settings_title(), 'Settings')\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "command_succeeds",
+      "argv": ["python3", "-m", "unittest", "-q"]
+    },
+    {
+      "kind": "file_lacks",
+      "path": "views.py",
+      "pattern": "'Settings'|You have|new messages"
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "python3",
+        "-c",
+        "from views import inbox, settings_title\n\nassert inbox(3) == 'You have 3 new messages'\nassert settings_title() == 'Settings'\n"
+      ]
+    },
+    {
+      "kind": "changed_only",
+      "paths": ["views.py", "locales/en.json", "i18n.py", "test_views.py"]
+    }
+  ],
+  "proof": "mkdir -p \"$(dirname locales/en.json)\" && cat > locales/en.json <<'EVAL_EOF'\n{\n  \"welcome\": \"Welcome back\",\n  \"inbox\": \"You have {count} new messages\",\n  \"settings\": \"Settings\"\n}\nEVAL_EOF\nmkdir -p \"$(dirname views.py)\" && cat > views.py <<'EVAL_EOF'\nfrom i18n import t\n\n\ndef header():\n    return t('welcome')\n\n\ndef inbox(count):\n    return t('inbox', count=count)\n\n\ndef settings_title():\n    return t('settings')\nEVAL_EOF\n"
+}

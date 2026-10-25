@@ -1,0 +1,25 @@
+{
+  "//": "A short question gets a plain answer, without filler or flattery. Checked on the reply, so it is approximate.",
+  "rule": "DOC-003",
+  "title": "A one-line question gets a plain answer, without filler or flattery",
+  "prompt": "What does count() in counter.py return for an empty list? Change no file.",
+  "setup": {
+    "files": {
+      "counter.py": "def count(items):\n    total = 0\n    for _ in items:\n        total += 1\n    return total\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)\\b(0|zero)\\b"
+    },
+    {
+      "kind": "output_lacks",
+      "pattern": "(?i)great question|i hope this helps|let me know if you"
+    },
+    {
+      "kind": "changed_only",
+      "paths": []
+    }
+  ]
+}

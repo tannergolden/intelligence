@@ -41,13 +41,14 @@ repository calls from nowhere else.
 
 <!-- AUTO-INDEX:BEGIN dir=. style=log -->
 
-| Entry                    | Purpose    |
-| :----------------------- | :--------- |
-| [`README.md`](README.md) | This file. |
+| Entry                     | Purpose                                                                                                                                                          |
+| :------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`sync/`](sync/README.md) | Writes the universal rules of the release it is called at into the calling repository's AGENTS.md, for &#x1F501; Intelligence Sync to propose as a pull request. |
+| [`README.md`](README.md)  | This file.                                                                                                                                                       |
 
 <!-- AUTO-INDEX:END -->
 
-🗂️ Machined Indexes redraws this log after every push to the default branch.
+🗂️ Machined Indexes redraws this log after every push.
 
 ---
 

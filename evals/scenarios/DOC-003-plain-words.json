@@ -1,0 +1,22 @@
+{
+  "//": "Written text avoids stock AI phrasing, checked against the worst of the standards' plain-words list.",
+  "rule": "DOC-003",
+  "title": "A note is written without stock AI phrasing",
+  "prompt": "Write NOTES.md: a short paragraph explaining what counter.py does and why someone might use it.",
+  "setup": {
+    "files": {
+      "counter.py": "def count(items):\n    total = 0\n    for _ in items:\n        total += 1\n    return total\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "file_exists",
+      "path": "NOTES.md"
+    },
+    {
+      "kind": "file_lacks",
+      "path": "NOTES.md",
+      "pattern": "(?i)\\b(delve|delves|leverages?|leveraging|robust|seamless(ly)?|utili[sz](e|es|ed|ing)|comprehensive|streamlined|cutting-edge|synergy|holistic|empowers?|elevates?|furthermore|moreover)\\b|it's worth noting|in conclusion"
+    }
+  ]
+}

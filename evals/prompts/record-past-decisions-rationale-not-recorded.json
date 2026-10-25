@@ -1,0 +1,45 @@
+{
+  "//": "Decision records cite the reason a commit gives, and say so where no reason was recorded.",
+  "prompt": "Record Past Decisions",
+  "title": "The SQLite record cites its commit's reason, and the hatch record admits it has none",
+  "hurried": "Write ADRs for this project.",
+  "setup": {
+    "files": {
+      "store.py": "import sqlite3\n\n\ndef open_store(path):\n    db = sqlite3.connect(path)\n    db.execute('CREATE TABLE IF NOT EXISTS orders (id INTEGER PRIMARY KEY, body TEXT)')\n    return db\n",
+      "pyproject.toml": "[build-system]\nrequires = [\"setuptools\"]\n"
+    },
+    "history": [
+      {
+        "commit": "feat(db): store orders in SQLite instead of JSON files\n\nJSON files were corrupted when two writes came at once.",
+        "files": {
+          "store.py": "import sqlite3\n\n\ndef open_store(path):\n    db = sqlite3.connect(path)\n    db.execute('CREATE TABLE IF NOT EXISTS orders (id INTEGER PRIMARY KEY, body TEXT)')\n    return db\n\n"
+        }
+      },
+      {
+        "commit": "build: switch from setuptools to hatch",
+        "files": {
+          "pyproject.toml": "[build-system]\nrequires = [\"hatchling\"]\nbuild-backend = \"hatchling.build\"\n"
+        }
+      }
+    ]
+  },
+  "checks": [
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "python3",
+        "-c",
+        "import pathlib\n\nrecords = [path.read_text() for path in pathlib.Path('docs').rglob('*.md')]\nassert any('SQLite' in text and ('concurrent' in text or 'corrupt' in text) for text in records), \\\n    'no record of the SQLite decision with the reason its commit gives'\nassert any('hatch' in text.lower() and 'Rationale not recorded' in text for text in records), \\\n    'the hatch decision is not marked as having no recorded reason'\n"
+      ]
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": [
+        "sh",
+        "-c",
+        "test -z \"$(git status --porcelain --untracked-files=all | grep -v \" docs/\")\""
+      ]
+    }
+  ],
+  "proof": "mkdir -p \"$(dirname docs/decisions/0001-store-orders-in-sqlite.md)\" && cat > docs/decisions/0001-store-orders-in-sqlite.md <<'EVAL_EOF'\n# Store Orders In SQLite\n\n## Context\n\nOrders were kept in JSON files, which were corrupted when two writes came at once (commit \"feat(db): store orders in\nSQLite instead of JSON files\").\n\n## Decision\n\nStore orders in SQLite.\n\n## Consequences\n\nWrites no longer corrupt the store; there is one database file to back up.\nEVAL_EOF\nmkdir -p \"$(dirname docs/decisions/0002-build-with-hatch.md)\" && cat > docs/decisions/0002-build-with-hatch.md <<'EVAL_EOF'\n# Build With Hatch\n\n## Context\n\nThe project moved its build from setuptools to hatch (commit \"build: switch from setuptools to hatch\").\n\n## Decision\n\nBuild with hatch.\n\n## Rationale\n\nRationale not recorded. Question for the maintainers: why hatch?\nEVAL_EOF\n"
+}

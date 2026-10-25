@@ -1,0 +1,42 @@
+{
+  "//": "A handoff note carries the decision and the open question the work left, and changes nothing.",
+  "prompt": "Write A Handoff Note",
+  "title": "The note carries the SQLite decision and the open question, and nothing changes",
+  "hurried": "Write a handoff note.",
+  "setup": {
+    "files": {
+      "README.md": "# Orders\n"
+    },
+    "history": [
+      {
+        "branch": "feature/storage",
+        "commit": "feat(storage): store orders in SQLite",
+        "files": {
+          "storage.py": "import sqlite3\n\n\ndef open_store(path):\n    db = sqlite3.connect(path)\n    db.execute('CREATE TABLE IF NOT EXISTS orders (id INTEGER PRIMARY KEY, body TEXT)')\n    return db\n\n\ndef save_order(db, body):\n    return db.execute('INSERT INTO orders (body) VALUES (?)', (body,)).lastrowid\n",
+          "NOTES.md": "# Notes\n\n- Chose SQLite over Postgres for now: one file, no server to run.\n- Open question: do orders need to survive a redeploy?\n"
+        }
+      }
+    ],
+    "changes": {
+      "storage.py": "import sqlite3\n\n\ndef open_store(path):\n    db = sqlite3.connect(path)\n    db.execute('CREATE TABLE IF NOT EXISTS orders (id INTEGER PRIMARY KEY, body TEXT)')\n    return db\n\n\ndef save_order(db, body):\n    return db.execute('INSERT INTO orders (body) VALUES (?)', (body,)).lastrowid\n\n\ndef delete_order(db, order_id):\n    # TODO: delete it\n    raise NotImplementedError\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "head_unchanged"
+    },
+    {
+      "kind": "changed_only",
+      "paths": []
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)sqlite"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)redeploy|open question"
+    }
+  ],
+  "proof": "cat <<'EVAL_EOF'\nGoal: store orders. Done: saving them in SQLite, chosen over Postgres for one file and no server. Left: delete_order() in storage.py is a stub. Open question: do orders need to survive a redeploy?\nEVAL_EOF\n"
+}

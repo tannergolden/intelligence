@@ -1,6 +1,6 @@
 <!--
 title: '🛡️ OPERATIONS & SECURITY'
-description: 'Keeping this project healthy and safe once it runs: runbooks, incident response, post-mortems, security, and the risks it still carries.'
+description: 'Keeping the hub and everything it reaches healthy: the server-side backstops behind the rules, the risks that remain, and what to do when a sync, an install or the guard reports a problem.'
 type: index
 -->
 
@@ -10,9 +10,9 @@ type: index
 
 <a name="top"></a>
 
-**Keeping this project healthy and safe.**
+**Keeping the hub healthy and safe.**
 
-_What to do while it runs, and when it breaks._
+_The backstops, the risks, and the fixes._
 
 </div>
 
@@ -20,27 +20,12 @@ _What to do while it runs, and when it breaks._
 
 ## 💡 What This Folder Is For
 
-What it takes to keep this project running once it exists, and what to do when
-something goes wrong.
-
-- **Runbooks**: the steps for a routine task or a known failure, written to be
-  followed under pressure, one each in `runbooks/`, from the
-  [Runbook template](../templates/Runbook.md).
-- **Incidents**: how one is declared and handled, and who is told, from the
-  [Incident Response](../templates/operations/Incident-Response.md) seed.
-- **Post-mortems**: one for each incident, in `post-mortems/`, from the
-  [Post-Mortem template](../templates/Post-Mortem.md).
-- **Security**: what this project protects, how it protects it, and the risks
-  it still carries, from the [Threat Model](../templates/operations/Threat-Model.md)
-  seed.
-- **Dependencies**: how they are chosen, pinned and kept current, and how fast
-  a vulnerable one is fixed, from the
-  [Dependency Policy](../templates/operations/Dependency-Policy.md) seed.
-
-Its documents are **yours from the first commit**: nothing upstream ever
-writes, moves or removes one. Only this README is ever updated from the
-template, when you run 🔄 Template Sync, and its log is redrawn from the files
-the folder holds.
+The documents here are about keeping the hub safe once it runs, rather than how
+it works: the controls behind the rules, the risks that remain with every one
+of them on, and what to do when a sync, a merge, an install or the guard
+reports a problem. How a release ships lives in
+[`../distribution/`](../distribution/README.md), and how each part works in
+[`../technical/`](../technical/README.md).
 
 ---
 
@@ -48,27 +33,20 @@ the folder holds.
 
 <!-- AUTO-INDEX:BEGIN dir=. style=log -->
 
-| Entry                    | Purpose    |
-| :----------------------- | :--------- |
-| [`README.md`](README.md) | This file. |
+| Entry                                                                | Purpose                                                                                                                                                                                                                                                                                                            |
+| :------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`Backstops-&-Residual-Risk.md`](Backstops-&-Residual-Risk.md)       | The server-side controls behind the universal rules, how to apply them to each repository, and the risks that remain once they are on.                                                                                                                                                                             |
+| [`README.md`](README.md)                                             | This file.                                                                                                                                                                                                                                                                                                         |
+| [`Troubleshooting-Sync.md`](Troubleshooting-Sync.md)                 | What each line from make audit, make sync, make merge and a repository's &#x1F501; Intelligence Sync means, and what to do about it. Read it when a repository's rules are not current, its prompts page is missing, or a sync pull request will not merge.                                                        |
+| [`Troubleshooting-The-Home-Kit.md`](Troubleshooting-The-Home-Kit.md) | What the installer, its check, the Claude cloud setup script and the guard hook print when something on a machine is wrong, and what to do about each. Read it when make agents-check is not all current, a cloud session starts without the rules, the guard blocks a call, or Claude Code asks before an action. |
 
 <!-- AUTO-INDEX:END -->
-
-🗂️ Machined Indexes redraws this log after every push to the default branch,
-from each document's own frontmatter.
-
----
-
-## 🔗 See also
-
-- [Documentation index](../README.md) - every document this project keeps
-- [Operations & Security](https://github.com/tannergolden/standards/blob/Development/docs/operations/README.md) - the shared guardrails: protection, dependencies, secrets and troubleshooting
 
 ---
 
 <div align="center">
 
-**Write the runbook before the night you need it.**
+**Say what it cannot stop.**
 
 [↑ Back to Top](#top)
 

@@ -1,0 +1,42 @@
+{
+  "//": "Updates stay within their major versions, and the major update is listed rather than made.",
+  "prompt": "Update The Dependencies",
+  "title": "The package manager updates within majors, and the major update is held back and named",
+  "hurried": "Update the dependencies.",
+  "setup": {
+    "files": {
+      "package.json": "{\n  \"name\": \"shop\",\n  \"version\": \"1.0.0\",\n  \"dependencies\": {\n    \"express\": \"^4.18.2\",\n    \"left-pad\": \"^1.1.0\"\n  }\n}\n",
+      "package-lock.json": "{\"lockfileVersion\": 3}\n"
+    },
+    "shims": ["npm"],
+    "replies": {
+      "npm": "Package   Current  Wanted  Latest  Location\nexpress   4.18.2   4.21.2  5.1.0   node_modules/express\nleft-pad  1.1.0    1.3.0   1.3.0   node_modules/left-pad\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "shim_called",
+      "name": "npm",
+      "pattern": "(?i)^(?:update|up|upgrade|install|i|add)\\b"
+    },
+    {
+      "kind": "shim_not_called",
+      "name": "npm",
+      "pattern": "(?i)express@\\^?5|@latest|--force|--legacy-peer-deps"
+    },
+    {
+      "kind": "file_lacks",
+      "path": "package.json",
+      "pattern": "\"express\": \"\\^?5"
+    },
+    {
+      "kind": "file_unchanged",
+      "path": "package-lock.json"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?is)express.{0,160}\\b5(?:\\.\\d+)*\\b|major"
+    }
+  ],
+  "proof": "npm update\ncat <<'EVAL_EOF'\nUpdated within their majors: left-pad 1.1.0 to 1.3.0, express 4.18.2 to 4.21.2. Held back: express 5.1.0, a major update with breaking changes.\nEVAL_EOF\n"
+}

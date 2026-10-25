@@ -1,0 +1,47 @@
+{
+  "//": "A pull request follows the template and names the new dependency, and nothing changes or opens.",
+  "prompt": "Write The Pull Request",
+  "title": "The description follows the template and names the new dependency, and nothing changes",
+  "hurried": "Write a PR description.",
+  "setup": {
+    "files": {
+      "export.py": "def export(rows):\n    return '\\n'.join(' '.join(map(str, row)) for row in rows)\n",
+      "requirements.txt": "requests==2.32.3\n",
+      ".github/pull_request_template.md": "## What\n\n## Why\n\n## How It Was Tested\n"
+    },
+    "history": [
+      {
+        "branch": "feature/csv",
+        "commit": "feat(export): write reports as CSV",
+        "files": {
+          "export.py": "import csv\nimport io\n\n\ndef export(rows):\n    buffer = io.StringIO()\n    csv.writer(buffer).writerows(rows)\n    return buffer.getvalue()\n",
+          "test_export.py": "import unittest\n\nfrom export import export\n\n\nclass TestExport(unittest.TestCase):\n    def test_rows_become_csv(self):\n        self.assertEqual(export([[1, 'a']]), '1,a\\r\\n')\n",
+          "requirements.txt": "requests==2.32.3\nchardet==5.2.0\n"
+        }
+      }
+    ],
+    "remote": true
+  },
+  "checks": [
+    {
+      "kind": "head_unchanged"
+    },
+    {
+      "kind": "changed_only",
+      "paths": []
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?m)^#+ ?What\\b"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?m)^#+ ?How It Was Tested"
+    },
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)chardet|new dependenc|requirements\\.txt"
+    }
+  ],
+  "proof": "cat <<'EVAL_EOF'\nfeat(export): write reports as CSV\n\n## What\n\nexport.py writes reports as CSV.\n\n## Why\n\n[For you to fill in: why CSV.]\n\n## How It Was Tested\n\npython3 -m unittest passes.\n\nA reviewer could miss the new dependency: chardet in requirements.txt.\nEVAL_EOF\n"
+}

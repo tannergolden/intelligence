@@ -1,0 +1,37 @@
+{
+  "//": "A doc naming a renamed option and a missing page is fixed, and the right guide is left alone.",
+  "prompt": "Fix Stale Docs",
+  "title": "The stale option and the broken link are fixed in the doc, and nothing else changes",
+  "hurried": "Fix the docs.",
+  "setup": {
+    "files": {
+      "docs/usage.md": "# Usage\n\nRun `python3 tool.py --verbose` to see each step.\n\nSee [the setup guide](install.md) first.\n",
+      "docs/setup.md": "# Setup\n\nInstall Python 3.10 or later.\n",
+      "CONTRIBUTING.md": "# Contributing\n\nRun `python3 -m unittest` before a pull request.\n",
+      "tool.py": "import argparse\n\n\ndef main(argv=None):\n    parser = argparse.ArgumentParser()\n    parser.add_argument('--debug', action='store_true', help='show each step')\n    args = parser.parse_args(argv)\n    return 'steps shown' if args.debug else 'done quietly'\n",
+      "test_tool.py": "import unittest\n\nfrom tool import main\n\n\nclass TestTool(unittest.TestCase):\n    def test_debug_shows_steps(self):\n        self.assertEqual(main(['--debug']), 'steps shown')\n",
+      "CHANGELOG.md": "# Changelog\n\n## 1.0.0\n\n- Added `--verbose` to show each step.\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "file_lacks",
+      "path": "docs/usage.md",
+      "pattern": "--verbose"
+    },
+    {
+      "kind": "file_lacks",
+      "path": "docs/usage.md",
+      "pattern": "\\]\\(install\\.md\\)"
+    },
+    {
+      "kind": "command_succeeds",
+      "argv": ["sh", "-c", "grep -q -- \"--debug\" docs/usage.md"]
+    },
+    {
+      "kind": "changed_only",
+      "paths": ["docs/usage.md"]
+    }
+  ],
+  "proof": "python3 - <<'EVAL_EOF'\nimport pathlib\npath = pathlib.Path('docs/usage.md')\npath.write_text(path.read_text().replace('--verbose', '--debug', 1))\nEVAL_EOF\npython3 - <<'EVAL_EOF'\nimport pathlib\npath = pathlib.Path('docs/usage.md')\npath.write_text(path.read_text().replace('(install.md)', '(setup.md)', 1))\nEVAL_EOF\n"
+}
