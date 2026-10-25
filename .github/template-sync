@@ -47,7 +47,7 @@
 /.github/ISSUE_TEMPLATE/Feedback-Report.yaml
 /.github/ISSUE_TEMPLATE/Performance-Report.yaml
 /.github/ISSUE_TEMPLATE/README.md
-/.github/ISSUE_TEMPLATE/Vulnerability-Report.yaml
+#/.github/ISSUE_TEMPLATE/Vulnerability-Report.yaml
 /.github/ISSUE_TEMPLATE/config.yml
 /.github/SECURITY.md
 /.github/SUPPORT.md

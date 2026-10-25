@@ -2,8 +2,8 @@
   "//": "Where each file here was last synced from. Written by 🔄 Template Sync alone; never edit it by hand.",
   "format": 1,
   "template": "tannergolden/path",
-  "version": "",
-  "commit": "",
+  "version": "v1.4.0",
+  "commit": "047f5c1fbea57ac09e0582281dca361cd2033818",
   "identity": {
     "owner": "tannergolden",
     "repository": "tannergolden/intelligence",
@@ -129,7 +129,8 @@
     },
     ".github/ISSUE_TEMPLATE/Vulnerability-Report.yaml": {
       "blob": "67d6705bff2c6cd05313e878673f664123363111",
-      "mode": "100644"
+      "mode": "100644",
+      "deleted": true
     },
     ".github/ISSUE_TEMPLATE/config.yml": {
       "blob": "e65c3bb27fdfc93aedce8fef7e3f2885fcc34820",
@@ -220,7 +221,7 @@
       "mode": "100644"
     },
     ".github/workflows/README.md": {
-      "blob": "9e4199d7b9d7368fdb2863e2d98570db06faeb14",
+      "blob": "33d7d047b460e9b67c16bc5cee7844d676abd1f6",
       "mode": "100644"
     },
     ".github/workflows/apply-standards.yml": {
@@ -228,19 +229,19 @@
       "mode": "100644"
     },
     ".github/workflows/auto-format.yml": {
-      "blob": "cd0d619ab807a8758dc406857dd3e488afa91d96",
+      "blob": "9e230c4cfe9bc70cab901c7cec8f116c5d577003",
       "mode": "100644"
     },
     ".github/workflows/auto-index.yml": {
-      "blob": "af6a1a2eeda653a242b0f32406dadb6909c793c8",
+      "blob": "456751bce48a275ac499e81c403f407c09ec7b95",
       "mode": "100644"
     },
     ".github/workflows/checks.yml": {
-      "blob": "78c977c079b782ca3e059fe05426a7f80f87a9fd",
+      "blob": "4a34ae1049c208e6fdde8ca948b3eefb5f879e99",
       "mode": "100644"
     },
     ".github/workflows/ci-failure-alert.yml": {
-      "blob": "2aaa95767b91b575d77864dedd4ddb4db229d8cb",
+      "blob": "da3f29254d42ba23d9bd4017d6bfeb637d923961",
       "mode": "100644"
     },
     ".github/workflows/cut-release.yml": {
@@ -260,7 +261,7 @@
       "mode": "100644"
     },
     ".github/workflows/lifecycle.yml": {
-      "blob": "97444fc466bad62bf340dbe5ac01a8a99e8330b9",
+      "blob": "959b16807d8406afd3080f2566df276fe87c0bbc",
       "mode": "100644"
     },
     ".github/workflows/maintenance.yml": {
@@ -280,19 +281,19 @@
       "mode": "100644"
     },
     ".github/workflows/scorecard.yml": {
-      "blob": "ec5f5f006f460018dee507077efc46f91f9cac97",
+      "blob": "908686a6e9298ca9248472ddc646ceff45450595",
       "mode": "100644"
     },
     ".github/workflows/semantic-pr.yml": {
-      "blob": "55d2744088d7ddf9ccf4ecf567642ba4af336783",
+      "blob": "335a38d65e439d4c01b30fbd0c107381d43d566a",
       "mode": "100644"
     },
     ".github/workflows/template-sync.yml": {
-      "blob": "5ebc057d8bd161391eb97b6e2552644f3f9932e1",
+      "blob": "91ce8061ae89b5d5b0f922da88a8782e096c1543",
       "mode": "100644"
     },
     ".github/workflows/verify-stubs.yml": {
-      "blob": "cb17233c0bfb562bb63b92d6b8a15bf4ec77d5ce",
+      "blob": "976ff15e5548b9e59a22037a3c9e35feb0fef58b",
       "mode": "100644"
     },
     ".gitignore": {
