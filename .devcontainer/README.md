@@ -1,6 +1,6 @@
 <!--
 title: '🐳 DEVELOPMENT CONTAINER'
-description: 'The language-neutral development container this repository ships, and how to give it the toolchain your project needs.'
+description: 'The development container for working on the intelligence hub: the environment image, with every tool the checks run at the versions CI installs.'
 type: index
 -->
 
@@ -10,9 +10,9 @@ type: index
 
 <a name="top"></a>
 
-**A container that can clone, edit, and commit in any language, with no toolchain yet.**
+**The hub, worked on inside the machine every check runs on.**
 
-_Neutral until you name the language._
+_The environment's image, and the hub's own hooks._
 
 </div>
 
@@ -21,23 +21,24 @@ _Neutral until you name the language._
 ## 💡 What This Folder Is For
 
 Open the repository in a dev container - <kbd>Reopen in Container</kbd> in VS
-Code, or a Codespace - and this folder decides what you get: an Ubuntu base
-image, git, the common shell utilities, and a handful of editor extensions that
-are useful whatever you write.
+Code, or a Codespace - and this folder decides what you get: the environment's
+image, [`ghcr.io/tannergolden/environment:1`](https://github.com/tannergolden/environment).
+It holds git, Python 3.12, Node.js 22 and every tool the standards' checks run,
+at the versions CI installs them at, so the hub's own checks, the validator,
+the renderer's check and the installer and kit tests, run here as they run in
+CI.
 
-**Nothing for your project's language is installed, on purpose.** This
-scaffold does not know what you are about to build, and a toolchain nobody
-needs costs every contributor a slow rebuild.
+When it is created it does what the template's container does: installs the
+scripts' requirement, PyYAML, switches on the
+[git hooks](../.github/scripts/hooks/README.md), and sets the commit message
+template. The image already holds gitleaks, at the version CI scans with, so
+the `pre-commit` hook scans what you stage for secrets with the same one.
 
-**Python is the one exception, and it is not a language choice.** The checks
-this repository runs on its own configuration are Python: the validator, the
-stub checker, the commit-message hook and their tests. So the container
-installs Python and the scripts' one requirement, PyYAML, and switches on the
-[git hooks](../.github/scripts/hooks/README.md) when it is created. A
-container that cannot run those checks cannot tell you whether CI will pass.
-It also installs gitleaks from Ubuntu's archive, so the `pre-commit` hook
-scans what you stage for secrets. That release trails gitleaks itself, and CI
-scans every pull request with the current one.
+**This file is the hub's own.** Its two lines in
+[`.github/template-sync`](../.github/template-sync) are switched off, so a sync
+never puts the template's container back. The image is for the repositories
+other repositories call, like this one; the template keeps a container of its
+own for everything else.
 
 `.gitattributes` marks this folder `export-ignore`, so `git archive` leaves it
 out of a source tarball. It is for developing the project, not for shipping it.
@@ -48,10 +49,10 @@ out of a source tarball. It is for developing the project, not for shipping it.
 
 <!-- AUTO-INDEX:BEGIN dir=. style=log -->
 
-| Entry                                    | Purpose                                                |
-| :--------------------------------------- | :----------------------------------------------------- |
-| [`devcontainer.json`](devcontainer.json) | Development container - deliberately language-neutral. |
-| [`README.md`](README.md)                 | This file.                                             |
+| Entry                                    | Purpose                                                                  |
+| :--------------------------------------- | :----------------------------------------------------------------------- |
+| [`devcontainer.json`](devcontainer.json) | Development container for the intelligence hub: the environment's image. |
+| [`README.md`](README.md)                 | This file.                                                               |
 
 <!-- AUTO-INDEX:END -->
 
@@ -60,17 +61,15 @@ from what each file says about itself.
 
 ---
 
-## ⚙️ Giving It A Toolchain
+## ⚙️ Keeping It In Step
 
-- [ ] Uncomment the feature for your language under `features` in
-      `devcontainer.json`. The full catalogue is at
-      [containers.dev/features](https://containers.dev/features).
-- [ ] Append your bootstrap step to `postCreateCommand`, such as
-      `&& npm ci`, `&& pip install -e .` or `&& go mod download`, so a fresh
-      container is ready to build. Keep what is already there: it installs
-      what the repository's own checks need and switches on the hooks.
-- [ ] Add your language's editor extension to `customizations.vscode.extensions`.
-- [ ] Rebuild the container.
+- Every check tool's version is the environment's: a new image reaches this
+  container after `docker pull ghcr.io/tannergolden/environment:1` and a
+  rebuild.
+- Add an editor extension to `customizations.vscode.extensions`, and anything
+  the hub needs beyond the image to `postCreateCommand`, keeping what is
+  already there.
+- Rebuild the container after any change here.
 
 > [!NOTE]
 > **There is no `settings` block, deliberately.** VS Code reads
@@ -86,7 +85,7 @@ as an error.
 
 <div align="center">
 
-**Equip it for this project, and for nothing else.**
+**The same tools as CI, wherever you open it.**
 
 [↑ Back to Top](#top)
 
