@@ -1,0 +1,28 @@
+{
+  "//": "The trigger test for visualize, taken from its assets/trigger-evals.json by .github/scripts/faculties.py. Never edit it by hand.",
+  "skill": "visualize",
+  "runs": 3,
+  "threshold": 0.5,
+  "should_trigger": [
+    "chart this revenue data",
+    "make a bar chart of these numbers",
+    "graph the sales trend over the year",
+    "draw a flowchart of the onboarding process",
+    "diagram our system architecture",
+    "show this as a timeline",
+    "turn this table into a chart",
+    "build me an interactive dashboard for these metrics",
+    "visualize how these parts connect",
+    "make an explanatory illustration of how the cache works",
+    "plot these two variables against each other",
+    "map out the decision logic"
+  ],
+  "should_not_trigger": [
+    "write me an email summarizing these results",
+    "add a mermaid diagram inside this note I'm editing",
+    "research the best charting libraries",
+    "build a skill that makes charts",
+    "analyze this dataset and tell me what it means",
+    "design a production dashboard web app with a backend"
+  ]
+}

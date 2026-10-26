@@ -8,6 +8,27 @@
     "research",
     "visualize"
   ],
-  "version": "",
-  "skills": {}
+  "version": "v1.0.0",
+  "skills": {
+    "discover": {
+      "archive": "6d37fd1618cccae97bfa728f38c1647ac147c7c48adaa5e84f80884b1f94760b",
+      "files": "dc3b6698081a1d7275a28091c3a87822ca0a843f9f8106f21601b7f475cedfff"
+    },
+    "editorial": {
+      "archive": "e19d4e3d9182f760c0d910c141d7e5f1250caba334804c95384eca30c8ad200e",
+      "files": "def46517b5948815f28e41112c799ecc5f59b2ca6662390f7398e8bf8c8551b1"
+    },
+    "finance": {
+      "archive": "76fcb7a83d121ea1bcb9f14d46b83dbc93738db4453eb3e177d723d499614f30",
+      "files": "3e52c3dfb602145f11cd375a5f832e5ee8a86a1d74b47ed0b17015a0b206e662"
+    },
+    "research": {
+      "archive": "37a47d3943d3548e484df65d7c397c76ca1dd467bff3daee52365df7943c85af",
+      "files": "e6638b4ce4920f59830575cc601f2a3836af710f3e13774aa0a94fc973d4f9a3"
+    },
+    "visualize": {
+      "archive": "6ead9b5505ba0cc31f485fe09f8e3952f3b1c1bd9bda7e74353a006000f9ddec",
+      "files": "c7b62467466e00cb4dca121aebbd5bf4244e7610da34cf546b02562d196f90da"
+    }
+  }
 }

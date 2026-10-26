@@ -34,10 +34,15 @@ Subagents](../../docs/technical/Skills-&-Subagents.md).
 
 <!-- AUTO-INDEX:BEGIN dir=. style=log -->
 
-| Entry                    | Purpose                                                                                                      |
-| :----------------------- | :----------------------------------------------------------------------------------------------------------- |
-| [`develop/`](develop/)   | The skill the hub writes: builds, tests and ships every other skill, and the agents and teams they dispatch. |
-| [`README.md`](README.md) | This file.                                                                                                   |
+| Entry                      | Purpose                                                                                                                              |
+| :------------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
+| [`develop/`](develop/)     | The skill the hub writes: builds, tests and ships every other skill, and the agents and teams they dispatch.                         |
+| [`discover/`](discover/)   | A faculty pinned from the knowledge template: generates options from distinct lenses and ranks them fairly, with the Discovery team. |
+| [`editorial/`](editorial/) | A faculty pinned from the knowledge template: writes, edits and formats prose, with the Editorial team.                              |
+| [`finance/`](finance/)     | A faculty pinned from the knowledge template: advises on personal and household money, with the Finance team.                        |
+| [`research/`](research/)   | A faculty pinned from the knowledge template: runs multi-source, fact-checked research, with the Research team.                      |
+| [`visualize/`](visualize/) | A faculty pinned from the knowledge template: makes charts, diagrams and other visuals, with the Design team.                        |
+| [`README.md`](README.md)   | This file.                                                                                                                           |
 
 <!-- AUTO-INDEX:END -->
 

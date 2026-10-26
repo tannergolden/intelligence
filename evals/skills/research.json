@@ -1,0 +1,30 @@
+{
+  "//": "The trigger test for research, taken from its assets/trigger-evals.json by .github/scripts/faculties.py. Never edit it by hand.",
+  "skill": "research",
+  "runs": 3,
+  "threshold": 0.5,
+  "should_trigger": [
+    "research the current state of solid-state batteries",
+    "look into whether GLP-1 drugs reduce cardiovascular risk",
+    "/research how do the major LLM providers price prompt caching",
+    "dig into the EU AI Act timeline and what it requires",
+    "find out about recent advances in perovskite solar cells",
+    "what is the current state of fusion startup funding",
+    "get me sources on the health effects of microplastics",
+    "I need to decide between two vendors, can you research them",
+    "is the claim that creatine helps cognition actually supported",
+    "compare the evidence for and against four-day work weeks"
+  ],
+  "should_not_trigger": [
+    "write me a short story about a lighthouse keeper",
+    "what is 17 times 24",
+    "refactor this function to use async await",
+    "explain how a bicycle derailleur works",
+    "draft a thank-you email to my landlord",
+    "what is the capital of Australia",
+    "fix the bug in my Python script",
+    "summarize the file I just pasted",
+    "set a reminder for my dentist appointment tomorrow",
+    "translate this paragraph into Spanish"
+  ]
+}

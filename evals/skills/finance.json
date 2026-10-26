@@ -1,0 +1,35 @@
+{
+  "//": "The trigger test for finance, taken from its assets/trigger-evals.json by .github/scripts/faculties.py. Never edit it by hand.",
+  "skill": "finance",
+  "runs": 3,
+  "threshold": 0.5,
+  "should_trigger": [
+    "can I afford a $40k car on my salary",
+    "should I pay off my student loans or invest the extra money",
+    "Roth or traditional 401k for me",
+    "how do I raise my credit score before applying for a mortgage",
+    "do I need life insurance if I'm single",
+    "what should I do with my $15k bonus",
+    "my RSUs vest next week, should I sell",
+    "a collector keeps calling about an old credit card",
+    "help me make a budget, I never have money left at the end of the month",
+    "get me out of credit card debt",
+    "am I on track to retire at 60",
+    "we're having a baby, what do we need to sort out financially",
+    "I just got laid off, what do I do about money",
+    "should we rent or buy in the next two years",
+    "do a money checkup for me",
+    "what year-end tax moves should I make",
+    "help me pick my benefits for open enrollment"
+  ],
+  "should_not_trigger": [
+    "build the financial model for my startup",
+    "should our company take on venture debt",
+    "what does the research say about active versus passive funds",
+    "write an email to my landlord asking to renew the lease",
+    "chart my net worth over the last five years from this table",
+    "interview me to fill out my financial profile",
+    "brainstorm side business ideas I could start",
+    "build me a budgeting app"
+  ]
+}

@@ -29,10 +29,15 @@ with it. What each test holds: [Evals](../../docs/technical/Evals.md).
 
 <!-- AUTO-INDEX:BEGIN dir=. style=log -->
 
-| Entry                          | Purpose                                                                                           |
-| :----------------------------- | :------------------------------------------------------------------------------------------------ |
-| [`develop.json`](develop.json) | The trigger test for develop: when it should load, when it should not, and a task to judge it by. |
-| [`README.md`](README.md)       | This file.                                                                                        |
+| Entry                              | Purpose                                                                                                   |
+| :--------------------------------- | :-------------------------------------------------------------------------------------------------------- |
+| [`develop.json`](develop.json)     | The trigger test for develop: when it should load, when it should not, and a task to judge it by.         |
+| [`discover.json`](discover.json)   | The trigger test for discover, taken from its assets/trigger-evals.json by .github/scripts/faculties.py.  |
+| [`editorial.json`](editorial.json) | The trigger test for editorial, taken from its assets/trigger-evals.json by .github/scripts/faculties.py. |
+| [`finance.json`](finance.json)     | The trigger test for finance, taken from its assets/trigger-evals.json by .github/scripts/faculties.py.   |
+| [`README.md`](README.md)           | This file.                                                                                                |
+| [`research.json`](research.json)   | The trigger test for research, taken from its assets/trigger-evals.json by .github/scripts/faculties.py.  |
+| [`visualize.json`](visualize.json) | The trigger test for visualize, taken from its assets/trigger-evals.json by .github/scripts/faculties.py. |
 
 <!-- AUTO-INDEX:END -->
 

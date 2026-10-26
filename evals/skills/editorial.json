@@ -1,0 +1,32 @@
+{
+  "//": "The trigger test for editorial, taken from its assets/trigger-evals.json by .github/scripts/faculties.py. Never edit it by hand.",
+  "skill": "editorial",
+  "runs": 3,
+  "threshold": 0.5,
+  "should_trigger": [
+    "draft a reply declining this partnership, keep it warm",
+    "write a thank-you email to my landlord",
+    "clean up these notes into a doc",
+    "tighten this paragraph, it rambles",
+    "make this README read well",
+    "/editorial rewrite this for clarity",
+    "proofread this before I send it",
+    "format these notes for Obsidian",
+    "turn this rough outline into an essay",
+    "reword this message so it sounds less harsh",
+    "write the body of this Library article",
+    "edit this cover letter"
+  ],
+  "should_not_trigger": [
+    "research the current state of solid-state batteries",
+    "what is 17 times 24",
+    "refactor this function to use async await",
+    "build me a skill that drafts invoices",
+    "run the vault checks",
+    "diagram the OAuth login flow for me",
+    "what is the capital of Australia",
+    "sort my inbox",
+    "look into whether GLP-1 drugs reduce cardiovascular risk",
+    "fix the bug in my Python script"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "//": "The trigger test for discover, taken from its assets/trigger-evals.json by .github/scripts/faculties.py. Never edit it by hand.",
+  "skill": "discover",
+  "runs": 3,
+  "threshold": 0.5,
+  "should_trigger": [
+    "brainstorm ideas for a new feature",
+    "give me ideas to grow my audience",
+    "how might we reduce churn",
+    "what are my options for monetizing this",
+    "ways to make onboarding faster",
+    "ideate on names for the product",
+    "help me think through approaches to this problem",
+    "what could I do about the slow signup flow",
+    "come up with approaches to cut costs",
+    "I need a bunch of fresh angles on this",
+    "how could I get more people to the event"
+  ],
+  "should_not_trigger": [
+    "research the best churn-reduction tactics",
+    "which of these two options should I pick",
+    "should I launch the product now or wait",
+    "build me a skill that generates ideas",
+    "write the announcement for this idea",
+    "what is design thinking"
+  ]
+}

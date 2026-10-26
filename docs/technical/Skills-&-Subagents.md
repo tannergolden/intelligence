@@ -64,9 +64,7 @@ copy holds, and `make lint` fails when a copy differs from its pin;
 holds it. So a
 change to a faculty is made in the template, released there, and pinned
 here with `make faculties VERSION=vX.Y.Z`, never made in place. The copier
-refuses a name the hub already uses for a skill of its own, and until the
-template releases the layout that keeps its skills in `.agents/skills/`,
-the pin names no release and the kit carries `develop` alone.
+refuses a name the hub already uses for a skill of its own.
 
 **The hand-over.** Claude Code loads a person's skill over a repository's of
 the same name, so in a vault the kit's copy of a faculty would run in place
