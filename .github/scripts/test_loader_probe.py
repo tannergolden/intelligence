@@ -37,9 +37,13 @@ _spec.loader.exec_module(probe)
 
 CODES = {'PROBE_REPO': 'aaaaaaaaaaaa', 'PROBE_HOME': 'bbbbbbbbbbbb', 'PROBE_MASTER': 'cccccccccccc',
          'PROBE_SKILL_SHARED': 'dddddddddddd', 'PROBE_SKILL_CLAUDE': 'eeeeeeeeeeee',
-         'PROBE_SKILL_ANTIGRAVITY': 'ffffffffffff'}
+         'PROBE_SKILL_ANTIGRAVITY': 'ffffffffffff', 'PROBE_HANDOVER_HOME': '111111111111',
+         'PROBE_HANDOVER_VAULT': '222222222222', 'PROBE_PLAIN_HOME': '333333333333',
+         'PROBE_PLAIN_VAULT': '444444444444'}
 SHARED_SKILL = '~/.agents/skills/intelligence-probe-canary/SKILL.md'
 CLAUDE_SKILL = '~/.claude/skills/intelligence-probe-canary/SKILL.md'
+HOME_HANDOVER = '~/.agents/skills/intelligence-probe-handover/SKILL.md'
+VAULT_HANDOVER = '.agents/skills/intelligence-probe-handover/SKILL.md'
 
 # A stand-in for an AI app. Its second argument says what to load: paths
 # starting with ~/ are under the home folder, the rest under the folder it
@@ -113,6 +117,19 @@ class TestProbeText(unittest.TestCase):
     def test_every_other_app_gets_the_bare_block(self) -> None:
         for key in ('claude', 'codex', 'antigravity'):
             self.assertEqual(probe.home_text(key, 'abc123'), probe.probe_block('PROBE_HOME', 'abc123'))
+
+    def test_the_hand_over_canary_opens_with_the_rule_every_faculty_carries(self) -> None:
+        text = probe.handover_text('PROBE_HANDOVER_HOME', 'abc123')
+        self.assertTrue(text.startswith('---\nname: intelligence-probe-handover\n'))
+        rule = probe.faculties.HANDOVER.format(name='intelligence-probe-handover')
+        self.assertIn('\n---\n\n' + rule + '\n', text)
+        self.assertIn('The value of PROBE_HANDOVER_HOME is abc123.', text)
+
+    def test_the_control_is_the_same_skill_with_no_rule(self) -> None:
+        text = probe.handover_text('PROBE_PLAIN_HOME', 'abc123', probe.PLAIN)
+        self.assertTrue(text.startswith('---\nname: intelligence-probe-plain\n'))
+        self.assertNotIn('Where it runs', text)
+        self.assertIn('---\n\nThe value of PROBE_PLAIN_HOME is abc123.', text)
 
 
 class TestInstallAndRestore(Sandbox):
@@ -238,6 +255,16 @@ class TestJudging(unittest.TestCase):
     def test_echoing_the_skill_question_proves_nothing(self) -> None:
         self.assertFalse(any(probe.observe(probe.SKILL_QUESTION, CODES, probe.SKILL_NAMES).values()))
 
+    def test_echoing_the_hand_over_question_proves_nothing(self) -> None:
+        self.assertFalse(any(probe.observe(probe.HANDOVER_QUESTION, CODES, probe.HANDOVER_NAMES).values()))
+        self.assertFalse(any(probe.observe(probe.PLAIN_QUESTION, CODES, probe.PLAIN_NAMES).values()))
+
+    def test_the_hand_over_wants_the_vault_copy_alone(self) -> None:
+        (check,) = probe.plan_checks(['codex'], 'read-both.json', handover=True)[:1]
+        self.assertTrue(probe.judge(check.expect, {'PROBE_HANDOVER_HOME': False, 'PROBE_HANDOVER_VAULT': True}))
+        self.assertFalse(probe.judge(check.expect, {'PROBE_HANDOVER_HOME': True, 'PROBE_HANDOVER_VAULT': False}))
+        self.assertFalse(probe.judge(check.expect, {'PROBE_HANDOVER_HOME': True, 'PROBE_HANDOVER_VAULT': True}))
+
     def test_a_value_expected_as_none_is_not_judged(self) -> None:
         expect = {'PROBE_REPO': True, 'PROBE_HOME': None, 'PROBE_MASTER': False}
         self.assertTrue(probe.judge(expect, {'PROBE_REPO': True, 'PROBE_HOME': True, 'PROBE_MASTER': False}))
@@ -284,6 +311,26 @@ class TestPlan(unittest.TestCase):
         self.assertIsNone(by_app['grok'].expect['PROBE_SKILL_CLAUDE'])
         self.assertTrue(all(c.exactly_one and c.question == probe.SKILL_QUESTION for c in checks))
 
+    def test_the_hand_over_canary_adds_one_check_per_app_in_the_vault(self) -> None:
+        checks = [c for c in probe.plan_checks(list(probe.APPS), 'read-both.json', handover=True)
+                  if c.names == probe.HANDOVER_NAMES]
+        self.assertEqual(sorted(c.app for c in checks), sorted(probe.APPS))
+        for check in checks:
+            self.assertEqual(check.fixture, probe.VAULT)
+            self.assertEqual(check.expect, {'PROBE_HANDOVER_HOME': False, 'PROBE_HANDOVER_VAULT': True})
+            self.assertTrue(check.reads and check.question == probe.HANDOVER_QUESTION)
+        self.assertFalse(any(c.reads for c in probe.plan_checks(list(probe.APPS), 'read-both.json', skills=True)))
+
+    def test_the_control_expects_claude_to_follow_its_home_copy_and_judges_no_other(self) -> None:
+        checks = {c.app: c for c in probe.plan_checks(list(probe.APPS), 'read-both.json', handover=True)
+                  if c.names == probe.PLAIN_NAMES}
+        self.assertEqual(sorted(checks), sorted(probe.APPS))
+        self.assertEqual(checks['claude'].expect, {'PROBE_PLAIN_HOME': True, 'PROBE_PLAIN_VAULT': False})
+        for key in set(probe.APPS) - {'claude'}:
+            self.assertEqual(checks[key].expect, {'PROBE_PLAIN_HOME': None, 'PROBE_PLAIN_VAULT': None}, key)
+        self.assertTrue(all(c.reads and c.fixture == probe.VAULT and c.question == probe.PLAIN_QUESTION
+                            for c in checks.values()))
+
     def test_no_app_may_read_the_master(self) -> None:
         # One that did would load the rules twice once the kit writes its copy.
         for check in probe.plan_checks(list(probe.APPS), 'read-both.json'):
@@ -313,6 +360,20 @@ class TestPlannedWrites(unittest.TestCase):
             self.assertEqual(mode, 'file')
             self.assertTrue(text.startswith('---\nname: intelligence-probe-canary\n'))
             self.assertIn(f'The value of {name} is {CODES[name]}.', text)
+
+    def test_the_hand_over_canary_plants_a_home_copy_in_every_skills_folder(self) -> None:
+        writes = {path.relative_to(self.home).as_posix(): (text, mode)
+                  for path, text, mode in probe.planned_writes(['cursor'], self.home, CODES, handover=True)}
+        for root in probe.SKILL_ROOTS.values():
+            text, mode = writes[f'{root}/intelligence-probe-handover/SKILL.md']
+            self.assertEqual(mode, 'file')
+            self.assertIn(f"The value of PROBE_HANDOVER_HOME is {CODES['PROBE_HANDOVER_HOME']}.", text)
+            plain, mode = writes[f'{root}/intelligence-probe-plain/SKILL.md']
+            self.assertEqual(mode, 'file')
+            self.assertNotIn('Where it runs', plain)
+        planted = ''.join(text for text, _ in writes.values())
+        self.assertNotIn(CODES['PROBE_HANDOVER_VAULT'], planted)
+        self.assertNotIn(CODES['PROBE_PLAIN_VAULT'], planted)
 
     def test_personal_files_get_a_block_and_folders_get_a_file(self) -> None:
         self.assertEqual(self.writes(['claude', 'codex', 'antigravity', 'copilot']), {
@@ -368,6 +429,21 @@ class TestCommands(unittest.TestCase):
         check = probe.Check('claude', 'x', 'plain', {}, extra_args=('--settings', 's.json'))
         argv = probe.build_argv(probe.APPS['claude'], check, {'claude': 'claude -p "{prompt}"'})
         self.assertEqual(argv, ['claude', '-p', probe.QUESTION, '--settings', 's.json'])
+
+    def test_only_the_hand_over_lets_claude_read_and_never_write(self) -> None:
+        def forbidden(check: object) -> set[str]:
+            argv = probe.build_argv(probe.APPS['claude'], check, {})
+            return set(argv[argv.index('--disallowedTools') + 1].split(','))
+        loader = probe.Check('claude', 'x', 'plain', {})
+        handover = probe.Check('claude', 'x', probe.VAULT, {}, reads=True)
+        self.assertIn('Read', forbidden(loader))
+        self.assertNotIn('Read', forbidden(handover))
+        self.assertTrue({'Bash', 'Edit', 'Write'} <= forbidden(handover))
+
+    def test_an_app_with_no_reading_command_runs_its_own(self) -> None:
+        check = probe.Check('codex', 'x', probe.VAULT, {}, reads=True)
+        self.assertEqual(probe.build_argv(probe.APPS['codex'], check, {})[:4],
+                         ['codex', 'exec', '--sandbox', 'read-only'])
 
 
 class TestMatrix(unittest.TestCase):
@@ -439,6 +515,19 @@ class TestWholeRun(Sandbox):
         self.assertEqual(code, 1, out)
         self.assertIn('| Codex skill copies | read | read, expected not read | not read | fail |', out)
 
+    def test_an_app_that_follows_the_vault_copy_passes_the_hand_over(self) -> None:
+        before = self.snapshot()
+        code, out = self.run_probe(f'AGENTS.md,~/.codex/AGENTS.md,{VAULT_HANDOVER}', '--handover')
+        self.assertEqual(code, 0, out)
+        self.assertIn('| Check | PROBE_HANDOVER_HOME | PROBE_HANDOVER_VAULT | Result |', out)
+        self.assertIn('| Codex hand-over | not read | read | pass |', out)
+        self.assertEqual(self.snapshot(), before, 'the home copies are gone again')
+
+    def test_an_app_that_stops_at_its_home_copy_fails_the_hand_over(self) -> None:
+        code, out = self.run_probe(f'AGENTS.md,~/.codex/AGENTS.md,{HOME_HANDOVER}', '--handover')
+        self.assertEqual(code, 1, out)
+        self.assertIn('| Codex hand-over | read, expected not read | not read, expected read | fail |', out)
+
     def test_an_app_that_reads_the_master_fails(self) -> None:
         code, out = self.run_probe('AGENTS.md,~/.codex/AGENTS.md,~/.agents/AGENTS.md')
         self.assertEqual(code, 1, out)
@@ -501,6 +590,25 @@ class TestWholeRun(Sandbox):
         self.assertEqual(self.snapshot(), before)
         self.assertFalse(scratch.exists())
 
+    def test_keep_with_the_hand_over_leaves_a_vault_that_says_it_is_one(self) -> None:
+        code, out = self.run_probe('AGENTS.md', '--keep', '--handover')
+        self.assertEqual(code, 0, out)
+        self.assertIn(probe.HANDOVER_QUESTION, out)
+        manifest = probe.Manifest(self.state)
+        manifest.load()
+        (scratch,) = [pathlib.Path(entry['tree']) for entry in manifest.entries if entry.get('tree')]
+        vault = scratch / probe.VAULT
+        self.assertIn('This repository is a BRAIN', (vault / 'AGENTS.md').read_text(encoding='utf-8'))
+        for folder in ('.agents/skills', '.claude/skills'):
+            text = (vault / folder / probe.HANDOVER / 'SKILL.md').read_text(encoding='utf-8')
+            self.assertIn('The value of PROBE_HANDOVER_VAULT is ', text)
+            text = (vault / folder / probe.PLAIN / 'SKILL.md').read_text(encoding='utf-8')
+            self.assertIn('The value of PROBE_PLAIN_VAULT is ', text)
+        self.assertTrue((vault / '.git').is_dir())
+        code, out = self.run_probe('AGENTS.md', '--cleanup')
+        self.assertEqual(code, 0, out)
+        self.assertFalse(scratch.exists())
+
     def test_a_leftover_manifest_blocks_a_run_until_cleanup(self) -> None:
         # A run that died right after its first write.
         before = self.snapshot()
@@ -514,6 +622,18 @@ class TestWholeRun(Sandbox):
         self.assertEqual(self.snapshot(), before)
         code, out = self.run_probe('AGENTS.md,~/.codex/AGENTS.md')
         self.assertEqual(code, 0, out)
+
+    def test_claude_following_its_home_copy_passes_the_control_and_the_vault_copy_fails_it(self) -> None:
+        vault = probe.make_vault(self.root, CODES)
+        self.personal('.claude/skills/intelligence-probe-plain/SKILL.md',
+                      probe.handover_text('PROBE_PLAIN_HOME', CODES['PROBE_PLAIN_HOME'], probe.PLAIN).encode())
+        (control,) = [c for c in probe.plan_checks(['claude'], 'read-both.json', handover=True)
+                      if c.names == probe.PLAIN_NAMES]
+        for loads, status in (('~/.claude/skills/intelligence-probe-plain/SKILL.md', 'pass'),
+                              ('.claude/skills/intelligence-probe-plain/SKILL.md', 'fail')):
+            overrides = probe.parse_overrides([self.command('claude', loads)])
+            row = probe.run_check(probe.APPS['claude'], control, vault, CODES, overrides, 60)
+            self.assertEqual(row['status'], status, row['output'])
 
     def test_grok_is_trusted_everywhere_but_its_untrusted_control(self) -> None:
         trusted, untrusted = probe.plan_checks(['grok'], 'read-both.json')

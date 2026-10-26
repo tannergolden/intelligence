@@ -48,11 +48,28 @@ Each app is asked which copies it can see; one copy passes, none or two
 fail. VS Code, which reads both `~/.claude/skills` and `~/.agents/skills`,
 is checked by hand with `--keep --skills`.
 
+THE HAND-OVER CANARY. With `--handover`, the probe checks the rule that
+lets the kit carry the faculty skills: in a BRAIN vault, a home copy of a
+faculty gives way to the vault's own. It plants a canary skill in the same
+three home folders, opening with the rule word for word as every faculty
+does, and a scratch vault whose AGENTS.md says it is a BRAIN, holding its
+own copy of the skill where every app reads a repository's skills. Each
+copy carries its own code. Each app is asked, in the vault, to use the
+skill and give the value it was told to give: the vault's passes, the
+home copy's fails. Its control plants a second skill the same way, with
+no rule, to show the rule is what made the difference: Claude Code, which
+loads a person's skill over a repository's, should follow the home copy
+there, and every other app's choice is recorded without a verdict. Unlike
+every other check, these ask the app to read files, since a faculty has to
+read the vault's copy to hand over, so Claude Code, which runs the rest
+with its tools off, may read files and load skills here, and nothing more.
+
 SAFETY. The probe never overwrites a file it did not create. It records
 every change in a manifest before making it, and restores the original
 bytes when it finishes, fails, or is interrupted. A run that dies anyway
 leaves the manifest behind; `--cleanup` replays it. The probe makes one
-model call per check, twelve in a full run.
+model call per check, twelve in a full run: the skill canary adds one per
+app, and the hand-over canary two, with its control.
 
 Run it:
 
@@ -60,6 +77,7 @@ Run it:
     python3 .github/scripts/loader-probe.py               # every installed app
     python3 .github/scripts/loader-probe.py --apps claude,grok
     python3 .github/scripts/loader-probe.py --skills      # add the skill canary
+    python3 .github/scripts/loader-probe.py --handover    # add the hand-over canary
     python3 .github/scripts/loader-probe.py --keep        # set up a check by hand
     python3 .github/scripts/loader-probe.py --cleanup     # undo --keep, or a crash
 """
@@ -81,6 +99,9 @@ import subprocess
 import sys
 import tempfile
 from collections.abc import Sequence
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import faculties  # noqa: E402  the faculty copier, beside this file, which words the hand-over rule
 
 BEGIN = '<!-- INTELLIGENCE-PROBE:BEGIN -->'
 END = '<!-- INTELLIGENCE-PROBE:END -->'
@@ -132,6 +153,28 @@ SKILL_SEES = {
     'antigravity': 'PROBE_SKILL_ANTIGRAVITY',
 }
 
+# The hand-over canary: a faculty's opening rule, one copy at home and one in a
+# vault, a code each. Every app should end up following the vault's copy. Its
+# control is a plain skill with no rule, planted the same way, which an app
+# that prefers a person's skill to a repository's follows at home.
+HANDOVER = 'intelligence-probe-handover'
+HANDOVER_NAMES = ('PROBE_HANDOVER_HOME', 'PROBE_HANDOVER_VAULT')
+PLAIN = 'intelligence-probe-plain'
+PLAIN_NAMES = ('PROBE_PLAIN_HOME', 'PROBE_PLAIN_VAULT')
+ASK_SKILL = ('Use your {} skill and follow it. '
+             'Reply with only the value it gives you, or NONE if you have no such skill.')
+HANDOVER_QUESTION = ASK_SKILL.format(HANDOVER)
+PLAIN_QUESTION = ASK_SKILL.format(PLAIN)
+# The copy an app follows when nothing hands it over, where its documentation says.
+PLAIN_FOLLOWS = {'claude': 'PROBE_PLAIN_HOME'}
+VAULT = 'vault'  # the fixture the hand-over canary runs in
+VAULT_AGENTS = (
+    '# Agent Instructions\n\n'
+    '**How AI agents work in this BRAIN vault.**\n\n'
+    'This repository is a BRAIN: a vault of plain Markdown, generated from tannergolden/knowledge. '
+    'Nothing in this file defines a probe value.\n'
+)
+
 # Each fixture is a scratch git repository whose AGENTS.md carries PROBE_REPO,
 # beside the file named here, which defines nothing.
 FIXTURES: dict[str, str | None] = {
@@ -152,6 +195,7 @@ class App:
     home_mode: str = 'file'  # "file": a file the probe owns; "block": a marked block
     reads_home_of: str | None = None  # the app whose home copy this one reads
     env: dict[str, str] = dataclasses.field(default_factory=dict)
+    read_argv: tuple[str, ...] | None = None  # for a check that reads files; None when argv already may
 
 
 APPS: dict[str, App] = {
@@ -161,6 +205,8 @@ APPS: dict[str, App] = {
         argv=('claude', '-p', '{prompt}', '--disallowedTools',
               'Bash,Read,Grep,Glob,Edit,Write,WebFetch,WebSearch'),
         home='.claude/rules/intelligence-probe.md',
+        read_argv=('claude', '-p', '{prompt}', '--disallowedTools',
+                   'Bash,Edit,Write,NotebookEdit,WebFetch,WebSearch'),
     ),
     'codex': App(
         key='codex',
@@ -203,19 +249,29 @@ class Check:
 
     app: str
     label: str
-    fixture: str  # a key of FIXTURES: which scratch repository to run in
+    fixture: str  # which scratch repository to run in: a key of FIXTURES, or VAULT
     expect: dict[str, bool | None]  # None means "not judged"
     extra_args: tuple[str, ...] = ()
     drop_env: tuple[str, ...] = ()
     question: str = QUESTION
     names: tuple[str, ...] = NAMES
     exactly_one: bool = False  # passes only if exactly one of the names is seen
+    reads: bool = False  # the app may read files, as a faculty must to hand over
 
 
-def plan_checks(apps: Sequence[str], settings_path: str,
-                claude_reads_both: bool = False, skills: bool = False) -> list[Check]:
+def plan_checks(apps: Sequence[str], settings_path: str, claude_reads_both: bool = False,
+                skills: bool = False, handover: bool = False) -> list[Check]:
     """Every check for the chosen apps, negative controls included."""
     checks: list[Check] = []
+    if handover:
+        for key in apps:
+            checks.append(Check(key, f'{APPS[key].name} hand-over', VAULT,
+                                {'PROBE_HANDOVER_HOME': False, 'PROBE_HANDOVER_VAULT': True},
+                                question=HANDOVER_QUESTION, names=HANDOVER_NAMES, reads=True))
+            follows = PLAIN_FOLLOWS.get(key)
+            checks.append(Check(key, f'{APPS[key].name} with no rule to hand over', VAULT,
+                                {name: name == follows if follows else None for name in PLAIN_NAMES},
+                                question=PLAIN_QUESTION, names=PLAIN_NAMES, reads=True))
     if skills:
         for key in apps:
             sees = SKILL_SEES.get(key)
@@ -275,6 +331,19 @@ def skill_text(name: str, code: str) -> str:
         f'The value of {name} is {code}. Use when asked about {SKILL}.\n'
         '---\n\n'
         f'The value of {name} is {code}.\n'
+    )
+
+
+def handover_text(name: str, code: str, skill: str = HANDOVER) -> str:
+    """One copy of a hand-over skill: a faculty's opening rule, unless it is the plain control, then its value."""
+    rule = f'{faculties.HANDOVER.format(name=skill)}\n\n' if skill == HANDOVER else ''
+    return (
+        '---\n'
+        f'name: {skill}\n'
+        'description: A temporary test written by the tannergolden/intelligence loader probe. '
+        f'Use when asked to use {skill}.\n'
+        '---\n\n'
+        f'{rule}The value of {name} is {code}. Reply with that value alone.\n'
     )
 
 
@@ -424,9 +493,26 @@ def make_fixture(root: pathlib.Path, name: str, code: str) -> pathlib.Path:
     return repo
 
 
+def make_vault(root: pathlib.Path, codes: dict[str, str]) -> pathlib.Path:
+    """The vault fixture: a scratch BRAIN vault with its own copy of each hand-over skill, where apps read skills."""
+    repo = root / VAULT
+    repo.mkdir()
+    subprocess.run(['git', 'init', '-q'], cwd=repo, check=True)
+    (repo / 'AGENTS.md').write_text(VAULT_AGENTS, encoding='utf-8')
+    for skill, name in ((HANDOVER, 'PROBE_HANDOVER_VAULT'), (PLAIN, 'PROBE_PLAIN_VAULT')):
+        for folder in ('.agents/skills', '.claude/skills'):
+            path = repo / folder / skill / 'SKILL.md'
+            path.parent.mkdir(parents=True)
+            path.write_text(handover_text(name, codes[name], skill), encoding='utf-8')
+    return repo
+
+
 def build_argv(app: App, check: Check, overrides: dict[str, str]) -> list[str]:
     """The command for one check, with the question in place of {prompt}."""
-    template = shlex.split(overrides[app.key]) if app.key in overrides else list(app.argv)
+    if app.key in overrides:
+        template = shlex.split(overrides[app.key])
+    else:
+        template = list(app.read_argv if check.reads and app.read_argv else app.argv)
     return [check.question if part == '{prompt}' else part for part in template] + list(check.extra_args)
 
 
@@ -494,7 +580,7 @@ def cell(want: bool | None, seen: bool) -> str:
 def matrix(results: Sequence[dict[str, object]]) -> str:
     """The results as Markdown tables, ready to paste into an issue."""
     tables = []
-    for names in (NAMES, SKILL_NAMES):
+    for names in (NAMES, SKILL_NAMES, HANDOVER_NAMES, PLAIN_NAMES):
         rows = [row for row in results if tuple(row.get('names') or NAMES) == names]
         if not rows:
             continue
@@ -528,7 +614,7 @@ def parse_overrides(values: Sequence[str]) -> dict[str, str]:
 
 
 def planned_writes(apps: Sequence[str], home: pathlib.Path, codes: dict[str, str],
-                   skills: bool = False) -> list[tuple[pathlib.Path, str, str]]:
+                   skills: bool = False, handover: bool = False) -> list[tuple[pathlib.Path, str, str]]:
     """Every file the probe writes for these apps: path, text and mode."""
     writes = [(home / MASTER, probe_block('PROBE_MASTER', codes['PROBE_MASTER']), 'block')]
     owners = set(apps) | {APPS[key].reads_home_of for key in apps if APPS[key].reads_home_of}
@@ -539,6 +625,11 @@ def planned_writes(apps: Sequence[str], home: pathlib.Path, codes: dict[str, str
     if skills:
         for name, root in SKILL_ROOTS.items():
             writes.append((home / root / SKILL / 'SKILL.md', skill_text(name, codes[name]), 'file'))
+    if handover:
+        for skill, name in ((HANDOVER, 'PROBE_HANDOVER_HOME'), (PLAIN, 'PROBE_PLAIN_HOME')):
+            text = handover_text(name, codes[name], skill)
+            for root in SKILL_ROOTS.values():
+                writes.append((home / root / skill / 'SKILL.md', text, 'file'))
     return writes
 
 
@@ -562,6 +653,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                              'and leave them until --cleanup')
     parser.add_argument('--skills', action='store_true',
                         help='add the skill canary: one more model call per app')
+    parser.add_argument('--handover', action='store_true',
+                        help='add the hand-over canary and its control: two more model calls per app')
     args = parser.parse_args(argv)
 
     manifest = Manifest(args.state or default_state())
@@ -597,19 +690,20 @@ def main(argv: Sequence[str] | None = None) -> int:
               file=sys.stderr)
         return 1
 
-    codes = {name: secrets.token_hex(6) for name in NAMES + SKILL_NAMES}
+    codes = {name: secrets.token_hex(6) for name in NAMES + SKILL_NAMES + HANDOVER_NAMES + PLAIN_NAMES}
     # A check by hand needs no command line, so it writes for every app named.
-    writes = planned_writes(wanted if args.keep else installed, args.home, codes, args.skills)
+    writes = planned_writes(wanted if args.keep else installed, args.home, codes, args.skills, args.handover)
+    fixture_names = list(FIXTURES) + ([VAULT] if args.handover else [])
     both = claude_reads_both(args.home)
 
     if args.dry_run:
-        checks = plan_checks(installed, '<scratch>/claude-read-both.json', both, args.skills)
+        checks = plan_checks(installed, '<scratch>/claude-read-both.json', both, args.skills, args.handover)
         print('Would write, and leave in place until --cleanup:' if args.keep
               else 'Would write, then restore afterwards:')
         for path, _, mode in writes:
             print(f'  {mode:<5}  {path}')
         if args.keep:
-            print('Would make fixtures: ' + ', '.join(FIXTURES))
+            print('Would make fixtures: ' + ', '.join(fixture_names))
             return 0
         print('Would run, each in a scratch git repository:')
         for check in checks:
@@ -633,15 +727,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     scratch = pathlib.Path(tempfile.mkdtemp(prefix=SCRATCH_PREFIX))
     manifest.remember_tree(scratch)
     settings_path = scratch / 'claude-read-both.json'
-    checks = plan_checks(installed, str(settings_path), both, args.skills)
+    checks = plan_checks(installed, str(settings_path), both, args.skills, args.handover)
     kept = False
     try:
         for path, text, mode in writes:
             install(manifest, path, text, mode)
         settings_path.write_text(json.dumps(CLAUDE_READ_BOTH_SETTINGS), encoding='utf-8')
         fixtures = {name: make_fixture(scratch, name, codes['PROBE_REPO']) for name in FIXTURES}
+        if args.handover:
+            fixtures[VAULT] = make_vault(scratch, codes)
         if args.keep:
-            explain_keep(writes, fixtures, settings_path, codes, args.skills)
+            explain_keep(writes, fixtures, settings_path, codes, args.skills, args.handover)
             kept = True
             return 0
         for check in checks:
@@ -681,7 +777,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 def explain_keep(writes: Sequence[tuple[pathlib.Path, str, str]],
                  fixtures: dict[str, pathlib.Path], settings_path: pathlib.Path,
-                 codes: dict[str, str], skills: bool = False) -> None:
+                 codes: dict[str, str], skills: bool = False, handover: bool = False) -> None:
     """How to run the checks by hand against what --keep left in place."""
     print('Left in place until you run --cleanup:')
     for path, _, mode in writes:
@@ -709,6 +805,21 @@ def explain_keep(writes: Sequence[tuple[pathlib.Path, str, str]],
         print()
         print('A correct answer names exactly one of '
               + ', '.join(f'{name}={codes[name]}' for name in SKILL_NAMES) + '.')
+    if handover:
+        print()
+        print('For the hand-over canary, open each app in the vault fixture, start a new session, '
+              'and send this:')
+        print()
+        print('  ' + HANDOVER_QUESTION)
+        print()
+        print(f"A correct answer gives PROBE_HANDOVER_VAULT={codes['PROBE_HANDOVER_VAULT']}, "
+              f"and never PROBE_HANDOVER_HOME={codes['PROBE_HANDOVER_HOME']}.")
+        print('For its control, start one more new session there and send this:')
+        print()
+        print('  ' + PLAIN_QUESTION)
+        print()
+        print(f"Claude Code should give PROBE_PLAIN_HOME={codes['PROBE_PLAIN_HOME']}, the home copy, "
+              f"not PROBE_PLAIN_VAULT={codes['PROBE_PLAIN_VAULT']}; note which another app gives.")
     print()
     print('When you are done: python3 .github/scripts/loader-probe.py --cleanup')
 
