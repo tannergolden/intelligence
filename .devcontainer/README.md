@@ -10,7 +10,7 @@ type: index
 
 <a name="top"></a>
 
-**The hub, worked on inside the machine every check runs on.**
+**The hub, worked on with the tools every check runs.**
 
 _The environment's image, and the hub's own hooks._
 
