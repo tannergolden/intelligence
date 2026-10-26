@@ -148,7 +148,7 @@ comment at its top, so the installer can tell it is the kit's.
 | `//`      | A note that the file is written by the script and never edited by hand                                                                                         |
 | `source`  | `tannergolden/knowledge`, the template every faculty comes from                                                                                                |
 | `names`   | The faculties the kit carries, each the name of a skill the template keeps in `.agents/skills/`                                                                |
-| `version` | The template's release they come from; empty until one is pinned, and then the kit carries none of them                                                        |
+| `version` | The template's release they come from, a tag `vX.Y.Z`; empty until one is pinned, and while it is empty the kit carries none of them                           |
 | `skills`  | Each faculty's name, mapped to `archive`, the SHA-256 of the `.skill` archive it came from, and `files`, the SHA-256 of the list of its files and their hashes |
 
 That list holds one line per file of the copy, in path order: its path

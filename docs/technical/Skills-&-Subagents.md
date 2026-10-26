@@ -108,9 +108,10 @@ of the template passes here unchanged.
 > comment frontmatter and no decorative header or footer. For the same
 > reason a skill folder has no `README.md`: it would ship with the skill.
 
-Each skill's trigger test lives in `evals/skills/`, outside its folder, so it
-never ships; a faculty's is drawn from the copy of it the faculty keeps in
-its own `assets/`. [Evals](Evals.md) describes them.
+Each skill's trigger test lives in `evals/skills/`, outside its folder, so the
+hub's own never ships. A faculty's is drawn from the one it keeps in its own
+`assets/`, which ships with it, as the template keeps it. [Evals](Evals.md)
+describes them.
 
 ---
 

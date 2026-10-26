@@ -57,7 +57,8 @@ every command below.
 release of the knowledge template, run `make faculties VERSION=vX.Y.Z` with
 the template's version, then `make render` and `make check`, and commit it
 all on `Development` before step 1; dotfiles needs nothing but the new pins
-from step 3.
+from step 3. A faculty's folder cannot describe itself in `kit/skills/README.md`,
+so give each new one's row its purpose by hand, once.
 
 Every version stays: the stub passes `keep-versions: true`, so standards' Cut
 Release never prunes here, because a pin to a full version must keep

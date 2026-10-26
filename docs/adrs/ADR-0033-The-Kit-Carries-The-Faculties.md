@@ -79,12 +79,13 @@ Option 1 leaves the faculties out of every repository but a vault. Option 2 make
 
 ### What Changed
 
-| Was                                    | Is now                                                                                          |
-| :------------------------------------- | :---------------------------------------------------------------------------------------------- |
-| `develop`, the one skill the kit holds | `develop`, the one the hub writes, and the five faculties copied from a release of the template |
-| No faculty outside a vault             | `kit/skills/<name>/`, written by `faculties.py --pin` and held to `kit/faculties.json`          |
-| Trigger tests written in the hub       | A faculty's drawn from the one it ships, and checked with its copy                              |
-| A skill canary in the probe            | A hand-over canary beside it, `--handover`, run in a scratch vault                              |
+| Was                                         | Is now                                                                                          |
+| :------------------------------------------ | :---------------------------------------------------------------------------------------------- |
+| `develop`, the one skill the kit holds      | `develop`, the one the hub writes, and the five faculties copied from a release of the template |
+| No faculty outside a vault                  | `kit/skills/<name>/`, written by `faculties.py --pin` and held to `kit/faculties.json`          |
+| Trigger tests written in the hub            | A faculty's drawn from the one it ships, and checked with its copy                              |
+| A skill canary in the probe                 | A hand-over canary beside it, `--handover`, run in a scratch vault                              |
+| develop: never one skill name at two levels | The same, except a skill that opens with a rule settling which copy runs, as each faculty does  |
 
 ---
 

@@ -2,7 +2,7 @@
 name: develop
 description: Builds, updates and improves Agent Skills, and the agents and teams they dispatch, so a skill loads and works in every coding app. Decides first whether the need is a skill at all or belongs in a rule, a hook or a script; researches before writing; reuses an agent before creating one; gates every build with a deterministic validator and independent reviewers; and learns from a skill's mistakes. Use when the user asks to build, create, write, add, package, share, fix or improve a skill, an agent, a team of agents, a slash command or a reusable procedure, or says an agent keeps getting the same multi-step task wrong, even if they never say skill.
 license: MIT
-metadata: { 'team': 'Development', 'version': '4.0.3' }
+metadata: { 'team': 'Development', 'version': '4.0.4' }
 ---
 
 # 🏭 Develop - the skill and agent factory

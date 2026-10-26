@@ -102,11 +102,11 @@ Invariant, because nothing waives one.
 The rules travel with a kit, one pinned file in the same release, and each
 module has its own document:
 
-| Module                                                     | What it is                                                                                                                                    | Read more                                                              |
-| :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------- |
-| The guard hook                                             | Denies the few tool calls the Invariants forbid outright, before they run, in every app                                                       | [The Home Kit](../technical/The-Home-Kit.md)                           |
-| The `develop` skill, and the Worker and Reviewer subagents | A procedure loaded when the task calls for it, and two agents a session hands work to                                                         | [Skills & Subagents](../technical/Skills-&-Subagents.md)               |
-| The five faculties                                         | The knowledge template's skills for research, ideas, writing, visuals and money, pinned to its release, each giving way to a vault's own copy | [Skills & Subagents](../technical/Skills-&-Subagents.md#the-faculties) |
+| Module                                                     | What it is                                                                                                                                                  | Read more                                                              |
+| :--------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------- |
+| The guard hook                                             | Denies the few tool calls the Invariants forbid outright, before they run, in every app                                                                     | [The Home Kit](../technical/The-Home-Kit.md)                           |
+| The `develop` skill, and the Worker and Reviewer subagents | A procedure loaded when the task calls for it, and two agents a session hands work to                                                                       | [Skills & Subagents](../technical/Skills-&-Subagents.md)               |
+| The five faculties                                         | The knowledge template's skills for research, ideas, writing, visuals and money, from the release of it the hub pins, each giving way to a vault's own copy | [Skills & Subagents](../technical/Skills-&-Subagents.md#the-faculties) |
 
 The universal [prompts](../technical/Prompts.md) stay in the hub, in
 [`docs/Prompts.md`](../Prompts.md), for anyone to copy. Every repository gets

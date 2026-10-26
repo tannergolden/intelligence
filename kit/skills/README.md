@@ -12,7 +12,7 @@ type: index
 
 **Procedures an agent loads only when the task in front of it needs them.**
 
-_One skill written here, and five pinned from the knowledge template._
+_One skill written here, and the faculties of whichever template release is pinned._
 
 </div>
 
@@ -21,9 +21,10 @@ _One skill written here, and five pinned from the knowledge template._
 ## 💡 What This Folder Is For
 
 The skills the home kit installs, one folder each in the open Agent Skills
-format: [`develop/`](develop/SKILL.md), the one the hub writes, and the five
-faculties `make faculties` copies from a release of the knowledge template,
-which [`../faculties.json`](../faculties.json) pins and no one edits here.
+format: [`develop/`](develop/SKILL.md), the one the hub writes, and, once a
+release is pinned, the five faculties `make faculties` copies from the
+knowledge template. [`../faculties.json`](../faculties.json) records the pin,
+and no one edits a faculty here.
 Where they land and the rules every skill here follows: [Skills &
 Subagents](../../docs/technical/Skills-&-Subagents.md).
 
@@ -33,10 +34,10 @@ Subagents](../../docs/technical/Skills-&-Subagents.md).
 
 <!-- AUTO-INDEX:BEGIN dir=. style=log -->
 
-| Entry                    | Purpose                                                                                           |
-| :----------------------- | :------------------------------------------------------------------------------------------------ |
-| [`develop/`](develop/)   | The one skill: builds, tests and ships every other skill, and the agents and teams they dispatch. |
-| [`README.md`](README.md) | This file.                                                                                        |
+| Entry                    | Purpose                                                                                                      |
+| :----------------------- | :----------------------------------------------------------------------------------------------------------- |
+| [`develop/`](develop/)   | The skill the hub writes: builds, tests and ships every other skill, and the agents and teams they dispatch. |
+| [`README.md`](README.md) | This file.                                                                                                   |
 
 <!-- AUTO-INDEX:END -->
 
