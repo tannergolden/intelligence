@@ -359,7 +359,7 @@ class TestTheRealPrompts(unittest.TestCase):
     def test_the_page_a_repository_gets_is_empty_and_points_here(self) -> None:
         self.assertEqual(prompts.template(ROOT), self.page)
         self.assertNotRegex(self.page, r'(?m)^##|^```', 'its owner makes every section and prompt')
-        self.assertIn('](https://github.com/tannergolden/intelligence/blob/Development/docs/Prompts.md)', self.page)
+        self.assertIn('](https://github.com/tannergolden/intelligence/blob/HEAD/docs/Prompts.md)', self.page)
 
 
 if __name__ == '__main__':

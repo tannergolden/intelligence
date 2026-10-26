@@ -1,6 +1,6 @@
 <!--
 title: '💬 PROMPTS'
-description: 'Prompts for working in this repository with an AI agent, written for it. Copy one, fill in any details it asks for, and paste it into your agent.'
+description: 'Prompts for working in this repository with an AI agent, written for it: copy one, fill it in, paste it.'
 type: reference
 keywords: [prompts, ai-agents]
 -->
@@ -26,7 +26,7 @@ _Written for this repository. Copied whole._
 > changes to it or understanding how it works. Give each a `###` heading, a
 > **Use when** line and one `text` block. Prompts that work in any repository,
 > and how to write a good one, are in the
-> [universal prompts](https://github.com/tannergolden/intelligence/blob/Development/docs/Prompts.md).
+> [universal prompts](https://github.com/tannergolden/intelligence/blob/HEAD/docs/Prompts.md).
 > 🔁 Intelligence Sync added this page, and never changes it.
 
 ---
