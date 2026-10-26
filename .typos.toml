@@ -1,0 +1,16 @@
+# --- Hub Spell-Check Words ---
+#
+# Words the shared standards config does not know but this hub spells
+# correctly. `typos` finds this file on its own and adds it to the shared
+# config that the Check Spelling job passes with --config, so both lists apply.
+#
+# Additive, like the shared list: add the term rather than reword the sentence.
+# A faculty is a copy held to its pin and cannot be reworded here, so a word
+# one carries is added here, as the knowledge template's own list adds it.
+#
+# ---
+
+[default.extend-words]
+Damon = "Damon" # the Devil's Advocate agent's name, kit/skills/research/agents/
+HSA = "HSA" # a health savings account, kit/skills/finance/
+mis = "mis" # the prefix in hyphenated words: mis-fires, mis-called
