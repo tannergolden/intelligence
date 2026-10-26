@@ -89,7 +89,7 @@ serves to this repository from its `.github` repository.
 ## Gotchas
 
 - Never edit inside `home/`. It is rendered, and `make check` fails on a hand edit.
-- Never edit a faculty in `kit/skills/`, its trigger test in `evals/skills/` or `kit/faculties.json`. They are copied from a release of tannergolden/knowledge, and `make check` fails on a hand edit: change the faculty there, and pin the release that carries it.
+- Never edit a faculty in `kit/skills/`, its trigger test in `evals/skills/` or `kit/faculties.json`. They are copied from a release of tannergolden/knowledge: `make check` fails on a hand edit to a copy or its trigger test, and `faculties.py --verify` on a pin that no longer holds the release it names. Change the faculty there, and pin the release that carries it.
 - The guard hook denies a commit git would author as an AI. In a cloud session, pass `--author` and `--trailer 'Signed-off-by: ...'` with your user's identity, never `-s`.
 - Changing `CONSTITUTION.md` changes nothing elsewhere until a release: other repositories receive the rules only through one, which their stub or `make sync` delivers.
 - `sync.py`, `render.py`, `kit.py` and `prompts.py`, and `setup/Prompts.md`, also run or are read inside every repository that carries the stub, at the hub's latest release, from the archive GitHub serves. Cut Release refuses a tag without them, `.gitattributes` keeps `.github/scripts/` in that archive, and `test_stub.py` holds both.

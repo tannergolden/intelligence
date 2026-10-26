@@ -16,8 +16,10 @@ skill's trigger test comes with it, from its `assets/trigger-evals.json` into
 
 A release is a tag `vX.Y.Z`. `--pin` downloads each archive from that tag on
 GitHub, or with `--from` reads it from the tag in a clone of the template,
-never from whatever the clone has checked out, so a pin always holds the
-release it names.
+never from whatever the clone has checked out, and only once GitHub confirms
+the template published that tag on the same commit. So a pin holds the
+release it names, and `--verify` downloads the pinned release again to show
+it still does, archive hashes included, which `--check` cannot do offline.
 
 A home copy must give way to a vault's own. Claude Code loads a person's
 skill over a repository's of the same name, so in a vault the kit's copy is
@@ -38,6 +40,7 @@ all of it is written. Line endings are stored as LF, as git stores them.
 Run it:
 
     python3 .github/scripts/faculties.py --check
+    python3 .github/scripts/faculties.py --verify
     python3 .github/scripts/faculties.py --pin v3.0.0
     python3 .github/scripts/faculties.py --pin v3.0.0 --from ../knowledge
 """
@@ -67,6 +70,9 @@ EVALS = 'evals/skills'
 # Where a release of the template keeps each skill's archive.
 ARCHIVE = 'System/Skills/{name}.skill'
 URL = 'https://raw.githubusercontent.com/{source}/{version}/' + ARCHIVE
+REMOTE = 'https://github.com/{source}.git'  # where a release tag is confirmed for --from
+# Files an app or an editor leaves beside a skill's own, never part of a copy.
+JUNK = frozenset({'__pycache__', '.DS_Store', 'Thumbs.db'})
 NAME = re.compile(r'[a-z0-9]+(-[a-z0-9]+)*')
 VERSION = re.compile(r'v[0-9]+\.[0-9]+\.[0-9]+')
 SOURCE = re.compile(r'[A-Za-z0-9-]+/[A-Za-z0-9._-]+')
@@ -118,11 +124,15 @@ def tree_hash(files: dict[str, bytes]) -> str:
     return digest(lines.encode('utf-8'))
 
 
+def junk(rel: pathlib.PurePath) -> bool:
+    return any(part in JUNK for part in rel.parts) or rel.suffix in ('.pyc', '.pyo')
+
+
 def folder_files(folder: pathlib.Path) -> dict[str, bytes]:
     if not folder.is_dir():
         return {}
     return {path.relative_to(folder).as_posix(): path.read_bytes()
-            for path in sorted(folder.rglob('*')) if path.is_file()}
+            for path in sorted(folder.rglob('*')) if path.is_file() and not junk(path.relative_to(folder))}
 
 
 def read_archive(data: bytes, name: str) -> dict[str, bytes]:
@@ -140,6 +150,8 @@ def read_archive(data: bytes, name: str) -> dict[str, bytes]:
         path = pathlib.PurePosixPath(entry.filename)
         if not path.parts or path.is_absolute() or '..' in path.parts or path.parts[0] != name or len(path.parts) < 2:
             raise Refused(f'{name}.skill holds {entry.filename!r}, outside the {name}/ folder')
+        if junk(path):
+            continue
         if len(path.parts) > 3:
             raise Refused(f'{name}.skill holds {entry.filename}, more than one folder below SKILL.md')
         rel = pathlib.PurePosixPath(*path.parts[1:]).as_posix()
@@ -218,14 +230,20 @@ def fetch(source: str, version: str, name: str, origin: pathlib.Path | None) -> 
     """One skill's archive as the release's tag holds it: in a clone of the template, or on GitHub."""
     path = ARCHIVE.format(name=name)
     if origin is not None:
+        blob = f'refs/tags/{version}:{path}'
+        size = git_text(origin, 'cat-file', '-s', blob)
+        if size is None:
+            raise Refused(f'{origin} has no tag {version} holding {path}; fetch its tags with '
+                          f'git -C {origin} fetch --tags, or check the release')
+        if not size.isdigit() or int(size) > MAX_ARCHIVE:
+            raise Refused(f'{origin}: {path} at {version} is larger than a skill archive may be')
         try:
-            done = subprocess.run(['git', '-C', str(origin), 'cat-file', 'blob', f'refs/tags/{version}:{path}'],
+            done = subprocess.run(['git', '-C', str(origin), 'cat-file', 'blob', blob],
                                   capture_output=True, timeout=60, check=False)
         except (OSError, subprocess.SubprocessError) as error:
             raise Refused(f'git cannot read {origin}: {error}') from error
         if done.returncode != 0:
-            raise Refused(f'{origin} has no tag {version} holding {path}; fetch its tags with '
-                          f'git -C {origin} fetch --tags, or check the release')
+            raise Refused(f'git cannot read {path} at {version} in {origin}')
         return done.stdout
     url = URL.format(source=source, version=version, name=name)
     try:
@@ -236,6 +254,31 @@ def fetch(source: str, version: str, name: str, origin: pathlib.Path | None) -> 
     if len(data) > MAX_ARCHIVE:
         raise Refused(f'{url} is larger than a skill archive may be')
     return data
+
+
+def git_text(cwd: pathlib.Path, *args: str) -> str | None:
+    """What a git command prints, stripped, or None when it fails."""
+    try:
+        done = subprocess.run(['git', '-C', str(cwd), *args], capture_output=True, text=True, timeout=60, check=False)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return done.stdout.strip() if done.returncode == 0 else None
+
+
+def published(origin: pathlib.Path, source: str, version: str) -> None:
+    """Refuse a tag in a clone unless the template published it, on the same commit."""
+    local = git_text(origin, 'rev-parse', '--verify', '--quiet', f'refs/tags/{version}^{{commit}}')
+    if not local:
+        raise Refused(f'{origin} has no tag {version}; fetch its tags with git -C {origin} fetch --tags')
+    remote = REMOTE.format(source=source)
+    listing = git_text(origin, 'ls-remote', '--tags', remote, f'refs/tags/{version}', f'refs/tags/{version}^{{}}')
+    if listing is None:
+        raise Refused(f'cannot reach {remote} to confirm {version} is a release; pin without --from, or try again')
+    refs = {ref: sha for sha, ref in (line.split('\t', 1) for line in listing.splitlines() if '\t' in line)}
+    commit = refs.get(f'refs/tags/{version}^{{}}') or refs.get(f'refs/tags/{version}')
+    if commit != local:
+        raise Refused(f'{version} in {origin} is not the release {source} published; pin without --from, or fetch '
+                      f'its tags with git -C {origin} fetch --tags --force')
 
 
 def ignored(root: pathlib.Path, paths: list[str]) -> list[str]:
@@ -262,6 +305,8 @@ def pin_release(root: pathlib.Path, version: str, origin: pathlib.Path | None = 
     if not VERSION.fullmatch(version):
         raise Refused(f'{version!r} is not a release; a release of the template is a tag vX.Y.Z')
     pin = load_pin(root)
+    if origin is not None:
+        published(origin, pin['source'], version)
     taken = {}
     for name in pin['names']:
         if (root / SKILLS / name).exists() and name not in pin['skills']:
@@ -316,11 +361,11 @@ def pin_release(root: pathlib.Path, version: str, origin: pathlib.Path | None = 
                 move(staging / 'new' / name, root / SKILLS / name)
                 move(staging / 'evals' / f'{name}.json', root / EVALS / f'{name}.json')
             move(staging / 'faculties.json', root / PIN)
-        except OSError as error:
+        except BaseException as error:  # a Ctrl-C too: every copy moved aside goes back before the run ends
             try:
                 for source, target in reversed(moved):
                     os.replace(target, source)
-            except OSError:
+            except BaseException:
                 stranded = True
                 raise Refused(f'could not move the release into place, nor put every old copy back; what was moved '
                               f'aside is in {staging}') from error
@@ -375,17 +420,40 @@ def problems(root: pathlib.Path) -> list[str]:
     return found
 
 
+def verify(root: pathlib.Path) -> list[str]:
+    """Every way the pin differs from the release it names, downloaded again from GitHub."""
+    found = problems(root)
+    try:
+        pin = load_pin(root)
+    except Refused:
+        return found
+    for name, entry in sorted(pin['skills'].items()):
+        try:
+            data = fetch(pin['source'], pin['version'], name, None)
+            files = read_archive(data, name)
+        except Refused as error:
+            found.append(str(error))
+            continue
+        if not isinstance(entry, dict) or entry.get('archive') != digest(data):
+            found.append(f'{PIN}: the archive {pin["version"]} serves for {name} is not the one the pin records')
+        if not isinstance(entry, dict) or entry.get('files') != tree_hash(files):
+            found.append(f'{PIN}: the files {pin["version"]} holds for {name} are not the ones the pin records')
+    return found
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=(__doc__ or '').split('\n', 1)[0])
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument('--check', action='store_true', help='fail when a copy differs from its pin')
+    mode.add_argument('--verify', action='store_true',
+                      help='also download the pinned release, and fail unless the pin and every copy are its')
     mode.add_argument('--pin', metavar='VERSION', help='copy every faculty from this release of the template')
     parser.add_argument('--from', dest='origin', type=pathlib.Path,
                         help='read the archives from the release tag in a clone of the template, not GitHub')
     parser.add_argument('--root', type=pathlib.Path, default=ROOT, help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
-    if args.check:
-        found = problems(args.root)
+    if args.check or args.verify:
+        found = verify(args.root) if args.verify else problems(args.root)
         for line in found:
             print(f'error: {line}', file=sys.stderr)
         if not found:

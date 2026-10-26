@@ -195,11 +195,12 @@ Each is `python3 .github/scripts/<name>`, and each exits 1 on a problem.
 `--check`. [Skills & Subagents](../technical/Skills-&-Subagents.md#the-faculties)
 explains the copies and their pin.
 
-| Command                                 | What it does                                                                                                                                                         |
-| :-------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `faculties.py --check`                  | Fail when a faculty's copy in `kit/skills/`, or its trigger test in `evals/skills/`, differs from the release `kit/faculties.json` pins, or lacks the hand-over rule |
-| `faculties.py --pin VERSION`            | Replace every faculty's copy and trigger test with that release's, downloaded from GitHub, and rewrite the pin                                                       |
-| `faculties.py --pin VERSION --from DIR` | The same, from the release's tag in a clone of the template, whatever the clone has checked out                                                                      |
+| Command                                 | What it does                                                                                                                                                                        |
+| :-------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `faculties.py --check`                  | Fail when a faculty's copy in `kit/skills/`, or its trigger test in `evals/skills/`, differs from the release `kit/faculties.json` pins, or lacks the hand-over rule                |
+| `faculties.py --pin VERSION`            | Replace every faculty's copy and trigger test with that release's, downloaded from GitHub, and rewrite the pin                                                                      |
+| `faculties.py --verify`                 | The same as `--check`, and download the pinned release again: fail unless every recorded hash is that release's                                                                     |
+| `faculties.py --pin VERSION --from DIR` | The same as `--pin`, from the release's tag in a clone of the template, whatever the clone has checked out, once GitHub confirms the template published that tag on the same commit |
 
 `VERSION` is a release tag, `vX.Y.Z`. It exits 1 on a problem or a refused
 release, and a refused release changes nothing. After a pin, run

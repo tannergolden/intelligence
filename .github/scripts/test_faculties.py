@@ -95,6 +95,12 @@ class Hub(unittest.TestCase):
         self.template = self.root / 'template'
         self.template.mkdir()
         git(self.template, 'init', '-q')
+        # The template's GitHub repository, where a release's tag is published.
+        self.published = self.root / 'published.git'
+        git(self.root, 'init', '-q', '--bare', str(self.published))
+        remote = mock.patch.object(faculties, 'REMOTE', str(self.published))
+        remote.start()
+        self.addCleanup(remote.stop)
         self.write_pin(version='', skills={})
         for name in NAMES:
             self.archive(name)
@@ -122,11 +128,13 @@ class Hub(unittest.TestCase):
         path.write_bytes(buffer.getvalue())
         return buffer.getvalue()
 
-    def release(self, version: str) -> None:
-        """Commit the template as it stands and tag it, as a release of it."""
+    def release(self, version: str, publish: bool = True) -> None:
+        """Commit the template as it stands and tag it, and publish the tag, as a release of it."""
         git(self.template, 'add', '-A')
         git(self.template, 'commit', '-q', '--allow-empty', '-m', version)
         git(self.template, 'tag', '-f', version)
+        if publish:
+            git(self.template, 'push', '-q', '--force', str(self.published), f'refs/tags/{version}')
 
     def pin_release(self, version: str = 'v3.0.0') -> list[str]:
         if faculties.VERSION.fullmatch(version):
@@ -194,6 +202,39 @@ class TestPinning(Hub):
         self.archive('alpha', files_of('alpha', **{'references/unreleased.md': 'not in the release\n'}))
         faculties.pin_release(self.hub, 'v3.0.0', self.template)
         self.assertFalse((self.hub / faculties.SKILLS / 'alpha' / 'references').exists())
+
+    def test_a_tag_only_the_clone_holds_is_not_a_release(self) -> None:
+        self.release('v3.0.0', publish=False)
+        with self.assertRaises(faculties.Refused) as caught:
+            faculties.pin_release(self.hub, 'v3.0.0', self.template)
+        self.assertIn('v3.0.0 in', str(caught.exception))
+        self.assertIn('is not the release tannergolden/knowledge published', str(caught.exception))
+
+    def test_a_tag_the_clone_moved_is_not_the_release(self) -> None:
+        self.release('v3.0.0')
+        self.archive('alpha', files_of('alpha', **{'references/unreleased.md': 'later work\n'}))
+        self.release('v3.0.0', publish=False)
+        with self.assertRaises(faculties.Refused):
+            faculties.pin_release(self.hub, 'v3.0.0', self.template)
+        self.assertFalse((self.hub / faculties.SKILLS).exists())
+
+    def test_a_release_that_cannot_be_confirmed_is_refused(self) -> None:
+        self.release('v3.0.0')
+        with mock.patch.object(faculties, 'REMOTE', str(self.root / 'nowhere.git')):
+            with self.assertRaises(faculties.Refused) as caught:
+                faculties.pin_release(self.hub, 'v3.0.0', self.template)
+        self.assertIn('cannot reach', str(caught.exception))
+
+    def test_files_an_editor_or_python_leaves_beside_a_copy_are_not_part_of_it(self) -> None:
+        self.archive('alpha', files_of('alpha', **{'.DS_Store': 'junk', 'assets/__pycache__/x.pyc': 'junk'}))
+        self.pin_release()
+        copy = self.hub / faculties.SKILLS / 'alpha'
+        self.assertFalse((copy / '.DS_Store').exists())
+        self.assertFalse((copy / 'assets' / '__pycache__').exists())
+        (copy / '__pycache__').mkdir()
+        (copy / '__pycache__' / 'run.cpython-39.pyc').write_bytes(b'\x00compiled')
+        (copy / '.DS_Store').write_bytes(b'finder')
+        self.assertEqual(faculties.problems(self.hub), [])
 
     def test_pinning_the_same_release_again_changes_no_byte(self) -> None:
         self.pin_release()
@@ -301,6 +342,10 @@ class TestRefusals(Hub):
         with mock.patch.object(faculties, 'MAX_FILE', 200):
             self.assertRefused('larger than a skill file may be')
 
+    def test_an_archive_too_large_is_refused_before_it_is_read(self) -> None:
+        with mock.patch.object(faculties, 'MAX_ARCHIVE', 100):
+            self.assertRefused('larger than a skill archive may be')
+
     def test_an_archive_with_no_manifest_is_refused(self) -> None:
         self.archive('alpha', {'alpha/README.md': 'no skill here\n'})
         self.assertRefused('has no alpha/SKILL.md')
@@ -354,6 +399,23 @@ class TestRefusals(Hub):
         self.assertEqual(self.snapshot(), before)
         self.assertEqual([p.name for p in (self.hub / 'kit').iterdir() if p.name.startswith('.faculties-')], [])
 
+    def test_a_ctrl_c_while_moving_puts_every_old_copy_back(self) -> None:
+        self.pin_release()
+        before = self.snapshot()
+        self.archive('alpha', files_of('alpha', **{'references/new.md': 'new\n'}))
+        real, calls = os.replace, []
+
+        def interrupted(source: object, target: object) -> None:
+            calls.append(target)
+            if len(calls) == 3:
+                raise KeyboardInterrupt
+            real(source, target)
+
+        with mock.patch.object(faculties.os, 'replace', interrupted), self.assertRaises(KeyboardInterrupt):
+            self.pin_release('v3.1.0')
+        self.assertEqual(self.snapshot(), before)
+        self.assertEqual([p.name for p in (self.hub / 'kit').iterdir() if p.name.startswith('.faculties-')], [])
+
 
 class TestDownload(Hub):
     def response(self, data: bytes) -> mock.MagicMock:
@@ -383,6 +445,34 @@ class TestDownload(Hub):
                         faculties.pin_release(self.hub, 'v3.0.0')
                 self.assertIn('could not download', str(caught.exception))
                 self.assertFalse((self.hub / faculties.SKILLS).exists())
+
+
+class TestVerify(Hub):
+    """--verify downloads the pinned release again; GitHub here is a stand-in serving the template's archives."""
+
+    def serve(self) -> mock._patch:
+        archives = {name: (self.template / 'System' / 'Skills' / f'{name}.skill').read_bytes() for name in NAMES}
+
+        def urlopen(url: str, timeout: int = 0) -> mock.MagicMock:
+            response = mock.MagicMock()
+            response.__enter__.return_value.read = lambda limit=-1: archives[url.rsplit('/', 1)[1][:-len('.skill')]]
+            return response
+
+        return mock.patch.object(faculties.urllib.request, 'urlopen', urlopen)
+
+    def test_a_pin_that_holds_its_release_verifies(self) -> None:
+        self.pin_release()
+        with self.serve():
+            self.assertEqual(faculties.verify(self.hub), [])
+
+    def test_a_pin_whose_release_holds_something_else_fails(self) -> None:
+        self.pin_release()
+        self.archive('alpha', files_of('alpha', **{'references/other.md': 'what GitHub serves\n'}))
+        with self.serve():
+            found = faculties.verify(self.hub)
+        self.assertTrue(any('the archive v3.0.0 serves for alpha is not the one the pin records' in line
+                            for line in found), found)
+        self.assertTrue(any('the files v3.0.0 holds for alpha' in line for line in found), found)
 
 
 class TestCheck(Hub):

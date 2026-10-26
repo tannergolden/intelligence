@@ -59,7 +59,9 @@ release tag of the template holds, into `kit/skills/<name>/`, and writes its
 trigger test into `evals/skills/` from the one it ships in
 `assets/trigger-evals.json`. [`kit/faculties.json`](../../kit/faculties.json)
 records the release and the SHA-256 of each archive and of the files each
-copy holds, and `make lint` fails when a copy differs from its pin. So a
+copy holds, and `make lint` fails when a copy differs from its pin;
+`faculties.py --verify` downloads the release again to show the pin still
+holds it. So a
 change to a faculty is made in the template, released there, and pinned
 here with `make faculties VERSION=vX.Y.Z`, never made in place. The copier
 refuses a name the hub already uses for a skill of its own, and until the
