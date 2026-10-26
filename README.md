@@ -62,7 +62,7 @@ per part. Start with How It Works.
 | [Repository Sync](docs/technical/Repository-Sync.md)                            | How a release reaches every repository: the stub, `make sync`, `make merge` and `make audit`                |
 | [Cloud Setup](docs/technical/Cloud-Setup.md)                                    | The rules and the kit in every Claude Code cloud session                                                    |
 | [Prompts](docs/technical/Prompts.md)                                            | The universal prompts the hub keeps, the empty page each repository gets, and how to change each            |
-| [Skills & Subagents](docs/technical/Skills-&-Subagents.md)                      | The one skill, the Worker and the Reviewer, and where each app reads them                                   |
+| [Skills & Subagents](docs/technical/Skills-&-Subagents.md)                      | `develop`, the pinned faculties, the Worker and the Reviewer, and where each app reads them                 |
 | [The Loader Probe](docs/technical/The-Loader-Probe.md)                          | How the hub proves which files each app actually loads, and the results so far                              |
 | [Evals](docs/technical/Evals.md)                                                | How each rule is measured, with the block and without it                                                    |
 | [Releasing](docs/distribution/Releasing.md)                                     | Every step from a green `Development` to the rules on every machine and in every repository                 |

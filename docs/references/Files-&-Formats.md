@@ -140,6 +140,20 @@ Codex's TOML carries no tool list: the body becomes its
 `developer_instructions`. Every rendered file carries the kit's mark as a
 comment at its top, so the installer can tell it is the kit's.
 
+**The faculty pin** is `kit/faculties.json`, which `faculties.py` writes and
+`make lint` checks:
+
+| Key       | Holds                                                                                                                                                          |
+| :-------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `//`      | A note that the file is written by the script and never edited by hand                                                                                         |
+| `source`  | `tannergolden/knowledge`, the template every faculty comes from                                                                                                |
+| `names`   | The faculties the kit carries, each the name of a skill the template keeps in `.agents/skills/`                                                                |
+| `version` | The template's release they come from; empty until one is pinned, and then the kit carries none of them                                                        |
+| `skills`  | Each faculty's name, mapped to `archive`, the SHA-256 of the `.skill` archive it came from, and `files`, the SHA-256 of the list of its files and their hashes |
+
+That list holds one line per file of the copy, in path order: its path
+inside the skill, a NUL, the SHA-256 of its bytes, and a newline.
+
 ---
 
 ## 🗂️ What A Repository Carries

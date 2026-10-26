@@ -167,6 +167,12 @@ that triggers it. Each file in [`evals/skills/`](../../evals/skills/README.md) i
 there rather than in the skill's folder, so they never ship with it, and
 `make lint` fails while a skill has none.
 
+A faculty's test is not written here. The knowledge template keeps it in the
+faculty's own `assets/trigger-evals.json`, and `.github/scripts/faculties.py`
+draws this one from it when the faculty is pinned: the prompts on each side,
+with no `quality` tasks. `make lint` fails when it differs, so it changes
+only with the faculty, in the template.
+
 ---
 
 ## 🔗 See Also

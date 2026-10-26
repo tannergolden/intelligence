@@ -40,9 +40,10 @@ serves to this repository from its `.github` repository.
 ## Commands
 
 - `make setup`: install PyYAML, which the repository validator in `make lint` needs. CI runs it before the checks.
-- `make check`: everything CI checks, which are the repository validator, `render.py --check`, `prompts.py --check`, `evals.py --check` and every test.
+- `make check`: everything CI checks, which are the repository validator, `render.py --check`, `faculties.py --check`, `prompts.py --check`, `evals.py --check` and every test.
 - `make test`: the tests alone, every `test_*.py` in `.github/scripts/`.
 - `make render`: rewrite `home/` from `CONSTITUTION.md`, the kit's sources in `kit/` and the installer.
+- `make faculties VERSION=vX.Y.Z`: copy the five faculties, their trigger tests and their pin from that release of tannergolden/knowledge. Follow it with `make render`.
 - `make probe`: prove which instruction files each installed app loads. It makes one model call per check.
 - `make evals`: measure each rule with the block and without it, and each universal prompt against the hurried request it replaces. Real runs make model calls; `ARGS=--dry-run` makes none.
 - `python3 kit/guard.py --command '<command>'`: see what the guard hook would say about one command.
@@ -67,27 +68,28 @@ serves to this repository from its `.github` repository.
 
 ## Where things live
 
-| Path                                 | What                                                                                                                                                          |
-| :----------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`CONSTITUTION.md`](CONSTITUTION.md) | The source of every rule, and the order and budget of the block                                                                                               |
-| `kit/`                               | The kit's sources: the guard, the one skill `develop` and its team, and the Worker and Reviewer subagents                                                     |
-| `home/`                              | Everything a machine downloads, rendered: the home file, the kit, the installer and their hashes, which every release tag serves                              |
-| `evals/`                             | Scenarios for every rule and every universal prompt, and the skill trigger tests                                                                              |
-| `setup/`                             | The Claude cloud setup script, the stub a repository carries, and the empty prompts page every repository gets                                                |
-| `docs/Prompts.md`                    | The universal prompts, which stay in the hub: anyone copies one from here into any agent                                                                      |
-| `.github/scripts/`                   | Every script, with its test beside it: `render.py`, `kit.py`, `install.py`, `sync.py`, `prompts.py`, `evals.py`, `loader-probe.py`, and the template's checks |
-| `.github/actions/`                   | The action a repository's stub runs, through `.github/workflows/sync.yml`                                                                                     |
-| `docs/introduction/`                 | Where to start: `How-It-Works.md`, which shows how the pieces fit, and the roadmap                                                                            |
-| `docs/distribution/`                 | Every step of a release, from a green `Development` to every machine and repository                                                                           |
-| `docs/technical/`                    | How every part of the hub works, one document each                                                                                                            |
-| `docs/operations/`                   | The controls and risks behind the rules, and what to do when a sync or an install goes wrong                                                                  |
-| `docs/references/`                   | Pages to look up: the glossary, the commands, the files and formats, and the eval scenario format                                                             |
-| `docs/library/`                      | Material to learn from, as the standards keep it: the prompt engineering best practices                                                                       |
-| `docs/adrs/`                         | Every decision behind the plan                                                                                                                                |
+| Path                                 | What                                                                                                                                                                          |
+| :----------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`CONSTITUTION.md`](CONSTITUTION.md) | The source of every rule, and the order and budget of the block                                                                                                               |
+| `kit/`                               | The kit's sources: the guard, `develop` and its team, the faculties `faculties.json` pins from tannergolden/knowledge, and the Worker and Reviewer subagents                  |
+| `home/`                              | Everything a machine downloads, rendered: the home file, the kit, the installer and their hashes, which every release tag serves                                              |
+| `evals/`                             | Scenarios for every rule and every universal prompt, and the skill trigger tests                                                                                              |
+| `setup/`                             | The Claude cloud setup script, the stub a repository carries, and the empty prompts page every repository gets                                                                |
+| `docs/Prompts.md`                    | The universal prompts, which stay in the hub: anyone copies one from here into any agent                                                                                      |
+| `.github/scripts/`                   | Every script, with its test beside it: `render.py`, `kit.py`, `faculties.py`, `install.py`, `sync.py`, `prompts.py`, `evals.py`, `loader-probe.py`, and the template's checks |
+| `.github/actions/`                   | The action a repository's stub runs, through `.github/workflows/sync.yml`                                                                                                     |
+| `docs/introduction/`                 | Where to start: `How-It-Works.md`, which shows how the pieces fit, and the roadmap                                                                                            |
+| `docs/distribution/`                 | Every step of a release, from a green `Development` to every machine and repository                                                                                           |
+| `docs/technical/`                    | How every part of the hub works, one document each                                                                                                                            |
+| `docs/operations/`                   | The controls and risks behind the rules, and what to do when a sync or an install goes wrong                                                                                  |
+| `docs/references/`                   | Pages to look up: the glossary, the commands, the files and formats, and the eval scenario format                                                                             |
+| `docs/library/`                      | Material to learn from, as the standards keep it: the prompt engineering best practices                                                                                       |
+| `docs/adrs/`                         | Every decision behind the plan                                                                                                                                                |
 
 ## Gotchas
 
 - Never edit inside `home/`. It is rendered, and `make check` fails on a hand edit.
+- Never edit a faculty in `kit/skills/`, its trigger test in `evals/skills/` or `kit/faculties.json`. They are copied from a release of tannergolden/knowledge, and `make check` fails on a hand edit: change the faculty there, and pin the release that carries it.
 - The guard hook denies a commit git would author as an AI. In a cloud session, pass `--author` and `--trailer 'Signed-off-by: ...'` with your user's identity, never `-s`.
 - Changing `CONSTITUTION.md` changes nothing elsewhere until a release: other repositories receive the rules only through one, which their stub or `make sync` delivers.
 - `sync.py`, `render.py`, `kit.py` and `prompts.py`, and `setup/Prompts.md`, also run or are read inside every repository that carries the stub, at the hub's latest release, from the archive GitHub serves. Cut Release refuses a tag without them, `.gitattributes` keeps `.github/scripts/` in that archive, and `test_stub.py` holds both.
@@ -97,7 +99,7 @@ serves to this repository from its `.github` repository.
 ## Ask first
 
 - Cutting a release, running `make sync` or `make merge` against real repositories, or running a repository's 🔁 Intelligence Sync.
-- Adding a universal skill: the owner keeps one, `develop`. A skill one repository needs lives in that repository.
+- Adding a universal skill: the hub writes one, `develop`, and pins the five faculties from tannergolden/knowledge. A skill one repository needs lives in that repository.
 - Changing a rule's wording, its kind or its ID.
 - Adding, removing or rewording a universal prompt, which everyone copies from the hub, or changing the empty page in `setup/Prompts.md`, which every repository without one gets at the next release.
 

@@ -35,30 +35,31 @@ own subscriptions, or the files in your home folder.
 
 ## ⚙️ The Make Targets
 
-| Target             | Runs                                                                                    | Reaches                                                                                              |
-| :----------------- | :-------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
-| `make help`        | Lists every target with its summary                                                     | Nothing                                                                                              |
-| `make setup`       | `pip install pyyaml==6.0.3`, for the repository validator; CI runs it first             | The Python package index                                                                             |
-| `make check`       | `make lint`, then `make test`: everything CI checks                                     | Nothing                                                                                              |
-| `make lint`        | `validate-repository.py`, `render.py --check`, `prompts.py --check`, `evals.py --check` | Nothing                                                                                              |
-| `make test`        | Every `test_*.py` in `.github/scripts/`, through `unittest`                             | Nothing: GitHub and the apps are stand-ins                                                           |
-| `make render`      | `render.py --write`, which rewrites `home/`                                             | Nothing                                                                                              |
-| `make probe`       | `loader-probe.py` with `ARGS`                                                           | Every installed app, one model call per check, and your home folder, which it restores               |
-| `make evals`       | `evals.py` with `ARGS`, which must name `--apps` unless it holds `--check`              | The apps named, one model call per run; nothing with `--check` or `--dry-run`                        |
-| `make audit`       | `sync.py audit` with `ARGS`                                                             | Every repository you own, read only                                                                  |
-| `make sync`        | `sync.py sync` with `ARGS`                                                              | Every repository you own: moves `chore/intelligence`, commits to it, opens or updates a pull request |
-| `make merge`       | `sync.py merge` with `ARGS`                                                             | Every sync pull request: approves or reopens to start held checks, and merges the green ones         |
-| `make pins`        | `render.py --pins` for `VERSION`, or for this checkout without it                       | Nothing: it reads the tag from your checkout                                                         |
-| `make cloud-setup` | `render.py --setup` for `VERSION`, which it requires                                    | Nothing: it reads the tag from your checkout                                                         |
+| Target             | Runs                                                                                                            | Reaches                                                                                              |
+| :----------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
+| `make help`        | Lists every target with its summary                                                                             | Nothing                                                                                              |
+| `make setup`       | `pip install pyyaml==6.0.3`, for the repository validator; CI runs it first                                     | The Python package index                                                                             |
+| `make check`       | `make lint`, then `make test`: everything CI checks                                                             | Nothing                                                                                              |
+| `make lint`        | `validate-repository.py`, `render.py --check`, `faculties.py --check`, `prompts.py --check`, `evals.py --check` | Nothing                                                                                              |
+| `make test`        | Every `test_*.py` in `.github/scripts/`, through `unittest`                                                     | Nothing: GitHub and the apps are stand-ins                                                           |
+| `make render`      | `render.py --write`, which rewrites `home/`                                                                     | Nothing                                                                                              |
+| `make faculties`   | `faculties.py --pin` for `VERSION`, which it requires, with `ARGS` such as `--from ../knowledge`                | GitHub, for the template's archives at that release; nothing with `--from`                           |
+| `make probe`       | `loader-probe.py` with `ARGS`                                                                                   | Every installed app, one model call per check, and your home folder, which it restores               |
+| `make evals`       | `evals.py` with `ARGS`, which must name `--apps` unless it holds `--check`                                      | The apps named, one model call per run; nothing with `--check` or `--dry-run`                        |
+| `make audit`       | `sync.py audit` with `ARGS`                                                                                     | Every repository you own, read only                                                                  |
+| `make sync`        | `sync.py sync` with `ARGS`                                                                                      | Every repository you own: moves `chore/intelligence`, commits to it, opens or updates a pull request |
+| `make merge`       | `sync.py merge` with `ARGS`                                                                                     | Every sync pull request: approves or reopens to start held checks, and merges the green ones         |
+| `make pins`        | `render.py --pins` for `VERSION`, or for this checkout without it                                               | Nothing: it reads the tag from your checkout                                                         |
+| `make cloud-setup` | `render.py --setup` for `VERSION`, which it requires                                                            | Nothing: it reads the tag from your checkout                                                         |
 
 Four variables change what a target runs:
 
-| Variable         | Default   | What it is                                                              |
-| :--------------- | :-------- | :---------------------------------------------------------------------- |
-| `ARGS`           | empty     | Options for the script, such as `ARGS='--repo dotfiles --dry-run'`      |
-| `VERSION`        | empty     | A release tag, such as `v0.2.0`, for `make pins` and `make cloud-setup` |
-| `PYTHON`         | `python3` | The interpreter every target runs                                       |
-| `PYYAML_VERSION` | `6.0.3`   | The PyYAML that `make setup` installs                                   |
+| Variable         | Default   | What it is                                                                                                      |
+| :--------------- | :-------- | :-------------------------------------------------------------------------------------------------------------- |
+| `ARGS`           | empty     | Options for the script, such as `ARGS='--repo dotfiles --dry-run'`                                              |
+| `VERSION`        | empty     | A release tag, such as `v0.2.0`, for `make pins` and `make cloud-setup`, or the template's for `make faculties` |
+| `PYTHON`         | `python3` | The interpreter every target runs                                                                               |
+| `PYYAML_VERSION` | `6.0.3`   | The PyYAML that `make setup` installs                                                                           |
 
 ---
 
@@ -153,6 +154,7 @@ explains each check and what it touches.
 | `--apps LIST`          | Comma-separated, from `claude`, `codex`, `antigravity`, `copilot`, `grok` and `cursor`; every installed one by default |
 | `--dry-run`            | Print the plan, and change nothing                                                                                     |
 | `--skills`             | Add the skill canary: one more model call per app                                                                      |
+| `--handover`           | Add the hand-over canary and its control: two more model calls per app, in a scratch vault                             |
 | `--keep`               | Write the files and fixtures for a check by hand, and leave them until `--cleanup`                                     |
 | `--cleanup`            | Restore what `--keep`, or a run that died, left behind                                                                 |
 | `--command 'APP=ARGV'` | Replace an app's command; it must keep `{prompt}`                                                                      |
@@ -184,6 +186,23 @@ The scripts that build what the hub ships. `make render` runs
 | `prompts.py --check`     | Fail on a broken universal prompt in `docs/Prompts.md`, or a broken `setup/Prompts.md`                                              |
 
 Each is `python3 .github/scripts/<name>`, and each exits 1 on a problem.
+
+---
+
+## 🧩 faculties.py
+
+`make faculties VERSION=vX.Y.Z` runs `--pin`, and `make lint` runs
+`--check`. [Skills & Subagents](../technical/Skills-&-Subagents.md#the-faculties)
+explains the copies and their pin.
+
+| Command                                 | What it does                                                                                                                                                         |
+| :-------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `faculties.py --check`                  | Fail when a faculty's copy in `kit/skills/`, or its trigger test in `evals/skills/`, differs from the release `kit/faculties.json` pins, or lacks the hand-over rule |
+| `faculties.py --pin VERSION`            | Replace every faculty's copy and trigger test with that release's, downloaded from GitHub, and rewrite the pin                                                       |
+| `faculties.py --pin VERSION --from DIR` | The same, from a checkout of the template at that release                                                                                                            |
+
+It exits 1 on a problem or a refused release, and a refused release changes
+nothing. After a pin, run `make render`, then `make check`, and commit it all.
 
 ---
 

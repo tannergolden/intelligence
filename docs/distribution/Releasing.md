@@ -53,6 +53,12 @@ every command below.
    by hand. After that, `make merge` lands every sync whose diff is only the
    block and whose checks passed.
 
+**The faculties** ride a release only once they are pinned. To carry a new
+release of the knowledge template, run `make faculties VERSION=vX.Y.Z` with
+the template's version, then `make render` and `make check`, and commit it
+all on `Development` before step 1; dotfiles needs nothing but the new pins
+from step 3.
+
 Every version stays: the stub passes `keep-versions: true`, so standards' Cut
 Release never prunes here, because a pin to a full version must keep
 resolving and `make audit` names old blocks by the release that shipped them.

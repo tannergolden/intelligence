@@ -20,6 +20,12 @@ _A factory, not a pamphlet._
 
 </div>
 
+> [!IMPORTANT]
+> **Amended by [ADR-0033](ADR-0033-The-Kit-Carries-The-Faculties.md).** `develop`
+> stays the one skill the hub writes, and the kit carries the knowledge
+> template's five faculties beside it, each copied from a release of the
+> template and pinned.
+
 ---
 
 ## 📋 Meta Information
