@@ -43,6 +43,7 @@ request is not the first place you hear about them.
 | :------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
 | [`hooks/`](hooks/README.md)                                    | The git hooks this repository ships, what each catches before a commit is recorded, and how to switch them on. |
 | [`evals.py`](evals.py)                                         | Measure whether the universal rules and prompts change what agents do, each with it and without.               |
+| [`faculties.py`](faculties.py)                                 | Keep the kit's copy of the faculty skills, pinned to one release of tannergolden/knowledge.                    |
 | [`install.py`](install.py)                                     | Install the universal rules into every AI app's home folder, check them, and take them out.                    |
 | [`kit.py`](kit.py)                                             | Render everything the home kit installs besides the rules into one bundle, `home/kit.json`.                    |
 | [`loader-probe.py`](loader-probe.py)                           | Phase 0 loader probe: proves which AI coding app reads which instruction file.                                 |
@@ -54,6 +55,7 @@ request is not the first place you hear about them.
 | [`test_cloud_setup.py`](test_cloud_setup.py)                   | Tests for the Claude cloud setup script.                                                                       |
 | [`test_develop.py`](test_develop.py)                           | Tests for the develop skill's validator and packager.                                                          |
 | [`test_evals.py`](test_evals.py)                               | Tests for the eval runner.                                                                                     |
+| [`test_faculties.py`](test_faculties.py)                       | Tests for the faculty copier.                                                                                  |
 | [`test_gitignore.py`](test_gitignore.py)                       | Tests for this repository's .gitignore.                                                                        |
 | [`test_guard.py`](test_guard.py)                               | Tests for the guard hook.                                                                                      |
 | [`test_hooks.py`](test_hooks.py)                               | Tests for the git hooks in .github/scripts/hooks/.                                                             |

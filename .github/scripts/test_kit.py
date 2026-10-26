@@ -199,9 +199,11 @@ class TestTheRealKit(unittest.TestCase):
     def test_they_break_no_rule(self) -> None:
         self.assertEqual(kit.problems(self.root), [])
 
-    def test_there_is_exactly_one_skill_the_one_that_builds_skills(self) -> None:
+    def test_the_skills_are_develop_and_the_faculties_the_pin_records(self) -> None:
+        # The hub writes one skill (ADR-0021) and carries the faculties it has pinned (ADR-0033); no other.
         bundle, _ = kit.bundle(self.root)
-        self.assertEqual(list(bundle['skills']), ['develop'])
+        pin = json.loads((self.root / 'kit' / 'faculties.json').read_text(encoding='utf-8'))
+        self.assertEqual(sorted(bundle['skills']), sorted(['develop', *pin['skills']]))
         self.assertEqual(sorted(bundle['subagents']), ['reviewer', 'worker'])
 
 

@@ -1,0 +1,13 @@
+{
+  "//": "The faculty skills the home kit carries, each copied from one release of tannergolden/knowledge with its trigger test, and the hashes that hold each copy to it. Written by .github/scripts/faculties.py; never edit it by hand, run make faculties VERSION=vX.Y.Z.",
+  "source": "tannergolden/knowledge",
+  "names": [
+    "discover",
+    "editorial",
+    "finance",
+    "research",
+    "visualize"
+  ],
+  "version": "",
+  "skills": {}
+}
