@@ -92,12 +92,12 @@ the vault, to use the skill and reply with the value it gives. Its control
 plants a second skill the same way with no rule, to show the rule is what
 made the difference:
 
-| Check                | Answer                      | Result |
-| :------------------- | :-------------------------- | :----- |
-| The hand-over        | The vault copy's code alone | pass   |
-| The hand-over        | The home copy's code        | fail   |
-| No rule to hand over | Claude Code, the home copy  | pass   |
-| No rule to hand over | Any other app               | noted  |
+| Check                | Answer                      | Result                                |
+| :------------------- | :-------------------------- | :------------------------------------ |
+| The hand-over        | The vault copy's code alone | pass                                  |
+| The hand-over        | The home copy's code        | fail                                  |
+| No rule to hand over | Claude Code, the home copy  | pass                                  |
+| No rule to hand over | Any other app               | pass, its choice recorded, not judged |
 
 Claude Code documents that it loads a person's skill over a repository's,
 so without the rule it should follow the home copy; the other apps' choice
@@ -124,7 +124,7 @@ python3 .github/scripts/loader-probe.py --cleanup     # undo --keep, or a crash
 
 It needs Python 3.9 or later and git, and nothing else. Each check is one model
 call: twelve in a full run, one more per app with `--skills`, and two more
-with `--handover`, on your own subscriptions. An app installed under
+per app with `--handover`, on your own subscriptions. An app installed under
 another name takes `--command`, which must keep the `{prompt}` slot:
 
 ```bash

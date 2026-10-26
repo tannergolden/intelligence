@@ -430,15 +430,12 @@ class TestCommands(unittest.TestCase):
         argv = probe.build_argv(probe.APPS['claude'], check, {'claude': 'claude -p "{prompt}"'})
         self.assertEqual(argv, ['claude', '-p', probe.QUESTION, '--settings', 's.json'])
 
-    def test_only_the_hand_over_lets_claude_read_and_never_write(self) -> None:
-        def forbidden(check: object) -> set[str]:
-            argv = probe.build_argv(probe.APPS['claude'], check, {})
-            return set(argv[argv.index('--disallowedTools') + 1].split(','))
-        loader = probe.Check('claude', 'x', 'plain', {})
-        handover = probe.Check('claude', 'x', probe.VAULT, {}, reads=True)
-        self.assertIn('Read', forbidden(loader))
-        self.assertNotIn('Read', forbidden(handover))
-        self.assertTrue({'Bash', 'Edit', 'Write'} <= forbidden(handover))
+    def test_only_the_hand_over_lets_claude_read_and_nothing_more(self) -> None:
+        loader = probe.build_argv(probe.APPS['claude'], probe.Check('claude', 'x', 'plain', {}), {})
+        self.assertIn('Read', loader[loader.index('--disallowedTools') + 1].split(','))
+        handover = probe.build_argv(probe.APPS['claude'], probe.Check('claude', 'x', probe.VAULT, {}, reads=True), {})
+        self.assertEqual(set(handover[handover.index('--tools') + 1].split(',')), {'Read', 'Grep', 'Glob', 'Skill'})
+        self.assertIn('--strict-mcp-config', handover)
 
     def test_an_app_with_no_reading_command_runs_its_own(self) -> None:
         check = probe.Check('codex', 'x', probe.VAULT, {}, reads=True)

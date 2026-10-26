@@ -205,8 +205,7 @@ APPS: dict[str, App] = {
         argv=('claude', '-p', '{prompt}', '--disallowedTools',
               'Bash,Read,Grep,Glob,Edit,Write,WebFetch,WebSearch'),
         home='.claude/rules/intelligence-probe.md',
-        read_argv=('claude', '-p', '{prompt}', '--disallowedTools',
-                   'Bash,Edit,Write,NotebookEdit,WebFetch,WebSearch'),
+        read_argv=('claude', '-p', '{prompt}', '--tools', 'Read,Grep,Glob,Skill', '--strict-mcp-config'),
     ),
     'codex': App(
         key='codex',
