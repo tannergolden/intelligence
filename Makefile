@@ -36,7 +36,7 @@ test: ## Every test in the repository
 render: ## Rewrite home/ from CONSTITUTION.md, the kit and the installer
 	$(PYTHON) $(SCRIPTS)/render.py --write
 
-faculties: ## Copy the faculty skills from VERSION of tannergolden/knowledge; ARGS='--from ../knowledge' reads a checkout
+faculties: ## Copy the faculty skills from release VERSION of tannergolden/knowledge; ARGS='--from ../knowledge' reads its tag in a clone
 	@test -n "$(VERSION)" || { echo 'usage: make faculties VERSION=vX.Y.Z' >&2; exit 2; }
 	$(PYTHON) $(SCRIPTS)/faculties.py --pin $(VERSION) $(ARGS)
 

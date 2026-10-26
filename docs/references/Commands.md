@@ -199,10 +199,11 @@ explains the copies and their pin.
 | :-------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `faculties.py --check`                  | Fail when a faculty's copy in `kit/skills/`, or its trigger test in `evals/skills/`, differs from the release `kit/faculties.json` pins, or lacks the hand-over rule |
 | `faculties.py --pin VERSION`            | Replace every faculty's copy and trigger test with that release's, downloaded from GitHub, and rewrite the pin                                                       |
-| `faculties.py --pin VERSION --from DIR` | The same, from a checkout of the template at that release                                                                                                            |
+| `faculties.py --pin VERSION --from DIR` | The same, from the release's tag in a clone of the template, whatever the clone has checked out                                                                      |
 
-It exits 1 on a problem or a refused release, and a refused release changes
-nothing. After a pin, run `make render`, then `make check`, and commit it all.
+`VERSION` is a release tag, `vX.Y.Z`. It exits 1 on a problem or a refused
+release, and a refused release changes nothing. After a pin, run
+`make render`, then `make check`, and commit it all.
 
 ---
 

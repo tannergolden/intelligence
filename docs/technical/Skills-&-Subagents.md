@@ -55,7 +55,7 @@ machines and not only in a vault:
 
 A faculty is the template's, never the hub's. `.github/scripts/faculties.py`
 copies each one, its team in `agents/` included, from the `.skill` archive a
-release of the template serves, into `kit/skills/<name>/`, and writes its
+release tag of the template holds, into `kit/skills/<name>/`, and writes its
 trigger test into `evals/skills/` from the one it ships in
 `assets/trigger-evals.json`. [`kit/faculties.json`](../../kit/faculties.json)
 records the release and the SHA-256 of each archive and of the files each
