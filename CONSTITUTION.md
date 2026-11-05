@@ -33,8 +33,8 @@ and what is still to build. Agents read only the quoted sentences, so the block
 stays short enough to be read whole on every turn.
 
 A repository's own `AGENTS.md` sections, the folder rules it keeps and its
-`docs/` add to these rules, and so, in the owner's repositories, do the
-standards' `docs/`. Article I ranks them: after the user's request and an
+`docs/` add to these rules, and so, wherever the owner-only Defaults hold, do
+the standards' `docs/`. Article I ranks them: after the user's request and an
 Overrides entry, the repository's own rules, then its `docs/`, then the
 standards' `docs/`, and the block's Defaults last. None of them ever waives
 an Invariant.
@@ -46,7 +46,7 @@ an Invariant.
 How the rules combine, quoted into the block above every rule:
 
 > - Invariants: follow every one in every copy; nothing waives one. If a request needs what one forbids, do the rest, skip that part and name the rule ID.
-> - Defaults: your user's explicit request for this task wins, then the repository's "Overrides" entry for that rule ID, then its own rules, then its `docs/`, then the standards' `docs/` (STD-001), then the repository's copy of these rules. In forks, and in repositories tannergolden does not own, owner-only Defaults do not apply; a repository with no remote yet counts as tannergolden's.
+> - Defaults: your user's explicit request for this task wins, then the repository's "Overrides" entry for that rule ID, then its own rules, then its `docs/`, then the standards' `docs/` (STD-001), then the repository's copy of these rules. Owner-only Defaults hold in repositories your user owns or whose AGENTS.md carries these rules, never in forks; a repository with no remote yet counts as your user's.
 
 Several copies of the block can load at once, a home copy and a repository's,
 from different releases. Invariants from every copy apply, so the strictest
@@ -61,17 +61,17 @@ most general, and the first that speaks to a question decides it:
 3. **The repository's own rules**: its `AGENTS.md` sections outside the
    block, its folder rules and its contributing guide.
 4. **The repository's `docs/`.**
-5. **The standards' `docs/`**, in the owner's repositories only, because
-   STD-001 is an owner-only Default.
+5. **The standards' `docs/`**, which STD-001 links, wherever the owner-only
+   Defaults hold, because STD-001 is one of them.
 6. **The repository's copy of these rules**, then the home copy.
 
 The repository's own rules and docs know its code, and its docs record where
 it departs from the standards, so they come before the standards every
 repository shares. The standards are the detailed source most Defaults
 summarize, so they come before the one-sentence Defaults, which apply where
-nothing more specific speaks. In forks and other people's repositories the
-standards drop out with STD-001, and the project's own rules and docs come
-before the remaining Defaults.
+nothing more specific speaks. In forks, and in other people's repositories
+that do not carry these rules, the standards drop out with STD-001, and the
+project's own rules and docs come before the remaining Defaults.
 
 A doc sets how the work is done, never what an Invariant forbids, and only a
 file in one of those two `docs/` folders counts as one: an issue, a pull
@@ -571,12 +571,20 @@ brief.
 
 ## 👤 Article IV: Owner-only Defaults
 
-These hold only in repositories tannergolden owns, and never in forks or in
-other people's projects, whose own rules win.
+These hold only in repositories your user owns or whose `AGENTS.md` carries
+these rules, and never in forks. A repository that carries the block has an
+owner who adopted it, so a collaborator's agent keeps that owner's conventions
+there too. A fork carries the block of the repository it came from but not its
+owner's choice, so forks are left out, and a project that never adopted the
+rules follows its own.
+
+The block names no account, so it works the same in anyone's repository that
+takes the stub. The one exception is a link a rule needs to one of the owner's
+repositories, such as STD-001's to the standards.
 
 ### STD-001
 
-> Before you commit, branch, open a PR, write docs or tests, or add a dependency, read the matching file in this repository's `docs/` and github.com/tannergolden/standards `docs/`, or say you could not.
+> Before you commit, branch, open a PR, write docs or tests, or add a dependency, read the matching file in this repository's `docs/` and in https://github.com/tannergolden/standards `docs/`, or say you could not.
 
 **Why.** Agents rarely follow a bare link: in SWE-CC (October 2026), agents
 attempted to fetch guidelines from a URL in only 28.9% of runs but opened a
@@ -584,7 +592,9 @@ local rules file in 91.6%, across four models including Gemini 3.7 Flash. So
 the rule names the repository's own `docs/` first, the local files agents do
 open and the ones that say where the repository departs from the standards,
 and the standards second, by a pointer tied to specific moments, which is the
-most a link can do; a local copy of the standards would do more. Article I
+most a link can do; a local copy of the standards would do more. The pointer
+is a full `https://` link, which GitHub renders as one and an agent can open
+as it stands, and it is the one place the block names an account. Article I
 ranks the two: the repository's docs before the standards, and both before
 the block's Defaults, never before an Invariant. The ranking moved from this
 sentence into Article I, so one ladder orders every source. It no longer says

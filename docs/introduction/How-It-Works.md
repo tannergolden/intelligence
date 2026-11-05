@@ -87,17 +87,18 @@ knows which rule wins:
 > - Defaults: your user's explicit request for this task wins, then the
 >   repository's "Overrides" entry for that rule ID, then its own rules, then
 >   its `docs/`, then the standards' `docs/` (STD-001), then the repository's
->   copy of these rules. In forks, and in repositories tannergolden does not
->   own, owner-only Defaults do not apply; a repository with no remote yet
->   counts as tannergolden's.
+>   copy of these rules. Owner-only Defaults hold in repositories your user
+>   owns or whose AGENTS.md carries these rules, never in forks; a repository
+>   with no remote yet counts as your user's.
 
 Below the Invariants, the most specific source wins: the user's request, the
 repository's Overrides entry, its own rules, its `docs/`, the standards'
 `docs/`, and the block's Defaults last, where nothing more specific speaks.
-The standards rung holds in the owner's repositories only, with STD-001,
-which also has the agent read the matching file in both `docs/` folders
-before it commits, branches, opens a pull request, writes docs or tests, or
-adds a dependency.
+The standards rung holds wherever the owner-only Defaults do, with STD-001,
+which links the standards directly and has the agent read the matching file
+in both `docs/` folders before it commits, branches, opens a pull request,
+writes docs or tests, or adds a dependency. The block names no account
+anywhere else, so any repository can carry it.
 
 A repository records each Default it changes under its `## Overrides`
 heading, one line per rule ID with the reason, such as
