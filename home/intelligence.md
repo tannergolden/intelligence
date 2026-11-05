@@ -1,9 +1,9 @@
-<!-- INTELLIGENCE:BEGIN sha256:9c61940532a892b54634e0d4a7db866c8b5d5d43b491901f2c15d046ae897a39 -->
+<!-- INTELLIGENCE:BEGIN sha256:623ca270ab5583a4f6bda3fae6a9be5140d39dc66760d1b09c760607a1b1d52a -->
 
 ## Constitution
 
 - Invariants: follow every one in every copy; nothing waives one. If a request needs what one forbids, do the rest, skip that part and name the rule ID.
-- Defaults: your user's explicit request for this task wins, then the repository's "Overrides" entry for that rule ID, then the repository's copy of these rules. In forks, and in repositories tannergolden does not own, the project's own rules win and owner-only Defaults do not apply; a repository with no remote yet counts as tannergolden's.
+- Defaults: your user's explicit request for this task wins, then the repository's "Overrides" entry for that rule ID, then its own rules, then its `docs/`, then the standards' `docs/` (STD-001), then the repository's copy of these rules. In forks, and in repositories tannergolden does not own, owner-only Defaults do not apply; a repository with no remote yet counts as tannergolden's.
 
 ### Invariants
 
@@ -32,7 +32,7 @@
 
 ### Owner-only Defaults
 
-- STD-001: Follow github.com/tannergolden/standards, which win over this block's Defaults: before you commit, branch, open a PR, write docs or tests, or add a dependency, read the matching file in its `docs/`, or say you could not.
+- STD-001: Before you commit, branch, open a PR, write docs or tests, or add a dependency, read the matching file in this repository's `docs/` and github.com/tannergolden/standards `docs/`, or say you could not.
 - GIT-010: Name branches `<type>/<topic>`, title commits and PRs `type(scope): subject`, and give each commit a body saying why and your user's `Signed-off-by:` last.
 - GIT-012: Keep each PR to one intent, under 300 changed lines and at most 10 files, into `Development`.
 - GIT-013: Add `Co-Authored-By: <model> <vendor no-reply address>` above the sign-off on each commit an AI shaped.

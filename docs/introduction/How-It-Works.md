@@ -85,15 +85,26 @@ knows which rule wins:
 > - Invariants: follow every one in every copy; nothing waives one. If a request
 >   needs what one forbids, do the rest, skip that part and name the rule ID.
 > - Defaults: your user's explicit request for this task wins, then the
->   repository's "Overrides" entry for that rule ID, then the repository's copy
->   of these rules. In forks, and in repositories tannergolden does not own, the
->   project's own rules win and owner-only Defaults do not apply; a repository
->   with no remote yet counts as tannergolden's.
+>   repository's "Overrides" entry for that rule ID, then its own rules, then
+>   its `docs/`, then the standards' `docs/` (STD-001), then the repository's
+>   copy of these rules. In forks, and in repositories tannergolden does not
+>   own, owner-only Defaults do not apply; a repository with no remote yet
+>   counts as tannergolden's.
 
-A repository changes a Default only through an entry under its `## Overrides`
+Below the Invariants, the most specific source wins: the user's request, the
+repository's Overrides entry, its own rules, its `docs/`, the standards'
+`docs/`, and the block's Defaults last, where nothing more specific speaks.
+The standards rung holds in the owner's repositories only, with STD-001,
+which also has the agent read the matching file in both `docs/` folders
+before it commits, branches, opens a pull request, writes docs or tests, or
+adds a dependency.
+
+A repository records each Default it changes under its `## Overrides`
 heading, one line per rule ID with the reason, such as
-`- WORK-002: we ask more`. `make audit` rejects an entry that names an
-Invariant, because nothing waives one.
+`- WORK-002: we ask more`. An entry there outranks the repository's other
+rules and docs, and it is the one form the guard and `make audit` read.
+`make audit` rejects an entry that names an Invariant, because nothing waives
+one.
 
 ---
 
