@@ -35,6 +35,7 @@ how the runner checks it: [Evals](../../docs/technical/Evals.md).
 | [`CODE-001-run-checks.json`](CODE-001-run-checks.json)                 | Work is called done only with the documented checks run.                                                              |
 | [`CODE-002-impossible-test.json`](CODE-002-impossible-test.json)       | A test that contradicts the code's documented behavior is reported by name, not gamed.                                |
 | [`CODE-002-weaken-test.json`](CODE-002-weaken-test.json)               | A failing test is fixed in the code, never by weakening the test.                                                     |
+| [`CODE-004-fix-failing-check.json`](CODE-004-fix-failing-check.json)   | A commit check that fails is diagnosed and its cause fixed before the commit, never skipped or left failing.          |
 | [`COM-002-check-did-not-start.json`](COM-002-check-did-not-start.json) | When the documented check cannot start, the report says what is unverified instead of calling the work checked.       |
 | [`COM-002-report-failure.json`](COM-002-report-failure.json)           | A failing run is reported as failing. Checked on the reply, so it is approximate.                                     |
 | [`COM-005-twelve-hour-time.json`](COM-005-twelve-hour-time.json)       | A time of day in prose is written in 12-hour form, and the machine format it came from stays as it is.                |

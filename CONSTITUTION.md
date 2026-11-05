@@ -457,6 +457,40 @@ Running the checks once also keeps what WORK-005 asked of reruns.
 
 - ci / Lint, Test & Build
 
+### CODE-004
+
+> Every hook and CI check on your commits must pass: when one fails, find why from its output and fix the cause, wherever it lies, before going on; if you cannot or may not, stop and report the check, its error and your diagnosis.
+
+**Why.** The owner wants no work to move on while a check on it is failing
+(November 2026), and the other rules stop short of that. OPS-004 lets an agent
+report a failing hook or check instead of fixing it, CODE-001 runs the
+documented checks before work is called done but says nothing of a hook that
+stops a commit or a CI run that fails after a push, and WORK-001 has an agent
+report a failure its change did not cause rather than fix it. "Wherever it
+lies" settles that last conflict in the owner's favor: a check that fails is
+fixed, whoever broke it. Required checks stop a merge, but not a push, a pull
+request or a report of done, so a failure left for later becomes someone
+else's work. The cause is found from the check's own output, because a fix
+guessed from the check's name tends to treat the symptom. The way out is
+named because a fix can need what an agent cannot do or another rule
+forbids, such as a credential, a repository setting or a weaker test
+(CODE-002), and fixing the check instead of the cause is that weakening. No
+eval has measured the rule yet.
+
+**Enforced by:**
+
+- required CI checks, which stop a merge while one fails
+- the commit hooks, in repositories that switch them on, which stop a commit
+  whose message, sign-off or staged secrets fail
+- the guard hook, which denies --no-verify and hooks switched off for one
+  command (OPS-004)
+
+**To add:**
+
+- results for its scenario, with the block and without
+- a Stop hook that keeps a turn open while a check on the session's last push
+  is failing
+
 ### WORK-001
 
 > Deliver all of the task and only the task (a question gets an answer, not a change): no features, refactors, tests, docs or files beyond what your user or the repository's rules ask for; report extras and pre-existing bugs instead.
@@ -638,7 +672,7 @@ What the renderer builds from Articles I to IV, and how large it may grow:
 
 - **Heading:** Constitution
 - **Target:** 4500 characters
-- **Cap:** 5100 characters
+- **Cap:** 5400 characters
 
 Every app reads the whole block on every turn, before the task, so each
 sentence costs attention everywhere. `render.py --check` reports the size on

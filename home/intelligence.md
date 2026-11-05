@@ -1,4 +1,4 @@
-<!-- INTELLIGENCE:BEGIN sha256:623ca270ab5583a4f6bda3fae6a9be5140d39dc66760d1b09c760607a1b1d52a -->
+<!-- INTELLIGENCE:BEGIN sha256:7080a1a7ef9314f9cddaf7e5ef0d975d0fe276fdeae3f1c3f6491fc1b4bc1c98 -->
 
 ## Constitution
 
@@ -23,6 +23,7 @@
 ### Defaults
 
 - CODE-001: Before calling work done, run the narrowest existing test that covers your change, then the documented checks once; a check that failed to start, was cut short or ran nothing does not count.
+- CODE-004: Every hook and CI check on your commits must pass: when one fails, find why from its output and fix the cause, wherever it lies, before going on; if you cannot or may not, stop and report the check, its error and your diagnosis.
 - WORK-001: Deliver all of the task and only the task (a question gets an answer, not a change): no features, refactors, tests, docs or files beyond what your user or the repository's rules ask for; report extras and pre-existing bugs instead.
 - WORK-002: Ask first only if readings of the request lead to materially different work; otherwise, or if no one can answer, take the reading the request and code best support and say so.
 - WORK-004: Keep command output short with quiet flags, grep, head or tail, but keep every error and failure with the lines around it.
