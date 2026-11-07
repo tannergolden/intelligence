@@ -71,7 +71,7 @@ serves to this repository from its `.github` repository.
 | Path                                 | What                                                                                                                                                          |
 | :----------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | [`CONSTITUTION.md`](CONSTITUTION.md) | The source of every rule, and the order and budget of the block                                                                                               |
-| `kit/`                               | The kit's sources: the guard, every skill and its team (the Agent Resources workforce is `board`'s), and the Worker and Reviewer subagents                    |
+| `kit/`                               | The kit's sources: the guard, every skill and its team (the company is `board` and nine department skills), and the Worker and Reviewer subagents             |
 | `home/`                              | Everything a machine downloads, rendered: the home file, the kit, the installer and their hashes, which every release tag serves                              |
 | `evals/`                             | Scenarios for every rule and every universal prompt, and the skill trigger tests                                                                              |
 | `setup/`                             | The Claude cloud setup script, the stub a repository carries, and the empty prompts page every repository gets                                                |
@@ -89,7 +89,7 @@ serves to this repository from its `.github` repository.
 ## Gotchas
 
 - Never edit inside `home/`. It is rendered, and `make check` fails on a hand edit.
-- Every skill in `kit/skills/` is universal: never name one repository's folders or scripts in it; a skill reads where to keep its work from the repository's own instructions. `kit.py` holds every skill, agent and team to `develop`'s validator, and refuses a team over six agents, its lead included, whether an Agent Resources department or a skill's own team.
+- Every skill in `kit/skills/` is universal: never name one repository's folders or scripts in it; a skill reads where to keep its work from the repository itself, its agent instructions or else its README files. Every skill is laid out alike: `kit.py` holds every skill, agent and team to `develop`'s validator, refuses a team over six agents, its lead included, and refuses a skill whose `metadata.team` names no roster in its own `agents/`, that ships no `assets/trigger-evals.json`, or whose metadata holds other keys than `team`, `version`, `author` and `status`. Build a new skill from `develop`'s `templates/t-SKILL.md`.
 - Never edit a drawn trigger test in `evals/skills/` by hand: change the skill's `assets/trigger-evals.json` and run `evals.py --draw`. Only `develop.json` is written there.
 - The guard hook denies a commit git would author as an AI. In a cloud session, pass `--author` and `--trailer 'Signed-off-by: ...'` with your user's identity, never `-s`.
 - Changing `CONSTITUTION.md` changes nothing elsewhere until a release: other repositories receive the rules only through one, which their stub or `make sync` delivers.

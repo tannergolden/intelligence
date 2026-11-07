@@ -1,0 +1,30 @@
+{
+  "//": "The trigger test for systems, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw. Never edit it by hand.",
+  "skill": "systems",
+  "runs": 3,
+  "threshold": 0.5,
+  "should_trigger": [
+    "set up SSO and MFA for all the tools our team uses",
+    "who should have admin access to our company Google Workspace",
+    "an employee leaves on Friday, plan the offboarding of their accounts",
+    "is it safe to connect this Zapier automation to our CRM",
+    "someone logged into our company email from another country last night, what do we do",
+    "write an access policy for our startup",
+    "list the tools our company runs on and who owns each one",
+    "we think an API key for our billing system leaked",
+    "automate the handoff from our website signup form to the support inbox",
+    "review the security risk of giving our marketing agency access to our ad accounts"
+  ],
+  "should_not_trigger": [
+    "build an internal admin web app for our support team",
+    "fix the failing CI pipeline in this repository",
+    "review the security of the code in this pull request",
+    "negotiate the renewal with our CRM vendor and compare its price to alternatives",
+    "what does GDPR require us to do with our customers' personal data",
+    "QA test the new onboarding flow before we launch it",
+    "write the first-week onboarding plan for our new hire",
+    "draft the email telling customers about yesterday's outage",
+    "draw a diagram of how our tools connect to each other",
+    "should we cut our software budget to extend runway"
+  ]
+}

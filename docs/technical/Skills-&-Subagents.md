@@ -1,6 +1,6 @@
 <!--
 title: '🧰 SKILLS & SUBAGENTS'
-description: 'The skills the home kit installs, every one written here and universal, the Agent Resources workforce board dispatches, the Worker and Reviewer subagents, the rules every skill here follows, and where each app reads them.'
+description: 'The skills the home kit installs, every one written here, universal and laid out alike, the company's departments as skills of their own, the Worker and Reviewer subagents, the rules every skill here follows, and where each app reads them.'
 type: guide
 -->
 
@@ -23,22 +23,40 @@ _Loaded on demand. Rendered for every app._
 A skill is a folder an agent opens only when its description matches the
 task. The universal rules stay in the always-loaded block; a skill carries a
 procedure. The hub writes every skill the kit carries, and each one works in
-any repository, or in a conversation with no repository at all:
+any repository, or in a conversation with no repository at all.
 
-| Skill                                              | What it does                                                                                                                                                                                                                                                     |
-| :------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`develop`](../../kit/skills/develop/SKILL.md)     | Builds, updates and improves skills and the agents and teams they dispatch: decides whether the need is a skill at all, researches, reuses before it creates, gates every build with its validator and independent reviewers, and learns from a skill's mistakes |
-| [`research`](../../kit/skills/research/SKILL.md)   | Runs multi-source, fact-checked research scaled to the question, with cited synthesis                                                                                                                                                                            |
-| [`discover`](../../kit/skills/discover/SKILL.md)   | Generates ideas wide from distinct lenses, then converges to a ranked shortlist                                                                                                                                                                                  |
-| [`editorial`](../../kit/skills/editorial/SKILL.md) | Writes, edits and formats any prose a person will read, from a message to a book                                                                                                                                                                                 |
-| [`visualize`](../../kit/skills/visualize/SKILL.md) | Makes the chart, diagram, timeline or interactive visual that lands better seen than read                                                                                                                                                                        |
-| [`finance`](../../kit/skills/finance/SKILL.md)     | Advises on personal and household money: budgets, debt, taxes, investing, insurance, benefits and homes                                                                                                                                                          |
-| [`board`](../../kit/skills/board/SKILL.md)         | Founds, runs, scales and maintains a company with the Agent Resources (AR) workforce, scaled to its stage, behind a write-gate                                                                                                                                   |
-| [`identify`](../../kit/skills/identify/SKILL.md)   | Interviews the user about themselves with validated frameworks and turns the answers into a profile they approve line by line                                                                                                                                    |
+**The faculties** serve any work:
 
-Each skill carries everything it needs in its own folder: its team in
-`agents/`, a roster and the agents it dispatches, its references, templates
-and assets. `develop` also carries two standard-library scripts in
+| Skill                                              | What it does                                                                                                                         |
+| :------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
+| [`develop`](../../kit/skills/develop/SKILL.md)     | Builds, updates and improves skills and the agents and teams they dispatch, and gives a product its technical direction              |
+| [`research`](../../kit/skills/research/SKILL.md)   | Runs multi-source, fact-checked research scaled to the question, with cited synthesis                                                |
+| [`discover`](../../kit/skills/discover/SKILL.md)   | Generates ideas wide from distinct lenses, then converges to a ranked shortlist                                                      |
+| [`editorial`](../../kit/skills/editorial/SKILL.md) | Writes, edits and formats any prose a person will read, from a message to a book                                                     |
+| [`visualize`](../../kit/skills/visualize/SKILL.md) | Makes the chart, diagram, timeline or interactive visual that lands better seen than read                                            |
+| [`finance`](../../kit/skills/finance/SKILL.md)     | Advises on personal, household and company money: budgets, debt, taxes, investing, insurance, the books, the model and the cap table |
+| [`identify`](../../kit/skills/identify/SKILL.md)   | Interviews the user about themselves with validated frameworks and turns the answers into a profile they approve line by line        |
+
+**The company** is `board` and nine department skills, for a company the
+user runs:
+
+| Skill                                                        | Team                         | What it does                                                                                                                                                    |
+| :----------------------------------------------------------- | :--------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`board`](../../kit/skills/board/SKILL.md)                   | Administration               | Founds, runs, scales and maintains the company: strategy, decisions across departments and the operating cadence, convening the departments behind a write-gate |
+| [`legal`](../../kit/skills/legal/SKILL.md)                   | Legal & Compliance (L&C)     | Entity formation, contracts, intellectual property, compliance and privacy                                                                                      |
+| [`sales`](../../kit/skills/sales/SKILL.md)                   | Sales & Revenue (S&R)        | Pipeline and deals, revenue operations, positioning and demand, and the revenue number                                                                          |
+| [`operations`](../../kit/skills/operations/SKILL.md)         | Operations & Logistics (O&L) | Processes and standard operating procedures, programs, vendors and logistics                                                                                    |
+| [`people`](../../kit/skills/people/SKILL.md)                 | Human Resources (HR)         | Roles, hiring, compensation, onboarding and the people records                                                                                                  |
+| [`systems`](../../kit/skills/systems/SKILL.md)               | Information Technology (IT)  | Internal systems, tools and access, and their security                                                                                                          |
+| [`analytics`](../../kit/skills/analytics/SKILL.md)           | Business Intelligence (BI)   | Metric definitions, the data model, dashboards and analysis of the company's own data                                                                           |
+| [`quality`](../../kit/skills/quality/SKILL.md)               | Quality Assurance (QA)       | Independent verification of consequential work before it lands, standards and testing                                                                           |
+| [`customers`](../../kit/skills/customers/SKILL.md)           | Client Experience (CX)       | Onboarding, customer success and support                                                                                                                        |
+| [`communications`](../../kit/skills/communications/SKILL.md) | Public Relations (PR)        | Announcements, media relations and crisis communications                                                                                                        |
+
+**Every skill is laid out alike**: a `SKILL.md`, the team it dispatches in
+its own `agents/` (a roster and one file for each agent), its
+`references/`, `templates/` and `assets/`, a `Changelog.md` and a
+`License.txt`. `develop` also carries two standard-library scripts in
 `scripts/`: `validate.py` checks a skill, an agent, a team or a library
 against the format every app accepts, and `package.py` builds a `.skill`
 archive for the Claude app, with the team vendored and the same bytes on
@@ -52,39 +70,49 @@ here.
 
 No skill names a repository's folders or scripts. Where a skill keeps
 anything it makes, a report, an idea, a venture's files, a profile, is set by
-the repository's own instructions, its `AGENTS.md` and folder rules, which
-the skill reads first, along with the checks those instructions name. With
-none, it works in the conversation and writes a file only where the user
-asks. A skill writes the user's personal context only into a repository
-whose instructions say it was made to hold it (SEC-003); anywhere else that
-stays in the conversation. So a repository with a layout of its own, such as
-a vault generated from tannergolden/knowledge, states it once in its
-`AGENTS.md`, and every skill follows it.
+the repository itself: its agent instructions where it has them, its
+`AGENTS.md` and folder rules, and otherwise its `README.md` files, the root
+one and the one in each folder written into, which the skill reads first,
+along with the checks they name. With neither, it works in the conversation
+and writes a file only where the user asks. A skill writes the user's
+personal context only into a repository that says it was made to hold it
+(SEC-003); anywhere else that stays in the conversation. So a vault
+generated from tannergolden/knowledge, which holds no AI instructions,
+explains each folder in its README, and every skill follows it.
 
-### The Agent Resources (AR) workforce
+### The company's teams
 
-`board` dispatches the AR workforce, a company's departments as agents
-known by their role titles alone, each with a star lead, kept as `board`'s own team in
-[`kit/skills/board/agents/`](../../kit/skills/board/agents/): one roster for
-each department and one file for each agent. **Every team keeps at most
-its six most critical agents, its lead included**, each AR department and
-each skill's own team alike, and `kit.py` refuses a roster with more.
-Deeper specialists are not kept on disk: a present lead stands in for them.
-`identify` embodies the R&D department's interviewer.
+`board` keeps the Administration team, the Chief Executive Officer, the Chief
+Operating Officer, the Corporate Secretary and the Chief of Staff, and
+convenes each department from that department's own skill. Called on its
+own, a department skill does its function's work and keeps only its own
+department's records; inside a `board` run, `board` keeps the results.
+Agents are known by their role titles alone, and each team's lead carries a
+star.
+
+**Every team keeps at most its six most critical agents, its lead
+included**, a department's and a faculty's alike, and `kit.py` refuses a
+roster with more. Deeper specialists are not kept on disk: a present lead
+stands in for them. `identify`'s own Interview team is led by the UX and
+Design Research Lead, and borrows the Writer and the Standards Reviewer.
 
 **The checks.** `.github/scripts/kit.py` holds every skill, every agent and
-every team to `develop`'s own `validate.py`, and every name and title is
-unique across all of `kit/skills/*/agents/`. Each skill's trigger test in
-`evals/skills/` is drawn from the one it ships in
-`assets/trigger-evals.json` by `evals.py --draw`, and `make lint` fails when
-the two differ; `develop`'s is written in `evals/skills/` by hand.
+every team to `develop`'s own `validate.py`, every title is unique across
+all of `kit/skills/*/agents/`, and every skill is laid out alike: its
+`metadata.team` names a roster in its own `agents/`, it ships
+`assets/trigger-evals.json`, and its metadata holds exactly `team`,
+`version`, `author` and `status`. Each skill's trigger test in
+`evals/skills/` is drawn from the one it ships by `evals.py --draw`, and
+`make lint` fails when the two differ; `develop`'s is written in
+`evals/skills/` by hand.
 
 `.github/scripts/kit.py` bundles every folder in [`kit/skills/`](../../kit/skills/README.md)
 into `home/kit.json`, and the home kit copies each one into
 `~/.agents/skills/`, `~/.claude/skills/` and Antigravity's
 `~/.gemini/antigravity-cli/skills/`, with a mark that lets it replace its own
 folders and refuse anyone else's. The loader probe's `--skills` canary proves
-each app sees exactly one copy.
+each app sees exactly one copy. To run the teams as Grok Bot agents instead,
+see [`kit/skills/README.md`](../../kit/skills/README.md).
 
 ---
 
@@ -149,6 +177,7 @@ no tool list, so there it is read-only by instruction.
 
 - [ADR-0021](../adrs/ADR-0021-Develop-Is-The-One-Skill.md): develop is the one skill the hub writes
 - [ADR-0037](../adrs/ADR-0037-The-Hub-Writes-Every-Skill.md): the hub writes every skill, universal, and the knowledge template keeps none
+- [ADR-0038](../adrs/ADR-0038-Each-Department-Is-A-Skill.md): each department is a skill, laid out like every other
 - [ADR-0015](../adrs/ADR-0015-A-Worker-And-A-Reviewer.md): the hierarchy starts with a Worker and a Reviewer
 - [The Home Kit](The-Home-Kit.md): how the kit reaches each app
 

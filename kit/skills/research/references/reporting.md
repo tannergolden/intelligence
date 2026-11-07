@@ -1,6 +1,6 @@
 # Reporting - output, filing, and freshness
 
-How a run's findings are delivered, filed, and kept fresh. This is the kit's model, and it overrides any per-volatility scheme a generic research skill would use. Where a report is filed, and how it is named, indexed and linked, is set by the repository's own instructions (its `AGENTS.md` or `CLAUDE.md` and the folder rules they name), which the lead reads first; this file supplies the method and the defaults for what they leave open.
+How a run's findings are delivered, filed, and kept fresh. This is the kit's model, and it overrides any per-volatility scheme a generic research skill would use. Where a report is filed, and how it is named, indexed and linked, is set by the repository's own instructions (its `AGENTS.md` or `CLAUDE.md`, or with neither its root and folder `README.md` files, and the folder rules they name), which the lead reads first; this file supplies the method and the defaults for what they leave open.
 
 ## Chat first, file on request
 

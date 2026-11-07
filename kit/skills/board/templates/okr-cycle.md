@@ -2,7 +2,7 @@
 
 *The fill-in scaffold a strategize run uses to write the venture's OKRs into `Goals.md`: annual objectives at the top, the quarterly OKRs that ladder up to them below, each key result tagged committed or aspirational and carrying a 0.0-to-1.0 grading line. It connects the company thesis in `Strategy.md` to the north-star in `Metrics.md`, and it is the spine the four review loops grade against. Fill only the brackets the venture actually has; never fabricate a target.*
 
-The chair fills this in a **strategize** run, then the skill writes the result into the venture's `Goals.md` behind the write-gate (see `write-gate.md`). The OKRs ladder up: a few annual objectives state what the year is for, and each quarter's OKRs are the slice of that year the venture commits to next. The ladder has to hold in both directions, every quarterly objective serves a named annual objective, and every annual objective is served by at least one live quarterly OKR, or the cycle has a gap. The north-star metric is not redefined here; it is canonical in `Metrics.md` (BI owns it) and referenced, so the OKRs and the scoreboard cannot drift apart. Stage-scale the whole cycle (`lifecycle.md`): a **found** venture writes few OKRs against learning and survival signals and grades loosely; a **scale** venture writes efficiency and repeatability OKRs and grades hard on the numbers; a **maintain** venture splits the ladder across Three Horizons so defending the core does not starve the next S-curve. Keep the standard: **every angle heard, one owner accountable**. Each objective and each key result has exactly one single-threaded owner, OKRs are set by catchball (the chair frames the target, the owning chief returns what is committable; see `operating-cadence.md`), and the skill is the sole writer.
+The chair fills this in a **strategize** run, then the skill writes the result into the venture's `Goals.md` behind the write-gate (see `write-gate.md`). The OKRs ladder up: a few annual objectives state what the year is for, and each quarter's OKRs are the slice of that year the venture commits to next. The ladder has to hold in both directions, every quarterly objective serves a named annual objective, and every annual objective is served by at least one live quarterly OKR, or the cycle has a gap. The north-star metric is not redefined here; it is canonical in `Metrics.md` (the analytics skill keeps it) and referenced, so the OKRs and the scoreboard cannot drift apart. Stage-scale the whole cycle (`lifecycle.md`): a **found** venture writes few OKRs against learning and survival signals and grades loosely; a **scale** venture writes efficiency and repeatability OKRs and grades hard on the numbers; a **maintain** venture splits the ladder across Three Horizons so defending the core does not starve the next S-curve. Keep the standard: **every angle heard, one owner accountable**. Each objective and each key result has exactly one single-threaded owner, OKRs are set by catchball (the chair frames the target, the owning department's lead returns what is committable; see `operating-cadence.md`), and board is the sole writer.
 
 ---
 
@@ -10,7 +10,7 @@ The chair fills this in a **strategize** run, then the skill writes the result i
 
 - **Objective** is qualitative and directional: what success looks like, in a sentence a human would be proud to hit. It is not a metric.
 - **Key result (KR)** is the measurable proof the objective moved: a number with a start, a target, and a date, so a grade is unambiguous at the QBR. If you cannot grade it 0.0 to 1.0 from data, it is a task, not a KR.
-- **Owner** is one named person (one workforce chief or specialist), single-threaded. Two owners is no owner.
+- **Owner** is one named seat (one department lead or specialist, named for its skill), single-threaded. Two owners is no owner.
 - **Tag** is `committed` or `aspirational`, defined below. The tag sets the bar the grade is read against.
 - **Grade** is the 0.0-to-1.0 line, blank at planning, filled at the QBR. Carry the line from the start so grading is mechanical, not a renegotiation.
 
@@ -24,7 +24,7 @@ The chair fills this in a **strategize** run, then the skill writes the result i
 - **Quarter being set:** [Q_ 2026]
 - **Thesis it serves:** [one line from `Strategy.md`: where we play and how we win this year]
 - **North-star metric:** [the single metric, by reference to `Metrics.md`; current value and as-of date] - *canonical in `Metrics.md`, not redefined here*
-- **Set by:** [the chair plus the chiefs whose functions own the KRs; catchball recorded]
+- **Set by:** [the chair plus the leads of the departments that own the KRs; catchball recorded]
 - **Framework feeding this:** [the strategize output that produced the objectives, e.g. Balanced Scorecard, V2MOM at the annual tier; see `strategy-toolkit.md`]
 
 ---

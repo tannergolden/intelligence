@@ -1,0 +1,30 @@
+{
+  "//": "The trigger test for quality, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw. Never edit it by hand.",
+  "skill": "quality",
+  "runs": 3,
+  "threshold": 0.5,
+  "should_trigger": [
+    "check our investor update against the numbers before it goes out",
+    "verify this SOP against our definition of done before we adopt it",
+    "is this client deliverable actually done? check it against the acceptance criteria",
+    "write the definition of done for our client reports",
+    "build a test plan for the launch of our new product catalog",
+    "triage these defects from our last batch of client deliverables",
+    "find the root cause of why our proposals keep going out with the same errors",
+    "QA this proposal before we send it to the client",
+    "audit our onboarding materials against our quality standard",
+    "set the quality standard our marketing assets must meet"
+  ],
+  "should_not_trigger": [
+    "write unit tests for the login function in my app",
+    "QA the checkout feature you just built in this repo",
+    "a customer reported a bug in the app, reply to them",
+    "fact-check the market size figures in this article",
+    "proofread this report for typos and tone",
+    "should we delay the launch to fix these quality issues",
+    "is the indemnity clause in this contract enforceable",
+    "make a chart of defect counts by month",
+    "write the SOP for how our team packs orders",
+    "set up the CI pipeline that runs our test suite"
+  ]
+}

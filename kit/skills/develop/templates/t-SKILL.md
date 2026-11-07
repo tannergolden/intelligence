@@ -2,7 +2,7 @@
 name: '[skill-name]'
 description: "[What it does, in one sentence. Use when the user asks to ..., with 4 to 6 concrete trigger phrases in the user's own words, even if they never say the skill's name. This line decides whether the skill ever fires.]"
 license: "[the repository's licence, such as MIT]"
-metadata: { 'team': '[team-name]', 'version': '1.0.0' }
+metadata: { team: '[team-name]', version: '1.0.0', author: '[author]', status: active }
 ---
 
 # [emoji] [Skill Name]
@@ -49,7 +49,7 @@ This skill dispatches the **[team-name]** team (`<agent-home>/[team-name]/`). Ag
 
 ## Conformance with the repository
 
-[Only for a skill that writes into a repository; drop this section otherwise.] Read the repository's `AGENTS.md` and the documents it names, and the rules of every folder written into; follow its rules for backups, deletes and structure; run the checks it names as the exit gate.
+[Only for a skill that writes into a repository; drop this section otherwise.] Read the repository's `AGENTS.md` (or, with none, its root and folder `README.md` files) and the documents it names, and the rules of every folder written into; follow its rules for backups, deletes and structure; run the checks it names as the exit gate.
 
 ## Gotchas
 

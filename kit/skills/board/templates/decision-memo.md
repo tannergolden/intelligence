@@ -1,6 +1,6 @@
 # Decision memo (board, decide mode)
 
-A board-style decision record. The skill fills this and appends it to the venture's `Administration/Decisions.md` (or, for a cross-venture call with no venture record, files it where the repository's instructions keep reports or at the path the user names, and otherwise returns it in chat), then adds a one-line entry to the venture's `Log.md`. Lead with the answer; preserve the minority view. The convened functions and chiefs are derived from the brief, not fixed.
+A board-style decision record. The skill fills this and appends it to the venture's `Administration/Decisions.md` (or, for a cross-venture call with no venture record, files it where the repository's instructions keep reports or at the path the user names, and otherwise returns it in chat), then adds a one-line entry to the venture's `Log.md`. Lead with the answer; preserve the minority view. The convened departments and their leads are derived from the brief, not fixed.
 
 **Decision requested:** [the question, in one line]
 **Recommendation (BLUF):** [the call, stated first, with the one accountable owner named]
@@ -24,12 +24,12 @@ A board-style decision record. The skill fills this and appends it to the ventur
 | [A] |  |  |  |  |
 | [B] |  |  |  |  |
 
-## Each function's view and the tradeoffs
+## Each department's view and the tradeoffs
 
-[one line per convened function (only the ones the decision touched), each with the tradeoff it raised]
+[one line per convened department (only the ones the decision touched), each with the tradeoff it raised]
 
-- **[Function] ([chief]):** [view; the tradeoff it sees]
-- **[Function] ([chief]):** [view; any Agree or veto threshold]
+- **[Department] ([lead, named for its skill]):** [view; the tradeoff it sees]
+- **[Department] ([lead, named for its skill]):** [view; any Agree or veto threshold]
 
 ## Risks and pre-mortem
 

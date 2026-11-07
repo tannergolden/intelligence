@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**`1.3.0`**
+**`1.4.0`**
 
 The version is SemVer, per standards' [versioning policy](https://github.com/tannergolden/standards/blob/Development/docs/distribution/Releases-&-Versioning.md#-versioning-policy-semver). It matches `metadata.version` in `SKILL.md`, and develop's validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
 
@@ -22,11 +22,15 @@ The version is SemVer, per standards' [versioning policy](https://github.com/tan
 
 ### `1.0.0` - 2026-10-22
 
-Initial build of the finance skill: the BRAIN's personal and household finance skill, dispatching the new standing Finance team in `Inbox/Faculties/Finance/` (the Financial Planning Lead leads the Cash Flow Analyst, the Credit & Debt Specialist, the Tax Strategist, the Investment & Retirement Analyst, the Insurance & Estate Specialist, the Equity & Benefits Specialist and the Home & Major Purchases Analyst, with the Plan Reviewer as the independent Plan Reviewer) to the standard of the Founder's interest first, with show the math as its craft rule. Three modes (ask, plan, review) and three tiers (quick, standard, deep); a fact sheet compiled before dispatch; every load-bearing number reproduced by a script before review; a blind review gate on consequential advice; and a gate that never moves money and never records a secret. Five references (doctrine, dispatch, data and writes, cadence, life events), five templates (fact sheet, brief, plan, review, checkup), and two assets (trigger tests, official US sources).
+Initial build of the finance skill: a personal and household finance skill, dispatching the new standing Finance team (the Financial Planning Lead leads the Cash Flow Analyst, the Credit & Debt Specialist, the Tax Strategist, the Investment & Retirement Analyst, the Insurance & Estate Specialist, the Equity & Benefits Specialist and the Home & Major Purchases Analyst, with the Plan Reviewer as the independent Plan Reviewer) to the standard of the Founder's interest first, with show the math as its craft rule. Three modes (ask, plan, review) and three tiers (quick, standard, deep); a fact sheet compiled before dispatch; every load-bearing number reproduced by a script before review; a blind review gate on consequential advice; and a gate that never moves money and never records a secret. Five references (doctrine, dispatch, data and writes, cadence, life events), five templates (fact sheet, brief, plan, review, checkup), and two assets (trigger tests, official US sources).
 
 ## Minor Updates
 
 > Backward-compatible additions. Most recent 4 entries.
+
+### `1.4.0` - 2026-11-07
+
+The skill now covers a company's money as well as the household's: for a company or venture the user runs, the books and the monthly close, cash, burn and runway, the financial model (a driver-based forecast, scenarios, unit economics), the operating budget, the cap table and dilution, fundraising math, company tax and business insurance. The board skill's Finance & Accounting department is retired and its duties move here, so the team stays at six and each seat applies its craft to both units: the Financial Planning Lead is also the company's finance lead (capital allocation and runway calls as recommendations, the cap table, approving the model), the Cash Flow Analyst keeps the company's actuals (the books, the close, the statements, cash, burn and runway), the Investment & Retirement Analyst builds its forward model and the math of a raise, the Tax Strategist adds company tax (the entity's tax classification, payroll and sales tax basics, credits, franchise tax, the 409A beside the 83(b) and QSBS clocks), the Insurance & Estate Specialist adds business insurance and founder succession, and the Plan Reviewer verifies the model, the statements and any cap table change before they land. A new `references/company.md` carries the deliverables with their completion evidence, the stage scaling, the inputs from other skills and the metrics, and a new `templates/financial-model.md` the model's shape. The doctrine adds the company foundations, decision rules and referrals; dispatch the company tiers, routing and order; the cadence the close and the company calendar; the life events the company events; and data and writes the *company finance repository*, the only place a company's figures are written. Business decisions and strategy stay with the board skill, which convenes the lead as the company's finance function and persists its own runs; the pipeline comes from the sales skill and equity documents from the legal skill. The description, the roster and its global rules, every spec, the templates, the official sources and the trigger tests follow, and `metadata` drops its `id` key.
 
 ### `1.3.0` - 2026-11-07
 
@@ -38,7 +42,7 @@ The hub now owns and authors the skill, made universal: the hand-over rule to a 
 
 ### `1.1.0` - 2026-10-26
 
-The Finance team now ships inside the skill, in `agents/`, instead of living in `Inbox/Faculties/Finance/`, and the skill source moved from `System/Skills/.unpackaged/` to `.agents/skills/`, where the agent apps read a repository's skills, so the vault's own sessions load it and tannergolden/intelligence's home kit can carry it to every repository. Briefs read each spec from `<skill>/agents/`, and the dispatch reference and `SKILL.md` point there too. A new **Where it runs** rule: in a vault, the vault's own copy runs, so a home copy hands over to it; anywhere else the run works only from what the user says and keeps nothing. `allowed-tools` now pre-approves read-only tools only, and the frontmatter keeps one key to a line, as the home kit's reader requires.
+The Finance team now ships inside the skill, in `agents/`, instead of living in a separate team folder, and the skill source moved to `.agents/skills/`, where the agent apps read a repository's skills, so the vault's own sessions load it and tannergolden/intelligence's home kit can carry it to every repository. Briefs read each spec from `<skill>/agents/`, and the dispatch reference and `SKILL.md` point there too. A new **Where it runs** rule: in a vault, the vault's own copy runs, so a home copy hands over to it; anywhere else the run works only from what the user says and keeps nothing. `allowed-tools` now pre-approves read-only tools only, and the frontmatter keeps one key to a line, as the home kit's reader requires.
 
 ## Patch Updates
 

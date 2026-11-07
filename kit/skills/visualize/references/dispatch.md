@@ -20,9 +20,9 @@ When two rows fit, take the higher. Announce the tier before dispatching; it is 
 
 ## How to brief each agent
 
-- **Design Lead.** Give the request, the data or content, the question the visual must answer, and the audience. She returns the framed brief with the chosen form and why, then orchestrates. Use `templates/visual-brief.md`.
-- **Visualization Designer.** Give the chosen form, the data, the integrity constraints, the palette or house style, and the render target (inline SVG or self-contained HTML). He returns the artifact source plus a one-line note of the encoding choices.
-- **Design Critic.** Give the rendered visual or its source and the question it must answer; withhold the maker's notes so she does not inherit the maker's blind spots. She returns the review: form-fit verdict, integrity findings, the accessibility gate result (PASS or FAIL with the failing checks), clarity notes, and a ship-or-hold call. She never fixes.
+- **Design Lead.** Give the request, the data or content, the question the visual must answer, and the audience. It returns the framed brief with the chosen form and why, then orchestrates. Use `templates/visual-brief.md`.
+- **Visualization Designer.** Give the chosen form, the data, the integrity constraints, the palette or house style, and the render target (inline SVG or self-contained HTML). It returns the artifact source plus a one-line note of the encoding choices.
+- **Design Critic.** Give the rendered visual or its source and the question it must answer; withhold the maker's notes so it does not inherit the maker's blind spots. It returns the review: form-fit verdict, integrity findings, the accessibility gate result (PASS or FAIL with the failing checks), clarity notes, and a ship-or-hold call. It never fixes.
 
 ## By-demand collaborations (not roster seats)
 

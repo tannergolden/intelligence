@@ -3,14 +3,14 @@ name: discover
 description: "Use when the user wants ideas or options generated, on request or proactively when a problem clearly calls for divergent options. Fires on brainstorm this, brainstorm ideas for, give me ideas, how might we, how could I, what are my options for, ways to, ideate on, help me think through, what could I do about, come up with approaches to, and any open-ended generate-possibilities request. The kit's ideation skill: it dispatches the Discovery team to generate ideas wide from distinct lenses, then converge to a ranked shortlist by a fair pairwise tournament, to a standard of generate wide, select fair. It generates options; deciding among them stays yours. A what-are-my-options is brainstorm; what-is-known-about-X is research; which-should-I-choose is board."
 license: MIT
 allowed-tools: Read, Grep, Glob
-metadata: { team: Discovery, version: "1.2.0", author: Tanner Golden, status: active }
+metadata: { team: Discovery, version: "1.2.1", author: Tanner Golden, status: active }
 ---
 
 # 💡 Discover - the kit's ideation skill
 
 Discover generates ideas for any challenge by dispatching the standing **Discovery team**, whose specs ship with this skill in `agents/`, scaled to the question. The one standard, the team's, is **generate wide, select fair**: bold ideas are protected while generating (judgment deferred), and the winner is settled by a fair pairwise tournament, never by whose idea it is or which answer was hoped for. The skill is a thin orchestration and doctrine layer over its team. The hard rule, shared with `research` and `develop`: the lead holds the brief and generation happens in isolated parallel workers, so no generator grades its own idea and the tournament decides.
 
-**Where it runs.** Anywhere: in any repository, or in a plain conversation with no repository. The ranked shortlist is returned in chat. Where to persist anything (idea records, a discovery report) is set by the repository's own instructions (its `AGENTS.md` or `CLAUDE.md` and folder rules), which the skill reads first; with no such instruction, it keeps the idea pool in the conversation, dedups against what this run produced, and writes a file only when your user asks, at the path they name. It never writes anything about your user into a repository unless that repository's instructions say it is a private one made to hold it (SEC-003).
+**Where it runs.** Anywhere: in any repository, or in a plain conversation with no repository. The ranked shortlist is returned in chat. Where to persist anything (idea records, a discovery report) is set by the repository's own instructions (its `AGENTS.md` or `CLAUDE.md`, or with neither its root and folder `README.md` files, and folder rules), which the skill reads first; with no such instruction, it keeps the idea pool in the conversation, dedups against what this run produced, and writes a file only when your user asks, at the path they name. It never writes anything about your user into a repository unless that repository's instructions say it is a private one made to hold it (SEC-003).
 
 > Operating doctrine lives in `references/`. Read `references/brief.md` to frame the challenge, `references/lenses.md` for the generation lenses, `references/method.md` for the diverge-converge method and why parallel generation wins, `references/convergence.md` before ranking, and `references/dispatch.md` before choosing a tier.
 
@@ -48,7 +48,7 @@ A bigger roster is not a better one. Dispatch the **smallest sufficient** seats:
 
 ## Filing and conformance
 
-**Preflight (before any write).** Filing idea records or a report is a write into the repository: read its `AGENTS.md` or `CLAUDE.md` and the rules of every folder written into, follow them (some repositories require a file's last state committed before an edit, an index entry added in the same edit, or plain paths in place of links), and run the checks those instructions name after the write. Idea records follow `templates/idea-record.md`, fitted to the frontmatter the repository's rules set.
+**Preflight (before any write).** Filing idea records or a report is a write into the repository: read its `AGENTS.md` or `CLAUDE.md`, or with neither its root and folder `README.md` files, and the rules of every folder written into, follow them (some repositories require a file's last state committed before an edit, an index entry added in the same edit, or plain paths in place of links), and run the checks those instructions name after the write. Idea records follow `templates/idea-record.md`, fitted to the frontmatter the repository's rules set.
 
 **Read before acting.** Before filing into a folder that already holds ideas, read what is there so records fit the pool, and dedup against the existing pool (including killed ideas) so the same idea is not re-filed. After a substantial run, **offer** (never silently) to file the survivors, and, where the repository keeps a memory or decision log its instructions name, to record the distilled outcome there. Confirm before filing; never create or delete top-level folders.
 

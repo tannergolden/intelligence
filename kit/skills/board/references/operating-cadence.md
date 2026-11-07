@@ -2,7 +2,7 @@
 
 *The operating rhythm for review runs: the four nested loops (weekly business review, monthly review, quarterly QBR plus planning, annual planning) and the board cadence, each with a fixed agenda, its inputs and outputs, and the metric and ownership discipline that keeps the loops honest.*
 
-REVIEW is the mode that keeps a running venture honest over time. Where strategize sets the OKRs and operate produces the work, review runs the clock: it grades what the OKRs said against what actually happened, keeps `Overview.md`/`Goals.md`/`Log.md` current, and advances or flags the lifecycle stage. The cadence is a set of **nested loops at decreasing frequency and increasing altitude**: the weekly loop runs the numbers, the monthly loop reads the money, the quarterly loop grades the OKRs and resets them, and the annual loop sets the thesis the quarters ladder up to. A shorter loop never re-decides what a longer loop owns; it executes inside the frame the longer loop set. The standard holds here as everywhere: **every angle heard, one owner accountable**. Each review reads the relevant functions, the chair synthesizes, one owner is named per number and per action, and the skill is the sole writer (see `write-gate.md`).
+REVIEW is the mode that keeps a running venture honest over time. Where strategize sets the OKRs and operate produces the work, review runs the clock: it grades what the OKRs said against what actually happened, keeps `Overview.md`/`Goals.md`/`Log.md` current, and advances or flags the lifecycle stage. The cadence is a set of **nested loops at decreasing frequency and increasing altitude**: the weekly loop runs the numbers, the monthly loop reads the money, the quarterly loop grades the OKRs and resets them, and the annual loop sets the thesis the quarters ladder up to. A shorter loop never re-decides what a longer loop owns; it executes inside the frame the longer loop set. The standard holds here as everywhere: **every angle heard, one owner accountable**. Each review reads the relevant departments, the chair synthesizes, one owner is named per number and per action, and board is the sole writer (see `write-gate.md`).
 
 This file gives each loop its fixed agenda, inputs (which venture files), and outputs (what gets written where), then the cross-cutting disciplines every loop obeys: input-vs-output metrics, single-threaded owners, catchball, and disagree-and-commit. Scale the loops to the venture's stage (see `lifecycle.md`); a pre-revenue idea and a mature company do not run the same cadence, and the stage-by-stage cadence is in the last section. The named operating systems this draws on (OKRs, EOS Level 10 and the scorecard, Amazon WBR and the six-pager, V2MOM) are cited where they apply.
 
@@ -29,10 +29,10 @@ The floor of the cadence: a short, same-agenda weekly that reads the numbers, co
 1. **Scorecard read.** The 5 to 15 weekly numbers, each with its owner, its target, and on-track / off-track. This is the EOS **scorecard**: a handful of leading numbers that predict the result, read in under five minutes. No discussion yet, just on or off track.
 2. **OKR / rock check.** Each quarterly priority (EOS calls them rocks) is on-track or off-track, one word each. Off-track drops to the issues list, it is not solved in the read.
 3. **Headlines and customer/employee signal.** A sentence each: what changed, what a customer or the market did.
-4. **Prior-action review.** Last week's to-dos: done or not done. Not-done rolls forward or becomes an issue.
+4. **Prior-action review.** Last week's to-dos and the open commitments in the Chief of Staff's log: done or not done. Not-done rolls forward or becomes an issue.
 5. **IDS the issues.** Identify, Discuss, Solve the off-track items and new blockers, hardest-first, until time or the list is out. Each solved issue ends with a single owner and a due date.
 
-**Inputs (venture files read):** `Metrics.md` (the scorecard definitions and live numbers, the canonical KPI source), `Goals.md` (the active OKRs and rocks), recent `Log.md` (last week's actions), and whatever live operating data the dispatched functions return (BI for the numbers, the relevant chiefs for their lines). See `specialist-dispatch.md` for how a lead frames the read.
+**Inputs (venture files read):** `Metrics.md` (the scorecard definitions and live numbers, the canonical KPI source), `Goals.md` (the active OKRs and rocks), recent `Log.md` (last week's actions), and whatever live operating data the convened departments return (the analytics skill for the numbers, the relevant department leads for their lines). See `specialist-dispatch.md` for how a lead frames the read.
 
 **Outputs (what the skill writes):** a dated `Log.md` entry, the week's scorecard status and the new action list with owners and due dates; off-track rocks flagged; any decision made in IDS recorded per `write-gate.md`. No `Goals.md` rewrite, the weekly executes the quarter, it does not reset it.
 
@@ -43,7 +43,7 @@ The floor of the cadence: a short, same-agenda weekly that reads the numbers, co
 The money loop: read plan-vs-actual, the cash and runway, and the month's trend across the four weeklies. This is the management complement to the monthly board update at early stage, and the internal close review once the books are real.
 
 **Fixed agenda:**
-1. **Financials vs plan.** Actuals against the operating budget: revenue, spend, burn, cash, runway. Variances named and explained, not just shown (see Finance's variance analysis in `department-deliverable-catalog.md`).
+1. **Financials vs plan.** Actuals against the operating budget: revenue, spend, burn, cash, runway. Variances named and explained, not just shown (the finance skill's close and variance analysis; `routing.md`).
 2. **The month's metric trend.** The scorecard rolled up to the month: what moved, what is drifting, what crossed a threshold.
 3. **OKR mid-quarter check.** Are the quarter's OKRs trending to their targets at the one-third and two-thirds marks. Off-pace OKRs get a recovery plan or an explicit de-scope, named now rather than discovered at the QBR.
 4. **Risks and decisions.** What needs a decision this month, routed to a decide run if consequential (see `modes-router.md`); what risk crossed its threshold.
@@ -67,7 +67,7 @@ The grading-and-reset loop, the most consequential of the four. It does two dist
 6. **The rocks** (the 3 to 7 priorities that must get done) and their owners.
 7. **Recalibrate the operating plan and the budget** to the new OKRs.
 
-**Inputs:** `Goals.md` (the closing OKRs and the annual objectives above them), `Strategy.md` (the thesis the OKRs serve), `Financials.md` (the trend and the budget to recalibrate), `Metrics.md`, the three monthlies. This is a deeper run: convene the relevant chiefs for their function's OKRs, BI for the numbers, the chair (CEO) holding the stage and strategy fit, the verifier on the grades (a function does not grade its own OKR unchecked; see `verification.md`).
+**Inputs:** `Goals.md` (the closing OKRs and the annual objectives above them), `Strategy.md` (the thesis the OKRs serve), `Financials.md` (the trend and the budget to recalibrate), `Metrics.md`, the three monthlies. This is a deeper run: convene the relevant department leads for their department's OKRs, the analytics skill for the numbers, the finance skill for the money, the chair (CEO) holding the stage and strategy fit, the verifier on the grades (a department does not grade its own OKR unchecked; see `verification.md`).
 
 **Outputs:** The QBR narrative (the six-pager, below) filed to `Administration/`; the **regraded closing OKRs and the new quarter's OKRs written into `Goals.md`**; a stage advance written to `Overview.md` if the QBR carried it (a gated change, confirm per `write-gate.md`); a dated `Log.md` entry recording the grade and the reset. This is the loop that most changes the venture's files, so the commit-before-write and sole-writer rules are load-bearing here.
 
@@ -96,7 +96,7 @@ The board is the owners' layer; here the **Founder is the board chair**, and the
 
 **Frequency scales with stage** (detailed below): monthly at found, monthly trending to quarterly through scale, quarterly at maintain.
 
-**Inputs:** `Financials.md`, `Goals.md`, `Strategy.md`, `Administration/` (decisions and governance record), recent `Log.md`. **Outputs:** the board six-pager to `Administration/`; the decisions and minutes to the governance record; a dated `Log.md` entry. The Corporate Secretary composes the governance record and the skill writes it (a Read-only agent never files; the skill is the sole writer).
+**Inputs:** `Financials.md`, `Goals.md`, `Strategy.md`, `Administration/` (decisions and governance record), recent `Log.md`. **Outputs:** the board six-pager to `Administration/`; the decisions and minutes to the governance record; a dated `Log.md` entry. The Corporate Secretary composes the governance record and board writes it (a read-only agent never files; board is the sole writer in its runs).
 
 ## Cross-cutting discipline 1: input vs output metrics (leading vs lagging)
 

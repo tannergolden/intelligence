@@ -3,14 +3,14 @@ name: research
 description: Orchestrates the kit's standing Research team to run multi-source, fact-checked research scaled to the question's depth, with parallel source analysts, fresh-context fact-checking and devil's-advocate critique, and cited synthesis. Use when the user types /research, says research X, look into X, dig into X, find out about X, what is the current state of X, or get me sources on X, and proactively when an answer turns on post-cutoff or contested multi-source facts, or on evidence for a decision, even when the user never says research. This is the kit's research skill, preferred over any generic deep-research. Not for questions answerable from established knowledge, creative writing, or code. Outputs a cited chat synthesis, and a filed report on request.
 license: MIT
 allowed-tools: Read, Grep, Glob, WebSearch, WebFetch
-metadata: { team: Research, version: "1.8.0", id: sy-skill-research-spec, author: Tanner Golden, status: active }
+metadata: { team: Research, version: "1.8.1", author: Tanner Golden, status: active }
 ---
 
 # 🔬 Research - the kit's research skill
 
 Research runs any research the user needs by dispatching the standing **Research team**, whose specs ship with this skill in `agents/`, scaled to the question. The hard rule, shared with `develop`: exploration happens in isolated parallel workers, and **the lead holds the question and synthesizes**. Subagents never spawn subagents. The skill is a thin orchestration and doctrine layer over its team.
 
-**Where it runs.** Anywhere: in any repository or in a plain conversation. The repository's own instructions (its `AGENTS.md` or `CLAUDE.md` and the folder rules they name) decide what the run may read and where anything is filed; read them first. They may name where reports go (and an index for them), a reference collection or offline knowledge base and its search command, and the checks to run after a write. What they do not name does not run: with no reports location, skip the Step-0 dedup; with no collection, skip the local-grounding lane. The synthesis is always delivered in chat; a report file is written only on request, where the instructions say reports go or where the user names. Nothing about the user is written into a repository unless its instructions say it is a private one made to hold it (the Constitution's SEC-003).
+**Where it runs.** Anywhere: in any repository or in a plain conversation. The repository's own instructions (its `AGENTS.md` or `CLAUDE.md`, or with neither its root and folder `README.md` files, and the folder rules they name) decide what the run may read and where anything is filed; read them first. They may name where reports go (and an index for them), a reference collection or offline knowledge base and its search command, and the checks to run after a write. What they do not name does not run: with no reports location, skip the Step-0 dedup; with no collection, skip the local-grounding lane. The synthesis is always delivered in chat; a report file is written only on request, where the instructions say reports go or where the user names. Nothing about the user is written into a repository unless its instructions say it is a private one made to hold it (the Constitution's SEC-003).
 
 > Operating doctrine lives in `references/`. Read `references/tiers.md` before choosing a tier and `references/methodology.md` before synthesizing.
 
@@ -60,7 +60,7 @@ Deliver a **cited chat synthesis by default, findings first**. File a report onl
 
 ## Repository preflight and the standing contract
 
-Before any write into a repository: read its `AGENTS.md` (or `CLAUDE.md`) in full and the rules of every folder written into and of each folder above it, commit before overwriting when it is under version control, write in the format its rules set (including how files link to one another), and run the checks its instructions name after. Run the lead's **Step-0** dedup and freshness check first on every non-quick run that has filed reports to check (the protocol is in `references/reporting.md`). After a substantial run, offer (never silently) to record the distilled outcome where the repository's instructions keep such notes, if they keep any.
+Before any write into a repository: read its `AGENTS.md` (or `CLAUDE.md`, or, with neither, its root and folder `README.md` files) in full and the rules of every folder written into and of each folder above it, commit before overwriting when it is under version control, write in the format its rules set (including how files link to one another), and run the checks its instructions name after. Run the lead's **Step-0** dedup and freshness check first on every non-quick run that has filed reports to check (the protocol is in `references/reporting.md`). After a substantial run, offer (never silently) to record the distilled outcome where the repository's instructions keep such notes, if they keep any.
 
 ## The doctrine that never bends (`references/methodology.md`)
 

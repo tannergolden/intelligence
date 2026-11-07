@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**`2.3.0`**
+**`3.0.0`**
 
 The version is SemVer, per standards' [versioning policy](https://github.com/tannergolden/standards/blob/Development/docs/distribution/Releases-&-Versioning.md#-versioning-policy-semver). It matches `metadata.version` in `SKILL.md`, and the validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
 
@@ -19,6 +19,10 @@ The version is SemVer, per standards' [versioning policy](https://github.com/tan
 ## Major Updates
 
 > Breaking changes, restructured pipeline, incompatible output. Most recent 4 entries.
+
+### `3.0.0` - 2026-11-07
+
+The company's departments are now their own skills, and board is the orchestrator that convenes them. Board's own team is Administration (★ Chief Executive Officer, Chief Operating Officer, Corporate Secretary, Chief of Staff), the only roster left in its `agents/`; `legal`, `sales`, `operations`, `people`, `systems`, `analytics`, `quality`, `customers` and `communications` each carry their department's roster, agents and deliverables. Board convenes a department by dispatching its lead from that skill's `agents/`, or by handing the skill a whole department deliverable; within a board run board persists the results, and a department skill called on its own persists its own department's records. Three departments are removed: Finance & Accounting (a company's money is the `finance` skill's, whose ★ Financial Planning Lead is the company's finance function), Research & Development and Product Technology (evidence about users and markets is `research`'s, options are `discover`'s, technical direction and building are `develop`'s ★ Engineering Lead's, and the product decision is the CEO's, recorded in `Administration/Roadmap.md`). Information Security merges into the `systems` skill, whose IT team holds the Chief Information Security Officer. The quality skill's ★ Head of Quality stays the independent verifier. `references/department-deliverable-catalog.md` becomes `references/routing.md`, a map of each deliverable family to the skill that owns it, its lead and its cross-department dependencies, with Administration's own deliverables kept in full; `references/specialist-dispatch.md` is rebuilt around a legal worked example and the hand-off to a department skill; `references/workforce.md` is the company's organization: the department table (41 agents in 11 teams with finance's), the company-wide rules each roster restates, the Chief of Staff's relay, and the committees, with the Compensation Committee under the people skill's CHRO and the security residuals under the systems skill's CISO. Every reference, template and asset names the department skills in place of the removed seats. The description routes a single department's work to its skill, the trigger tests gain near misses for the department skills, and `metadata` drops `id`.
 
 ### `2.0.0` - 2026-06-29
 

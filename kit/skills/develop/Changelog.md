@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**`5.0.0`**
+**`5.0.1`**
 
 Semantic versioning, `MAJOR.MINOR.PATCH`, with no leading zeros, as [SemVer 2.0.0](https://semver.org) requires. This value matches `metadata.version` in `SKILL.md`, and the validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
 
@@ -47,6 +47,10 @@ _None yet._
 
 > Fixes and clarifications. Most recent 4 entries.
 
+### `5.0.1` - 2026-11-07
+
+A repository with no agent instructions now explains itself in its `README.md` files: the skill reads the root one and the one in each folder it writes into.
+
 ### `4.0.4` - 2026-10-26
 
 - The rule never to ship one skill name at two levels names its one exception: a skill that opens with a rule settling which copy runs, as the knowledge template's faculties do.
@@ -59,7 +63,3 @@ _None yet._
 
 - A fact about the setup, not an instruction, goes in the repository's `AGENTS.md`, under Gotchas or Where things live: the hub's knowledge facts are gone.
 
-### `4.0.1` - 2026-10-19
-
-- Versions are plain SemVer, with no leading zeros, as SemVer 2.0.0 requires: develop's own `04.00.00` is now `4.0.0`, and a new skill starts at `1.0.0`.
-- The skill templates, the Changelog template's versioning line and the validator's examples follow.

@@ -2,7 +2,7 @@
 
 *The upkeep instrument a review run fills before it decides whether a venture is current, correctly staged, fully deliverable, and balanced between too little structure and too much. Four scans, run in order: staleness (is the record current), stage (does the declared stage match the signals), deliverables (what is missing or stale per department), and flexibility-versus-control (is the venture drifting toward death-by-chaos or death-by-bureaucracy). Every finding is one line, one owner, one next step. The chair fills it; the skill writes the result back behind the write-gate (see write-gate.md). This is plain payload, not a filed memo: it scaffolds the run, then its findings land in Log.md and, where they change the record, in Overview.md or Goals.md.*
 
-This scaffold is run during a **review** mode pass (SKILL.md), after the venture-context preflight has read `Overview.md`, `Goals.md`, `Strategy.md`, and recent `Log.md`, and after stage detection (`lifecycle.md`). It does not replace the operating cadence (the weekly business review, the monthly financials, the quarterly OKR grading and QBR); it is the **health check** that runs alongside the cadence to catch the things a cadence meeting glides past: a record that has gone stale, a stage label that has outrun reality, a deliverable that should exist and does not, and the slow drift toward chaos or bureaucracy. The standard is unchanged: **every angle heard, one owner accountable**. Every scan that touches a function convenes that function's chief for the read; every finding resolves to a single accountable owner and a single next step. The skill is the sole writer; nothing here is written by an agent.
+This scaffold is run during a **review** mode pass (SKILL.md), after the venture-context preflight has read `Overview.md`, `Goals.md`, `Strategy.md`, and recent `Log.md`, and after stage detection (`lifecycle.md`). It does not replace the operating cadence (the weekly business review, the monthly financials, the quarterly OKR grading and QBR); it is the **health check** that runs alongside the cadence to catch the things a cadence meeting glides past: a record that has gone stale, a stage label that has outrun reality, a deliverable that should exist and does not, and the slow drift toward chaos or bureaucracy. The standard is unchanged: **every angle heard, one owner accountable**. Every scan that touches a department convenes that department's lead, from its own skill, for the read; every finding resolves to a single accountable owner and a single next step. Board is the sole writer; nothing here is written by an agent.
 
 Fill the header, then run the four scans in order. A scan that finds nothing still records "clean" with the date, so the next review can see the gap was checked and not skipped.
 
@@ -44,11 +44,11 @@ The declared stage string is a claim; the signals are the measurement (`lifecycl
 
 | Signal | Reads from | Value now | Points to | 
 |---|---|---|---|
-| ARR / revenue | `Finance & Accounting (F&A)/Financials.md`, `Metrics.md` | [value] | [FOUND / SCALE / MAINTAIN] |
+| ARR / revenue | the finance records' `Financials.md`, `Metrics.md` | [value] | [FOUND / SCALE / MAINTAIN] |
 | Headcount | `Human Resources (HR)/Hierarchy.md` | [value] | [FOUND <10 / SCALE 10s to low 100s / MAINTAIN ~150+ with divisions] |
 | Retention / NRR | `Metrics.md`, `Client Experience (CX)/Clients.md` | [any cohort retention? NRR %?] | [FOUND: any retention at all / SCALE+MAINTAIN: durable NRR] |
 | Last round and date | `Financials.md`, `Log.md` | [round, date] | [Seed/none FOUND / A-B-C SCALE / D+ or profitable MAINTAIN; >18mo old = suspect] |
-| Motion repeatability | `Strategy.md`, `Sales & Marketing (S&M)`, `Log.md` | [founder-led non-repeatable? documented, instrumented?] | [the seam-breaker: non-repeatable = still FOUND; repeatable = SCALE] |
+| Motion repeatability | `Strategy.md`, the sales records (`Sales-Plan.md`, `Pipeline.md`), `Log.md` | [founder-led non-repeatable? documented, instrumented?] | [the seam-breaker: non-repeatable = still FOUND; repeatable = SCALE] |
 
 **Reconciliation:**
 
@@ -63,34 +63,34 @@ The declared stage string is a claim; the signals are the measurement (`lifecycl
 
 ## Scan 3 - Missing or stale deliverable list (per department)
 
-Each workforce department owns a venture file and a small set of standing deliverables that **should** exist by a given stage (`department-deliverable-catalog.md`, `write-gate.md` producer-to-file map). This scan walks the departments the stage makes load-bearing, checks the owning file for the deliverable, and flags it **missing** (should exist at this stage, does not), **stale** (exists, but its definition-of-done no longer holds or its data is out of date), or **present** (current). Convene only the chiefs the stage makes relevant; a FOUND venture does not get a Risk-committee deliverable scan, and a board of eleven on a three-function venture is wasted tokens and false weight (`lenses.md`).
+Each department owns its files in the venture's record and a small set of standing deliverables that **should** exist by a given stage (`routing.md`, and each department skill's `references/deliverables.md`). This scan walks the departments the stage makes load-bearing, checks the owning file for the deliverable, and flags it **missing** (should exist at this stage, does not), **stale** (exists, but its definition-of-done no longer holds or its data is out of date), or **present** (current). Convene only the department leads the stage makes relevant; a FOUND venture does not get a Risk-committee deliverable scan, and a board of eleven on a three-department venture is wasted tokens and false weight (`lenses.md`).
 
 **Read the owning file, judge against the stage's expected deliverable, record the verdict.** Expected-by-stage is the discipline: a 3-statement model is **expected** at SCALE and **premature** at early FOUND; an SOP written before there is a repeatable motion is premature process, itself a finding (`lifecycle.md`). Grey out, do not flag, a deliverable that is correctly not-yet-applicable for the stage.
 
-| Department | Owning venture file | Expected-by-stage deliverable | Status | Owner (chief) | Action |
+| Department (skill) | Owning venture file | Expected-by-stage deliverable | Status | Owner (lead) | Action |
 |---|---|---|---|---|---|
-| Administration (exec office) | `Administration/Strategy.md`, decisions record | thesis + OKR ladder; governance/decision record current | [present/stale/missing] | Chief Executive Officer / CorpSec the Corporate Secretary | [route to strategize / refresh / clean] |
-| Finance & Accounting (F&A) | `Finance & Accounting (F&A)/Financials.md` | FOUND: runway + cash; SCALE+: 3-statement model, budget, unit economics, board package | [present/stale/missing] | Chief Financial Officer | [produce via operate / refresh] |
-| Sales & Marketing (S&M) | `Sales & Marketing (S&M)/Brand.md`, `Products.md` | positioning + GTM; SCALE: demand plan, sales playbook, pipeline + forecast | [present/stale/missing] | Chief Revenue Officer | [produce / refresh] |
-| Client Experience (CX) | `Client Experience (CX)/Clients.md` | FOUND: activation + cohort retention read; SCALE: success plan, SLAs, QBR deck | [present/stale/missing] | Chief Customer Officer | [produce / refresh] |
-| Operations & Logistics (O&L) | `Operations & Logistics (O&L)/Operations.md` | SCALE: SOPs/runbooks, ops KPI dashboard, vendor scorecards, capacity plan | [present/stale/missing] | Head of Operations | [produce / refresh] |
-| Human Resources (HR) | `Human Resources (HR)/Hierarchy.md` | SCALE: org design, comp bands, hiring plan, performance system | [present/stale/missing] | Chief Human Resources Officer | [produce / refresh] |
-| Legal & Compliance (L&C) | `Legal & Compliance (L&C)/Compliance.md` | entity pack + key contracts tracker; SCALE+: compliance program, governance calendar | [present/stale/missing] | General Counsel | [produce / refresh] |
-| Research & Development (R&D) | `Research & Development (R&D)/Products.md`, `Roadmap.md` | FOUND: MVP + experiment log; SCALE: roadmap, PRD, release plan | [present/stale/missing] | Chief Product Officer | [produce / refresh] |
-| Business Intelligence (BI) | `Business Intelligence (BI)/Metrics.md` | governed metric definitions, North Star, the stage's load-bearing KPIs | [present/stale/missing] | Chief Data Officer | [produce / refresh] |
-| Information Technology (IT) | `Information Technology (IT)/Stack.md` | reference architecture, security posture; SCALE: SRE runbooks | [present/stale/missing] | Chief Information Officer | [produce / refresh] |
-| Public Relations (PR) | `Public Relations (PR)/Press.md` | comms plan; SCALE+: press kit, crisis plan, IR materials | [present/stale/missing] | Chief Communications Officer | [produce / refresh] |
-| Quality Assurance (QA) | `Quality Assurance (QA)/Standards.md` | quality standard; the verifier seat for every produced deliverable | [present/stale/missing] | Head of Quality | [produce / refresh] |
+| Administration (board) | `Administration/Strategy.md`, `Administration/Roadmap.md`, the decisions record | thesis + OKR ladder; the product roadmap; governance/decision record current | [present/stale/missing] | the ★ Chief Executive Officer / the Corporate Secretary | [route to strategize / refresh / clean] |
+| Finance (finance) | the finance records' `Financials.md`, `Financial-Model.md`, `Cap-Table.md` | FOUND: runway + cash; SCALE+: 3-statement model, budget, unit economics, board package | [present/stale/missing] | the finance skill's ★ Financial Planning Lead | [produce / refresh] |
+| Sales & Revenue (sales) | the sales records' `Brand.md`, `Products.md`, `Sales-Plan.md`, `Pipeline.md` | positioning + GTM; SCALE: demand plan, sales playbook, pipeline + forecast | [present/stale/missing] | the sales skill's ★ Chief Revenue Officer | [produce / refresh] |
+| Client Experience (customers) | `Client Experience (CX)/Clients.md` | FOUND: activation + cohort retention read; SCALE: success plan, SLAs, QBR deck | [present/stale/missing] | the customers skill's ★ Chief Customer Officer | [produce / refresh] |
+| Operations & Logistics (operations) | `Operations & Logistics (O&L)/Operations.md` | SCALE: SOPs/runbooks, ops KPI dashboard, vendor scorecards, capacity plan | [present/stale/missing] | the operations skill's ★ Head of Operations | [produce / refresh] |
+| Human Resources (people) | `Human Resources (HR)/Hierarchy.md` | SCALE: org design, comp bands, hiring plan, performance system | [present/stale/missing] | the people skill's ★ Chief Human Resources Officer | [produce / refresh] |
+| Legal & Compliance (legal) | `Legal & Compliance (L&C)/Compliance.md` | entity pack + key contracts tracker; SCALE+: compliance program, governance calendar | [present/stale/missing] | the legal skill's ★ General Counsel | [produce / refresh] |
+| Product (research, discover, develop; the CEO decides) | `Administration/Roadmap.md` | FOUND: MVP definition + experiment log; SCALE: roadmap, requirements, release plan | [present/stale/missing] | the ★ Chief Executive Officer, with the develop skill's ★ Engineering Lead on the build | [decide / refresh] |
+| Business Intelligence (analytics) | `Business Intelligence (BI)/Metrics.md` | governed metric definitions, North Star, the stage's load-bearing KPIs | [present/stale/missing] | the analytics skill's ★ Chief Data Officer | [produce / refresh] |
+| Information Technology (systems) | `Information Technology (IT)/Stack.md` | reference architecture, security posture; SCALE: SRE runbooks | [present/stale/missing] | the systems skill's ★ Chief Information Officer | [produce / refresh] |
+| Public Relations (communications) | `Public Relations (PR)/Press.md` | comms plan; SCALE+: press kit, crisis plan, IR materials | [present/stale/missing] | the communications skill's ★ Chief Communications Officer | [produce / refresh] |
+| Quality Assurance (quality) | `Quality Assurance (QA)/Standards.md` | quality standard; the verifier seat for every produced deliverable | [present/stale/missing] | the quality skill's ★ Head of Quality | [produce / refresh] |
 
 **Deliverable rules:**
 
-- [ ] **Missing** means missing **for this stage**, not missing absolutely. Use the stage column in `department-deliverable-catalog.md`; do not flag a MAINTAIN-grade artifact absent from a FOUND venture.
+- [ ] **Missing** means missing **for this stage**, not missing absolutely. Use the stage each department skill's `references/deliverables.md` gives its deliverables; do not flag a MAINTAIN-grade artifact absent from a FOUND venture.
 - [ ] **Premature** is also a finding. A deliverable that exists too early (the SOP before the repeatable motion, the divisional org chart at FOUND) is structure ahead of need; it feeds Scan 4.
 - [ ] A **stale** deliverable fails its definition-of-done **now**, even if it passed when written (a financial model on six-month-old actuals, a comp band benchmarked to last year, a metric definition that drifted from `Metrics.md`).
-- [ ] Each fix is a **separate run**: a missing or stale deliverable routes to an `operate` run (a lead frames a brief, specialists produce, the Head of Quality verifies, the skill writes it behind the gate, `specialist-dispatch.md`, `verification.md`). The health check **names** the gap and its owner; it does not produce the artifact in place.
-- [ ] **One owner per finding.** Every missing or stale deliverable resolves to a single accountable chief, never "the team."
+- [ ] Each fix is a **separate run**: a missing or stale deliverable routes to its department skill's own run when it is that department's alone, or to a board `operate` run when it crosses departments (a lead frames a brief, specialists produce, the quality skill's ★ Head of Quality verifies, board writes it behind the gate, `specialist-dispatch.md`, `verification.md`). The health check **names** the gap and its owner; it does not produce the artifact in place.
+- [ ] **One owner per finding.** Every missing or stale deliverable resolves to a single accountable department lead, never "the team."
 
-**Deliverable findings (one line each):** `[department / file / deliverable] - [missing-for-stage | stale | premature] - [chief owner] - [operate run | refresh | retire]`
+**Deliverable findings (one line each):** `[department / file / deliverable] - [missing-for-stage | stale | premature] - [lead owner] - [department skill run | operate run | refresh | retire]`
 
 ## Scan 4 - Flexibility versus control (death-by-chaos or death-by-bureaucracy)
 
@@ -131,7 +131,7 @@ Bureaucracy-side signals (too much structure for the stage):
 The health check produces findings; the **skill** persists them, and only inside the lanes `write-gate.md` allows. The chair holds the four scans; the skill alone writes.
 
 - **Autonomous (green), prior state committed first:** refreshing `Overview.md`, `Goals.md`, or `Log.md` (Scan 1 staleness fixes), advancing the `Overview.md` stage with its evidence (Scan 2 reconciliation), and the standing `Log.md` append that records this health check ran, what it found, and what it routed. Commit an existing file's last state before editing it; git history is the backup, a `Log.md` append included.
-- **Routed, not written here:** every missing or stale **deliverable** (Scan 3) becomes its own `operate` run, every thesis or OKR drift becomes a `strategize` run, and every structural balance call (Scan 4) becomes a `decide` run. The health check names the gap, the owner, and the route; it does not produce the artifact in place. A producer never verifies its own work, and consequential output is verified by the Head of Quality before the skill persists it (`verification.md`).
+- **Routed, not written here:** every missing or stale **deliverable** (Scan 3) becomes its own run (its department skill's, or a board `operate` run when it crosses departments), every thesis or OKR drift becomes a `strategize` run, and every structural balance call (Scan 4) becomes a `decide` run. The health check names the gap, the owner, and the route; it does not produce the artifact in place. A producer never verifies its own work, and consequential output is verified by the quality skill's ★ Head of Quality before it is persisted (`verification.md`).
 - **Hard-gated (red), the Founder confirms:** nothing in a health check moves money, sends an external communication, signs a contract, deletes a file, or changes equity. If a corrective implies one of those, the health check **stages** it and the skill waits for the Founder (`write-gate.md`). A "yes" from the CEO seat is advice, not authorization.
 
 **Standing `Log.md` entry for the run:** `[date] - Health check ([tier]): record [current/refreshed], stage [held/advanced X to Y], [N] deliverable findings routed, balance [healthy/drifting toward chaos|bureaucracy]. Correctives owned by [chiefs].`

@@ -20,6 +20,11 @@ _No vault keeps instructions of its own; a vault says where things go._
 
 </div>
 
+> [!IMPORTANT]
+> **Amended by [ADR-0038](ADR-0038-Each-Department-Is-A-Skill.md).** The
+> departments left `board` to become skills of their own, three were removed,
+> and every skill is now laid out alike.
+
 ---
 
 ## 📋 Meta Information

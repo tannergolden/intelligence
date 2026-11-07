@@ -2,11 +2,11 @@
 
 *The metric dictionary for strategize and review. One trusted definition per metric, indexed by function and by stage, so the same number means the same thing every run.*
 
-This is the reference strategize reaches for when it sets the North Star and the OKRs, and review reaches for when it grades them and statuses the venture. Each metric below carries: a definition, the formula, a 2025/26 benchmark band where one is known, a leading-vs-lagging tag, the workforce function that owns it, and the stage where it first becomes load-bearing. Two rules hold throughout. First, every number is grounded in a tool or a source, never asserted (see `verification.md`); a benchmark band is a reference point, not a measurement of this venture. Second, a metric is reported against the stage it belongs to: a pre-revenue idea is not graded on the Rule of 40, and a mature company is not run on raw activation. The stage model and the dominant question per stage are in `lifecycle.md`; the benchmark bands that status a number red/amber/green live in `assets/benchmark-bands.json` and back the venture scorecard.
+This is the reference strategize reaches for when it sets the North Star and the OKRs, and review reaches for when it grades them and statuses the venture. Each metric below carries: a definition, the formula, a 2025/26 benchmark band where one is known, a leading-vs-lagging tag, the department (and the skill) that owns it, and the stage where it first becomes load-bearing. Two rules hold throughout. First, every number is grounded in a tool or a source, never asserted (see `verification.md`); a benchmark band is a reference point, not a measurement of this venture. Second, a metric is reported against the stage it belongs to: a pre-revenue idea is not graded on the Rule of 40, and a mature company is not run on raw activation. The stage model and the dominant question per stage are in `lifecycle.md`; the benchmark bands that status a number red/amber/green live in `assets/benchmark-bands.json` and back the venture scorecard.
 
 > [!NOTE]
 > **How to read a metric.**
-> **Leading** metrics move before the outcome and you can still act on them (activation, pipeline coverage, MQL-to-SQL). **Lagging** metrics confirm what already happened (ARR, churned revenue, gross margin). A function should be steered by its leading indicators and judged by its lagging ones. The single canonical KPI source for a live venture is its `Business Intelligence (BI)/Metrics.md`; `Goals.md` references that definition rather than redefining it, so the North Star does not drift between two files.
+> **Leading** metrics move before the outcome and you can still act on them (activation, pipeline coverage, MQL-to-SQL). **Lagging** metrics confirm what already happened (ARR, churned revenue, gross margin). A function should be steered by its leading indicators and judged by its lagging ones. The single canonical KPI source for a live venture is its `Business Intelligence (BI)/Metrics.md`, which the analytics skill keeps; `Goals.md` references that definition rather than redefining it, so the North Star does not drift between two files.
 
 ## The two metrics that sit above the rest
 
@@ -21,9 +21,9 @@ The rest of this file is the inventory the NSM and OMTM are chosen from. Read it
 
 ## Index by FUNCTION
 
-Each block is the metrics one workforce function owns and is judged by. The owning lead is named; the venture file the metric lands in is named; the producing specialist is dispatched per `specialist-dispatch.md`. Definitions are deliberately exact so the number is reproducible.
+Each block is the metrics one department owns and is judged by. The owning lead and its skill are named; the venture file the metric lands in is named; the producing specialist is dispatched per `specialist-dispatch.md`. Definitions are deliberately exact so the number is reproducible.
 
-### Finance and Accounting (Chief Financial Officer) - owns the company-level financial and growth set, in `Financials.md`
+### Finance (the finance skill's ★ Financial Planning Lead) - owns the company-level financial and growth set, in `Financials.md`
 
 These are the company health metrics the whole board reads. Most are lagging by nature (they confirm an outcome), which is exactly why the function is also judged on the leading inputs to each.
 
@@ -38,7 +38,7 @@ These are the company health metrics the whole board reads. Most are lagging by 
 - **FCF / FCF margin.** Free cash flow (operating cash flow minus capex) and FCF as a percent of revenue. *Lagging. Load-bearing from maintain* (durability), though it feeds the Rule of 40 earlier.
 - **DSO (Days Sales Outstanding).** (Accounts receivable / revenue) x days in period: average days to collect cash after a sale. *Benchmark:* ~30-45 days is healthy for B2B on net-30 terms; a rising DSO is an early collections or customer-health warning. *Leading. Load-bearing from scale* (it is real once there is a billed book of business). Owned in finance, read by the collections side of operations.
 
-### The unit-economics set (Chief Financial Officer, with the revenue and customer functions) - in `Financials.md`, definitions in `Metrics.md`
+### The unit-economics set (the finance skill, with the sales and customers skills) - in `Financials.md`, definitions in `Metrics.md`
 
 The economics of acquiring and keeping one customer. These decide whether growth creates or destroys value, so they become load-bearing the moment a repeatable acquisition motion exists.
 
@@ -47,7 +47,7 @@ The economics of acquiring and keeping one customer. These decide whether growth
 - **LTV / CAC ratio.** LTV divided by CAC: dollars of lifetime value returned per dollar spent to acquire. *Benchmark:* ~3x is the healthy floor; below 1x is value-destroying, well above ~5x usually means under-investing in growth. *Lagging. Load-bearing from scale.*
 - **CAC payback period.** CAC / (monthly recurring revenue per customer x gross margin): months to recover the acquisition cost from a customer's gross profit. *Benchmark:* under ~12 months is strong, 12-18 acceptable, beyond ~24 is a cash trap. *Leading* (it predicts how cash-hungry growth will be). *Load-bearing from scale.* The most stage-relevant of the four because it speaks directly to runway.
 
-### The retention set (Chief Customer Officer, jointly) - in `Financials.md` and `Clients.md`
+### The retention set (the customers skill's ★ Chief Customer Officer, jointly with finance) - in `Financials.md` and `Clients.md`
 
 Retention is where SaaS value compounds. These are the metrics a scaling and a mature company are most honestly judged on, because they reveal whether the product is keeping the value it sold.
 
@@ -56,7 +56,7 @@ Retention is where SaaS value compounds. These are the metrics a scaling and a m
 - **Customer / logo churn.** Customers lost in a period / customers at the start of the period. *Benchmark:* low-single-digit monthly for SMB, low-single-digit annual for enterprise. *Lagging, with leading early-warning signals (declining usage, slipped renewals) tracked by CX. Load-bearing from late-found* (the first retention signal that PMF is real) *through maintain.*
 - **Revenue churn.** Recurring revenue lost to cancellation and contraction in a period / starting recurring revenue. The dollar-weighted companion to logo churn; the two diverge when churn concentrates in large or small accounts. *Lagging. Load-bearing from scale.*
 
-### Sales and Revenue (Chief Revenue Officer, with the Account Executive; the marketing seats sit here too) - in `Pipeline.md` / `Revenue.md` / `Sales-Plan.md` and `Metrics.md`
+### Sales and Revenue (the sales skill's ★ Chief Revenue Officer, with the Account Executive; the marketing seats sit here too) - in `Pipeline.md` / `Revenue.md` / `Sales-Plan.md` and `Metrics.md`
 
 The conversion and capacity metrics of the deal engine. Leading where they predict the number, lagging where they record it.
 
@@ -65,7 +65,7 @@ The conversion and capacity metrics of the deal engine. Leading where they predi
 - **Pipeline coverage.** Open qualified pipeline value / the bookings target for the period. *Benchmark:* ~3x-4x coverage of the target is the common rule of thumb for a normal win rate. *Leading. Load-bearing from scale.* The clearest forward read on whether the number is reachable.
 - **Sales cycle length.** Average days from qualified opportunity to closed-won. *Leading* (it sets how fast pipeline converts to cash, and feeds the forecast). *Load-bearing from scale.*
 
-### Marketing (produced from S&R: Product Marketing Manager and Demand Generation Manager, under Chief Revenue Officer) - in `Brand.md` and the GTM surface in `Products.md`
+### Marketing (the sales skill's marketing seats: the Product Marketing Manager and the Demand Generation Manager, under its ★ Chief Revenue Officer) - in `Brand.md` and the GTM surface in `Products.md`
 
 The demand engine's funnel and its efficiency. Almost entirely leading: marketing's job is to move the inputs that revenue lags.
 
@@ -74,7 +74,7 @@ The demand engine's funnel and its efficiency. Almost entirely leading: marketin
 - **Pipeline generated (sourced pipeline).** Qualified pipeline value attributable to marketing in a period, and marketing-sourced as a share of total pipeline. *Leading. Load-bearing from scale.* The metric that ties marketing to revenue rather than to traffic.
 - **CAC by channel and blended CAC.** Defined under unit economics above; marketing owns the channel-level decomposition that tells which sources are efficient. *Leading. Load-bearing late-found into scale.*
 
-### Product and R&D (Chief Product Officer / Product) - in `Products.md` and `Roadmap.md`
+### Product (the ★ Chief Executive Officer, who holds the product decision; defined and read by the analytics skill, with evidence from the research skill) - in `Metrics.md` and `Administration/Roadmap.md`
 
 The metrics of whether the product creates and keeps value. These are the earliest honest signals a venture has, which is why product carries the load-bearing metrics at found.
 
@@ -83,7 +83,7 @@ The metrics of whether the product creates and keeps value. These are the earlie
 - **Engagement (DAU/WAU/MAU and the stickiness ratio).** Active users by window, and DAU/MAU as a stickiness measure of how often value is returned to. *Leading. Load-bearing from found through scale,* with the right window chosen for the product's natural cadence (daily tools vs weekly vs monthly).
 - **Willingness-to-pay / problem-validation signal.** Qualitative-to-quantitative evidence that a real, urgent problem exists and customers will pay: interview conversion, pre-orders, paid pilots, letters of intent. Not a single formula; the found-stage substitute for revenue. *Leading. Load-bearing at found only,* then it gives way to ARR and retention.
 
-### Operations (Head of Operations) - in `Operations.md`
+### Operations (the operations skill's ★ Head of Operations) - in `Operations.md`
 
 The metrics of whether the company can deliver, repeatably and on time.
 
@@ -91,7 +91,7 @@ The metrics of whether the company can deliver, repeatably and on time.
 - **Throughput.** Units of work completed per period. The capacity-side companion to cycle time; the two together (with SLA attainment) are the operations dashboard. *Leading. Load-bearing from scale.*
 - **SLA / on-time attainment.** Share of work delivered within the committed time or quality target. *Lagging on each unit, leading on customer-health trend. Load-bearing from scale.*
 
-### Client Experience (Chief Customer Officer) - in `Clients.md`
+### Client Experience (the customers skill's ★ Chief Customer Officer) - in `Clients.md`
 
 The voice-of-the-customer metrics. They lead retention and therefore lead revenue.
 
@@ -110,7 +110,7 @@ The same metrics, re-sorted by when they first carry weight. This is the view st
 Survival and learning velocity, not optimization. Revenue is a lagging vanity signal here; the load-bearing metrics are qualitative-to-leading.
 
 - **Load-bearing:** runway, net burn, cohort/product retention, activation, meaningful engagement, willingness-to-pay and problem-validation evidence, time-to-first-value.
-- **Owner emphasis:** Product/R&D for the value signals; Finance for runway and burn.
+- **Owner emphasis:** the CEO's product decision, read through the analytics skill, for the value signals; the finance skill for runway and burn.
 - **Typical OMTM:** an evidence-of-retention or willingness-to-pay number.
 - **Explicitly suppressed as not-yet-applicable:** Rule of 40, Magic Number, LTV/CAC at scale, NRR. Reporting them here implies precision the business does not have. Revenue itself is reported but read as a weak lagging signal, not as proof of fit.
 
@@ -119,7 +119,7 @@ Survival and learning velocity, not optimization. Revenue is a lagging vanity si
 Turn a validated motion into a repeatable, efficient one. The metrics shift from "does it work" to "does it work profitably and at scale."
 
 - **Load-bearing:** CAC payback, NRR (>100% floor, 120%+ elite), burn multiple, Magic Number, ARR growth rate, gross margin, LTV/CAC, win rate, quota attainment, pipeline coverage, MQL/SQL conversion, sourced pipeline, cycle time, throughput, DSO, NPS/CSAT.
-- **Owner emphasis:** Finance for efficiency and retention economics; Sales and Revenue (Chief Revenue Officer) for the revenue number, pipeline, close, and the demand funnel (the marketing seats sit in S&R); Operations for delivery.
+- **Owner emphasis:** the finance skill for efficiency and retention economics; the sales skill (its ★ Chief Revenue Officer) for the revenue number, pipeline, close, and the demand funnel (the marketing seats sit on its team); the operations skill for delivery.
 - **Typical OMTM:** an efficiency number (CAC payback, burn multiple, or NRR).
 - **Becomes the headline:** The Rule of 40, above roughly $5-10M ARR, once growth and margin are both real enough to trade off against each other.
 
@@ -128,7 +128,7 @@ Turn a validated motion into a repeatable, efficient one. The metrics shift from
 Defend the core and fund the next S-curve; the risk flips from death-by-chaos to death-by-bureaucracy.
 
 - **Load-bearing:** Rule of 40, FCF and FCF margin, durable NRR, GRR, gross margin, durable ARR growth, plus the reinvestment-in-R&D rate read as an anti-aging gauge (loss of hunger and under-investment in the next horizon are the earliest decline signals).
-- **Owner emphasis:** Finance for durability; the CEO for the horizon-pipeline health that no single financial metric captures.
+- **Owner emphasis:** the finance skill for durability; the CEO for the horizon-pipeline health that no single financial metric captures.
 - **Typical OMTM:** a durability number (Rule of 40 or FCF margin).
 - **Watch for:** vanity stability. High current margins with a starved H2/H3 pipeline is the classic pre-decline reading; the scorecard pairs the financial durability metrics with pipeline-of-the-next-S-curve health so the board does not mistake harvesting for health.
 
@@ -139,4 +139,4 @@ Defend the core and fund the next S-curve; the risk flips from death-by-chaos to
 - **Strategize** sets the NSM (once, durable) and chooses the OMTM for the cycle from the stage block above, then writes the OKRs so each key result is a metric from this glossary with a target relative to its benchmark band. It writes the canonical definition into `Metrics.md` and points `Goals.md` at it. If a proposed key result is a metric the stage suppresses, strategize flags it rather than committing the venture to a number that cannot yet mean anything.
 - **Review** grades the OKRs and statuses each health metric red/amber/green against its benchmark band (`assets/benchmark-bands.json`), reads only the stage-appropriate metrics, and greys the rest. It surfaces the leading indicators that moved before any lagging number did, so a problem is caught while it is still a leading metric. Every number it reports is grounded in a tool or source per `verification.md`, and the result is written back to the venture per `write-gate.md`.
 
-The standard holds here as everywhere in board: every angle heard, one owner accountable. Each metric in this glossary has exactly one owning function that is steered by its leading version and judged by its lagging version, and the chair (not the loudest function) decides which metrics the stage makes load-bearing this cycle. Benchmark bands are reference points the BI function refreshes; treat them as the band a number is statused against, never as a measurement of this particular venture.
+The standard holds here as everywhere in board: every angle heard, one owner accountable. Each metric in this glossary has exactly one owning department that is steered by its leading version and judged by its lagging version, and the chair (not the loudest department) decides which metrics the stage makes load-bearing this cycle. Benchmark bands are reference points the analytics skill refreshes; treat them as the band a number is statused against, never as a measurement of this particular venture.

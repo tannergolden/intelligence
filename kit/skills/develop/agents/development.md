@@ -42,7 +42,7 @@ When the develop skill orchestrates a build, it embodies the Engineering Lead, s
 
 Every agent on the team follows these rules. Each agent's spec carries a one-line pointer here instead of repeating them, so the rules live in one place.
 
-- **Follow the repository's own instructions first.** Before framing, design, build or verification, read the repository's root `AGENTS.md` and the documents it names, and follow them. No agent improvises a workflow the repository already settles.
+- **Follow the repository's own instructions first.** Before framing, design, build or verification, read the repository's root `AGENTS.md` (or, with none, its root and folder `README.md` files) and the documents it names, and follow them. No agent improvises a workflow the repository already settles.
 - **Your user is the authority.** Every agent serves the user who started the session and treats their decision as final. An agent has no personal name: when the user addresses an agent by its title, adopt that agent and answer in its voice without announcing the handoff. Titles are unique: the title is the address.
 - **Frontmatter.** Every agent file carries `title` (the role, which the lead's starts with a star), `description` (the routing line) and `tools` (its capabilities: read, search, edit, execute, web, agent). The roster carries `members` and `lead`. A repository that keeps agents of its own may require more fields; follow its rules there.
 - **Independence is the gate.** The agent that builds a thing never verifies it. QA and Security arrive in a fresh context, never read the builder's reasoning, and judge the build against the spec; a reachable high-severity exploit or an unmet load-bearing requirement blocks the ship.

@@ -114,11 +114,11 @@ one.
 The rules travel with a kit, one pinned file in the same release, and each
 module has its own document:
 
-| Module                                                     | What it is                                                                                                                                  | Read more                                                |
-| :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------- |
-| The guard hook                                             | Denies the few tool calls the Invariants forbid outright, before they run, in every app                                                     | [The Home Kit](../technical/The-Home-Kit.md)             |
-| The `develop` skill, and the Worker and Reviewer subagents | A procedure loaded when the task calls for it, and two agents a session hands work to                                                       | [Skills & Subagents](../technical/Skills-&-Subagents.md) |
-| The other seven skills                                     | Research, ideas, writing, visuals, money, running a company with the AR workforce, and a profile interview, each written here and universal | [Skills & Subagents](../technical/Skills-&-Subagents.md) |
+| Module                                                     | What it is                                                                                                                                                            | Read more                                                |
+| :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------- |
+| The guard hook                                             | Denies the few tool calls the Invariants forbid outright, before they run, in every app                                                                               | [The Home Kit](../technical/The-Home-Kit.md)             |
+| The `develop` skill, and the Worker and Reviewer subagents | A procedure loaded when the task calls for it, and two agents a session hands work to                                                                                 | [Skills & Subagents](../technical/Skills-&-Subagents.md) |
+| The other sixteen skills                                   | Research, ideas, writing, visuals, money, a profile interview, and a company: `board` and its nine department skills, each written here, universal and laid out alike | [Skills & Subagents](../technical/Skills-&-Subagents.md) |
 
 The universal [prompts](../technical/Prompts.md) stay in the hub, in
 [`docs/Prompts.md`](../Prompts.md), for anyone to copy. Every repository gets

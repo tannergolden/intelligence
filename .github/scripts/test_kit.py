@@ -43,7 +43,8 @@ def load(name: str, file: str):
 kit = load('kit', 'kit.py')
 
 SKILL = ('---\nname: processing-invoices\ndescription: Extracts line items from invoices. '
-         'Use when the user has invoices to read.\nlicense: MIT\nmetadata: { version: "1.0.0" }\n---\n\n'
+         'Use when the user has invoices to read.\nlicense: MIT\n'
+         'metadata: { team: Invoicing, version: "1.0.0", author: Tester, status: active }\n---\n\n'
          '# Processing invoices\n\n## Boundaries\n\nInvoices only.\n')
 CHANGELOG = '# processing-invoices Changelog\n\n## Current Version\n\n**`1.0.0`**\n'
 ROSTER = ('---\ntitle: "{team}"\ndescription: "Dispatch this team to run {team}."\nmembers: [{members}]\n'
@@ -53,6 +54,7 @@ SPEC = ('---\ntitle: "{title}"\ndescription: "Dispatch this agent to do {title} 
         '- **Voice:** x\n\n' + ''.join(f'## {section}\n\nx\n\n' for section in (
             'Role & Objective', 'Inputs', 'Method', 'Output contract', 'Examples', 'Boundaries', 'Recovery',
             'Non-negotiables')))
+TRIGGERS = json.dumps({'skill': 'x', 'should_trigger': ['a'] * 5, 'near_miss': ['b'] * 5})
 AGENT = ('---\nname: reviewer\ndescription: Reviews a change. Use after a change.\ntools: read, search, execute\n'
          '---\n\nYou review. Quote "this" and a \\ backslash.\n')
 
@@ -67,11 +69,19 @@ class Hub(unittest.TestCase):
         self.write('kit/skills/processing-invoices/references/forms.md', 'Forms.\n')
         self.write('kit/skills/processing-invoices/License.txt', 'MIT\n')
         self.write('kit/skills/processing-invoices/Changelog.md', CHANGELOG)
+        self.staff('processing-invoices', 'Invoicing')
         self.write('kit/subagents/reviewer.md', AGENT)
         self.write('kit/subagents/README.md', 'The folder log, which is not an agent.\n')
 
     def tearDown(self) -> None:
         shutil.rmtree(self.root, ignore_errors=True)
+
+    def staff(self, skill: str, team: str) -> None:
+        """Give a skill its own one-lead team and the trigger test every skill ships."""
+        lead = f'\u2605 {team} Lead'
+        self.write(f'kit/skills/{skill}/agents/{lead}.md', SPEC.format(title=lead))
+        self.write(f'kit/skills/{skill}/agents/{team}.md', ROSTER.format(team=team, members=f'"{lead}"'))
+        self.write(f'kit/skills/{skill}/assets/trigger-evals.json', TRIGGERS)
 
     def write(self, rel: str, text: str) -> pathlib.Path:
         path = self.root / rel
@@ -98,7 +108,8 @@ class TestSound(Hub):
         self.assertEqual(sorted(data), ['//', 'format', 'guard', 'skills', 'subagents'])
         self.assertEqual(data['format'], 2, 'the format without the knowledge facts')
         self.assertEqual(sorted(data['skills']['processing-invoices']),
-                         ['Changelog.md', 'License.txt', 'SKILL.md', 'references/forms.md'])
+                         ['Changelog.md', 'License.txt', 'SKILL.md', 'agents/Invoicing.md',
+                          'agents/\u2605 Invoicing Lead.md', 'assets/trigger-evals.json', 'references/forms.md'])
         self.assertEqual(list(data['subagents']), ['reviewer'], 'the README is not an agent')
 
 
@@ -158,9 +169,11 @@ class TestTeams(Hub):
         members = ', '.join(f'"{title}"' for title in titles)
         self.write(f'{home}/{team}.md', ROSTER.format(team=team, members=members))
         skill = home.split('/')[2]
-        self.write(f'kit/skills/{skill}/SKILL.md', SKILL.replace('processing-invoices', skill))
+        self.write(f'kit/skills/{skill}/SKILL.md',
+                   SKILL.replace('processing-invoices', skill).replace('team: Invoicing', f'team: {team}'))
         self.write(f'kit/skills/{skill}/License.txt', 'MIT\n')
         self.write(f'kit/skills/{skill}/Changelog.md', CHANGELOG)
+        self.write(f'kit/skills/{skill}/assets/trigger-evals.json', TRIGGERS)
 
     def test_a_department_of_six_is_sound(self) -> None:
         self.department(6)
@@ -183,6 +196,27 @@ class TestTeams(Hub):
     def test_a_skill_breaking_develops_standard_is_refused(self) -> None:
         (self.root / 'kit/skills/processing-invoices/Changelog.md').unlink()
         self.assertProblem('needs Changelog.md')
+
+
+class TestLayout(Hub):
+    """Every skill is laid out alike: its own team, its trigger test, the same metadata keys."""
+
+    def test_a_skill_borrowing_its_whole_team_is_refused(self) -> None:
+        self.write('kit/skills/lonely/SKILL.md', SKILL.replace('processing-invoices', 'lonely'))
+        self.write('kit/skills/lonely/License.txt', 'MIT\n')
+        self.write('kit/skills/lonely/Changelog.md', CHANGELOG)
+        self.write('kit/skills/lonely/assets/trigger-evals.json', TRIGGERS)
+        self.assertProblem('kit/skills/lonely: dispatches no team of its own')
+
+    def test_a_skill_without_a_trigger_test_is_refused(self) -> None:
+        (self.root / 'kit/skills/processing-invoices/assets/trigger-evals.json').unlink()
+        self.assertProblem('ships no assets/trigger-evals.json')
+
+    def test_every_skill_carries_the_same_metadata_keys(self) -> None:
+        self.write('kit/skills/processing-invoices/SKILL.md', SKILL.replace('author: Tester, ', ''))
+        self.assertProblem('metadata holds team, version, status; every skill carries exactly')
+        self.write('kit/skills/processing-invoices/SKILL.md', SKILL.replace('status: active', 'status: active, id: x'))
+        self.assertProblem('metadata holds team, version, author, status, id')
 
 
 class TestSubagents(Hub):
@@ -250,10 +284,13 @@ class TestTheRealKit(unittest.TestCase):
         self.assertEqual(kit.problems(self.root), [])
 
     def test_the_hub_writes_every_skill(self) -> None:
-        # The hub writes every skill and agent the kit carries (ADR-0037); none is copied from elsewhere.
+        # The hub writes every skill and agent the kit carries (ADR-0037), the company's departments among
+        # them, each a skill of its own (ADR-0038); none is copied from elsewhere.
         bundle, _ = kit.bundle(self.root)
-        self.assertEqual(sorted(bundle['skills']), ['board', 'develop', 'discover', 'editorial', 'finance',
-                                                    'identify', 'research', 'visualize'])
+        faculties = ['develop', 'discover', 'editorial', 'finance', 'identify', 'research', 'visualize']
+        company = ['analytics', 'board', 'communications', 'customers', 'legal', 'operations', 'people', 'quality',
+                   'sales', 'systems']
+        self.assertEqual(sorted(bundle['skills']), sorted(faculties + company))
         self.assertEqual(sorted(bundle['subagents']), ['reviewer', 'worker'])
 
 

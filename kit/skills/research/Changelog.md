@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**`1.8.0`**
+**`1.8.1`**
 
 The version is SemVer, per standards' [versioning policy](https://github.com/tannergolden/standards/blob/Development/docs/distribution/Releases-&-Versioning.md#-versioning-policy-semver). It matches `metadata.version` in `SKILL.md`, and develop's validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
 
@@ -50,6 +50,10 @@ Added the `kb read` step to local grounding and tightened the knowledge-base doc
 
 > Fixes, wording, reference tweaks. Most recent 4 entries.
 
+### `1.8.1` - 2026-11-07
+
+A repository with no agent instructions now explains itself in its `README.md` files: the skill reads the root one and the one in each folder it writes into.
+
 ### `1.5.3` - 2026-10-19
 
 - A report's three-month window ends on its `review_by` date, since the hidden frontmatter retired `updated` (`references/reporting.md`, `templates/report.md`).
@@ -64,6 +68,3 @@ Added the `kb read` step to local grounding and tightened the knowledge-base doc
 
 Moved local grounding and the preflight off the retired engine: the offline knowledge bases are searched with `.github/scripts/knowledge-base.py` when one is installed, a report overwrite starts from a committed state, and `update-vault.py` and `check-vault.py` replace `sync` and `health`. The archive now carries the Research team, vendored when it is built.
 
-### `1.1.3` - 2026-06-24
-
-Dropped the "Research - " prefix from filed-report naming. A report is now named for its topic alone (`<Topic Title>.md`) and filed in `Inbox/Reports/`; its location, not a prefix, marks it as a report. Updated `references/reporting.md` (the naming rule) and `templates/report.md` (title, path, H1, and the id pattern, now `in-<slug>`). The three existing reports were renamed to match.

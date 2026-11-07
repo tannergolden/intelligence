@@ -3,7 +3,7 @@ name: identify
 description: Interviews the user about themselves with validated frameworks (Big Five, HEXACO, Schwartz values, McAdams life story) to build and deepen their profile one facet at a time, from Working Style and Personality to Values and Goals. Use when the user types /identify, says interview me, fill out my profile, help me populate my Working Style, get to know me better, or asks to confirm unconfirmed profile entries, and proactively when a profile facet is found thin or template-empty, even when they never say identify. Mixed structured and conversational questions with skip options and a consent gate on sensitive topics; every inference is marked and reviewed blind, and only an approved proposal batch is kept. In a private repository whose instructions say it holds the user's profile, it writes the approved batch there; anywhere else it returns the approved profile in the conversation and writes nothing about the user.
 license: MIT
 allowed-tools: Read, Grep, Glob, AskUserQuestion
-metadata: { team: "Research & Development (R&D)", version: "1.1.0", id: sy-skill-identify-spec, author: Tanner Golden, status: active }
+metadata: { team: Interview, version: "1.2.0", author: Tanner Golden, status: active }
 ---
 
 # 🪪 Identify
@@ -14,7 +14,7 @@ Identify builds and deepens the user's profile by interviewing them about themse
 
 ## Where the profile lives
 
-Read the repository's own instructions first (its `AGENTS.md` or `CLAUDE.md` and the rules of any folder it would write into). They decide which of two cases this run is in:
+Read the repository's own instructions first (its `AGENTS.md` or `CLAUDE.md`, or with neither its root and folder `README.md` files, and the rules of any folder it would write into). They decide which of two cases this run is in:
 
 - **A profile repository.** Its instructions say it is a private repository made to hold the user's profile, and name where the profile facets live and which checks to run after a write. There, the run writes the approved batch where those instructions put each facet, follows their rules for every write, and runs the checks they name. Their profile rules add to the ones in `references/provenance.md`; where the two differ, the stricter wins.
 - **Anywhere else** (any other repository, or a conversation with no repository). The run returns the approved profile in the conversation, ready for the user to keep wherever they keep it, and writes nothing about the user into the repository, not even when asked: the repository is not one made to hold personal context (SEC-003, the Constitution's privacy rule). Say so plainly if the user asks for a file.
@@ -31,9 +31,9 @@ The skill's own facet vocabulary, with each facet's sections and items in `refer
 | **confirm** | "confirm my unconfirmed profile entries", or a confirm sweep is due | Targets existing `unconfirmed` markers (in a profile repository, or in a profile the user pastes or points to): short confirmation asks, then markers shortened to `confirmed` or the line corrected, through the same batch, review, and approval path |
 | **facet-named** | The caller names a facet ("let's fill in my Working Style", "/identify Health") | Caller-named wins over coverage; the pipeline runs scoped to that facet, consent gate included when it is sensitive |
 
-## The architecture it serves
+## The team it dispatches
 
-This skill composes the **Research & Development (R&D)** department of the board skill's Agent Resources workforce, the home of its embodied lead. Three seats, all reuse, constant across runs: the skill **embodies the UX and Design Research Lead** (UX and Design Research Lead, the board skill's `agents/UX and Design Research Lead.md`) as the interviewer, so only the top-level context converses and calls the question tool; the **Writer** (Writer, the editorial skill's `agents/Writer.md`) composes the proposal batch; the **Standards Reviewer** (Standards Reviewer, the research skill's `agents/Standards Reviewer.md`) reviews it blind against the profile rules. `metadata.team` names the embodied lead's home department, and the two dispatched seats are referenced by name from their own skills. Nothing is copied locally. Seats, briefs, verdict vocabulary, and rejected alternatives: `references/roster.md`.
+This skill dispatches its own **Interview** team (`agents/Interview.md`). Three seats, constant across runs: the skill **embodies the ★ UX and Design Research Lead** (`agents/★ UX and Design Research Lead.md`), the team's lead and the interviewer, so only the top-level context converses and calls the question tool; the **Writer** (the editorial skill's `agents/Writer.md`) composes the proposal batch; the **Standards Reviewer** (the research skill's `agents/Standards Reviewer.md`) reviews it blind against the profile rules. The lead lives in this skill's `agents/`; the two borrowed seats stay in their own skills, referenced by title, nothing copied. Seats, briefs, verdict vocabulary, and rejected alternatives: `references/roster.md`.
 
 ## The interview pipeline
 

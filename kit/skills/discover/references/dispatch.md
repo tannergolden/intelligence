@@ -20,17 +20,17 @@ When two rows fit, take the higher. Announce the tier before dispatching.
 
 ## How to brief each agent
 
-- **Creative Lead.** Give the raw challenge and any constraints. He returns the framed how-might-we questions and the dispatch plan, then orchestrates, runs the kill-gate, and synthesizes the shortlist. Use `templates/generative-brief.md`.
-- **Idea Generator.** Give the framed HMW and ONE assigned lens (from `references/lenses.md`), with the rule to defer judgment, go for quantity, and welcome wild ideas. She returns a list of candidate ideas. Dispatch several in parallel, each on a contrasting lens; this is the load-bearing parallel-independent-generation step.
-- **Idea Curator.** Give the raw pool. She dedups against the whole pool including killed ideas, merges near-duplicates (keeping the higher-Elo record canonical), and keeps the idea records. Returns the deduped set.
-- **Idea Critic.** Give the survivors. He steelmans then stress-tests each for novelty, feasibility, and fatal flaws. Returns the classified critique; he never picks the winner.
-- **Tournament Ranker.** Give the shortlist. He runs the pairwise Elo tournament and returns the stable order with Elo scores and games played.
-- **Portfolio Manager.** Fired only on a cross-venture or cross-project call. Give the developed survivors across the portfolio; he weighs them by RICE and returns a portfolio-balanced ranking.
+- **Creative Lead.** Give the raw challenge and any constraints. It returns the framed how-might-we questions and the dispatch plan, then orchestrates, runs the kill-gate, and synthesizes the shortlist. Use `templates/generative-brief.md`.
+- **Idea Generator.** Give the framed HMW and ONE assigned lens (from `references/lenses.md`), with the rule to defer judgment, go for quantity, and welcome wild ideas. It returns a list of candidate ideas. Dispatch several in parallel, each on a contrasting lens; this is the load-bearing parallel-independent-generation step.
+- **Idea Curator.** Give the raw pool. It dedups against the whole pool including killed ideas, merges near-duplicates (keeping the higher-Elo record canonical), and keeps the idea records. Returns the deduped set.
+- **Idea Critic.** Give the survivors. It steelmans then stress-tests each for novelty, feasibility, and fatal flaws. Returns the classified critique; it never picks the winner.
+- **Tournament Ranker.** Give the shortlist. It runs the pairwise Elo tournament and returns the stable order with Elo scores and games played.
+- **Portfolio Manager.** Fired only on a cross-venture or cross-project call. Give the developed survivors across the portfolio; it weighs them by RICE and returns a portfolio-balanced ranking.
 
 ## Collaborations
 
 - **Research team.** Ideation and research are duals: research grounds an idea in evidence, and ideation produces hypotheses research then tests. Reach for `research` when an idea turns on a fact that must be verified.
-- **The domain team.** When the challenge concerns a venture or a project, work with the team that owns that domain (an Agent Resources department of the board workforce, or the project crew) for context, data, and feasibility grounding. The domain team informs the ideas and judges feasibility; it does not pick the winner, which the tournament settles fairly.
+- **The domain team.** When the challenge concerns a venture or a project, work with the team that owns that domain (a company department's skill, such as sales or operations, or the project crew) for context, data, and feasibility grounding. The domain team informs the ideas and judges feasibility; it does not pick the winner, which the tournament settles fairly.
 
 ## Filing
 

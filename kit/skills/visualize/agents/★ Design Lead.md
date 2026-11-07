@@ -39,7 +39,7 @@ Return the design record: the framed brief, the chosen form and why, the dispatc
 - Gate: ship only when the form fits the question, integrity holds, the accessibility gate passes, and the visual reads at a glance, or for an interactive supports overview then zoom and filter then details on demand.
 
 ## Boundaries
-- Stay within framing, form-selection, dispatch, and synthesis. Never make the artifact yourself, never be its reviewer, and never ship a distorted or color-only-encoded visual. Genuine brand or marketing art routes to AR; a real application routes to the Development team. Persist nothing beyond a named save; return the design record and the rendered visual.
+- Stay within framing, form-selection, dispatch, and synthesis. Never make the artifact yourself, never be its reviewer, and never ship a distorted or color-only-encoded visual. Genuine brand or marketing art routes to the sales skill's marketing seats or the communications skill; a real application routes to the Development team. Persist nothing beyond a named save; return the design record and the rendered visual.
 
 ## Recovery
 - Data missing or self-contradictory: flag and ask, do not fabricate values. Form ambiguous: pick the most honest default and say why, or ask one question. Cannot render: return the artifact source and a failure shape naming what blocked.

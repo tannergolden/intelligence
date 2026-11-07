@@ -1,11 +1,11 @@
 {
   "skill": "finance",
-  "note": "The official and primary US sources each Finance seat checks first for current figures, rules and deadlines. A secondary source may explain a rule but never supplies its figure. Confirm a source still serves its purpose before citing it, and date every figure taken from it. Outside the US, find the equivalent national and regional authorities and name them in the plan. Domains by seat: the Cash Flow Analyst reads cash, credit and housing; the Tax Strategist reads tax and, for grants and equity plans, benefits; the Investment & Retirement Analyst reads investing, retirement and benefits; the Insurance & Estate Specialist reads insurance and, for Medicare, retirement.",
+  "note": "The official and primary US sources each Finance seat checks first for current figures, rules and deadlines. A secondary source may explain a rule but never supplies its figure. Confirm a source still serves its purpose before citing it, and date every figure taken from it. Outside the US, find the equivalent national and regional authorities and name them in the plan. Domains by seat: the Cash Flow Analyst reads cash, credit, housing and, for a company's books, accounting; the Tax Strategist reads tax, business tax and, for grants and equity plans, benefits; the Investment & Retirement Analyst reads investing, retirement, benefits and, for a company's model and a raise, business; the Insurance & Estate Specialist reads insurance, business and, for Medicare, retirement; the lead reads business.",
   "jurisdiction": "US",
   "sources": [
     {"domain": "tax", "name": "Internal Revenue Service", "url": "https://www.irs.gov", "use": "brackets, the standard deduction, contribution limits, phase-outs, forms, notices, deadlines, Identity Protection PINs"},
     {"domain": "tax", "name": "Taxpayer Advocate Service", "url": "https://www.taxpayeradvocate.irs.gov", "use": "help when an IRS problem is not resolving through normal channels"},
-    {"domain": "tax", "name": "The state's department of revenue", "url": "", "use": "state brackets, credits, residency rules and deadlines; find it from the state's official site"},
+    {"domain": "tax", "name": "The state's department of revenue", "url": "", "use": "state brackets, credits, residency rules and deadlines, and for a company, state business taxes, sales tax registration, nexus thresholds and filing; find it from the state's official site"},
     {"domain": "tax", "name": "IRS Trump Accounts", "url": "https://www.irs.gov/trumpaccounts", "use": "the government-seeded child account: eligibility, the pilot contribution and its election"},
     {"domain": "retirement", "name": "Social Security Administration", "url": "https://www.ssa.gov", "use": "the user's own benefit estimate and earnings record, claiming rules, survivor benefits"},
     {"domain": "retirement", "name": "Medicare", "url": "https://www.medicare.gov", "use": "enrollment periods, plan comparison, late enrollment penalties"},
@@ -33,6 +33,13 @@
     {"domain": "insurance", "name": "FloodSmart (National Flood Insurance Program)", "url": "https://www.floodsmart.gov", "use": "flood risk and flood insurance"},
     {"domain": "housing", "name": "Department of Housing and Urban Development", "url": "https://www.hud.gov", "use": "HUD-approved housing counselors, FHA loans, foreclosure help"},
     {"domain": "housing", "name": "The state housing finance agency", "url": "", "use": "first-time buyer programs and down payment help; find it from the state's official site"},
-    {"domain": "benefits", "name": "The employer's plan documents", "url": "", "use": "the summary plan description, the grant agreements and the equity plan, which govern over any summary"}
+    {"domain": "benefits", "name": "The employer's plan documents", "url": "", "use": "the summary plan description, the grant agreements and the equity plan, which govern over any summary"},
+    {"domain": "business tax", "name": "IRS Small Business and Self-Employed Tax Center", "url": "https://www.irs.gov/businesses/small-businesses-self-employed", "use": "a company's tax basics: entity classification and elections, estimated payments, employment taxes, information returns, credits"},
+    {"domain": "business tax", "name": "IRS Publication 15 (Circular E), Employer's Tax Guide", "url": "https://www.irs.gov/publications/p15", "use": "payroll withholding, the deposit schedules and the employer's returns"},
+    {"domain": "business tax", "name": "The state's division of corporations", "url": "", "use": "the franchise tax, its methods, and the annual report in the state of incorporation; find it from the state's official site"},
+    {"domain": "accounting", "name": "Financial Accounting Standards Board", "url": "https://www.fasb.org", "use": "US GAAP, the standards a company's books follow; a CPA confirms a judgment call"},
+    {"domain": "business", "name": "U.S. Small Business Administration", "url": "https://www.sba.gov", "use": "business structures, business insurance basics, and funding and loan programs"},
+    {"domain": "business", "name": "The company's executed documents", "url": "", "use": "the formation, founder stock agreements, SAFEs and notes, stock purchase and option agreements and board consents, which govern the cap table over any summary"},
+    {"domain": "business", "name": "The state's workers' compensation agency", "url": "", "use": "whether and when the state requires workers' compensation coverage; find it from the state's official site"}
   ]
 }

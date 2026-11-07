@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**`1.6.0`**
+**`1.6.1`**
 
 The version is SemVer, per standards' [versioning policy](https://github.com/tannergolden/standards/blob/Development/docs/distribution/Releases-&-Versioning.md#-versioning-policy-semver). It matches `metadata.version` in `SKILL.md`, and the validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
 
@@ -47,6 +47,10 @@ Added four format and inline-craft references from a deep research run: formats.
 ## Patch Updates
 
 > Fixes and clarifications. Most recent 4 entries.
+
+### `1.6.1` - 2026-11-07
+
+A repository with no agent instructions now explains itself in its `README.md` files: the skill reads the root one and the one in each folder it writes into. Brand and marketing art now routes to the sales skill's marketing seats or the communications skill.
 
 ### `1.4.2` - 2026-10-19
 

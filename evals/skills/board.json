@@ -13,12 +13,13 @@
     "what is our north star metric",
     "should we enter the enterprise market",
     "should I launch the product now or wait",
-    "which of these two vendors should we choose",
+    "which of these two vendors should we commit to for the next three years",
     "go or no-go on the acquisition",
-    "build the financial model for the venture",
-    "draft the brand guide",
-    "write the onboarding SOP",
+    "should we sign an exclusive deal with this supplier",
     "run the venture this week",
+    "launch the new product across sales, legal and support",
+    "get the company ready for the seed round",
+    "execute the plan we agreed for next quarter across the departments",
     "how is the company doing",
     "run the quarterly business review",
     "keep the venture context current"
@@ -32,6 +33,17 @@
     "write a standalone blog post",
     "make a chart of our revenue",
     "should I refinance my mortgage",
-    "should I pay off my car loan or invest the money"
+    "should I pay off my car loan or invest the money",
+    "draft an NDA with our supplier",
+    "close the books for October",
+    "build the financial model for the venture",
+    "draft the brand guide",
+    "write the onboarding SOP for our warehouse team",
+    "set up compensation bands for the engineering team",
+    "review our cloud access controls",
+    "define how we calculate churn",
+    "write the test strategy for our next release",
+    "build the customer onboarding playbook",
+    "write the press release announcing our funding round"
   ]
 }

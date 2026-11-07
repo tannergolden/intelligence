@@ -46,6 +46,11 @@ VALIDATOR = 'kit/skills/develop/scripts/validate.py'  # develop's gate 1, which 
 # most critical agents, its lead included, by the owner's decision (ADR-0037).
 WORKFORCE_DIR = 'kit/skills/board/agents'
 MAX_TEAM = 6
+# Every skill is laid out alike: it dispatches its own team, whose roster is
+# in its own agents/, ships the trigger test its description is measured by,
+# and carries these metadata keys, no more and no fewer.
+TRIGGER_TEST = 'assets/trigger-evals.json'
+METADATA_KEYS = ('team', 'version', 'author', 'status')
 
 # The line that marks a file or folder as the kit's own. The installer
 # replaces what carries it and refuses to touch what does not.
@@ -249,6 +254,34 @@ def check_teams(root: pathlib.Path, found: list[str]) -> None:
                          'its lead included')
 
 
+def check_layout(root: pathlib.Path, found: list[str]) -> None:
+    """Every skill alike: its own team in its own agents/, its trigger test, and the same metadata keys."""
+    validate = load_validator(ROOT)
+    base = root / SKILLS_DIR
+    for folder in sorted(p for p in base.iterdir() if p.is_dir()) if base.is_dir() else []:
+        where = f'{SKILLS_DIR}/{folder.name}'
+        manifest = folder / 'SKILL.md'
+        if not manifest.is_file():
+            continue  # load_skills reports it
+        try:
+            fields, _ = validate.read_frontmatter(manifest)
+        except (validate.FrontmatterError, UnicodeDecodeError):
+            continue  # check_skill reports it
+        metadata = fields.get('metadata') if isinstance(fields.get('metadata'), dict) else {}
+        keys = tuple(metadata)
+        if sorted(keys) != sorted(METADATA_KEYS):
+            found.append(f'{where}/SKILL.md: metadata holds {", ".join(keys) or "nothing"}; every skill carries '
+                         f'exactly {", ".join(METADATA_KEYS)}')
+        team = str(metadata.get('team', ''))
+        own = folder / 'agents'
+        roster, _ = validate.find_team(team, [own], validate.Report()) if team and own.is_dir() else (None, [])
+        if roster is None:
+            found.append(f'{where}: dispatches no team of its own; every skill keeps the roster its metadata.team '
+                         'names in its own agents/')
+        if not (folder / TRIGGER_TEST).is_file():
+            found.append(f'{where}: ships no {TRIGGER_TEST}, the trigger test its description is measured by')
+
+
 def bundle(root: pathlib.Path) -> tuple[dict, list[str]]:
     """The bundle, and every problem with its sources."""
     found: list[str] = []
@@ -265,6 +298,7 @@ def bundle(root: pathlib.Path) -> tuple[dict, list[str]]:
         'subagents': load_subagents(root, found),
     }
     check_teams(root, found)
+    check_layout(root, found)
     text = json.dumps(kit, ensure_ascii=False)
     for name in sorted(set(NAMED.findall(text)) - set(NAMEABLE)):
         found.append(f'the kit names tannergolden/{name}, which is not a public repository')

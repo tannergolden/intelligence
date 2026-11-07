@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**`1.8.0`**
+**`1.8.1`**
 
 The version is SemVer, per standards' [versioning policy](https://github.com/tannergolden/standards/blob/Development/docs/distribution/Releases-&-Versioning.md#-versioning-policy-semver). It matches `metadata.version` in `SKILL.md`, and the validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
 
@@ -50,6 +50,10 @@ Restructured `SKILL.md` to develop's canonical skeleton, the standard every skil
 
 > Fixes, wording, reference tweaks. Most recent 4 entries.
 
+### `1.8.1` - 2026-11-07
+
+A repository with no agent instructions now explains itself in its `README.md` files: the skill reads the root one and the one in each folder it writes into. A company's brand voice now comes from the communications skill, and research-report polish from the research skill's lead.
+
 ### `1.5.2` - 2026-10-19
 
 - References point at `AGENTS.md`, the folder notes' Rules and `.docs/vault/` instead of the retired root rule files.
@@ -64,6 +68,3 @@ Moved the preflight and the exit gate off the retired engine: an edit in place s
 
 Expanded the 9.7 alignment to name GitHub's full set of recognized markdown files, not only README. `references/formatting.md` and `SKILL.md` now list the repository and community-health files GitHub renders in its web interface, `README.md`, `LICENSE.md`, `CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, `SECURITY.md`, `SUPPORT.md`, `GOVERNANCE.md`, and the issue and pull-request templates, as the only place GitHub-Flavored Markdown is in bounds. Verified against GitHub's community-health-files documentation.
 
-### `1.4.1` - 2026-06-27
-
-Aligned the formatting doctrine to new Constitution rule 9.7 (Obsidian-Compatible Markdown by Default). `references/formatting.md` and `SKILL.md` now state it explicitly: markdown is Obsidian-compatible by default (CommonMark plus Obsidian-Flavored Markdown), and GitHub-Flavored Markdown, including the five uppercase NOTE/TIP/IMPORTANT/WARNING/CAUTION alerts, is reserved for a primary repository file that renders on GitHub (a README and its kind), not for ordinary leaving-the-vault markdown. The precedence callout and the GitHub-five note cite 9.7.

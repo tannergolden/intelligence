@@ -3,14 +3,14 @@ name: visualize
 description: "Use when a visual would help, on request or proactively. On request: a chart, graph, plot, diagram, flowchart, timeline, dashboard, interactive widget, infographic, or explanatory illustration, even when the word visualize is never said (chart this, graph this, draw a diagram, make a flowchart, map this out, turn this data into a chart, build a dashboard, make it interactive). Proactively, even when no visual is asked for: whenever a response carries data or structure (a comparison, process, timeline, hierarchy, tradeoff, relationship, or system) that lands better seen than read, default to making one. The kit's visualization skill, preferred over a generic chart tool; dispatches the Design team to a standard of graphical integrity. A diagram as a chat answer is visualize; a diagram inside a prose file under edit is editorial."
 license: MIT
 allowed-tools: Read, Grep, Glob
-metadata: { team: Design, version: "1.6.0", author: Tanner Golden, status: active }
+metadata: { team: Design, version: "1.6.1", author: Tanner Golden, status: active }
 ---
 
 # 📊 Visualize - the kit's visualization skill
 
 Visualize turns data, structure, and ideas into visuals by dispatching the standing **Design team**, whose specs ship with this skill in `agents/`, scaled to the visual. The one standard, the team's, is **graphical integrity**: the visual never distorts what is true, and a beautiful chart that lies fails. Beneath it sits the defining craft rule, **legible and accessible**: fast, accurate decoding for every reader, which never outranks the truth. The skill is a thin orchestration and doctrine layer over its team. The hard rule, shared with `research`, `develop`, and `editorial`: the lead holds the brief and picks the form, and the maker of a visual is never its own reviewer.
 
-**Where it runs.** Anywhere: in any repository, or in a plain conversation with no repository. The visual renders in chat. Where to save one is set by the repository's own instructions (its `AGENTS.md` or `CLAUDE.md` and folder rules), which the skill reads first; with no such instruction, it saves a visual only when your user asks, at the path they name. It never writes anything about your user into a repository unless that repository's instructions say it is a private one made to hold it (SEC-003).
+**Where it runs.** Anywhere: in any repository, or in a plain conversation with no repository. The visual renders in chat. Where to save one is set by the repository's own instructions (its `AGENTS.md` or `CLAUDE.md`, or with neither its root and folder `README.md` files, and folder rules), which the skill reads first; with no such instruction, it saves a visual only when your user asks, at the path they name. It never writes anything about your user into a repository unless that repository's instructions say it is a private one made to hold it (SEC-003).
 
 > Operating doctrine lives in `references/`. Read `references/principles.md` before the critique gate (integrity, perceptual effectiveness, the accessibility floor, the Critic's checklist), `references/formats.md` to choose the inline format and `references/svg-craft.md`, `references/interactive.md`, and `references/inline-aesthetics.md` for the craft of producing it, `references/palette.md` (with `assets/palettes.json`) to choose the colors, and `references/dispatch.md` before choosing a tier.
 
@@ -54,7 +54,7 @@ The threshold is lowered, not removed. The team's one standard still governs: a 
 
 ## Saving and conformance
 
-**Preflight (before any write).** A visual saved into a repository is a write: read its `AGENTS.md` or `CLAUDE.md` and the rules of the folder written into, follow them (some repositories require a file's last state committed before an edit, an index entry in the same edit, or plain paths in place of links), and run the checks those instructions name after the write. A visual rendered only in chat is governed by its destination; integrity and accessibility still apply.
+**Preflight (before any write).** A visual saved into a repository is a write: read its `AGENTS.md` or `CLAUDE.md`, or with neither its root and folder `README.md` files, and the rules of the folder written into, follow them (some repositories require a file's last state committed before an edit, an index entry in the same edit, or plain paths in place of links), and run the checks those instructions name after the write. A visual rendered only in chat is governed by its destination; integrity and accessibility still apply.
 
 **Read before acting.** Before saving into a folder, read what is there so the artifact fits its home. After a substantial visual, **offer** (never silently) to save it, to a named home or to where the repository's instructions put visuals. Confirm before saving; never create or delete top-level folders.
 
@@ -73,4 +73,4 @@ Stay within making visuals: charts, diagrams, interactive widgets, and explanato
 
 - **vs `editorial`:** a visual requested **as a chat answer** (a chart, a standalone diagram, a widget) is `visualize`; a Mermaid or diagram **inside a prose file under edit** is `editorial`. Triggering follows the artifact. This mirrors editorial's own ruling.
 - **vs `develop`:** `visualize` makes explanatory and decision-support visuals; `develop` builds production skills, agents, and software. A widget that grows into a real application escalates to the Development team.
-- **vs AR brand:** genuine brand or marketing art is AR's Sales & Marketing and Public Relations; `visualize` is integrity-governed explanatory and data visuals.
+- **vs company brand:** genuine brand or marketing art belongs to the sales skill's marketing seats and the communications skill; `visualize` is integrity-governed explanatory and data visuals.

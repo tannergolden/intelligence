@@ -19,7 +19,7 @@ The memo the skill produces, in order:
 2. **Situation and complication (SCQA).** The shared context, what changed, and why the call is live now.
 3. **The question.** The exact choice being put, at the right altitude, with the decision criteria.
 4. **Options considered.** The 2 to 3 genuine options, MECE, scored against the criteria (a table). Include the option not taken and why.
-5. **Each function's view and the tradeoffs.** The independent functional views (finance, legal, marketing, operations, and the rest), each in a line or two, with the tradeoffs each surfaced. This is the multi-perspective record.
+5. **Each department's view and the tradeoffs.** The independent views of the convened departments (finance, legal, marketing, operations, and the rest), each in a line or two, with the tradeoffs each surfaced. This is the multi-perspective record.
 6. **Risks and pre-mortem.** The major risks rated by likelihood and impact, with mitigations, plus the pre-mortem causes (the ways this fails a year out).
 7. **Decision and owner.** The call, the decider, and the one accountable owner. Note where it escalated to the Founder.
 8. **Next steps.** The actions, each with an owner and a date.

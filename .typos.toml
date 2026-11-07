@@ -11,5 +11,9 @@
 # ---
 
 [default.extend-words]
+CMO = "CMO" # a chief marketing officer, kit/skills/board/
+EIN = "EIN" # an employer identification number, kit/skills/board/
+Extraversion = "Extraversion" # the Big Five trait, as the literature spells it, kit/skills/identify/
+yoy = "yoy" # year over year, a data key in kit/skills/board/assets/
 HSA = "HSA" # a health savings account, kit/skills/finance/
 mis = "mis" # the prefix in hyphenated words: mis-fires, mis-called

@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**`1.2.0`**
+**`1.2.1`**
 
 The version is SemVer, per standards' [versioning policy](https://github.com/tannergolden/standards/blob/Development/docs/distribution/Releases-&-Versioning.md#-versioning-policy-semver). It matches `metadata.version` in `SKILL.md`, and the validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
 
@@ -39,6 +39,10 @@ The Discovery team now ships inside the skill, in `agents/`, instead of living i
 ## Patch Updates
 
 > Fixes and clarifications. Most recent 4 entries.
+
+### `1.2.1` - 2026-11-07
+
+A repository with no agent instructions now explains itself in its `README.md` files: the skill reads the root one and the one in each folder it writes into. A company's domain team is now that department's own skill.
 
 ### `1.0.3` - 2026-10-19
 

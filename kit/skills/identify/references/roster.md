@@ -14,7 +14,7 @@ The contract that wires this skill to its people. Three seats, all reuse, consta
 
 ## The seats in full
 
-**The UX and Design Research Lead** (the board skill's `agents/UX and Design Research Lead.md`, in the Research & Development (R&D) department). Its craft is the skill's spine: instrument design, non-leading questions, and the observed-versus-stated-versus-assumed evidence discipline that keeps the ledger honest. The skill runs *as* it: the top-level context announces as the UX and Design Research Lead embodied (no handoff ceremony), converses, calls the question tool, keeps the session-only ledger, dispatches the other two, applies verdicts, and keeps the approved batch. It is embodied rather than dispatched precisely because only the top-level context can hold the conversation and call the question tool.
+**The ★ UX and Design Research Lead** (this skill's `agents/★ UX and Design Research Lead.md`, the lead of its Interview team). Its craft is the skill's spine: instrument design, non-leading questions, and the observed-versus-stated-versus-assumed evidence discipline that keeps the ledger honest. The skill runs *as* it: the top-level context announces as the UX and Design Research Lead embodied (no handoff ceremony), converses, calls the question tool, keeps the session-only ledger, dispatches the other two, applies verdicts, and keeps the approved batch. It is embodied rather than dispatched precisely because only the top-level context can hold the conversation and call the question tool.
 
 **The Writer** (the editorial skill's `agents/Writer.md`). It composes the proposal batch from the ledger in the user's own voice: one construct per line, stated rows to unmarked lines, observed rows to fully-marked `unconfirmed` lines, the Snapshot composed last. Its sole factual input is the ledger passed in the brief: if it is not in the ledger, it does not exist to it. It returns the batch in the `templates/proposal-batch.md` shape and persists nothing.
 
@@ -44,7 +44,7 @@ The Standards Reviewer reviews the batch and the law, never the ledger, the plan
 
 ## The cross-home reference convention
 
-The research skill's convention for a borrowed seat. `metadata.team` in SKILL.md names **Research & Development (R&D)**, the board workforce's department that is home to the embodied lead. The two dispatched seats are referenced by name from their own skills: the Writer from the editorial skill's `agents/`, the Standards Reviewer from the research skill's `agents/`. Nothing is copied into this skill: it carries no `agents/` folder and reads all three specs, by the skill-relative locations above, from the sibling skills installed beside it (board, editorial, research), which stay their source of truth.
+`metadata.team` in SKILL.md names **Interview**, this skill's own team, whose roster is `agents/Interview.md`. Its lead lives in this skill's `agents/`. The two dispatched seats are borrowed by title: the roster names them in its body, and their specs stay in their own skills, the Writer in the editorial skill's `agents/` and the Standards Reviewer in the research skill's `agents/`, which remain their source of truth. Nothing is copied into this skill.
 
 ## Rejected alternatives
 

@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**`1.1.0`**
+**`1.2.0`**
 
 The version is SemVer, per standards' [versioning policy](https://github.com/tannergolden/standards/blob/Development/docs/distribution/Releases-&-Versioning.md#-versioning-policy-semver). It matches `metadata.version` in `SKILL.md`, and the validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
 
@@ -27,6 +27,10 @@ Initial build of the identify skill: coverage-driven Profile interviewing. The e
 ## Minor Updates
 
 > Backward-compatible additions. Most recent 4 entries.
+
+### `1.2.0` - 2026-11-07
+
+Identify has its own team, Interview, like every other skill: the ★ UX and Design Research Lead moved here from the dissolved Research & Development department and became its lead and interviewer, rewritten for that job, with the Writer and the Standards Reviewer borrowed from the editorial and research skills.
 
 ### `1.1.0` - 2026-11-07
 

@@ -1,8 +1,8 @@
 # Board and QBR six-pager
 
-*A written, prose pre-read for the quarterly board meeting and the internal quarterly business review: a narrative, not slides. Page 1 opens with the recommendation and the asks; the outward BOARD UPDATE (governance, financials, runway, the asks the Founder must answer) is separated from the inward QBR (last quarter's OKR grades, the next 90 days, the trade-offs). Filed to the venture's `Administration/` by the review mode behind the write-gate, with the Head of Quality verifying every number against a tool or source first (see verification.md, write-gate.md). The skill is the sole writer; agents compose and return.*
+*A written, prose pre-read for the quarterly board meeting and the internal quarterly business review: a narrative, not slides. Page 1 opens with the recommendation and the asks; the outward BOARD UPDATE (governance, financials, runway, the asks the Founder must answer) is separated from the inward QBR (last quarter's OKR grades, the next 90 days, the trade-offs). Filed to the venture's `Administration/` by the review mode behind the write-gate, with the quality skill's ★ Head of Quality verifying every number against a tool or source first (see verification.md, write-gate.md). Board is the sole writer; agents and the department skills compose and return.*
 
-This template scaffolds the **review** mode's quarterly deliverable. The review run reads the venture's `Overview.md`, `Goals.md`, `Strategy.md`, and recent `Log.md`, detects the stage (see lifecycle.md), grades the quarter's OKRs, and assembles this six-pager. The CFO and the FP&A Analyst own the financial pages; the Corporate Secretary composes the governance record; the CEO holds the synthesis and states the recommendation; the Head of Quality verifies before the skill persists. One owner is named on every ask and every objective. The standard holds: **every angle heard, one owner accountable**.
+This template scaffolds the **review** mode's quarterly deliverable. The review run reads the venture's `Overview.md`, `Goals.md`, `Strategy.md`, and recent `Log.md`, detects the stage (see lifecycle.md), grades the quarter's OKRs, and assembles this six-pager. The finance skill owns the financial pages (its ★ Financial Planning Lead routes the work inside its team); the Corporate Secretary composes the governance record; the CEO holds the synthesis and states the recommendation; the quality skill's ★ Head of Quality verifies before board persists. One owner is named on every ask and every objective. The standard holds: **every angle heard, one owner accountable**.
 
 ## How to use this scaffold
 
@@ -20,7 +20,7 @@ Fill whatever frontmatter the venture's `Administration/` files use under the re
 
 # [Venture] - Board update and Q[n] [YYYY] review
 
-**Prepared by:** [CEO, with CFO on the financials and Corporate Secretary on the record]   **For:** [the board / the Founder as chair]   **Quarter:** Q[n] [YYYY] ([start date] to [end date])   **Stage:** [found / scale / maintain, per lifecycle.md]   **Verified by:** [Head of Quality, date]
+**Prepared by:** [CEO, with the finance skill on the financials and the Corporate Secretary on the record]   **For:** [the board / the Founder as chair]   **Quarter:** Q[n] [YYYY] ([start date] to [end date])   **Stage:** [found / scale / maintain, per lifecycle.md]   **Verified by:** [Head of Quality, date]
 
 ---
 
@@ -45,7 +45,7 @@ Fill whatever frontmatter the venture's `Administration/` files use under the re
 
 ## Page 2 - Financials, runway, and the plan-versus-actual (outward)
 
-*Owner: CFO, with the FP&A Analyst on the model and the Controller on the close. Every figure ties to the financial model, the close package, or `Financials.md`; the source is named.*
+*Owner: the finance skill's ★ Financial Planning Lead, who routes the model and the close inside its team. Every figure ties to the financial model, the close package, or `Financials.md`; the source is named.*
 
 **Cash and runway (the survival number).** [Cash on hand, monthly net burn, and runway in months at current burn, then at planned burn. State the date the company runs out of money under each case and what the plan is to extend it. This is the number a board reads first; lead the page with it.]
 
@@ -68,7 +68,7 @@ Fill whatever frontmatter the venture's `Administration/` files use under the re
 
 ## Page 3 - Governance, risk, and the corporate record (outward)
 
-*Owner: Corporate Secretary for the record, General Counsel for legal and compliance, with the relevant chief on each risk. The Corporate Secretary composes; the skill writes.*
+*Owner: Corporate Secretary for the record, the legal skill's ★ General Counsel for legal and compliance, with the relevant department lead on each risk. The Corporate Secretary composes; board writes.*
 
 **Decisions of record this quarter.** [The board-level and major management decisions made since the last meeting, each as a one-line entry: the call, the decider, the date, and a pointer to its decision memo in `Administration/Decisions.md`. This is the governance trail; it ties this six-pager to the decisions behind it.]
 
@@ -78,8 +78,8 @@ Fill whatever frontmatter the venture's `Administration/` files use under the re
 
 | Risk | Likelihood | Impact | Owner | Mitigation / status |
 |---|---|---|---|---|
-| [the risk] | [H/M/L] | [H/M/L] | [chief] | [what is being done] |
-| [the risk] | [H/M/L] | [H/M/L] | [chief] | [what is being done] |
+| [the risk] | [H/M/L] | [H/M/L] | [department lead] | [what is being done] |
+| [the risk] | [H/M/L] | [H/M/L] | [department lead] | [what is being done] |
 
 ---
 

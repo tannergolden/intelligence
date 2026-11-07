@@ -1,0 +1,32 @@
+{
+  "//": "The trigger test for operations, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw. Never edit it by hand.",
+  "skill": "operations",
+  "runs": 3,
+  "threshold": 0.5,
+  "should_trigger": [
+    "write an SOP for how we onboard new wholesale accounts",
+    "map our order fulfillment process and find where it slows down",
+    "build a project plan for our warehouse move with owners and milestones",
+    "help me pick between these three packaging suppliers for my company",
+    "our supplier keeps missing delivery dates, what should we do about them",
+    "set up a vendor scorecard for the bakery's flour supplier",
+    "what's on the critical path for opening our second store",
+    "document our returns process so anyone on the team can run it",
+    "we keep running out of stock at the shop, fix our reorder process",
+    "plan the switch to a new shipping carrier for our online store"
+  ],
+  "should_not_trigger": [
+    "turn the board's expansion decision into an execution plan across every department",
+    "should we outsource fulfillment or keep it in house",
+    "review the liability and termination clauses in our supplier contract",
+    "set next year's budget for the warehouse",
+    "set up single sign-on and a help desk tool for our staff",
+    "hire two warehouse associates and write the job descriptions",
+    "research which third-party logistics providers operate in Germany",
+    "independently verify the SOP the ops team wrote before we adopt it",
+    "define how we calculate on-time delivery for every dashboard",
+    "brainstorm ways we could cut our shipping costs",
+    "chart our on-time delivery rate by month",
+    "a customer says their order arrived damaged, write them a reply"
+  ]
+}

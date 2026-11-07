@@ -10,7 +10,7 @@ The five phases the skill runs:
 
 1. **Frame (the chair).** State the decision as one question at the right altitude: broad enough to admit real options, narrow enough to give traction, never a baked-in answer. Carry the situation, the complication, and the criteria the call will be judged on (SCQA, below). The chair (the CEO) lays out a MECE set of 2 to 3 genuine options. Restate the frame a few ways before any view is taken: a wrong frame decides the wrong question. Good board practice sends the framing and the pre-read far enough ahead that members arrive prepared, so the meeting is strategic rather than informational (AHA Trustee Services, "Deliberate Decision-Making").
 
-2. **Convene (independent functional views).** Each relevant department lead forms its view in isolation, on the same framed question and criteria, before any discussion. This is the anti-anchoring discipline (see `synthesis.md`): independent input first, so the room is not steered by the first or the most senior voice.
+2. **Convene (independent functional views).** Each relevant department lead, dispatched from its own department skill (`workforce.md`), forms its view in isolation, on the same framed question and criteria, before any discussion. This is the anti-anchoring discipline (see `synthesis.md`): independent input first, so the room is not steered by the first or the most senior voice.
 
 3. **Challenge (structured dissent).** Before the call hardens, a devil's advocate argues the opposing case and a pre-mortem imagines the decision has failed. The chair "creates space for dissent, and builds consensus without steamrolling minority views" (Board-room.org). The frameworks are in `frameworks.md`.
 
@@ -30,7 +30,7 @@ The chair "guides the conversation, ensures that all directors have an opportuni
 
 The board is the governing body: it sets strategy, oversees management, and protects the owners' interests, while management runs day-to-day execution (Ideals, "Board of Directors vs Management"). The split creates checks and balances: the board holds strategic oversight; management retains daily control except on major strategic shifts. The board owes fiduciary duties: the duty of care (informed, diligent decisions), the duty of loyalty (the company's interest over personal), and the duty of obedience (alignment with mission and law) (ESOP Partners; NACD, "Fiduciary Duties of Corporate Directors").
 
-In this skill's workforce the hierarchy is explicit: the Founder sits above the CEO. So the board decides and names an owner for reversible, in-mandate calls, and escalates irreversible or major calls to the Founder as the decider, exactly as a management team escalates a board-reserved matter to its board. The line the board draws between what it decides and what it escalates is the same line a real board draws between management decisions and board-reserved matters (mergers, large irreversible investments, a change of direction).
+In the company board runs, the hierarchy is explicit: the Founder sits above the CEO. So the board decides and names an owner for reversible, in-mandate calls, and escalates irreversible or major calls to the Founder as the decider, exactly as a management team escalates a board-reserved matter to its board. The line the board draws between what it decides and what it escalates is the same line a real board draws between management decisions and board-reserved matters (mergers, large irreversible investments, a change of direction).
 
 ## SCQA, the framing spine
 

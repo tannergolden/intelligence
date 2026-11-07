@@ -1,12 +1,13 @@
-# Life events - the money checklist for each
+# Life events and company events - the money checklist for each
 
-A life event runs as a deep plan. Read the event's entry before dispatching: it names the seats to convene, the time-critical items to date first, and the first moves. Every window below is the usual US one, varies by plan and state, and is verified at the source before it is quoted; date each one in the delivery (and, in a private money repository, in its deadline list, per `data-and-writes.md`).
+A life event, or a company event in a company the user runs, runs as a deep plan. Read the event's entry before dispatching: it names the seats to convene, the time-critical items to date first, and the first moves. Every window below is the usual US one, varies by plan and state, and is verified at the source before it is quoted; date each one in the delivery (and, in a private money repository or a company finance repository, in its deadline list, per `data-and-writes.md`).
 
 ## Rules for every event
 
 - **Time-critical items first.** Date every window before any optimizing; a missed window usually cannot be reopened.
 - **Big, irreversible decisions wait** until the user is ready, most of all after a death, a divorce or a windfall.
 - **Beneficiaries, coverage and the budget** are checked at every event, because each one changes at least one of them.
+- **A company event has a household side.** The company's money and the founder's own are worked on one fact sheet, each figure marked by unit, and each side's answer goes to its own records; a business decision inside the event is the board skill's, and every equity or corporate document is drafted by the legal skill and signed by the user.
 
 ## A new job or an offer
 
@@ -15,7 +16,7 @@ A life event runs as a deep plan. Read the event's entry before dispatching: it 
 
 ## A layoff or job loss
 
-- Seats: The Cash Flow Analyst first (cut to essentials, the emergency fund's runway in months, unemployment insurance and any means-tested benefits now in reach, and hardship programs before any payment is missed), the Investment & Retirement Analyst (severance terms, the unvested match, a plan loan, the workplace plan's rollover, the plan's COBRA dates), the Insurance & Estate Specialist (health coverage: she decides COBRA or a Marketplace plan, priced net of the premium tax credit), the Tax Strategist (unvested equity and option exercise windows; withholding on severance; unemployment benefits are taxable).
+- Seats: The Cash Flow Analyst first (cut to essentials, the emergency fund's runway in months, unemployment insurance and any means-tested benefits now in reach, and hardship programs before any payment is missed), the Investment & Retirement Analyst (severance terms, the unvested match, a plan loan, the workplace plan's rollover, the plan's COBRA dates), the Insurance & Estate Specialist (health coverage: the specialist decides COBRA or a Marketplace plan, priced net of the premium tax credit), the Tax Strategist (unvested equity and option exercise windows; withholding on severance; unemployment benefits are taxable).
 - Time-critical: file for unemployment at once; COBRA or a Marketplace plan decided inside the Marketplace's 60 days from losing job coverage (COBRA's own election window runs 60 days from its notice, and an elected COBRA is retroactive), since leaving COBRA early opens no special enrollment period except at Open Enrollment; option exercise windows, often 90 days, and an ISO not exercised within three months of leaving is taxed as an NSO; a workplace plan loan can come due faster after separation, and an unpaid balance is taxed unless rolled over by the return's due date, extensions included.
 
 ## Marriage
@@ -60,7 +61,7 @@ A life event runs as a deep plan. Read the event's entry before dispatching: it 
 ## Going self-employed or starting a company
 
 - Seats: The Tax Strategist (quarterly estimated payments, self-employment tax, the premium tax credit's income limits when the household buys Marketplace coverage, and any unvested equity and option windows left at the old employer), the Cash Flow Analyst (irregular income and a nine-to-twelve-month reserve), the Insurance & Estate Specialist (health coverage priced net of the premium tax credit, disability and liability coverage), the Investment & Retirement Analyst (a solo 401(k) or SEP IRA, and the match forfeited at the old employer).
-- The venture itself is `board`'s, staffed by AR's Finance & Accounting department; keep the business and personal books separate from day one.
+- Keep the business and personal books separate from day one. The company's own money (its books, its cap table and the 83(b), its tax and its insurance) runs as the company events below, and a business decision or its strategy is the board skill's.
 
 ## Approaching retirement
 
@@ -79,3 +80,34 @@ A life event runs as a deep plan. Read the event's entry before dispatching: it 
 ## Caring for an aging parent
 
 - Seats: The Insurance & Estate Specialist (long-term care and an elder law attorney), the Tax Strategist (dependent status and credits), the Cash Flow Analyst (the care costs in the budget).
+
+## Company events
+
+For a company the user runs. The deliverables' shapes and their completion evidence are in `company.md`.
+
+### Incorporating and issuing founder stock
+
+- Seats: The Tax Strategist (the entity's tax classification, weighed beside the legal skill's formation; the 83(b) election for founder stock with vesting; the QSBS issuance date; the state registrations and the franchise tax by each method the state allows), the lead (the cap table opened from the executed documents), the Cash Flow Analyst (the company's own bank account and books from day one, and the accounting basis), the Insurance & Estate Specialist (the first business coverage, and founder succession once there are co-founders).
+- Time-critical: the 83(b) election within 30 days of the stock's issue, with no extension, which the user files and keeps proof of; an S corporation election's deadline, if one is chosen.
+
+### A financing round (a SAFE, a note or a priced round)
+
+- Seats: The Investment & Retirement Analyst (the round sized to its milestone, the pre- and post-money valuation, the option pool's top-up, every SAFE and note converted, each holder's dilution, the pro forma cap table), the lead (the recommendation, then the cap table once the documents are executed, and the runway restated), the Tax Strategist (the QSBS dates for new stock, any 83(b) for new restricted stock, and a fresh 409A after a priced round before new grants), the Insurance & Estate Specialist (D&O in force before an investor takes a board seat), the Cash Flow Analyst (the new cash placed the day it lands: insured deposits spread across banks above the limit, Treasury bills or a government money market fund).
+- Time-critical: the closing date; any 83(b) window; nothing recorded on the cap table until the legal skill's documents are signed.
+
+### The first hire, or a new option grant
+
+- Seats: The Investment & Retirement Analyst (the hire's fully loaded cost and its effect on runway in the model; the people skill sets the role, the band and the offer), the Tax Strategist (payroll registered before the first paycheck, its deposits dated, worker classification flagged to the legal and people skills, a current 409A before any grant), the Insurance & Estate Specialist (workers' compensation wherever the state requires it), the lead (the grant on the cap table once it is executed).
+- Time-critical: the first payroll's tax deposits; the state's employer registrations.
+
+### A co-founder leaving
+
+- Refer first: the legal skill, for the repurchase of unvested shares under the stock agreement and the separation documents.
+- Seats: The lead (the cap table once the repurchase is executed), the Tax Strategist (the tax of the repurchase on both sides), the Insurance & Estate Specialist (key person coverage and the buy-sell), the Investment & Retirement Analyst (the model without the role, and the hire that replaces it).
+- Time-critical: any repurchase window the stock agreement sets.
+
+### Selling a company or winding it down
+
+- Refer first: the legal skill and a CPA, and an insolvency attorney if the company cannot pay its debts.
+- Seats: The lead (the waterfall: liquidation preferences, participation and conversion, and what each holder receives), the Tax Strategist (QSBS, the deal's tax structure, the final returns), the Cash Flow Analyst (final payroll and its tax deposits, and every tax owed, before any distribution, since withheld payroll taxes left unpaid can become a responsible person's personal liability), the Insurance & Estate Specialist (tail coverage for D&O and the other claims-made policies).
+- The founder's side runs alongside as a windfall, or as a job loss, on the household's rules.

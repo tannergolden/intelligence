@@ -1,8 +1,8 @@
 # Verification - the independent verifier before a deliverable lands
 
-*Head of Quality checks every consequential deliverable before the skill persists it, so produced work is grounded, complete, and honest. Read in operate mode, after the specialists return and before the write-gate. The verifier never produced the work it checks; a producer never grades its own output.*
+*The quality skill's ★ Head of Quality checks every consequential deliverable before board persists it, so produced work is grounded, complete, and honest. Read in operate mode, after the specialists return and before the write-gate. The verifier never produced the work it checks; a producer never grades its own output.*
 
-In operate mode a lead frames a brief, its specialists produce the work, and then, before the skill writes anything, the **Head of Quality** verifies it. This is the third phase of the universal run shape (challenge-or-verify), and in operate mode it is a hard gate, not a courtesy pass: the skill does not call the write-gate until the verifier has cleared the deliverable or the run has stopped on a documented failure. Verification sits between the producer and the writer on purpose, because the two roles the skill must never collapse are the one that makes the work and the one that judges it. See `specialist-dispatch.md` for how the work arrives, and `write-gate.md` for what happens after it clears.
+In operate mode a department's lead frames a brief, its specialists produce the work, and then, before board writes anything, the **Head of Quality**, the lead of the quality skill's team, verifies it. A department skill handed a whole deliverable returns it to the same check. This is the third phase of the universal run shape (challenge-or-verify), and in operate mode it is a hard gate, not a courtesy pass: board does not call the write-gate until the verifier has cleared the deliverable or the run has stopped on a documented failure. Verification sits between the producer and the writer on purpose, because the two roles board must never collapse are the one that makes the work and the one that judges it. See `specialist-dispatch.md` for how the work arrives, and `write-gate.md` for what happens after it clears.
 
 ## Why an independent verifier, and why not self-check
 
@@ -20,7 +20,7 @@ When in doubt, treat it as consequential. The cheap internal drafts that are non
 
 ## The completion-evidence requirement
 
-A deliverable does not arrive as "done." It arrives with the **evidence that it is done**, and the verifier checks the evidence, not the claim. Each operate brief carries a **Definition of Done** from the department deliverable catalog (`department-deliverable-catalog.md`): the concrete, checkable conditions the artifact must meet to count as complete. The producer returns the artifact plus its completion evidence against that definition; the Head of Quality verifies the evidence supports the claim of done before anything is written.
+A deliverable does not arrive as "done." It arrives with the **evidence that it is done**, and the verifier checks the evidence, not the claim. Each operate brief carries a **Definition of Done** from the owning department skill's `references/deliverables.md` (`routing.md` names the skill), or, for board's own deliverables, from `routing.md`: the concrete, checkable conditions the artifact must meet to count as complete. The producer returns the artifact plus its completion evidence against that definition; the Head of Quality verifies the evidence supports the claim of done before anything is written.
 
 Completion evidence is specific to the artifact and stated in checkable terms:
 
@@ -31,6 +31,8 @@ Completion evidence is specific to the artifact and stated in checkable terms:
 - For a **GTM or brand artifact**: the positioning matches the strategy on file, the claims are supportable, and nothing contradicts a published venture artifact.
 
 If the brief carried no Definition of Done, that is itself a finding: the verifier sends it back to the lead to define done before the work is graded, because a deliverable with no completion criteria cannot be verified and must not be persisted on faith.
+
+Some department skills carry a reviewer of their own (the finance skill's Plan Reviewer, for one). When a deliverable handed to such a skill comes back already cleared by that reviewer, who did not produce it, the review travels with it as part of its completion evidence. Inside a board run the Head of Quality is still the gate before board writes: it reads that review like any other evidence, checks what it did not cover, and does not re-run what it shows was checked.
 
 ## Ground every number in a tool or a source
 

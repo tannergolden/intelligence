@@ -1,0 +1,30 @@
+{
+  "skill": "operations",
+  "note": "Light trigger check set: should-trigger phrasings about a company or venture's operations (SOPs and process design, program and project plans, vendors and procurement, logistics) and near-miss negatives a neighbouring skill owns. Used by the description trigger check.",
+  "should_trigger": [
+    "write an SOP for how we onboard new wholesale accounts",
+    "map our order fulfillment process and find where it slows down",
+    "build a project plan for our warehouse move with owners and milestones",
+    "help me pick between these three packaging suppliers for my company",
+    "our supplier keeps missing delivery dates, what should we do about them",
+    "set up a vendor scorecard for the bakery's flour supplier",
+    "what's on the critical path for opening our second store",
+    "document our returns process so anyone on the team can run it",
+    "we keep running out of stock at the shop, fix our reorder process",
+    "plan the switch to a new shipping carrier for our online store"
+  ],
+  "near_miss": [
+    {"query": "turn the board's expansion decision into an execution plan across every department", "route": "board"},
+    {"query": "should we outsource fulfillment or keep it in house", "route": "board"},
+    {"query": "review the liability and termination clauses in our supplier contract", "route": "legal"},
+    {"query": "set next year's budget for the warehouse", "route": "finance"},
+    {"query": "set up single sign-on and a help desk tool for our staff", "route": "systems"},
+    {"query": "hire two warehouse associates and write the job descriptions", "route": "people"},
+    {"query": "research which third-party logistics providers operate in Germany", "route": "research"},
+    {"query": "independently verify the SOP the ops team wrote before we adopt it", "route": "quality"},
+    {"query": "define how we calculate on-time delivery for every dashboard", "route": "analytics"},
+    {"query": "brainstorm ways we could cut our shipping costs", "route": "discover"},
+    {"query": "chart our on-time delivery rate by month", "route": "visualize"},
+    {"query": "a customer says their order arrived damaged, write them a reply", "route": "customers"}
+  ]
+}
