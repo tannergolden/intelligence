@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**`4.0.4`**
+**`5.0.0`**
 
 Semantic versioning, `MAJOR.MINOR.PATCH`, with no leading zeros, as [SemVer 2.0.0](https://semver.org) requires. This value matches `metadata.version` in `SKILL.md`, and the validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
 
@@ -19,6 +19,10 @@ Semantic versioning, `MAJOR.MINOR.PATCH`, with no leading zeros, as [SemVer 2.0.
 ## Major Updates
 
 > Breaking changes, restructured pipeline, incompatible output. Most recent 4 entries.
+
+### `5.0.0` - 2026-11-07
+
+An agent is known by its role title alone. The validator now refuses an agent spec that carries a `name` in its frontmatter or a **Name:** line in its Identity block, and checks titles, not names, for uniqueness across the homes. The agent standard, both templates and the Development team drop their spoken names, and the team's rules make the title the address.
 
 ### `4.0.0` - 2026-10-19
 

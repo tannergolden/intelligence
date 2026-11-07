@@ -8,7 +8,7 @@ The lead synthesizes the draft in this shape, the Plan Reviewer rules on it, and
 
 ## Bottom line
 
-[The recommendation in one or two sentences, in the Founder's units.]
+[The recommendation in one or two sentences, in the user's units.]
 
 ## Do this next
 
@@ -50,4 +50,4 @@ The lead synthesizes the draft in this shape, the Plan Reviewer rules on it, and
 
 ## Saved
 
-- [What the skill wrote (dated deadlines, open loops) and what it offers to write (a Profile change, a decision record, a project), or "nothing"]
+- [What the skill wrote (dated deadlines, open loops) and what it offers to write (a financial-picture change, a decision record, a project), only in a private money repository; otherwise "nothing", with the deadlines and open loops listed above for the user to keep]

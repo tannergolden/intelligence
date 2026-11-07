@@ -6,7 +6,7 @@ One row per finding, then one verdict. The Plan Reviewer rules and never fixes; 
 |---|----------|------------|----------------|-----|
 | 1 | [FATAL, MATERIAL or MINOR] | [the plan's line, quoted] | [suitability, the math, currency and sourcing, the limits, risk] | [the prescribed fix] |
 
-- **FATAL:** acting on it would harm the Founder: an eligibility error, a horizon mismatch, a skipped foundation, a missed deadline, a math error that flips the answer, a breach of the team's limits.
+- **FATAL:** acting on it would harm the user: an eligibility error, a horizon mismatch, a skipped foundation, a missed deadline, a math error that flips the answer, a breach of the team's limits.
 - **MATERIAL:** wrong or missing but not answer-flipping: a stale or uncited figure, a missing trade-off, a missing referral.
 - **MINOR:** clarity.
 

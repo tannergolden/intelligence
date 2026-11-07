@@ -12,7 +12,8 @@
     "format these notes for Obsidian",
     "turn this rough outline into an essay",
     "reword this message so it sounds less harsh",
-    "write the body of this Library article",
+    "write the body of this docs page",
+    "rewrite the CONTRIBUTING guide so a newcomer can follow it",
     "edit this cover letter"
   ],
   "should_not_trigger": [
@@ -20,12 +21,14 @@
     "what is 17 times 24",
     "refactor this function to use async await",
     "build me a skill that drafts invoices",
-    "run the vault checks",
+    "run the repository's lint checks",
+    "regenerate the API reference from the docstrings",
+    "update the agent spec for the QA Engineer",
     "diagram the OAuth login flow for me",
     "what is the capital of Australia",
     "sort my inbox",
     "look into whether GLP-1 drugs reduce cardiovascular risk",
     "fix the bug in my Python script"
   ],
-  "notes": "Editorial is structurally scoped: it fires on producing or improving prose a person will read (emails, messages, docs, notes, article bodies), even when the word editorial is absent. It does NOT fire on investigating facts (research), building skills (develop), a chat-only visual (visualize), arithmetic or established-fact lookups, code tasks, or vault-script maintenance. 'Diagram this for me' as a chat answer is visualize; a diagram inside a file under edit would be editorial. Auto-fire also excludes System, agent-roster, log, template, index, and script files and any write a vault script makes, even though those are technically text."
+  "notes": "Editorial is structurally scoped: it fires on producing or improving prose a person will read (emails, messages, docs, notes, article bodies), even when the word editorial is absent. It does NOT fire on investigating facts (research), building skills (develop), a chat-only visual (visualize), arithmetic or established-fact lookups, code tasks, or running a repository's scripts and checks. 'Diagram this for me' as a chat answer is visualize; a diagram inside a file under edit would be editorial. Auto-fire also excludes code, generated or machine-written files (logs, build output, any write a script or tool makes), templates, and agent and skill specs, in any repository, even though those are technically text; the repository's own style rules govern the prose it does fire on."
 }

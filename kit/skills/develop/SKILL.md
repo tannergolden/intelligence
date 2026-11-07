@@ -2,7 +2,7 @@
 name: develop
 description: Builds, updates and improves Agent Skills, and the agents and teams they dispatch, so a skill loads and works in every coding app. Decides first whether the need is a skill at all or belongs in a rule, a hook or a script; researches before writing; reuses an agent before creating one; gates every build with a deterministic validator and independent reviewers; and learns from a skill's mistakes. Use when the user asks to build, create, write, add, package, share, fix or improve a skill, an agent, a team of agents, a slash command or a reusable procedure, or says an agent keeps getting the same multi-step task wrong, even if they never say skill.
 license: MIT
-metadata: { 'team': 'Development', 'version': '4.0.4' }
+metadata: { 'team': 'Development', 'version': '5.0.0' }
 ---
 
 # 🏭 Develop - the skill and agent factory
@@ -51,7 +51,7 @@ Develop builds skills, the single-file agents they dispatch, and the team roster
 
 ## How develop runs: it dispatches the Development team
 
-Develop builds with its Development team, whose specs ship in `agents/`, named in its `metadata.team`. When it orchestrates, develop embodies the team's ★ Engineering Lead (Maxwell). Develop runs the interactive requirements and the research itself, then dispatches the team's roles for the build, each briefed from scratch per `references/orchestration.md` with the skill-specific objective: the **Software Architect** designs the skill or agent, the **Full-Stack Engineer** writes the files, and the **QA Engineer** and **Application Security Engineer** verify it independently in a fresh context. The deterministic validator is a script, not an agent. The premium seat is that independent verification: a builder cannot honestly review its own work, so the reviewers arrive fresh, never "now check your work." The one rule that never bends, which the team's own roster also enforces, is that the reviewer is a fresh context, never the builder grading itself. Where the app cannot start a subagent, follow the fallback in `references/orchestration.md` and ask your user to review.
+Develop builds with its Development team, whose specs ship in `agents/`, named in its `metadata.team`. When it orchestrates, develop embodies the team's ★ Engineering Lead. Develop runs the interactive requirements and the research itself, then dispatches the team's roles for the build, each briefed from scratch per `references/orchestration.md` with the skill-specific objective: the **Software Architect** designs the skill or agent, the **Full-Stack Engineer** writes the files, and the **QA Engineer** and **Application Security Engineer** verify it independently in a fresh context. The deterministic validator is a script, not an agent. The premium seat is that independent verification: a builder cannot honestly review its own work, so the reviewers arrive fresh, never "now check your work." The one rule that never bends, which the team's own roster also enforces, is that the reviewer is a fresh context, never the builder grading itself. Where the app cannot start a subagent, follow the fallback in `references/orchestration.md` and ask your user to review.
 
 ## Dispatch scaling
 

@@ -43,7 +43,16 @@ def load(name: str, file: str):
 kit = load('kit', 'kit.py')
 
 SKILL = ('---\nname: processing-invoices\ndescription: Extracts line items from invoices. '
-         'Use when the user has invoices to read.\n---\n\n# Processing invoices\n')
+         'Use when the user has invoices to read.\nlicense: MIT\nmetadata: { version: "1.0.0" }\n---\n\n'
+         '# Processing invoices\n\n## Boundaries\n\nInvoices only.\n')
+CHANGELOG = '# processing-invoices Changelog\n\n## Current Version\n\n**`1.0.0`**\n'
+ROSTER = ('---\ntitle: "{team}"\ndescription: "Dispatch this team to run {team}."\nmembers: [{members}]\n'
+          'lead: "\u2605 {team} Lead"\n---\n\n# {team}\n')
+SPEC = ('---\ntitle: "{title}"\ndescription: "Dispatch this agent to do {title} work."\n'
+        'tools: Read, Grep, Glob\n---\n\n# {title}\n\n## Identity\n\n- **Persona:** x\n'
+        '- **Voice:** x\n\n' + ''.join(f'## {section}\n\nx\n\n' for section in (
+            'Role & Objective', 'Inputs', 'Method', 'Output contract', 'Examples', 'Boundaries', 'Recovery',
+            'Non-negotiables')))
 AGENT = ('---\nname: reviewer\ndescription: Reviews a change. Use after a change.\ntools: read, search, execute\n'
          '---\n\nYou review. Quote "this" and a \\ backslash.\n')
 
@@ -56,6 +65,8 @@ class Hub(unittest.TestCase):
         self.write('kit/guard.py', f'# {kit.OWNED}\nprint("guard")\n')
         self.write('kit/skills/processing-invoices/SKILL.md', SKILL)
         self.write('kit/skills/processing-invoices/references/forms.md', 'Forms.\n')
+        self.write('kit/skills/processing-invoices/License.txt', 'MIT\n')
+        self.write('kit/skills/processing-invoices/Changelog.md', CHANGELOG)
         self.write('kit/subagents/reviewer.md', AGENT)
         self.write('kit/subagents/README.md', 'The folder log, which is not an agent.\n')
 
@@ -86,7 +97,8 @@ class TestSound(Hub):
         data = json.loads(first)
         self.assertEqual(sorted(data), ['//', 'format', 'guard', 'skills', 'subagents'])
         self.assertEqual(data['format'], 2, 'the format without the knowledge facts')
-        self.assertEqual(sorted(data['skills']['processing-invoices']), ['SKILL.md', 'references/forms.md'])
+        self.assertEqual(sorted(data['skills']['processing-invoices']),
+                         ['Changelog.md', 'License.txt', 'SKILL.md', 'references/forms.md'])
         self.assertEqual(list(data['subagents']), ['reviewer'], 'the README is not an agent')
 
 
@@ -133,6 +145,39 @@ class TestSkills(Hub):
     def test_a_folder_without_skill_md(self) -> None:
         self.write('kit/skills/empty-skill/notes.md', 'No skill here.\n')
         self.assertProblem('has no SKILL.md')
+
+
+class TestTeams(Hub):
+    """Every skill, agent and team passes develop's validator, and no department of the workforce tops six."""
+
+    def department(self, size: int) -> None:
+        team = 'Sales'
+        titles = [f'\u2605 {team} Lead'] + [f'{team} Seat {n}' for n in range(1, size)]
+        for title in titles:
+            self.write(f'{kit.WORKFORCE_DIR}/{title}.md', SPEC.format(title=title))
+        members = ', '.join(f'"{title}"' for title in titles)
+        self.write(f'{kit.WORKFORCE_DIR}/{team}.md', ROSTER.format(team=team, members=members))
+        self.write('kit/skills/board/SKILL.md', SKILL.replace('processing-invoices', 'board'))
+        self.write('kit/skills/board/License.txt', 'MIT\n')
+        self.write('kit/skills/board/Changelog.md', CHANGELOG)
+
+    def test_a_department_of_six_is_sound(self) -> None:
+        self.department(6)
+        self.assertEqual(self.problems(), [])
+
+    def test_a_department_of_seven_is_refused(self) -> None:
+        self.department(7)
+        self.assertProblem('7 agents; a department keeps at most its 6 most critical')
+
+    def test_an_agent_breaking_develops_standard_is_refused(self) -> None:
+        self.department(2)
+        self.write(f'{kit.WORKFORCE_DIR}/Sales Seat 1.md', SPEC.format(title='Sales Seat 1')
+                   .replace('## Recovery', '## Elsewhere'))
+        self.assertProblem('is missing its Recovery section')
+
+    def test_a_skill_breaking_develops_standard_is_refused(self) -> None:
+        (self.root / 'kit/skills/processing-invoices/Changelog.md').unlink()
+        self.assertProblem('needs Changelog.md')
 
 
 class TestSubagents(Hub):
@@ -199,11 +244,11 @@ class TestTheRealKit(unittest.TestCase):
     def test_they_break_no_rule(self) -> None:
         self.assertEqual(kit.problems(self.root), [])
 
-    def test_the_skills_are_develop_and_the_faculties_the_pin_records(self) -> None:
-        # The hub writes one skill (ADR-0021) and carries the faculties it has pinned (ADR-0033); no other.
+    def test_the_hub_writes_every_skill(self) -> None:
+        # The hub writes every skill and agent the kit carries (ADR-0037); none is copied from elsewhere.
         bundle, _ = kit.bundle(self.root)
-        pin = json.loads((self.root / 'kit' / 'faculties.json').read_text(encoding='utf-8'))
-        self.assertEqual(sorted(bundle['skills']), sorted(['develop', *pin['skills']]))
+        self.assertEqual(sorted(bundle['skills']), ['board', 'develop', 'discover', 'editorial', 'finance',
+                                                    'identify', 'research', 'visualize'])
         self.assertEqual(sorted(bundle['subagents']), ['reviewer', 'worker'])
 
 

@@ -53,14 +53,12 @@ every command below.
    by hand. After that, `make merge` lands every sync whose diff is only the
    block and whose checks passed.
 
-**The faculties** ride a release only once they are pinned. To carry a new
-release of the knowledge template, run `make faculties VERSION=vX.Y.Z` with
-the template's version, then `make render` and `make check`, and commit it
-all on `Development` before step 1; dotfiles needs nothing but the new pins
-from step 3. Before step 1 of any release that carries faculties,
-`python3 .github/scripts/faculties.py --verify` downloads the pinned release
-again and fails unless the pin still holds it. A faculty's folder cannot describe itself in `kit/skills/README.md`,
-so give each new one's row its purpose by hand, once.
+**A changed skill** rides the next release like any other source: after
+editing one, run `python3 .github/scripts/evals.py --draw` if its
+`assets/trigger-evals.json` changed, then `make render` and `make check`, and
+commit it all on `Development` before step 1. A skill's folder cannot
+describe itself in `kit/skills/README.md`, so give each new one's row its
+purpose by hand, once.
 
 Every version stays: the stub passes `keep-versions: true`, so standards' Cut
 Release never prunes here, because a pin to a full version must keep

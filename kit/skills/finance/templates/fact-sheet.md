@@ -1,9 +1,9 @@
 # Fact sheet (the skill fills this before dispatching)
 
-The facts the answer turns on, and nothing more. It lives in the run workspace outside the vault, may hold exact figures for the run, and is deleted when the run ends, whether it shipped or not (`references/data-and-writes.md`). Every seat and the Plan Reviewer read this same sheet.
+The facts the answer turns on, and nothing more. It lives in the run workspace outside any repository, may hold exact figures for the run, and is deleted when the run ends, whether it shipped or not (`references/data-and-writes.md`). Every seat and the Plan Reviewer read this same sheet.
 
 - **Question:** [the one question, as framed]
-- **Decision it serves and its deadline:** [what the Founder will do with the answer, and by when]
+- **Decision it serves and its deadline:** [what the user will do with the answer, and by when]
 - **Household unit:** [one person, a couple, a family; who shares money; dependents]
 - **Jurisdiction and tax year:** [country, state of residence, any other state with income; the tax year in question]
 - **Mode and tier:** [ask, plan or review; quick, standard or deep]
@@ -12,15 +12,15 @@ The facts the answer turns on, and nothing more. It lives in the run workspace o
 
 | Fact | Value | Source | As of | Estimate? |
 |------|-------|--------|-------|-----------|
-| [net monthly income] | [figure] | [Profile, the Founder in chat, a document] | [date] | [yes or no] |
+| [net monthly income] | [figure] | [the user in chat, a document, a private money repository's record] | [date] | [yes or no] |
 
-## From the Profile
+## From the user's records (only in a private money repository; otherwise from the conversation)
 
-- **Goals that bear on this:** [from `Profile/Goals/` and `Profile/Finances.md`]
-- **Risk posture and money style:** [from `Profile/Finances.md`]
-- **Values that bear on this:** [from `Profile/Values/`]
-- **Settled decisions not to relitigate:** [from `Memory/Decisions/`]
-- **Known deadlines:** [from `Memory/Dates.md`]
+- **Goals that bear on this:** [recorded goals and the financial picture, or as stated]
+- **Risk posture and money style:** [from the financial picture, or as stated]
+- **Values that bear on this:** [recorded values, or as stated]
+- **Settled decisions not to relitigate:** [from decision records, or as stated]
+- **Known deadlines:** [from the deadline list, or as stated]
 
 ## Foundations
 
@@ -43,5 +43,5 @@ Alongside, from the first step:
 
 ## Open questions
 
-- **Asked and answered:** [the facts the Founder supplied this run]
+- **Asked and answered:** [the facts the user supplied this run]
 - **Declined or unknown:** [what the plan assumes in their place, and the range used]

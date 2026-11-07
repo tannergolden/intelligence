@@ -1,5 +1,5 @@
 {
-  "//": "The trigger test for editorial, taken from its assets/trigger-evals.json by .github/scripts/faculties.py. Never edit it by hand.",
+  "//": "The trigger test for editorial, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw. Never edit it by hand.",
   "skill": "editorial",
   "runs": 3,
   "threshold": 0.5,
@@ -14,7 +14,8 @@
     "format these notes for Obsidian",
     "turn this rough outline into an essay",
     "reword this message so it sounds less harsh",
-    "write the body of this Library article",
+    "write the body of this docs page",
+    "rewrite the CONTRIBUTING guide so a newcomer can follow it",
     "edit this cover letter"
   ],
   "should_not_trigger": [
@@ -22,7 +23,9 @@
     "what is 17 times 24",
     "refactor this function to use async await",
     "build me a skill that drafts invoices",
-    "run the vault checks",
+    "run the repository's lint checks",
+    "regenerate the API reference from the docstrings",
+    "update the agent spec for the QA Engineer",
     "diagram the OAuth login flow for me",
     "what is the capital of Australia",
     "sort my inbox",

@@ -1,16 +1,16 @@
-<!--
+---
 title: "[Topic Title]"
 description: "[One task-shaped sentence: what this report answers.]"
-type: "record"
 review_by: "[YYYY-MM-DD: the filing date plus three months]"
--->
+---
 
 # 🔬 [Topic Title]
 
-<!-- File to Inbox/Reports/. Tiered so a reader can stop early: Bottom Line, then Key Findings,
-     then the full Coverage Map and Findings. Findings first, never a narrative of the research.
-     review_by = the filing date + 3 months (the BRAIN flat window). No inline wikilinks in the body; the only
-     link to a report is its entry in the Inbox/Reports/Reports.md index, added when the report is filed. -->
+<!-- File where the repository's instructions say reports go, or where the user names. Tiered so a reader
+     can stop early: Bottom Line, then Key Findings, then the full Coverage Map and Findings. Findings first,
+     never a narrative of the research. review_by = the filing date + 3 months (the flat window), unless the
+     repository's instructions set another. Use the frontmatter and linking rules those instructions set; when
+     they keep a reports index, add this report's entry to it when the report is filed. -->
 
 ## Bottom line
 
@@ -39,7 +39,7 @@ review_by: "[YYYY-MM-DD: the filing date plus three months]"
 
 ## Promoted to the durable layer
 
-- [Any finding that must outlive this report, and where it was promoted (a Library/ doc, a folder namesake, etc.). "None" is a valid answer.]
+- [Any finding that must outlive this report, and where it was promoted (a reference doc, a folder note, a skill's references, etc.). "None" is a valid answer.]
 
 ## Freshness
 

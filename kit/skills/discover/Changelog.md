@@ -1,16 +1,10 @@
-<!--
-title: "discover - Changelog"
-description: "Change history for the discover skill."
-type: "record"
-keywords: ["version history", "release notes", "discover changes", "revision log"]
--->
 # discover Changelog
 
 ## Current Version
 
-**`1.1.0`**
+**`1.2.0`**
 
-The version is SemVer, per standards' [versioning policy](https://github.com/tannergolden/standards/blob/Development/docs/distribution/Releases-&-Versioning.md#-versioning-policy-semver). It matches `metadata.version` in `SKILL.md`, and `check-skills.py` fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
+The version is SemVer, per standards' [versioning policy](https://github.com/tannergolden/standards/blob/Development/docs/distribution/Releases-&-Versioning.md#-versioning-policy-semver). It matches `metadata.version` in `SKILL.md`, and the validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
 
 ---
 
@@ -28,11 +22,15 @@ The version is SemVer, per standards' [versioning policy](https://github.com/tan
 
 ### `1.0.0` - 2026-06-28
 
-Initial build of the discover skill: the BRAIN's ideation skill, dispatching the standing Discovery team (Sebastian's crew) to generate ideas wide then converge to a ranked shortlist by pairwise Elo tournament, to the standard generate wide, select fair. Idea records file to the new held idea pool at Inbox/Ideas/. Grounded in a research pass on ideation method (Osborn, CPS, the Double Diamond, the Diehl and Stroebe productivity evidence, Bradley-Terry and Elo, ICE and RICE, the de Bono and SCAMPER lenses, and the how-might-we briefing craft).
+Initial build of the discover skill: the BRAIN's ideation skill, dispatching the standing Discovery team (the Creative Lead's team) to generate ideas wide then converge to a ranked shortlist by pairwise Elo tournament, to the standard generate wide, select fair. Idea records file to the new held idea pool at Inbox/Ideas/. Grounded in a research pass on ideation method (Osborn, CPS, the Double Diamond, the Diehl and Stroebe productivity evidence, Bradley-Terry and Elo, ICE and RICE, the de Bono and SCAMPER lenses, and the how-might-we briefing craft).
 
 ## Minor Updates
 
 > Backward-compatible additions. Most recent 4 entries.
+
+### `1.2.0` - 2026-11-07
+
+The hub now owns and authors discover, and it is universal: the hand-over to a vault's own copy is gone, the ranked shortlist is returned in chat, and idea records and reports are filed only where the repository's instructions say ideas go, or where the user names. The roster takes develop's format, every agent spec carries `title` and drops its spoken name (an agent is known by its title alone), the idea method moves from the roster to `references/brief.md`, and the vault folder note `Discover.md` is removed.
 
 ### `1.1.0` - 2026-10-26
 
@@ -55,6 +53,3 @@ The Discovery team now ships inside the skill, in `agents/`, instead of living i
 ### `1.0.1` - 2026-10-19
 
 Moved the preflight off the retired engine: an existing file's last state is committed before an edit, since git history is the backup. The archive now carries the Discovery team, vendored when it is built.
-
-<!-- This is a BRAIN documentation node: it carries the vault's note schema above
-     (.docs/technical/vault/Note-Schema.md), not the Agent Skills schema. -->

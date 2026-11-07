@@ -7,7 +7,7 @@
     {"domain": "tax", "name": "Taxpayer Advocate Service", "url": "https://www.taxpayeradvocate.irs.gov", "use": "help when an IRS problem is not resolving through normal channels"},
     {"domain": "tax", "name": "The state's department of revenue", "url": "", "use": "state brackets, credits, residency rules and deadlines; find it from the state's official site"},
     {"domain": "tax", "name": "IRS Trump Accounts", "url": "https://www.irs.gov/trumpaccounts", "use": "the government-seeded child account: eligibility, the pilot contribution and its election"},
-    {"domain": "retirement", "name": "Social Security Administration", "url": "https://www.ssa.gov", "use": "the Founder's own benefit estimate and earnings record, claiming rules, survivor benefits"},
+    {"domain": "retirement", "name": "Social Security Administration", "url": "https://www.ssa.gov", "use": "the user's own benefit estimate and earnings record, claiming rules, survivor benefits"},
     {"domain": "retirement", "name": "Medicare", "url": "https://www.medicare.gov", "use": "enrollment periods, plan comparison, late enrollment penalties"},
     {"domain": "retirement", "name": "Department of Labor, Employee Benefits Security Administration", "url": "https://www.dol.gov/agencies/ebsa", "use": "workplace plan rights, COBRA, plan disclosures"},
     {"domain": "retirement", "name": "Pension Benefit Guaranty Corporation", "url": "https://www.pbgc.gov", "use": "what the federal guarantee covers for a private pension, and finding a lost pension"},

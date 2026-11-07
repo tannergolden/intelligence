@@ -2,7 +2,7 @@
      drafting dispatch, then threads it into every Writer and Line Editor brief so the draft is written to
      the real situation and the Line Editor gates against it. See references/intake.md for the method.
      Any field left unstated by the user takes the sensible default noted in the intake spine; an unstated
-     field gets its default, not a clarifying question. Load the voice separately from Profile/ per
+     field gets its default, not a clarifying question. Load the voice separately per
      references/voice.md. Set Message type only when the situation is a hard message (then load
      references/difficult-messages.md). No em dash. No slop. -->
 

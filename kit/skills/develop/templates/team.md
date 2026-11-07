@@ -15,11 +15,11 @@ lead: '[★ Lead Role]'
 
 ## Members
 
-<!-- One line each: role (spoken name) - what this member contributes. The star marks the lead. -->
+<!-- One line each: role - what this member contributes. The star marks the lead. -->
 
-- ★ [Lead Role] ([name]) - [what the lead does: sequences the team, resolves conflicts, runs the final gate or synthesis]
-- [Role] ([name]) - [contribution]
-- [Role] ([name]) - [contribution]
+- ★ [Lead Role] - [what the lead does: sequences the team, resolves conflicts, runs the final gate or synthesis]
+- [Role] - [contribution]
+- [Role] - [contribution]
 
 ## Dispatch
 

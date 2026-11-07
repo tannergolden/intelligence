@@ -1,16 +1,10 @@
-<!--
-title: "visualize - Changelog"
-description: "Change history for the visualize skill."
-type: "record"
-keywords: ["version history", "release notes", "visualize changes", "revision log"]
--->
 # visualize Changelog
 
 ## Current Version
 
-**`1.5.0`**
+**`1.6.0`**
 
-The version is SemVer, per standards' [versioning policy](https://github.com/tannergolden/standards/blob/Development/docs/distribution/Releases-&-Versioning.md#-versioning-policy-semver). It matches `metadata.version` in `SKILL.md`, and `check-skills.py` fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
+The version is SemVer, per standards' [versioning policy](https://github.com/tannergolden/standards/blob/Development/docs/distribution/Releases-&-Versioning.md#-versioning-policy-semver). It matches `metadata.version` in `SKILL.md`, and the validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
 
 ---
 
@@ -28,11 +22,15 @@ The version is SemVer, per standards' [versioning policy](https://github.com/tan
 
 ### `1.0.0` - 2026-06-28
 
-Initial build of the visualize skill. Rebuilt fresh on the federated-team architecture as the BRAIN's fifth faculty ("show"), dispatching the new standing Design team (Margot, Otto, Vera) to a standard of graphical integrity. Grounded in a research pass (Tufte, Cleveland and McGill, Munzner, Few, WCAG) and an adversarial design review that collapsed an initial six-role roster to a lead plus two.
+Initial build of the visualize skill. Rebuilt fresh on the federated-team architecture as the BRAIN's fifth faculty ("show"), dispatching the new standing Design team (the Design Lead, the Visualization Designer and the Design Critic) to a standard of graphical integrity. Grounded in a research pass (Tufte, Cleveland and McGill, Munzner, Few, WCAG) and an adversarial design review that collapsed an initial six-role roster to a lead plus two.
 
 ## Minor Updates
 
 > Backward-compatible additions. Most recent 4 entries.
+
+### `1.6.0` - 2026-11-07
+
+The hub now owns and authors visualize, and it is universal: the hand-over to a vault's own copy is gone, a visual renders in chat, and a kept visual is saved only where the repository's instructions say visuals go, or where the user names. The roster takes develop's format, every agent spec carries `title` and drops its spoken name (an agent is known by its title alone), and the vault folder note `Visualize.md` is removed.
 
 ### `1.5.0` - 2026-10-26
 
@@ -45,10 +43,6 @@ Added a curated color-palette library: assets/palettes.json (about 87 establishe
 ### `1.3.0` - 2026-06-28
 
 Added four format and inline-craft references from a deep research run: formats.md (choosing the inline format, with a per-format decision guide and the clean-Mermaid checklist), svg-craft.md (theme-reactive hand-authored SVG: viewBox, currentColor, markers, text-fitting, accessibility), interactive.md (self-contained HTML widgets and the charting-library decision matrix, canvas vs SVG, responsive sizing, interaction), and inline-aesthetics.md (typography, color and theming, data-ink, motion, native feel). Grounded in W3C and MDN, the chart-library and Mermaid official docs, and Tufte and Few, and fact-checked.
-
-### `1.2.0` - 2026-06-28
-
-Proactive use: the skill now fires on its own, not only on request. It defaults to producing a visual whenever a substantive response carries data or structure (comparison, process, timeline, hierarchy, tradeoff, relationship, system), skipping trivial or conversational replies. The description and a new Proactive use section carry the lowered-but-earned threshold; graphical integrity still governs. Standing rules were added to the skill-router and per-turn hooks.
 
 ## Patch Updates
 
@@ -67,6 +61,3 @@ Moved the preflight off the retired engine: an existing file's last state is com
 ### `1.3.1` - 2026-06-28
 
 Audit fixes to the format references found by a fresh-context review: corrected the Chart.js bundle figure in interactive.md (full bundle is comparable to D3, not markedly smaller), added a browser-support caveat and a `currentColor` fallback for `context-stroke` markers in svg-craft.md, and clarified that `orient=auto-start-reverse` needs the marker referenced on both ends.
-
-<!-- This is a BRAIN documentation node: it carries the vault's note schema above
-     (.docs/technical/vault/Note-Schema.md), not the Agent Skills schema. -->

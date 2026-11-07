@@ -29,7 +29,7 @@ These thresholds are from Anthropic's multi-agent research system: simple fact-f
 
 ## Triggers that drop the tier down
 
-- **A current report exists.** The Knowledge Manager Step-0 check finds a report in `Inbox/Reports/` on the canonicalized topic within its three-month window -> reuse it (a quick confirmation refreshes the window), do not re-run. This is the single largest token saver.
+- **A current report exists.** The Knowledge Manager Step-0 check finds a filed report (where the repository's instructions point) on the canonicalized topic within its freshness window -> reuse it (a quick confirmation refreshes the window), do not re-run. This is the single largest token saver.
 - **The web is unreachable.** Answer from model knowledge with an explicit currency disclaimer and offer to retry; never fan out into nothing.
 
 ## The cost the tier buys

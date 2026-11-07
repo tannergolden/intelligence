@@ -1,0 +1,37 @@
+{
+  "//": "The trigger test for board, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw. Never edit it by hand.",
+  "skill": "board",
+  "runs": 3,
+  "threshold": 0.5,
+  "should_trigger": [
+    "found a company for my new idea",
+    "start a new venture for me",
+    "we have an idea for X, help me stand it up",
+    "incorporate the business",
+    "set our strategy for next year",
+    "refresh the OKRs for this quarter",
+    "what is our north star metric",
+    "should we enter the enterprise market",
+    "should I launch the product now or wait",
+    "which of these two vendors should we choose",
+    "go or no-go on the acquisition",
+    "build the financial model for the venture",
+    "draft the brand guide",
+    "write the onboarding SOP",
+    "run the venture this week",
+    "how is the company doing",
+    "run the quarterly business review",
+    "keep the venture context current"
+  ],
+  "should_not_trigger": [
+    "brainstorm ways to grow the audience",
+    "what are my options for monetizing this",
+    "research the market size for this product",
+    "what is a weighted decision matrix",
+    "build me a skill that runs companies",
+    "write a standalone blog post",
+    "make a chart of our revenue",
+    "should I refinance my mortgage",
+    "should I pay off my car loan or invest the money"
+  ]
+}

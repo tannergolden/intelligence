@@ -29,7 +29,7 @@ Add `--json` for structured output, and `--allow-em-dash` in a repository whose 
   - it warns when `allowed-tools` pre-approves a tool that writes or runs commands.
 - **Agent**: frontmatter with `title`, `name` and `description`; a file name equal to the title's slug; `tools` drawn from `read`, `search`, `edit`, `execute`, `web` and `agent`; every core section heading (Identity, Role & Objective, Inputs, Method, Output contract, Examples, Boundaries, Recovery, Non-negotiables), counted outside code fences; an Identity block with Name, Persona and Voice (a warning when one is missing); no dashes.
 - **Team**: a roster with `title`, `description`, `members` and `lead`; the lead listed in `members` and starred, the only starred member; every member resolving to an agent file in the same folder or another agent home; no dashes.
-- **Library**: every agent and roster in every home given, with titles unique across the homes and spoken names unique case-insensitively. No two agents anywhere share a name or a role.
+- **Library**: every agent and roster in every home given, with titles unique across the homes, and no agent carrying a personal name. No two agents anywhere share a role.
 
 A validator error blocks the build. Run it first; it is cheap. In tannergolden/intelligence, `make check` also holds every universal skill to the renderer's own format checks.
 

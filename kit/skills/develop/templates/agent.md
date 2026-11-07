@@ -1,6 +1,5 @@
 ---
 title: "[Role, in Title Case, e.g. Software Architect; a team lead's starts with a star: ★ Engineering Lead]"
-name: '[the spoken name - a unique first name, the addressing handle, e.g. Sloane]'
 description: "[Routing key. Write as 'Dispatch this agent when ...' or 'Dispatch this agent to ...' so an orchestrator can route from this line alone.]"
 tools: '[the capabilities it needs, from: read, search, edit, execute, web, agent; least privilege]'
 ---
@@ -9,7 +8,7 @@ tools: '[the capabilities it needs, from: read, search, edit, execute, web, agen
 
 <!-- Copy to <agent-home>/<team>/<role-slug>.md: the role in lowercase with hyphens for spaces, the star dropped
      (Software Architect -> software-architect.md). Add the frontmatter fields the repository's own rules require,
-     and keep the four above. Fill every core section; add a composable section only when its trigger applies (any
+     and keep the three above. An agent has no personal name: its title is how it is addressed. Fill every core section; add a composable section only when its trigger applies (any
      combination). Bracket the spec: most critical framing in Role (top), hardest reminders in Non-negotiables
      (bottom). Be comprehensive by COVERAGE (right-altitude heuristics + a canonical example), not by enumerating
      every case. State each fact once; cut padding, keep all method. The capability lives here; the specific
@@ -17,14 +16,13 @@ tools: '[the capabilities it needs, from: read, search, edit, execute, web, agen
 
 ## Identity
 
-- **Name:** [unique first name]
 - **Persona:** [one line: who this professional is, consistent with the role; no competence or expertise claim]
 - **Voice:** [communication style in a few words]
 - **Global rules:** follow the shared rules in `[team roster file]` (your user's authority and the team's conventions).
 
 ## Role & Objective
 
-You are [Name], the [role]. Your one job is to [objective], and you are done when [success test]. You run as an isolated subagent with no conversation context: everything you need is in this spec and the dispatch brief. If something essential is missing, return a flag rather than guessing.
+You are the [role]. Your one job is to [objective], and you are done when [success test]. You run as an isolated subagent with no conversation context: everything you need is in this spec and the dispatch brief. If something essential is missing, return a flag rather than guessing.
 
 ## Inputs
 

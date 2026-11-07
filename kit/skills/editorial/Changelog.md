@@ -1,17 +1,10 @@
-<!--
-title: "editorial - Changelog"
-description: "Change history for the editorial skill, the BRAIN's writing, editing, and formatting orchestrator."
-type: "record"
-keywords: ["version history", "release notes", "editorial skill changes", "revision log"]
--->
-
 # 📋 editorial Changelog
 
 ## Current Version
 
-**`1.7.0`**
+**`1.8.0`**
 
-The version is SemVer, per standards' [versioning policy](https://github.com/tannergolden/standards/blob/Development/docs/distribution/Releases-&-Versioning.md#-versioning-policy-semver). It matches `metadata.version` in `SKILL.md`, and `check-skills.py` fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
+The version is SemVer, per standards' [versioning policy](https://github.com/tannergolden/standards/blob/Development/docs/distribution/Releases-&-Versioning.md#-versioning-policy-semver). It matches `metadata.version` in `SKILL.md`, and the validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
 
 ---
 
@@ -35,6 +28,10 @@ _None yet._
 
 > New tier behavior, new references, new templates or assets. Most recent 4 entries.
 
+### `1.8.0` - 2026-11-07
+
+The hub now owns and authors editorial, and it is universal: the hand-over to a vault's own copy is gone; it fires on prose in any repository, scoped away from code, generated and machine-written files, templates, and agent and skill specs; it follows the repository's own documentation style rules where its instructions name them, falling back to its formatting references; and the voice loads from a profile the repository keeps or from the user's own samples. The roster takes develop's format, every agent spec carries `title` and drops its spoken name (an agent is known by its title alone), and the vault folder note `Editorial.md` is removed.
+
 ### `1.7.0` - 2026-10-26
 
 The Editorial team now ships inside the skill, in `agents/`, instead of living in `Inbox/Faculties/Editorial/`, and the skill source moved from `System/Skills/.unpackaged/` to `.agents/skills/`, where the agent apps read a repository's skills, so the vault's own sessions load it and tannergolden/intelligence's home kit can carry it to every repository. Briefs read each spec from `<skill>/agents/`, and every reference to the team's old folder points at `agents/`, which holds the team alone. A new **Where it runs** rule: in a vault, the vault's own copy runs, so a home copy hands over to it; anywhere else the voice comes from the user's own writing at hand. `allowed-tools` now pre-approves read-only tools only, and the frontmatter keeps one key to a line, as the home kit's reader requires. The description is now quoted: unquoted, its colon made the frontmatter invalid YAML, so a loader dropped the description and the skill could never trigger.
@@ -48,12 +45,6 @@ The Editorial team now ships inside the skill, in `agents/`, instead of living i
 ### `1.5.0` - 2026-06-28
 
 Restructured `SKILL.md` to develop's canonical skeleton, the standard every skill now mirrors (`develop` `references/architecture.md`): the operational table first (Tiers), then the team it dispatches, how a piece is made (intake Phase 0, the destination rule, the Line Editor gate, editing in place), dispatch scaling, formatting and beauty, voice, conformance with the live BRAIN, quality bars, and boundaries. No behavior change: every prior rule is preserved and reordered, the granular sections (the beauty principle, voice, the structural trigger scope, editing essentials, the BRAIN-aware contract) are folded into the spine, and the quality non-negotiables are consolidated into a Quality bars list. The 986-character description, the tier table, and every reference pointer are unchanged.
-
-### `1.4.0` - 2026-06-25
-
-External writing help (a piece the user will send or use outside the vault: write me an email, rewrite this, proofread this, reply to this, soften this) is now **first-class**, and an **understand-the-situation intake phase** runs before drafting. New `references/intake.md` is the understand-first method: the **situation read** (the rhetorical checks of goal, audience and relationship and power, the one key message, and constraints, plus a sentiment read of the clustered tone cues), the **sentiment-and-tone calibration** rule (mirror the register, never the emotion: converge on warmth and formality, diverge from anger and panic, hold calm-warm-firm, with the NVC frame for charged replies), the **elicitation rule** (ask at most 1 to 3 questions, only when a different answer would change the draft and a wrong guess is costly to undo, else draft on stated assumptions; batch once; check Profile and memory first), and the **situation-brief spine** (the fields the lead captures, each with a default). The lead runs this as Phase 0 and threads a **situation brief** into every dispatch so the Writer drafts to it and the Line Editor gates against it. Added `references/difficult-messages.md` (the bad-news, apology, refusal, complaint and recovery, and de-escalation playbook) and `templates/situation-brief.md` (the scaffold the lead fills). Clarified in `SKILL.md` that a leaving piece goes to the user and is governed by the destination's own format, so the vault preflight and lint exit gate do not apply to it, though clarity and the slop rubric still do. Made intake Phase 0 in `references/tiers-and-dispatch.md` and updated the self-contained-brief contract to carry the situation brief. Intake is a **formalized lead responsibility, not a new team seat** (no roster change). Built from a deep four-lane research run: the rhetorical situation, sentiment and communication-accommodation theory, difficult-message frameworks, and intake-brief practice.
-
----
 
 ## Patch Updates
 

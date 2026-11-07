@@ -1,6 +1,6 @@
 <!-- Email scaffold. Bottom-line-up-front, scannable, one explicit ask. See references/email.md.
      Pick the greeting and sign-off from the relationship (the register ladder). No em dash. No slop.
-     When Profile/ has no captured voice, this is a neutral-default consultative register; say so on a first send. -->
+     When no real voice is loaded, this is a neutral-default consultative register; say so on a first send. -->
 
 **Subject:** [short, specific, under ~55 chars; optional INFO / REQUEST / ACTION prefix]
 

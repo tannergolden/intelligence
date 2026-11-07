@@ -23,6 +23,6 @@ One row per area the checkup covers; the annual review fills every row. Evidence
 |------|--------------------|------|
 | [date] | [item] | [seat] |
 
-## Profile updates to offer
+## Financial-picture updates to offer
 
-- [A rounded change to `Profile/Finances.md`, proposed line by line, or "none"]
+- [A rounded change to the financial picture, proposed line by line, only in a private money repository; otherwise "none"]

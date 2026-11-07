@@ -80,32 +80,6 @@ and asks every app which copies it can see:
 VS Code reads both of those folders and has no headless mode, so check it by
 hand with `--keep --skills`.
 
-**The hand-over canary, with `--handover`.** The kit carries the knowledge
-template's faculties, and in a vault each must give way to the vault's own
-copy, which Claude Code would otherwise lose to the home one, since it loads
-a person's skill over a repository's. The canary plants one skill at home,
-in the same three folders, opening with the rule every faculty carries,
-word for word. It also makes a scratch vault whose `AGENTS.md` says it is a
-BRAIN, holding its own copy of the skill in `.agents/skills/` and
-`.claude/skills/`. Each copy gives its own code, and every app is asked, in
-the vault, to use the skill and reply with the value it gives. Its control
-plants a second skill the same way with no rule, to show the rule is what
-made the difference:
-
-| Check                | Answer                      | Result                                |
-| :------------------- | :-------------------------- | :------------------------------------ |
-| The hand-over        | The vault copy's code alone | pass                                  |
-| The hand-over        | The home copy's code        | fail                                  |
-| No rule to hand over | Claude Code, the home copy  | pass                                  |
-| No rule to hand over | Any other app               | pass, its choice recorded, not judged |
-
-Claude Code documents that it loads a person's skill over a repository's,
-so without the rule it should follow the home copy; the other apps' choice
-is recorded, not judged. Unlike every other check, these ask the app to
-read files, since a faculty has to read the vault's copy to hand over.
-Claude Code, which runs the rest with its tools off, may read files and
-load skills here, and nothing more.
-
 ---
 
 ## 🚀 Running It
@@ -117,15 +91,14 @@ python3 .github/scripts/loader-probe.py --dry-run     # show the plan, change no
 python3 .github/scripts/loader-probe.py               # every installed app
 python3 .github/scripts/loader-probe.py --apps claude,grok
 python3 .github/scripts/loader-probe.py --skills      # add the skill canary
-python3 .github/scripts/loader-probe.py --handover    # add the hand-over canary
 python3 .github/scripts/loader-probe.py --keep        # set up a check by hand
 python3 .github/scripts/loader-probe.py --cleanup     # undo --keep, or a crash
 ```
 
 It needs Python 3.9 or later and git, and nothing else. Each check is one model
-call: twelve in a full run, one more per app with `--skills`, and two more
-per app with `--handover`, on your own subscriptions. An app installed under
-another name takes `--command`, which must keep the `{prompt}` slot:
+call: eleven in a full run, and one more per app with `--skills`, on your own
+subscriptions. An app installed under another name takes `--command`, which
+must keep the `{prompt}` slot:
 
 ```bash
 python3 .github/scripts/loader-probe.py --apps codex --command "codex=codex-beta exec {prompt}"
@@ -173,7 +146,10 @@ The Claude Code run, as the probe printed it:
 | Claude Code beside a CLAUDE.local.md               | not read   | read       | not read     | pass   |
 | Claude Code beside a CLAUDE.local.md, reading both | read       | read       | not read     | pass   |
 
-The hand-over, from the 2026-10-26 run, after the same five loader checks:
+The hand-over, from the 2026-10-26 run, after the same five loader checks. The
+hand-over check was retired on 2026-11-07, because vaults no longer hold
+skills: every skill lives in the hub's `kit/skills/` ([ADR-0037](../adrs/ADR-0037-The-Hub-Writes-Every-Skill.md)). These rows
+stay as the record:
 
 | Check                 | PROBE_HANDOVER_HOME | PROBE_HANDOVER_VAULT | Result |
 | :-------------------- | :------------------ | :------------------- | :----- |
@@ -204,7 +180,7 @@ never touch your home folder.
 
 - [ADR-0002](../adrs/ADR-0002-One-Root-AGENTS-File.md): one root `AGENTS.md` per repository, which the probe proves every app reads
 - [ADR-0005](../adrs/ADR-0005-Home-Copies-Not-Links.md): home files are copies, which the probe proves each app loads
-- [ADR-0033](../adrs/ADR-0033-The-Kit-Carries-The-Faculties.md): the kit carries the faculties, which the hand-over canary proves give way in a vault
+- [ADR-0037](../adrs/ADR-0037-The-Hub-Writes-Every-Skill.md): vaults hold no skills, so the hand-over canary, which proved a home copy gave way to a vault's, was retired
 - [The Home Kit](The-Home-Kit.md): the copies the probe stands in for
 
 ---

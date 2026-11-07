@@ -1,6 +1,6 @@
 # Formatting doctrine
 
-How editorial formats prose, subordinate to the vault's conventions in `AGENTS.md` (Conventions) and, for a page GitHub renders, to standards' [Document Styling guide](https://github.com/tannergolden/standards/blob/Development/docs/technical/interface/Document-Styling-&-Formatting.md). Read this before any markdown beautification.
+How editorial formats prose, subordinate to the repository's own documentation style rules wherever its instructions name them. This file is the fallback when they name none, and, for a page GitHub renders, it defers to standards' [Document Styling guide](https://github.com/tannergolden/standards/blob/Development/docs/technical/interface/Document-Styling-&-Formatting.md). Read this before any markdown beautification.
 
 This file is the **doctrine** layer: the beauty principle, the precedence,
 and the scope by destination. The exhaustive **syntax** lives
@@ -19,22 +19,22 @@ when and why to use it.
 ## Precedence (read first)
 
 > [!WARNING]
-> **The vault's rules outrank this file.**
-> A **vault note** follows the conventions in `AGENTS.md` (Conventions): GitHub-Flavored Markdown with wikilinks, a single H1 that opens with one fitting emoji, a plain `title`, and no decorative header or footer. It opens with the hidden frontmatter in `.docs/technical/vault/Note-Schema.md`, and holds no em dash (DOC-002). `lint-notes.py` is the **exit gate**: a piece that fails lint is not done, no matter how it reads. A **page GitHub renders** (any `README.md`, `AGENTS.md`, and the files under `.docs/` and `.github/`) follows standards' [Document Styling guide](https://github.com/tannergolden/standards/blob/Development/docs/technical/interface/Document-Styling-&-Formatting.md) instead.
+> **The repository's rules outrank this file.**
+> A file in a repository follows the documentation style its `AGENTS.md` or `CLAUDE.md` sets, and the style guides, frontmatter or note schema, heading and link conventions, and checks those instructions name. When they name a lint or docs check, that check is the **exit gate**: a piece that fails it is not done, no matter how it reads. Where the repository names no style, this file and its companions are the default, and a **page GitHub renders** (a `README.md`, docs pages, the files under `.github/`) follows standards' [Document Styling guide](https://github.com/tannergolden/standards/blob/Development/docs/technical/interface/Document-Styling-&-Formatting.md).
 
-The order, hardest first: `AGENTS.md` and the folder's Rules, then `lint-notes.py` for a vault note or the Document Styling guide for a page GitHub renders, then this file, then the owner's per-document override (which can raise density but never break a hard rule).
+The order, hardest first: the repository's instructions and the folder's own rules, then the style guide and checks they name, then (where they name none) the Document Styling guide for a page GitHub renders, then this file, then your user's per-document override (which can raise density but never break a hard rule).
 
 ## Scope - where the file lives
 
 Three destinations, three rule sets. Do not invent a parallel "portability tier" vocabulary; the destination already draws the line.
 
-- **A vault note** (a Markdown note in the BRAIN): follow `AGENTS.md`, Conventions. The markdown renders on GitHub, the vault's home renderer: CommonMark plus GitHub-Flavored Markdown (tables, task lists, strikethrough, footnotes, the five alerts, math, Mermaid), with wikilinks as the one addition, wherever `.docs/technical/vault/Link-Topology.md` allows the edge. Embeds, highlights, `%%` comments, block references and callout types beyond the five are not used. The emoji-H1 rule applies; the no-em-dash rule applies. Frontmatter follows the hidden schema in `.docs/technical/vault/Note-Schema.md`, never freeform properties or `#tags`.
-- **A page GitHub renders** (any `README.md`, `AGENTS.md`, and the files under `.docs/` and `.github/`): follow standards' [Document Styling guide](https://github.com/tannergolden/standards/blob/Development/docs/technical/interface/Document-Styling-&-Formatting.md). Its syntax is the same GitHub-Flavored Markdown, without wikilinks.
-- **Leaving the vault** (an email, a post, a file handed to someone): follow the **target's own format**. For a markdown target, GitHub-Flavored Markdown is the default; the portable core is CommonMark, so drop everything the target cannot render. A target that renders more, such as someone's Obsidian vault, may take its own constructs (`references/admonitions.md` has Obsidian's callout set).
+- **A file in a repository whose instructions set a documentation style:** follow those rules: their heading rule (some want one H1 that opens with an emoji, some forbid emoji), their frontmatter or note schema, their link convention (some notes use wikilinks, most repositories use relative Markdown links), the callout types they allow, and the check they name. Where a rule here conflicts, theirs wins.
+- **A file in a repository that names no style, or a page GitHub renders:** GitHub-Flavored Markdown: CommonMark plus tables, task lists, strikethrough, footnotes, the five alerts, math, and Mermaid. Follow standards' [Document Styling guide](https://github.com/tannergolden/standards/blob/Development/docs/technical/interface/Document-Styling-&-Formatting.md) for a page GitHub renders. No wikilinks; no em dash.
+- **Leaving the repository** (an email, a post, a file handed to someone): follow the **target's own format**. For a markdown target, GitHub-Flavored Markdown is the default; the portable core is CommonMark, so drop everything the target cannot render. A target that renders more, such as Obsidian, may take its own constructs (`references/admonitions.md` has Obsidian's callout set).
 
 > [!CAUTION]
-> **Wikilinks never leave the vault notes.**
-> They are the notes' own link syntax, resolved by `check-links.py`; every other renderer shows the raw double brackets as literal text. They stay in vault notes, never on a page GitHub renders. When a piece is leaving, convert each wikilink to a real link or plain text; the wikilink forms, and where a wikilink may go, are in `.docs/technical/vault/Link-Topology.md`.
+> **Wikilinks stay where they are the convention.**
+> A wikilink resolves only in wiki-style tools such as Obsidian; every other renderer shows the raw double brackets as literal text. Use one only in a repository whose instructions say its notes link that way, never on a page GitHub renders. When a piece leaves such a repository, convert each wikilink to a real link or plain text.
 
 ## Callouts: the GitHub five
 
@@ -49,7 +49,7 @@ ordinary markdown on the following `>` lines.
 > block inside.
 ```
 
-The vault uses exactly the five types GitHub renders:
+Unless the repository's rules allow more, use exactly the five types GitHub renders:
 
 - **NOTE** - context worth knowing even when skimming; also the stop-early summary at the top of a long piece.
 - **TIP** - advice: a better or faster way to do the thing.
@@ -79,7 +79,7 @@ Match the element to the content, never reach for variety. The principle holds: 
 
 When the target document is itself written in a non-Markdown lightweight markup, reStructuredText, AsciiDoc, MediaWiki, Org-mode, BBCode, or Textile, match **that target's** native syntax rather than emitting Markdown. These languages reuse Markdown's glyphs with different meanings, so do not pattern-match from habit: a single asterisk is bold in AsciiDoc but italic in reStructuredText, and a leading hash starts an ordered-list item in MediaWiki, not a heading. The glyphs collide, so verify the few constructs you actually need at the target's own primary docs before writing rather than carrying a stale table in your head.
 
-## The beauty principle (default restraint, owner overrides)
+## The beauty principle (default restraint, your user overrides)
 
 > [!TIP]
 > **Signal-scarcity, not maximalism.**
@@ -87,8 +87,8 @@ When the target document is itself written in a non-Markdown lightweight markup,
 
 **Default:** master every element, deploy each only where it earns its place, with density scaled to the piece's length and stakes. A two-line note is a two-line note, not a callout with a table. A long technical document carries a `<details>` block or two, a table, and a diagram where the structure is genuinely spatial.
 
-This is a **default, not a ceiling.** The owner overrides per document: "make this note rich," "go heavy on the formatting," "plain text only" all win over the default. State the default when you apply it, then follow the owner's instruction when it differs. A collapsible `<details>` block lets a long doc stay rich without becoming a wall, putting depth one click away.
+This is a **default, not a ceiling.** Your user overrides per document: "make this note rich," "go heavy on the formatting," "plain text only" all win over the default. State the default when you apply it, then follow your user's instruction when it differs. A collapsible `<details>` block lets a long doc stay rich without becoming a wall, putting depth one click away.
 
 ## The exit gate
 
-For any vault note: after formatting, run `python3 .github/scripts/lint-notes.py` and clear every error. Confirm the single emoji-led H1 (`AGENTS.md`, Conventions), zero em dashes (DOC-002), only the five callout types, and the hidden frontmatter (`.docs/technical/vault/Note-Schema.md`). The piece is done when it reads clear, sounds true, and lints clean.
+For a file in a repository: after formatting, run the check its instructions name (a docs lint, a link check, a format check) and clear every error. With no named check, confirm by reading: one H1, zero em dashes (DOC-002), only the five callout types, and frontmatter in the shape the repository's other files use. The piece is done when it reads clear, sounds true, and passes the repository's check.

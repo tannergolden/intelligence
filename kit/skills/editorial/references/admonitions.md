@@ -1,7 +1,7 @@
 # Callout (admonition) reference
 
 The complete callout/admonition reference, loaded on demand: GitHub's five
-alerts, the only types the vault uses (`AGENTS.md`, Conventions), and
+alerts, the default set wherever a repository's rules allow no more, and
 Obsidian's full system, for a piece written for a target that renders it. `references/formatting.md`
 is the doctrine (when a callout earns its place, the precedence, the scope by
 destination); this file is the full syntax and the type
@@ -135,7 +135,7 @@ still escapes as `\|`.
 
 ## Custom types via a CSS snippet
 
-Beyond the built-ins, a vault can define a custom callout type with a CSS
+Beyond the built-ins, an Obsidian setup can define a custom callout type with a CSS
 snippet. Match the snippet's data attribute to the type name you use in the
 callout, and set the two callout variables: `--callout-color` (an `R, G, B`
 triple) and `--callout-icon` (an icon id, for example a Lucide icon name, or an
@@ -149,12 +149,12 @@ inline SVG).
 ```
 
 With that snippet enabled, a callout whose type is `decision` renders with the
-custom color and icon. Custom types are local to the Obsidian vault that defines
+custom color and icon. Custom types are local to the Obsidian setup that defines
 them and have no meaning anywhere else.
 
-## The GitHub five (the vault's set)
+## The GitHub five (the default set)
 
-In a vault note, on a page GitHub renders, and in any piece bound for GitHub, only
+In a repository file whose rules allow no more, on a page GitHub renders, and in any piece bound for GitHub, only
 five alert types are used, written in **UPPERCASE** with the marker alone on its
 line (GitHub takes no title after it, so a title is a bold lead-in on the first
 body line):
@@ -178,8 +178,8 @@ engines, Discord), the bracketed type marker is **not** recognized: the callout
 degrades to an ordinary, plain **nested blockquote**, with the marker line
 showing as literal text. So a callout never breaks a page; it just loses its
 styled box. This is why callouts beyond the GitHub five do not travel: write them
-only for a target that renders them, such as an Obsidian vault; everywhere
-else, the vault included, keep to the five uppercase types and convert the rest
+only for a target that renders them, such as Obsidian; everywhere
+else, keep to the five uppercase types and convert the rest
 to plain prose or blockquotes.
 
 ## When to use which type
@@ -188,7 +188,7 @@ A concise guide; the callout earns its place only when it helps the reader
 understand faster than prose would (the beauty principle in
 `references/formatting.md`).
 
-Inside the vault, choose among the five: **NOTE** for an aside or a stop-early
+By default, choose among the five: **NOTE** for an aside or a stop-early
 summary, **TIP** for advice, **IMPORTANT** for the one point to retain,
 **WARNING** for a hazard, and **CAUTION** for a risk of loss or harm. For an
 Obsidian target, the full set reads:

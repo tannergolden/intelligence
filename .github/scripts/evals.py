@@ -11,7 +11,10 @@ AGENTS.md and once without, so the difference between the two pass rates is
 what the block is worth for that rule.
 
 The skill trigger tests in `evals/skills/` run the same way: each prompt a
-few times, counting how often the app loads the skill.
+few times, counting how often the app loads the skill. Each skill keeps its
+test in its own `assets/trigger-evals.json`, which ships with it, and
+`--draw` writes the one here from it; `--check` fails when the two differ.
+`develop`'s is written here by hand, richer than the one it ships.
 
 The prompt scenarios in `evals/prompts/` measure the universal prompts in
 the hub's `docs/Prompts.md`. Each sets up a repository where a hurried
@@ -41,6 +44,7 @@ copies installed by the kit still load, so for a true baseline run
 Run it:
 
     python3 .github/scripts/evals.py --check                   # validate every scenario and skill test
+    python3 .github/scripts/evals.py --draw                    # rewrite each skill's trigger test from its own
     python3 .github/scripts/evals.py --apps claude --dry-run   # the plan
     python3 .github/scripts/evals.py --apps claude --rules OPS-001,SEC-001 --runs 7
     python3 .github/scripts/evals.py --apps claude --skill develop
@@ -73,6 +77,9 @@ import prompts  # noqa: E402  the universal prompts, as the hub's docs/Prompts.m
 HOME_FILE = ROOT / 'home' / 'intelligence.md'
 EVALS = ROOT / 'evals'  # the scenarios and the skill trigger tests
 SKILLS = ROOT / 'kit' / 'skills'
+TRIGGER_TEST = 'assets/trigger-evals.json'  # where a skill keeps the trigger test it ships
+HAND_WRITTEN = ('develop',)  # skills whose test in evals/skills/ is written here, not drawn from the skill
+MIN_PROMPTS = 5  # prompts each side of a trigger test needs
 
 # How each app runs a task headless with its tools on. Claude Code, Codex and
 # Copilot CLI have flags for this; give the others with --command.
@@ -261,6 +268,58 @@ def prompt_problems(scenarios: Sequence[PromptScenario], library: Mapping[str, s
     return found
 
 
+def prompt_text(item: object) -> str:
+    """One prompt of a trigger test: the text itself, or the q or query a routed entry carries."""
+    if isinstance(item, str):
+        return item
+    if isinstance(item, dict):
+        return str(item.get('q') or item.get('query') or '')
+    return ''
+
+
+def drawn_test(name: str, skills: pathlib.Path = SKILLS) -> str | None:
+    """The skill's trigger test in evals/skills/'s shape, drawn from the one it ships; None if it ships none."""
+    source = skills / name / TRIGGER_TEST
+    if name in HAND_WRITTEN or not source.is_file():
+        return None
+    try:
+        data = json.loads(source.read_text(encoding='utf-8'))
+    except ValueError:
+        data = None
+    if not isinstance(data, dict):
+        return None
+    sides = []
+    for keys in (('should_trigger',), ('should_not_trigger', 'near_miss')):
+        items = next((data[key] for key in keys if data.get(key)), [])
+        sides.append([p for p in (prompt_text(item) for item in (items if isinstance(items, list) else [])) if p])
+    test = {
+        '//': f'The trigger test for {name}, taken from its {TRIGGER_TEST} by .github/scripts/evals.py --draw. '
+              'Never edit it by hand.',
+        'skill': name,
+        'runs': 3,
+        'threshold': 0.5,
+        'should_trigger': sides[0],
+        'should_not_trigger': sides[1],
+    }
+    return json.dumps(test, indent=2, ensure_ascii=False) + '\n'
+
+
+def skill_names(skills: pathlib.Path = SKILLS) -> list[str]:
+    return sorted(p.name for p in skills.iterdir() if p.is_dir()) if skills.is_dir() else []
+
+
+def draw(skills: pathlib.Path = SKILLS, evals: pathlib.Path = EVALS) -> list[str]:
+    """Write each skill's drawn trigger test into evals/skills/; return the ones that changed."""
+    changed = []
+    for name in skill_names(skills):
+        test = drawn_test(name, skills)
+        path = evals / 'skills' / f'{name}.json'
+        if test is not None and (not path.is_file() or path.read_text(encoding='utf-8') != test):
+            path.write_text(test, encoding='utf-8')
+            changed.append(name)
+    return changed
+
+
 def problems(scenarios: Sequence[Scenario], skills: Sequence[pathlib.Path], rules: set[str],
              prompt_scenarios: Sequence[PromptScenario] = (), library: Mapping[str, str] | None = None) -> list[str]:
     """Every way a scenario or skill test is malformed; with `library`, every universal prompt left unmeasured too."""
@@ -283,12 +342,16 @@ def problems(scenarios: Sequence[Scenario], skills: Sequence[pathlib.Path], rule
         data = json.loads(path.read_text(encoding='utf-8'))
         if data.get('skill') != path.stem or not (SKILLS / path.stem / 'SKILL.md').exists():
             found.append(f'{where}: names a skill that is not in kit/skills/')
-        if len(data.get('should_trigger', [])) < 5 or len(data.get('should_not_trigger', [])) < 5:
+        if len(data.get('should_trigger', [])) < MIN_PROMPTS or len(data.get('should_not_trigger', [])) < MIN_PROMPTS:
             found.append(f'{where}: needs at least five prompts each that should and should not trigger')
+        test = drawn_test(path.stem)
+        if test is not None and path.read_text(encoding='utf-8').replace('\r\n', '\n') != test:
+            found.append(f'{where}: differs from the trigger test kit/skills/{path.stem}/{TRIGGER_TEST} ships; '
+                         'run evals.py --draw')
     covered = {scenario.rule for scenario in scenarios}
     for rule in sorted(rules - covered):
         found.append(f'CONSTITUTION.md: {rule} has no scenario in evals/scenarios/ to test it')
-    for skill in sorted(p.name for p in SKILLS.iterdir() if p.is_dir()) if SKILLS.is_dir() else []:
+    for skill in skill_names():
         if not (EVALS / 'skills' / f'{skill}.json').exists():
             found.append(f'kit/skills/{skill}: no trigger test in evals/skills/')
     return found
@@ -666,6 +729,8 @@ def parse_overrides(values: Sequence[str]) -> dict[str, str]:
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=(__doc__ or '').split('\n', 1)[0])
     parser.add_argument('--check', action='store_true', help='validate every scenario and skill test, then stop')
+    parser.add_argument('--draw', action='store_true',
+                        help="rewrite each skill's trigger test in evals/skills/ from the one it ships, then check")
     parser.add_argument('--apps', default='', help='comma-separated: ' + ', '.join(COMMANDS) + ', or any with --command')
     parser.add_argument('--rules', default='', help='comma-separated rule IDs to run (default: all)')
     parser.add_argument('--skill', help='run this skill\'s trigger test instead of the scenarios')
@@ -684,6 +749,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument('--out', type=pathlib.Path, default=None, help='where the results go')
     args = parser.parse_args(argv)
 
+    if args.draw:
+        for name in draw():
+            print(f'drew evals/skills/{name}.json from kit/skills/{name}/{TRIGGER_TEST}')
+        args.check = True
     scenarios = load_scenarios()
     skills = sorted((EVALS / 'skills').glob('*.json'))
     measured = load_prompt_scenarios()

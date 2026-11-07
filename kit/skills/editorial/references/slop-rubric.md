@@ -8,7 +8,7 @@ The Line Editor (and, on quick, the lead self-editing) critiques every piece aga
 
 ## The two hard gates (everywhere, internal files included)
 
-1. **No em dash (DOC-002).** Zero U+2014 in the piece; DOC-002 names the replacements, and a rewrite often beats all of them. `lint-notes.py` flags any em dash in a vault file, so this is enforced on disk, not merely stated. The en dash (U+2013) and the hyphen are fine.
+1. **No em dash (DOC-002).** Zero U+2014 in the piece; DOC-002 names the replacements, and a rewrite often beats all of them. The kit's skill validator fails on the character, and many repositories' own checks do too, so this is enforced on disk, not merely stated. The en dash (U+2013) and the hyphen are fine.
 2. **No slop (DOC-003).** No word or habit from the Plain Words list, and none of the patterns below.
 
 ## Cite the span (the rule that makes the rubric work)

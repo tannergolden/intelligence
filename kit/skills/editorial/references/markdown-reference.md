@@ -18,7 +18,7 @@ Every element below is tagged with where it renders:
   GitHub's live renderer also does alerts, footnotes, emoji shortcodes, and
   mentions, which are not in the spec and will not work on a generic GFM engine.
 - **Obsidian-only** - Obsidian Flavored Markdown; degrades to literal text
-  elsewhere. The vault renders it in full.
+  elsewhere. Only Obsidian (and tools that copy it) renders it in full.
 
 The rule of thumb: target CommonMark plus the single platform you publish to, and
 keep the raw source legible as plain text.
@@ -46,10 +46,10 @@ parallel in grammar at one level, and never end a heading with a period. Put a
 blank line above and below every heading.
 
 > Where the file lives sets its heading style, which is not part of CommonMark. A
-> vault note follows `AGENTS.md`, Conventions: its single H1 opens with one
-> fitting emoji, then a space, then the title, and its YAML `title` stays plain.
-> A page GitHub renders (any `README.md`, `AGENTS.md`, and the files under
-> `.docs/` and `.github/`) follows standards'
+> repository whose instructions set a heading rule (for example, a single H1 that
+> opens with one fitting emoji while the YAML `title` stays plain) is followed.
+> Where none is set, a page GitHub renders (a `README.md`, docs pages, and the
+> files under `.github/`) follows standards'
 > [Document Styling guide](https://github.com/tannergolden/standards/blob/Development/docs/technical/interface/Document-Styling-&-Formatting.md).
 
 **Portability:** CommonMark.
@@ -100,7 +100,7 @@ consistent marker keeps the source clean.
 - Bold and italic: CommonMark.
 - Strikethrough (`~~`): GFM (and Obsidian).
 - Highlight (`==text==`): **Obsidian-only**; degrades to literal `==text==`
-  elsewhere, so it never leaves the vault.
+  elsewhere, so use it only for an Obsidian target.
 
 ### Inline code
 
@@ -146,9 +146,9 @@ GFM also auto-detects bare URLs without them.
 > Wikilinks and embeds are a separate, Obsidian-only link system. A wikilink is a
 > note name wrapped in doubled square brackets; an embed (transclusion) is the
 > same with a leading exclamation mark. They render only in Obsidian and degrade
-> to raw text everywhere else, so they stay inside the vault and a piece leaving
-> the vault converts them to real links or plain text. For the exact literal
-> bracket forms, and where a wikilink may go, see `.docs/technical/vault/Link-Topology.md`.
+> to raw text everywhere else, so use them only where the repository's
+> instructions say its notes link that way, and convert them to real links or
+> plain text in a piece leaving it.
 
 **Portability:** inline, reference, and autolinks are CommonMark; bare-URL
 autodetection is GFM; wikilinks and embeds are Obsidian-only.
@@ -163,10 +163,10 @@ text is the alt text.
 ```
 
 **Alt text rule.** Alt text states the image's **function in context**, not a
-generic label. A vault note and a page GitHub renders follow the alt-text rule in
+generic label. A repository file and a page GitHub renders follow the alt-text rule in
 standards' [Document Styling guide](https://github.com/tannergolden/standards/blob/Development/docs/technical/interface/Document-Styling-&-Formatting.md) (Rich Media & Accessibility):
 every image, badges included, carries descriptive alt text. Only in a piece
-leaving the vault may a purely decorative image take **empty** alt so assistive
+leaving the repository may a purely decorative image take **empty** alt so assistive
 technology skips it:
 
 ```markdown
@@ -297,7 +297,7 @@ a fence (as here), wrap the outer fence in **four** backticks.
 highlighting itself is renderer-provided). Lower-case language identifiers are the
 safe convention. Line numbering and line-highlighting are not native to Obsidian
 (they need a plugin), though GitHub and some renderers provide them; do not rely
-on them in a vault file.
+on them in a file bound for Obsidian.
 
 ### Footnotes
 
@@ -425,5 +425,5 @@ syntaxes in a fence (`geojson`, `topojson`, and ASCII STL).
 | Mermaid | no | yes | yes (plugin) |
 
 "renderer" means GitHub's live renderer does it but the frozen GFM spec does not,
-so it is not safe on a generic GFM engine. When a file leaves the vault, drop
+so it is not safe on a generic GFM engine. When a file leaves an Obsidian setting, drop
 every Obsidian-only construct and keep to the target's real capabilities.

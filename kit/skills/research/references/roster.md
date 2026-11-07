@@ -8,16 +8,17 @@ The contract that wires this skill to the standing Research team, whose specs sh
 
 | Agent (name) | Runs on | Input | Returns | Template |
 |--------------|---------|-------|---------|----------|
-| **Research Lead** (Beatrice) | every run, as orchestrator | the user's verbatim question | the findings-first answer, and `draft.md` for review | the chat shape in `reporting.md`; `report.md` when filed |
-| **Knowledge Manager** (Mabel) | before every non-quick run (Step-0) | the topic | the library verdict: canonical report or gap, freshness vs `review_by`, prior findings | `reporting.md` Step-0 (inline) |
-| **Information Specialist** (Lydia) | deep | the lanes | the source strategy per lane | `templates/source-strategy.md` |
-| **Search Peer-Reviewer** (Mara) | deep, before the fan-out | the source strategy | the search audit: PASS or REVISE, with the sentinel check | `templates/search-audit.md` |
-| **All-Source Analyst** (Jasper) xN | standard, deep | one lane (the five lane fields) | the lane findings brief | `templates/lane-brief.md` |
-| **Fact-Checker** (Ruth) | standard, deep | `draft.md` | the claim ledger | `templates/verification.md` |
-| **Devil's Advocate** (Damon) | deep; standard when contested | `draft.md` | the objection set | `templates/critique.md` |
-| **Statistician** (Soren) | when load-bearing numbers carry the conclusion | `draft.md` | the number ledger, or NONE | `templates/statistical-review.md` |
-| **Standards Reviewer** (Sterling) | sensitive or external-facing output | the draft | the exposure ledger: BLOCK / REVISE / CLEAR per exposure | the ledger shape below (inline) |
-| **Editor** (Genevieve) | only when a report file ships | the draft report | the polished report plus an edit note (the lead applies it) | `templates/report.md` |
+| **Research Lead** | every run, as orchestrator | the user's verbatim question | the findings-first answer, and `draft.md` for review | the chat shape in `reporting.md`; `report.md` when filed |
+| **Knowledge Manager** | before every non-quick run (Step-0), when the repository's instructions point to filed reports | the topic | the library verdict: canonical report or gap, freshness vs `review_by`, prior findings | `reporting.md` Step-0 (inline) |
+| **Librarian** | every non-quick run, after Step-0, only when the repository's instructions name a reference collection or offline knowledge base | the question, the collection's location, and any search-command results the skill fetched | the holdings found, cited, the gaps, and any follow-up query for the skill to run | inline (its Output contract) |
+| **Information Specialist** | deep | the lanes | the source strategy per lane | `templates/source-strategy.md` |
+| **Search Peer-Reviewer** | deep, before the fan-out | the source strategy | the search audit: PASS or REVISE, with the sentinel check | `templates/search-audit.md` |
+| **All-Source Analyst** xN | standard, deep | one lane (the five lane fields) | the lane findings brief | `templates/lane-brief.md` |
+| **Fact-Checker** | standard, deep | `draft.md` | the claim ledger | `templates/verification.md` |
+| **Devil's Advocate** | deep; standard when contested | `draft.md` | the objection set | `templates/critique.md` |
+| **Statistician** | when load-bearing numbers carry the conclusion | `draft.md` | the number ledger, or NONE | `templates/statistical-review.md` |
+| **Standards Reviewer** | sensitive or external-facing output | the draft | the exposure ledger: BLOCK / REVISE / CLEAR per exposure | the ledger shape below (inline) |
+| **Editor** | only when a report file ships | the draft report | the polished report plus an edit note (the lead applies it) | `templates/report.md` |
 
 ## Verdict vocabularies (so the lead applies a return mechanically)
 

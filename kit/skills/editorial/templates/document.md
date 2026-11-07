@@ -1,14 +1,15 @@
-<!--
+---
 title: "[Document Title]"
 description: "[One or two task-shaped sentences: what this document is and when to read it. Do not echo the title.]"
-type: "[guide | index | reference | record]"
--->
+---
 
-# [emoji] [Document Title]
+# [Document Title]
 
-<!-- A vault note. Single emoji-led H1 (AGENTS.md, Conventions); the YAML title stays plain.
-     No em dash anywhere (DOC-002). No slop (DOC-003). Format per references/formatting.md: restraint by default,
-     every rich element earns its place. Lint is the exit gate: `python3 .github/scripts/lint-notes.py`. -->
+<!-- A document scaffold. Where the repository's instructions set a documentation style, fit this to it:
+     its frontmatter (drop the block above if its documents carry none), its heading rule (some want the
+     single H1 to open with one fitting emoji), its link convention, and its exit check. With no such rules,
+     this shape is the default. No em dash anywhere (DOC-002). No slop (DOC-003). Format per
+     references/formatting.md: restraint by default, every rich element earns its place. -->
 
 [The bottom line or one-line summary, so a reader can stop early. Put the conclusion above the fold.]
 
@@ -19,7 +20,7 @@ type: "[guide | index | reference | record]"
 > [!TIP]
 > **[A callout earns its place only where it helps the reader understand faster than prose]**
 > [Use a callout, table, or diagram where it does real work, not for decoration. A collapsible `<details>`
-> block manages density in a long doc. Owner can override the default density per document.]
+> block manages density in a long doc. Your user can override the default density per document.]
 
 ## [Second section]
 

@@ -1,5 +1,5 @@
 {
-  "//": "The trigger test for visualize, taken from its assets/trigger-evals.json by .github/scripts/faculties.py. Never edit it by hand.",
+  "//": "The trigger test for visualize, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw. Never edit it by hand.",
   "skill": "visualize",
   "runs": 3,
   "threshold": 0.5,

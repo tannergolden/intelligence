@@ -28,13 +28,27 @@ A brief is neither a vague theme nor a pre-baked solution. One clear challenge p
 
 ## The idea record (lightweight, reusable, rankable)
 
-A captured idea stays lightweight until vetted. Fields (the full schema and scoring are the Discovery team's method in this skill's `agents/Discovery.md`, scaffolded by `templates/idea-record.md`):
-- a stable `id` (never reused; the dedup and lineage key),
-- a short `title` and a one-sentence `statement`,
-- the `lens` (or HMW) that produced it,
-- a cheap `ice` score for intake triage and an `elo` from the tournament,
-- its `lifecycle` (raw, shortlisted, developed, promoted, parked, killed),
-- `parents` for lineage (what it evolved or combined from) and `serves` for the venture, project, or topic it is for.
+A captured idea stays lightweight until vetted. This is the Discovery team's idea method, and it holds wherever an idea is delivered: in chat, the same fields describe each idea on the shortlist; filed, one idea is one Markdown file scaffolded by `templates/idea-record.md`, fitted to the frontmatter and file conventions the repository's instructions set. The fields:
+
+```yaml
+title: "Voice-first inbox triage"
+description: "An idea record: clear your inbox by talking to it, hands-free."
+id: idea-20260621-a3f9          # stable, never reused (the dedup + lineage key)
+statement: "Clear your inbox by talking to it, hands-free."
+lifecycle: shortlisted          # raw | shortlisted | developed | promoted | parked | killed
+ice: { impact: 8, confidence: 6, ease: 7, value: 336 }   # cheap intake score
+elo: 1530                       # relative rank from the pairwise tournament (default 1500)
+elo_games: 12                   # comparisons played; low = an unsettled rank
+lens: "constraint-removal"      # the generative lens that produced it
+parents: []                     # lineage: ids this idea evolved or combined from
+serves: "Acme onboarding"       # the venture, project, or topic it is for (plain text or a plain path, not a link)
+keywords: ["voice", "retention"]
+```
+
+- **Scoring.** ICE (Impact x Confidence x Ease, 1 to 10 each) is the cheap intake filter that triages a raw idea to shortlisted or kills it fast. Elo is the load-bearing relative ranker of the shortlist, from pairwise "which is better" contests (default 1500); a low `elo_games` marks a rank as unsettled. RICE is reserved for cross-venture portfolio calls on developed ideas, computed only when the Portfolio Manager runs. The method is in `references/convergence.md`.
+- **Lifecycle.** An idea flows raw -> shortlisted -> developed -> promoted (handed to a venture or project) or parked or killed, with a gate between each. The stage is `lifecycle`, kept apart from any `status` field the repository's own frontmatter uses. Most ideas end killed, by design; the team is a competitive selector, not an archive of everything.
+- **Dedup and lineage.** On intake the Idea Curator compares a new idea against the whole pool including killed ideas (in the run, and in any filed pool the repository keeps) and flags near-duplicates, at a high similarity threshold (about 0.9 cosine on statement and title, a tunable default) that flags a candidate and never merges on its own. A confirmed merge keeps the higher-Elo record canonical and folds the loser under `parents`. Comparing against killed ideas stops the team re-treading a rejected dead end. Ids are never reused, so lineage never dangles.
+- **Idea records are leaves.** `parents` are plain ids and `serves` is plain text, so an idea links to nothing; lineage is reconstructed by querying `id` and `parents`, not by links.
 
 ## Sources
 

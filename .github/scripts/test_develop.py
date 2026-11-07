@@ -68,7 +68,6 @@ CHANGELOG = '# sample Changelog\n\n## Current Version\n\n**`01.00.00`**\n'
 
 AGENT = """---
 title: "{title}"
-name: "{name}"
 description: "Dispatch this agent to {job}."
 tools: read, search
 ---
@@ -76,7 +75,6 @@ tools: read, search
 # {title}
 
 ## Identity
-- **Name:** {name}
 - **Persona:** A tester.
 - **Voice:** Plain.
 - **Global rules:** follow `crew.md`.
@@ -130,8 +128,8 @@ class Fixture(unittest.TestCase):
         for folder in validate.SKILL_FOLDERS:
             self.write(f'sample/{folder}/notes.md', 'Notes.\n')
         self.write('agents-home/crew/crew.md', ROSTER.format(star=STAR))
-        self.write('agents-home/crew/crew-lead.md', AGENT.format(title=STAR + 'Crew Lead', name='Ada', job='lead'))
-        self.write('agents-home/crew/crew-member.md', AGENT.format(title='Crew Member', name='Ben', job='work'))
+        self.write('agents-home/crew/crew-lead.md', AGENT.format(title=STAR + 'Crew Lead', job='lead'))
+        self.write('agents-home/crew/crew-member.md', AGENT.format(title='Crew Member', job='work'))
 
     def tearDown(self) -> None:
         shutil.rmtree(self.root, ignore_errors=True)
@@ -364,13 +362,19 @@ class TestAgentsAndTeams(Fixture):
                 self.edit('agents-home/crew/crew.md', old, new)
                 self.assertError(fragment, self.library_report())
 
-    def test_titles_and_names_are_unique_across_homes(self) -> None:
+    def test_titles_are_unique_across_homes(self) -> None:
         other = self.root / 'other-home'
-        self.write('other-home/twin.md', AGENT.format(title='Crew Member', name='BEN', job='copy'))
+        self.write('other-home/twin.md', AGENT.format(title='Crew Member', job='copy'))
         (other / 'twin.md').rename(other / 'crew-member.md')
         report = self.library_report(self.home, other)
         self.assertError('shares its title, Crew Member', report)
-        self.assertError('shares its spoken name', report)
+
+    def test_an_agent_is_known_by_its_title_alone(self) -> None:
+        self.edit('agents-home/crew/crew-member.md', 'title: "Crew Member"\n', 'title: "Crew Member"\nname: "Ben"\n')
+        self.assertError('drop the name from its frontmatter', self.library_report())
+        self.setUp()
+        self.edit('agents-home/crew/crew-member.md', '- **Persona:**', '- **Name:** Ben\n- **Persona:**')
+        self.assertError('its Identity block gives a name', self.library_report())
 
 
 class TestPackage(Fixture):

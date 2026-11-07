@@ -12,7 +12,7 @@ A message is one thought, often one line, with no ceremony. It gets **no** subje
 
 ## Register: keep it light, match the thread
 
-A message usually sits at the **casual** or **consultative** rung (Joos's lower-middle): contractions, brevity, and in-group shorthand where the relationship supports it. Pick the rung from the **tenor** (who the reader is) and match the thread you are already in, do not formalize a casual exchange on the way through. The full register ladder and its three dimensions (Field, Tenor, Mode) live in `references/email.md`. Once the owner's voice is captured, its actual chat habits override the default (`references/voice.md`).
+A message usually sits at the **casual** or **consultative** rung (Joos's lower-middle): contractions, brevity, and in-group shorthand where the relationship supports it. Pick the rung from the **tenor** (who the reader is) and match the thread you are already in, do not formalize a casual exchange on the way through. The full register ladder and its three dimensions (Field, Tenor, Mode) live in `references/email.md`. Once your user's voice is captured, its actual chat habits override the default (`references/voice.md`).
 
 ## Platform syntax does not travel
 

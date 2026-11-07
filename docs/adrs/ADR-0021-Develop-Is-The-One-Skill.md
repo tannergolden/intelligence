@@ -21,10 +21,10 @@ _A factory, not a pamphlet._
 </div>
 
 > [!IMPORTANT]
-> **Amended by [ADR-0033](ADR-0033-The-Kit-Carries-The-Faculties.md).** `develop`
-> stays the one skill the hub writes, and the kit carries the knowledge
-> template's five faculties beside it, each copied from a release of the
-> template and pinned.
+> **Amended by [ADR-0037](ADR-0037-The-Hub-Writes-Every-Skill.md).** The hub
+> now writes every skill the kit carries, `develop` among them, each made to
+> work in any repository; [ADR-0033](ADR-0033-The-Kit-Carries-The-Faculties.md)'s
+> pinned faculties are retired.
 
 ---
 

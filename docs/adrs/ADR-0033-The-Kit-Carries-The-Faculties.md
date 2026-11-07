@@ -2,7 +2,7 @@
 title: '📄 ADR-0033: THE KIT CARRIES THE FACULTIES'
 description: 'The home kit carries the knowledge template''s five faculty skills beside develop, each copied by script from one release of the template, pinned by hash, held to its pin by make lint, and refused without the rule that hands a home copy over to a vault''s own.'
 type: record
-status: 'Proposed'
+status: 'Superseded'
 date: '2026-10-26'
 evidence: 'N/A'
 -->
@@ -19,6 +19,11 @@ evidence: 'N/A'
 _Copied by script, pinned by hash, and giving way in a vault._
 
 </div>
+
+> [!IMPORTANT]
+> **Superseded by [ADR-0037](ADR-0037-The-Hub-Writes-Every-Skill.md).** The hub
+> now writes every skill itself, universal, and the knowledge template keeps
+> none, so nothing is pinned from it and no skill hands over to a vault's copy.
 
 ---
 

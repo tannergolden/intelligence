@@ -1,16 +1,10 @@
-<!--
-title: "finance - Changelog"
-description: "Change history for the finance skill."
-type: "record"
-keywords: ["version history", "release notes", "finance changes", "revision log"]
--->
 # finance Changelog
 
 ## Current Version
 
-**`1.1.0`**
+**`1.2.0`**
 
-The version is SemVer, per standards' [versioning policy](https://github.com/tannergolden/standards/blob/Development/docs/distribution/Releases-&-Versioning.md#-versioning-policy-semver). It matches `metadata.version` in `SKILL.md`, and `check-skills.py` fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
+The version is SemVer, per standards' [versioning policy](https://github.com/tannergolden/standards/blob/Development/docs/distribution/Releases-&-Versioning.md#-versioning-policy-semver). It matches `metadata.version` in `SKILL.md`, and develop's validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
 
 ---
 
@@ -28,11 +22,15 @@ The version is SemVer, per standards' [versioning policy](https://github.com/tan
 
 ### `1.0.0` - 2026-10-22
 
-Initial build of the finance skill: the BRAIN's personal and household finance skill, dispatching the new standing Finance team in `Inbox/Faculties/Finance/` (Theodore leads Lucille, Owen, Harriet, Graham, Clara, Elliot and Henry, with Ingrid as the independent Plan Reviewer) to the standard of the Founder's interest first, with show the math as its craft rule. Three modes (ask, plan, review) and three tiers (quick, standard, deep); a fact sheet compiled before dispatch; every load-bearing number reproduced by a script before review; a blind review gate on consequential advice; and a gate that never moves money and never records a secret. Five references (doctrine, dispatch, data and writes, cadence, life events), five templates (fact sheet, brief, plan, review, checkup), and two assets (trigger tests, official US sources).
+Initial build of the finance skill: the BRAIN's personal and household finance skill, dispatching the new standing Finance team in `Inbox/Faculties/Finance/` (the Financial Planning Lead leads the Cash Flow Analyst, the Credit & Debt Specialist, the Tax Strategist, the Investment & Retirement Analyst, the Insurance & Estate Specialist, the Equity & Benefits Specialist and the Home & Major Purchases Analyst, with the Plan Reviewer as the independent Plan Reviewer) to the standard of the Founder's interest first, with show the math as its craft rule. Three modes (ask, plan, review) and three tiers (quick, standard, deep); a fact sheet compiled before dispatch; every load-bearing number reproduced by a script before review; a blind review gate on consequential advice; and a gate that never moves money and never records a secret. Five references (doctrine, dispatch, data and writes, cadence, life events), five templates (fact sheet, brief, plan, review, checkup), and two assets (trigger tests, official US sources).
 
 ## Minor Updates
 
 > Backward-compatible additions. Most recent 4 entries.
+
+### `1.2.0` - 2026-11-07
+
+The hub now owns and authors the skill, made universal: the hand-over rule to a vault's own copy is gone, and it runs the same in any repository or a plain conversation. It writes the user's finances into a repository only when that repository's instructions say it is a private one made to hold them; everywhere else the plan, its deadlines and its open loops stay in the conversation (`references/data-and-writes.md`, reworked around that rule, with the vault's fixed folders replaced by the records a private repository's instructions name). The roster is in develop's format, every spec carries `title:` and is known by it alone (spoken names dropped), the namesake `Finance.md` is folded into `SKILL.md` and `references/doctrine.md` and deleted, and "the Founder" reads "the user".
 
 ### `1.1.0` - 2026-10-26
 
@@ -49,7 +47,7 @@ Fixes from a second, independent audit of the team and the skill, each checked a
 - Delaying Medicare Part B now depends on who pays first: at an employer with fewer than 20 employees Medicare usually does, so Part B starts on time (the Insurance & Estate Specialist, `references/life-events.md`).
 - Every income move (a Roth conversion, a gain harvest, a bonus, an extra withdrawal) is checked against the Marketplace premium tax credit, now repaid at filing with no cap, as well as IRMAA (the Tax Strategist, the Investment & Retirement Analyst, the Insurance & Estate Specialist, `references/doctrine.md`).
 - The inheritance event dates its deadlines (the nine-month disclaimer, the portability election, the year-of-death distribution); a federal student loan is never left to default; the match counts once it vests; debt payoff waits only on the starter buffer; the IRA rollover limit runs per 12 months; a government money market fund is no longer called government-backed.
-- Quick answers reproduce a seat's numbers with a script and lead with any foundation gap; the Plan Reviewer's inputs, severities and re-review scope read the same everywhere; the dependency order adds Clara before Elliot and Graham before Harriet on account choice.
+- Quick answers reproduce a seat's numbers with a script and lead with any foundation gap; the Plan Reviewer's inputs, severities and re-review scope read the same everywhere; the dependency order adds the Insurance & Estate Specialist before the Equity & Benefits Specialist and the Investment & Retirement Analyst before the Tax Strategist on account choice.
 - One owner per topic now holds (COBRA, the dependent care FSA, self-employed retirement plans, estate tax thresholds), public benefits and Social Security disability have owners, and the brief carries each seat's sources inline.
 - The official sources add the state unemployment agency, SHIP Medicare counseling, the No Surprises Act, the PBGC and the IRS child-account page.
 
@@ -63,6 +61,3 @@ Fixes from an independent review of the team and the skill, each checked against
 - The skill adds every fact a seat found to the fact sheet before the computation check, the lead sets each seat's share of the surplus, and the run workspace is deleted whether the run shipped or not.
 - Routing gains owners for Medicare, medical bills, a pension's lump-sum-or-annuity choice, college aid, rental property and scam checks, and one owner each for the health plan choice, the HSA and Social Security.
 - `templates/plan.md` opens with the question, the Plan Reviewer's brief includes the Profile, and the official sources add the state attorney general, the state's own health insurance exchange and the state housing finance agency.
-
-<!-- This is a BRAIN documentation node: it carries the vault's note schema above
-     (.docs/technical/vault/Note-Schema.md), not the Agent Skills schema. -->

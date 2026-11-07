@@ -59,7 +59,7 @@ The user wants help, not a questionnaire. Asking is the exception.
 - **Cap at the top 1 to 3, usually fewer (often zero).** Prioritize in this order, stopping as soon as the draft is determined: goal, then audience and relationship, then the one key message. Tone, format, and length are rarely worth a question; infer them from channel and relationship.
 - **Batch once, never drip.** If you must ask, ask the 1 to 3 questions together, once, then draft. Never trickle one at a time, and never end an otherwise-complete draft with a list of questions the user did not request.
 - **Otherwise draft and surface the assumptions.** When not asking, draft anyway and state the assumptions that drove it ("I assumed this is to your manager, the goal is X, and kept it brief; tell me if any of those are off"). A concrete artifact to react to is faster and more accurate than questions in the abstract, and every assumption stays visible and correctable.
-- **Let memory pre-empt the question.** Before asking about audience or voice, check `Profile/` and `Memory/` for an existing voice profile or recipient and relationship record and fill from it. Re-asking known facts is a failure mode.
+- **Let what is known pre-empt the question.** Before asking about audience or voice, check the conversation, and any voice profile or contact and relationship notes the repository's instructions say it keeps, and fill from them. Re-asking known facts is a failure mode.
 - **Use the structured ask tool** when it is available; otherwise ask in chat.
 
 ## The situation-brief spine
@@ -78,4 +78,4 @@ The fields the lead captures and threads into every dispatch. Each carries a sen
 | **Constraints** | length, deadline, must-include, must-avoid, policy or legal or brand rules | fit the medium's norms; keep it concise; assume no must-haves |
 | **Message type** (if a hard message) | bad news, apology, refusal, complaint and recovery, or de-escalation | none; set only when the situation is a hard message, then load `references/difficult-messages.md` |
 
-Load the voice into the brief from `Profile/` per `references/voice.md`: pass the concrete captured features, or the honest neutral-default note when `Profile/` is empty (do not invent a voice). The situation brief plus the loaded voice is what every Writer and Line Editor dispatch carries.
+Load the voice into the brief per `references/voice.md`: pass the concrete captured features, or the honest neutral-default note when no real voice is loaded (do not invent a voice). The situation brief plus the loaded voice is what every Writer and Line Editor dispatch carries.

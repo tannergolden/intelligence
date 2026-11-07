@@ -34,7 +34,7 @@ Do not collapse "how warm" and "how formal" into one dial. **Register** (the for
 
 1. **Frozen** - fixed, ceremonial wording (a legal notice, a motto). Rare in correspondence.
 2. **Formal** - one-directional, careful, no contractions (a cover letter, a first contact with a senior stranger). `Dear Dr. Reyes,` ... `Sincerely,`.
-3. **Consultative** - the professional default: warm, complete, some contractions (most work email). `Hi Sarah,` ... `Best,`. **This is the neutral default** when `Profile/` is empty (`references/voice.md`).
+3. **Consultative** - the professional default: warm, complete, some contractions (most work email). `Hi Sarah,` ... `Best,`. **This is the neutral default** when no real voice is loaded (`references/voice.md`).
 4. **Casual** - relaxed, elliptical, in-group (a colleague you know well). `Hey Sam,` ... `Thanks!` or no sign-off.
 5. **Intimate** - private shorthand (close personal ties). Minimal structure.
 
@@ -50,7 +50,7 @@ Pick the rung from the **tenor** (who the reader is), then set the **tone** (war
 | Close colleague (casual) | `Hey [First],` | `Thanks!` / none |
 | Chat / message | none, or a bare `[First]` | none |
 
-When the owner's voice is captured, its actual greeting and sign-off habits override this map. Until then, this is the neutral default and the draft says so on a first send (`references/voice.md`).
+When your user's voice is captured, its actual greeting and sign-off habits override this map. Until then, this is the neutral default and the draft says so on a first send (`references/voice.md`).
 
 ## Writing for HTML email
 

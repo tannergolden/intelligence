@@ -12,7 +12,7 @@ type: index
 
 **Procedures an agent loads only when the task in front of it needs them.**
 
-_One skill written here, and the faculties of whichever template release is pinned._
+_Every skill written here, for any repository._
 
 </div>
 
@@ -21,10 +21,8 @@ _One skill written here, and the faculties of whichever template release is pinn
 ## 💡 What This Folder Is For
 
 The skills the home kit installs, one folder each in the open Agent Skills
-format: [`develop/`](develop/SKILL.md), the one the hub writes, and, once a
-release is pinned, the five faculties `make faculties` copies from the
-knowledge template. [`../faculties.json`](../faculties.json) records the pin,
-and no one edits a faculty here.
+format, every one written here and universal, each with the team it
+dispatches in its own `agents/`.
 Where they land and the rules every skill here follows: [Skills &
 Subagents](../../docs/technical/Skills-&-Subagents.md).
 
@@ -36,12 +34,14 @@ Subagents](../../docs/technical/Skills-&-Subagents.md).
 
 | Entry                      | Purpose                                                                                                                              |
 | :------------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
-| [`develop/`](develop/)     | The skill the hub writes: builds, tests and ships every other skill, and the agents and teams they dispatch.                         |
-| [`discover/`](discover/)   | A faculty pinned from the knowledge template: generates options from distinct lenses and ranks them fairly, with the Discovery team. |
-| [`editorial/`](editorial/) | A faculty pinned from the knowledge template: writes, edits and formats prose, with the Editorial team.                              |
-| [`finance/`](finance/)     | A faculty pinned from the knowledge template: advises on personal and household money, with the Finance team.                        |
-| [`research/`](research/)   | A faculty pinned from the knowledge template: runs multi-source, fact-checked research, with the Research team.                      |
-| [`visualize/`](visualize/) | A faculty pinned from the knowledge template: makes charts, diagrams and other visuals, with the Design team.                        |
+| [`board/`](board/)         | Founds and runs a company with the Agent Resources workforce, at most six agents a department, behind a write-gate.                  |
+| [`develop/`](develop/)     | Builds, tests and ships every other skill, and the agents and teams they dispatch.                                                   |
+| [`discover/`](discover/)   | Generates options from distinct lenses and ranks them fairly, with the Discovery team.                                               |
+| [`editorial/`](editorial/) | Writes, edits and formats prose, with the Editorial team.                                                                            |
+| [`finance/`](finance/)     | Advises on personal and household money, with the Finance team.                                                                      |
+| [`identify/`](identify/)   | Interviews the user with validated frameworks into a profile they approve line by line.                                              |
+| [`research/`](research/)   | Runs multi-source, fact-checked research, with the Research team and the Librarian.                                                  |
+| [`visualize/`](visualize/) | Makes charts, diagrams and other visuals, with the Design team.                                                                      |
 | [`README.md`](README.md)   | This file.                                                                                                                           |
 
 <!-- AUTO-INDEX:END -->

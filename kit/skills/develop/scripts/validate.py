@@ -47,7 +47,7 @@ APP_TOOLS = ('Read', 'Write', 'Edit', 'MultiEdit', 'NotebookEdit', 'Bash', 'Grep
 PRE_APPROVES_WRITES = re.compile(r'\b(Write|Edit|MultiEdit|NotebookEdit|Bash|edit|execute)\b')
 AGENT_SECTIONS = ('Identity', 'Role & Objective', 'Inputs', 'Method', 'Output contract', 'Examples', 'Boundaries',
                   'Recovery', 'Non-negotiables')
-IDENTITY_LINES = ('Name', 'Persona', 'Voice')
+IDENTITY_LINES = ('Persona', 'Voice')
 CURRENT_VERSION = re.compile(r'^## Current Version[ \t]*\n\s*\*\*`(?P<version>[^`]+)`\*\*', re.M)
 FENCE = re.compile(r'^\s*(?:```|~~~)')
 KEY = re.compile(r'^([A-Za-z_][A-Za-z0-9_-]*):(?:[ \t]+(.*)|[ \t]*)$')
@@ -251,7 +251,7 @@ class Spec:
 
 
 def collect(homes: list[pathlib.Path], report: Report) -> tuple[list[Spec], list[Spec]]:
-    """The agents and the rosters in every home: a roster lists `members`, an agent has a title and a name."""
+    """The agents and the rosters in every home: a roster lists `members`, an agent has a title and a description."""
     agents, rosters = [], []
     for home in homes:
         if not home.is_dir():
@@ -266,7 +266,7 @@ def collect(homes: list[pathlib.Path], report: Report) -> tuple[list[Spec], list
                 continue  # not an agent spec; the agent check reports a broken one it is pointed at
             if 'members' in fields:
                 rosters.append(Spec(path, fields))
-            elif 'title' in fields and 'name' in fields:
+            elif 'title' in fields and 'description' in fields:
                 agents.append(Spec(path, fields))
     return agents, rosters
 
@@ -283,9 +283,11 @@ def check_agent(path: pathlib.Path, report: Report, allow_dash: bool = False) ->
     except FrontmatterError as error:
         report.error(path, f'frontmatter {error}')
         return
-    for key in ('title', 'name', 'description'):
+    for key in ('title', 'description'):
         if not str(fields.get(key, '')).strip():
             report.error(path, f'needs a {key} in its frontmatter')
+    if 'name' in fields:
+        report.error(path, 'an agent is known by its title alone; drop the name from its frontmatter')
     title = str(fields.get('title', ''))
     if title and path.stem not in (title, slug(title)):
         report.error(path, f'the file is named for its title: {slug(title)}.md, or "{title}.md" where the '
@@ -307,6 +309,8 @@ def check_agent(path: pathlib.Path, report: Report, allow_dash: bool = False) ->
         for label in IDENTITY_LINES:
             if f'**{label}:**' not in identity:
                 report.warn(path, f'its Identity block has no **{label}:** line')
+        if '**Name:**' in identity:
+            report.error(path, 'its Identity block gives a name; an agent is known by its title alone')
     check_dashes(path, text, report, allow_dash)
 
 
@@ -346,16 +350,11 @@ def check_library(homes: list[pathlib.Path], report: Report, allow_dash: bool = 
     for roster in rosters:
         check_team(roster, agents, report, allow_dash)
     titles: dict[str, list[pathlib.Path]] = {}
-    names: dict[str, list[pathlib.Path]] = {}
     for agent in agents:
         titles.setdefault(agent.title, []).append(agent.path)
-        names.setdefault(str(agent.fields.get('name', '')).lower(), []).append(agent.path)
     for title, paths in sorted(titles.items()):
         if title and len(paths) > 1:
             report.error(paths[1], f'shares its title, {title}, with {paths[0]}; a role is unique across the homes')
-    for name, paths in sorted(names.items()):
-        if name and len(paths) > 1:
-            report.error(paths[1], f'shares its spoken name with {paths[0]}; a name is unique across the homes')
 
 
 def find_team(team: str, homes: list[pathlib.Path], report: Report) -> tuple[Spec | None, list[Spec]]:
