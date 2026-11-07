@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**`2.2.0`**
+**`2.3.0`**
 
 The version is SemVer, per standards' [versioning policy](https://github.com/tannergolden/standards/blob/Development/docs/distribution/Releases-&-Versioning.md#-versioning-policy-semver). It matches `metadata.version` in `SKILL.md`, and the validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
 
@@ -31,6 +31,10 @@ Initial build of the board skill: the BRAIN's decision skill, convening the Agen
 ## Minor Updates
 
 > Backward-compatible additions. Most recent 4 entries.
+
+### `2.3.0` - 2026-11-07
+
+Added the Chief of Staff to Administration: the connective office that sits with every department, relays between them, tracks each commitment to done, and keeps the Founder's knowledge repository current behind the write-gate. When the workforce runs as standing agents, one group per department with the Chief of Staff in each, it holds the pen no skill holds there. The commitment tracking the COO had absorbed returns to it.
 
 ### `2.2.0` - 2026-11-07
 

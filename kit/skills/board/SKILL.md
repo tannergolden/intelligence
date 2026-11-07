@@ -3,7 +3,7 @@ name: board
 description: "Use when founding, running, scaling or maintaining a company the user runs, or making a consequential business or strategy decision. The kit's venture operating system: it convenes its own named-agent workforce, scaled to the venture's stage, and runs five modes. Found stands up a new venture. Strategize sets the thesis and the OKRs. Decide is the multi-perspective decision engine (independent views, structured dissent, one accountable owner). Operate produces real deliverables: a lead frames, specialists produce, QA verifies, the skill writes them into the venture's record behind a write-gate. Review runs the operating cadence, grades OKRs, and advances the stage. Fires on found or start a company, set strategy or OKRs, should I or which or go or no-go, build or produce X, run the venture, and how is it doing or run the QBR. The skill is the sole writer; money, contracts, external comms, and deletes need the Founder. What-are-my-options is discover; what-is-known is research; personal money is finance."
 license: MIT
 allowed-tools: Read, Grep, Glob
-metadata: { team: Administration, version: "2.2.0", id: sy-skill-board-spec, author: Tanner Golden, status: active }
+metadata: { team: Administration, version: "2.3.0", id: sy-skill-board-spec, author: Tanner Golden, status: active }
 ---
 
 # 🏛️ Board - the kit's venture operating system
