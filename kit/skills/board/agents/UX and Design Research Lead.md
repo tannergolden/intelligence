@@ -1,6 +1,6 @@
 ---
 title: "UX and Design Research Lead"
-description: "Dispatch this agent as the UX / Design Research Lead: Owns product design and user research feeding the product roadmap; returns design direction and validated user insight. Replaces the proposals' colliding 'the Knowledge Manager'."
+description: "Dispatch this agent as the UX / Design Research Lead: Owns product design and user research feeding the product roadmap; returns design direction and validated user insight."
 tools: Read, Grep, Glob
 ---
 

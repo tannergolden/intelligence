@@ -148,18 +148,19 @@ class TestSkills(Hub):
 
 
 class TestTeams(Hub):
-    """Every skill, agent and team passes develop's validator, and no department of the workforce tops six."""
+    """Every skill, agent and team passes develop's validator, and no team tops six agents."""
 
-    def department(self, size: int) -> None:
+    def department(self, size: int, home: str = kit.WORKFORCE_DIR) -> None:
         team = 'Sales'
         titles = [f'\u2605 {team} Lead'] + [f'{team} Seat {n}' for n in range(1, size)]
         for title in titles:
-            self.write(f'{kit.WORKFORCE_DIR}/{title}.md', SPEC.format(title=title))
+            self.write(f'{home}/{title}.md', SPEC.format(title=title))
         members = ', '.join(f'"{title}"' for title in titles)
-        self.write(f'{kit.WORKFORCE_DIR}/{team}.md', ROSTER.format(team=team, members=members))
-        self.write('kit/skills/board/SKILL.md', SKILL.replace('processing-invoices', 'board'))
-        self.write('kit/skills/board/License.txt', 'MIT\n')
-        self.write('kit/skills/board/Changelog.md', CHANGELOG)
+        self.write(f'{home}/{team}.md', ROSTER.format(team=team, members=members))
+        skill = home.split('/')[2]
+        self.write(f'kit/skills/{skill}/SKILL.md', SKILL.replace('processing-invoices', skill))
+        self.write(f'kit/skills/{skill}/License.txt', 'MIT\n')
+        self.write(f'kit/skills/{skill}/Changelog.md', CHANGELOG)
 
     def test_a_department_of_six_is_sound(self) -> None:
         self.department(6)
@@ -167,7 +168,11 @@ class TestTeams(Hub):
 
     def test_a_department_of_seven_is_refused(self) -> None:
         self.department(7)
-        self.assertProblem('7 agents; a department keeps at most its 6 most critical')
+        self.assertProblem('7 agents; a team keeps at most its 6 most critical')
+
+    def test_a_skills_own_team_of_seven_is_refused(self) -> None:
+        self.department(7, 'kit/skills/processing-invoices/agents')
+        self.assertProblem('processing-invoices/agents/Sales.md: 7 agents')
 
     def test_an_agent_breaking_develops_standard_is_refused(self) -> None:
         self.department(2)

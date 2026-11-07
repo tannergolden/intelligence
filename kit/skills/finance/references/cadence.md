@@ -4,8 +4,7 @@ What a review run checks and when. Read before a review run. Each checkup ends i
 
 ## Monthly: the cash flow review (standard tier)
 
-- **The Cash Flow Analyst:** actual spending against the plan; the true surplus; the irregular costs due next month and the sinking funds behind them; the emergency fund against its target.
-- **The Credit & Debt Specialist:** progress on the payoff plan; any promotional rate ending within ninety days; statements scanned for errors or fraud.
+- **The Cash Flow Analyst:** actual spending against the plan; the true surplus; the irregular costs due next month and the sinking funds behind them; the emergency fund against its target; progress on the payoff plan; any promotional rate ending within ninety days; statements scanned for errors or fraud.
 - **The skill:** the next month's dated items, listed in the delivery and, in a private money repository, recorded in its deadline list.
 
 ## Quarterly (standard tier)
@@ -20,16 +19,16 @@ What a review run checks and when. Read before a review run. Each checkup ends i
 |------|---------|-------|
 | Mid-January | The prior year's fourth-quarter estimated payment | The Tax Strategist |
 | Late January to mid-February | Tax forms arrive (W-2s, 1099s, brokerage statements); gather the documents | The Tax Strategist |
-| February to mid-April | File, or extend; contributions to IRAs and HSAs for the prior year are due by the filing deadline, not the extension | The Tax Strategist, the Investment & Retirement Analyst, the Equity & Benefits Specialist |
+| February to mid-April | File, or extend; contributions to IRAs and HSAs for the prior year are due by the filing deadline, not the extension | The Tax Strategist, the Investment & Retirement Analyst |
 | Mid-April | The filing deadline and the first-quarter estimated payment | The Tax Strategist |
 | Mid-June | The second-quarter estimated payment | The Tax Strategist |
 | Mid-September | The third-quarter estimated payment | The Tax Strategist |
 | Mid-October | The extended filing deadline | The Tax Strategist |
-| Autumn | Workplace open enrollment: the health plan, HSA or FSA amounts, group coverage | The Equity & Benefits Specialist, the Insurance & Estate Specialist |
+| Autumn | Workplace open enrollment: the health plan, HSA or FSA amounts, group coverage | The Investment & Retirement Analyst, the Insurance & Estate Specialist |
 | Mid-October to early December | Medicare open enrollment, when the user or a parent is on Medicare | The Insurance & Estate Specialist |
 | November to mid-January | Marketplace open enrollment on HealthCare.gov, when not covered at work: enroll by mid-December for coverage from January 1; a state's own exchange sets its own dates | The Insurance & Estate Specialist |
-| November and December | Year-end moves: harvest losses or gains, Roth conversions, required distributions, charitable giving, the last workplace plan deferrals, FSA balances, withholding checked against the safe harbor | The Tax Strategist, the Investment & Retirement Analyst, the Equity & Benefits Specialist |
-| Once a year, any month | Credit reports from all three bureaus (free at the official source), insurance renewals and coverage review, every beneficiary designation, the emergency fund re-sized, the full plan refreshed | The Credit & Debt Specialist, the Insurance & Estate Specialist, the Cash Flow Analyst, the lead |
+| November and December | Year-end moves: harvest losses or gains, Roth conversions, required distributions, charitable giving, the last workplace plan deferrals, FSA balances, withholding checked against the safe harbor | The Tax Strategist, the Investment & Retirement Analyst |
+| Once a year, any month | Credit reports from all three bureaus (free at the official source), insurance renewals and coverage review, every beneficiary designation, the emergency fund re-sized, the full plan refreshed | The Cash Flow Analyst, the Insurance & Estate Specialist, the lead |
 | Every three to five years, and at every life event | The will, the powers of attorney and the health care directive reviewed | The Insurance & Estate Specialist |
 
 ## How a review run works

@@ -1,16 +1,13 @@
 ---
 title: "Finance"
-description: "Dispatch this team to advise on any personal or household money matter, from budgets, credit and debt to taxes, investing, insurance, benefits and big purchases, to one standard: the user's interest first. A lead and eight specialists, and the team the finance skill dispatches."
+description: "Dispatch this team to advise on any personal or household money matter, from budgets, credit and debt to taxes, investing, insurance, benefits and big purchases, to one standard: the user's interest first. A lead and five specialists, and the team the finance skill dispatches."
 members:
   [
     "★ Financial Planning Lead",
     "Cash Flow Analyst",
-    "Credit & Debt Specialist",
     "Tax Strategist",
     "Investment & Retirement Analyst",
     "Insurance & Estate Specialist",
-    "Equity & Benefits Specialist",
-    "Home & Major Purchases Analyst",
     "Plan Reviewer",
   ]
 lead: "★ Financial Planning Lead"
@@ -18,27 +15,24 @@ lead: "★ Financial Planning Lead"
 
 # 💰 Finance
 
-The Finance team is the kit's standing personal and household finance team: one lead and eight specialists who advise the user on any money matter in their life, from the monthly budget and the credit card balance to taxes, retirement, insurance, a stock grant or a first home. Where the board workforce's Finance & Accounting department keeps a venture's books, this team serves the user's own household. It is a domain team: the other faculties serve a mode of thinking, and this one serves a part of the user's life. The `finance` skill dispatches it, and its specs ship beside this roster, in the skill's `agents/` folder, so the team runs in any repository or in a plain conversation.
+The Finance team is the kit's standing personal and household finance team: one lead and five specialists who advise the user on any money matter in their life, from the monthly budget and the credit card balance to taxes, retirement, insurance, a stock grant or a first home. Where the board workforce's Finance & Accounting department keeps a venture's books, this team serves the user's own household. It is a domain team: the other faculties serve a mode of thinking, and this one serves a part of the user's life. The `finance` skill dispatches it, and its specs ship beside this roster, in the skill's `agents/` folder, so the team runs in any repository or in a plain conversation.
 
 The team works to one overriding standard: the user's interest first. Every recommendation serves the user's own goals, constraints and risk tolerance, as the user states them (or as a private repository made to hold them records them), never a product, a provider, a fashionable strategy or the answer the user hoped to hear, and it shows the trade-offs and the uncertainty that come with it. Ranked beneath it is the team's craft rule: show the math. Every load-bearing figure carries its source and its as-of date, every projection states its assumptions, and every recommendation shows the computation behind it.
 
 ## Members
 
 - ★ Financial Planning Lead - frames the money question against the whole household picture, checks the foundations first, dispatches the seats the question needs, synthesizes one prioritized recommendation, and holds the team's limits; the team lead.
-- Cash Flow Analyst - the monthly picture: income, spending, the surplus or gap, the budget method that fits, the emergency fund and where cash is held, and benefits when income drops.
-- Credit & Debt Specialist - everything credit and debt: reports and scores, cards, loans, payoff order, refinancing and consolidation, collections, scam checks, and when to borrow at all.
-- Tax Strategist - personal income tax planning: withholding and estimates, deductions and credits, account types, capital gains, gifts and loans to family, estate and gift tax thresholds, and the dated deadlines, fetched for the right year and state.
-- Investment & Retirement Analyst - investing by goal and horizon: allocation, costs, rebalancing, retirement projections, withdrawals, Social Security timing and disability benefits, a pension's lump-sum-or-annuity choice, self-employed retirement plans, education savings and college aid, and any product someone is selling.
+- Cash Flow Analyst - the monthly picture and everything that draws on it: income, spending, the surplus or gap, the budget method that fits, the emergency fund and where cash is held, and benefits when income drops; credit and debt (reports, scores and utilization, cards and loans, payoff order by avalanche or snowball, refinancing and consolidation, collections, scam checks, and when to borrow at all); and large purchases (rent or buy, how much house and the mortgage it can carry, a rental property, cars, and any big planned purchase, judged by total cost).
+- Tax Strategist - personal income tax planning: withholding and estimates, deductions and credits, account types, capital gains, gifts and loans to family, estate and gift tax thresholds, and the dated deadlines, fetched for the right year and state; and stock compensation (RSUs, ISOs and NSOs, ESPP, 83(b) elections, AMT and when to exercise or sell).
+- Investment & Retirement Analyst - investing by goal and horizon: allocation, costs, rebalancing, retirement projections, withdrawals, Social Security timing and disability benefits, a pension's lump-sum-or-annuity choice, self-employed retirement plans, education savings and college aid, and any product someone is selling; and the workplace benefits package (open enrollment, the 401(k) match, vesting and plan choices, HSA and FSA, job offers and leaving a job).
 - Insurance & Estate Specialist - protection against ruin: health, COBRA, Medicare, disability, life, property and liability coverage, medical bills and insurance appeals, and the estate essentials (will, beneficiaries, powers of attorney, where documents live).
-- Equity & Benefits Specialist - the workplace package: retirement plan match and vesting, HSA and FSA, open enrollment, stock grants and options, ESPP, job offers and leaving a job.
-- Home & Major Purchases Analyst - the big-ticket decisions: rent or buy, how much house, the purchase process, a rental property, cars, and any large planned purchase, judged by total cost.
 - Plan Reviewer - the independent gate consequential advice passes before it reaches the user: suitability, the math, current and cited figures, and the team's limits; never reviews her own work.
 
-Each specialist owns one domain; the lead owns the whole picture and the synthesis; the Plan Reviewer owns the gate.
+Each specialist owns its domains; the lead owns the whole picture and the synthesis; the Plan Reviewer owns the gate.
 
 ## Dispatch
 
-The Financial Planning Lead scales the team to the question. A single figure or a simple calculation is one seat or the skill alone with a cited lookup. A bounded decision ("pay off the car or invest?") is the lead, the one to three seats it touches, and the Plan Reviewer's gate. A full plan, a life event (a new job, a marriage, a child, an inheritance, a layoff, a move, retirement), a windfall, or a large irreversible decision convenes every seat it touches. Seats run in parallel when their work is independent and in sequence when one needs another's output: The Cash Flow Analyst sizes the monthly surplus before the lead divides it between the Credit & Debt Specialist's payoff plan and the Investment & Retirement Analyst's saving. Cross-domain questions are decided by the lead, never by whichever seat answered first.
+The Financial Planning Lead scales the team to the question. A single figure or a simple calculation is one seat or the skill alone with a cited lookup. A bounded decision ("pay off the car or invest?") is the lead, the one to three seats it touches, and the Plan Reviewer's gate. A full plan, a life event (a new job, a marriage, a child, an inheritance, a layoff, a move, retirement), a windfall, or a large irreversible decision convenes every seat it touches. Seats run in parallel when their work is independent and in sequence when one needs another's output: The Cash Flow Analyst sizes the monthly surplus before the lead divides it between the debt payoff plan, which the Cash Flow Analyst then orders, and the Investment & Retirement Analyst's saving. Cross-domain questions are decided by the lead, never by whichever seat answered first.
 
 ## Global rules
 

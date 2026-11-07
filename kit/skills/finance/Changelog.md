@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**`1.2.0`**
+**`1.3.0`**
 
 The version is SemVer, per standards' [versioning policy](https://github.com/tannergolden/standards/blob/Development/docs/distribution/Releases-&-Versioning.md#-versioning-policy-semver). It matches `metadata.version` in `SKILL.md`, and develop's validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
 
@@ -27,6 +27,10 @@ Initial build of the finance skill: the BRAIN's personal and household finance s
 ## Minor Updates
 
 > Backward-compatible additions. Most recent 4 entries.
+
+### `1.3.0` - 2026-11-07
+
+The Finance team is trimmed to its six most critical agents: the Financial Planning Lead, the Cash Flow Analyst, the Tax Strategist, the Investment & Retirement Analyst, the Insurance & Estate Specialist and the Plan Reviewer. Three seats retire and their duties fold into the survivors, so every topic still has one owner: credit and debt (reports, scores and utilization, payoff order by avalanche or snowball, refinancing and consolidation, collections) and large purchases (rent or buy, mortgage affordability, cars) move to the Cash Flow Analyst; stock compensation (RSUs, ISOs and NSOs, ESPP, 83(b) elections, AMT, exercise timing) moves to the Tax Strategist; and workplace benefits (open enrollment, HSA and FSA, the 401(k) match and plan choices, job offers and leaving a job) move to the Investment & Retirement Analyst. The roster, `SKILL.md`'s team and dispatch scaling, the routing table and dependency order (`references/dispatch.md`), the life events, the cadence, the doctrine's design basis, and the official sources' domain-to-seat map follow.
 
 ### `1.2.0` - 2026-11-07
 

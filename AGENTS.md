@@ -89,7 +89,7 @@ serves to this repository from its `.github` repository.
 ## Gotchas
 
 - Never edit inside `home/`. It is rendered, and `make check` fails on a hand edit.
-- Every skill in `kit/skills/` is universal: never name one repository's folders or scripts in it; a skill reads where to keep its work from the repository's own instructions. `kit.py` holds every skill, agent and team to `develop`'s validator, and refuses an Agent Resources department over six agents, its lead included.
+- Every skill in `kit/skills/` is universal: never name one repository's folders or scripts in it; a skill reads where to keep its work from the repository's own instructions. `kit.py` holds every skill, agent and team to `develop`'s validator, and refuses a team over six agents, its lead included, whether an Agent Resources department or a skill's own team.
 - Never edit a drawn trigger test in `evals/skills/` by hand: change the skill's `assets/trigger-evals.json` and run `evals.py --draw`. Only `develop.json` is written there.
 - The guard hook denies a commit git would author as an AI. In a cloud session, pass `--author` and `--trailer 'Signed-off-by: ...'` with your user's identity, never `-s`.
 - Changing `CONSTITUTION.md` changes nothing elsewhere until a release: other repositories receive the rules only through one, which their stub or `make sync` delivers.
@@ -100,7 +100,7 @@ serves to this repository from its `.github` repository.
 ## Ask first
 
 - Cutting a release, running `make sync` or `make merge` against real repositories, or running a repository's 🔁 Intelligence Sync.
-- Adding a universal skill, or an agent to an Agent Resources department: the hub writes every skill the kit carries, and a department keeps at most its six most critical agents. A skill one repository needs lives in that repository.
+- Adding a universal skill, or an agent to any team: the hub writes every skill the kit carries, and every team keeps at most its six most critical agents. A skill one repository needs lives in that repository.
 - Changing a rule's wording, its kind or its ID.
 - Adding, removing or rewording a universal prompt, which everyone copies from the hub, or changing the empty page in `setup/Prompts.md`, which every repository without one gets at the next release.
 

@@ -1,6 +1,6 @@
 {
   "skill": "finance",
-  "note": "The official and primary US sources each Finance seat checks first for current figures, rules and deadlines. A secondary source may explain a rule but never supplies its figure. Confirm a source still serves its purpose before citing it, and date every figure taken from it. Outside the US, find the equivalent national and regional authorities and name them in the plan.",
+  "note": "The official and primary US sources each Finance seat checks first for current figures, rules and deadlines. A secondary source may explain a rule but never supplies its figure. Confirm a source still serves its purpose before citing it, and date every figure taken from it. Outside the US, find the equivalent national and regional authorities and name them in the plan. Domains by seat: the Cash Flow Analyst reads cash, credit and housing; the Tax Strategist reads tax and, for grants and equity plans, benefits; the Investment & Retirement Analyst reads investing, retirement and benefits; the Insurance & Estate Specialist reads insurance and, for Medicare, retirement.",
   "jurisdiction": "US",
   "sources": [
     {"domain": "tax", "name": "Internal Revenue Service", "url": "https://www.irs.gov", "use": "brackets, the standard deduction, contribution limits, phase-outs, forms, notices, deadlines, Identity Protection PINs"},

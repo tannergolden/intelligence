@@ -19,12 +19,13 @@ When two rows fit, take the higher. Announce the mode and the tier before dispat
 | The question is about | Seat |
 |-----------------------|------|
 | Income, spending, budget, savings rate, emergency fund, where cash is held; unemployment insurance and means-tested benefits (Medicaid, CHIP, SNAP) when income drops | Cash Flow Analyst |
-| Credit reports and scores, cards, any loan's terms, payoff order, refinancing, collections, borrowing, co-signing, a suspected scam | Credit & Debt Specialist |
+| Credit reports, scores and utilization, cards, any loan's terms, payoff order (avalanche or snowball), refinancing and consolidation, collections, borrowing, co-signing, a suspected scam | Cash Flow Analyst |
+| Rent or buy, how much house and mortgage is affordable, the down payment and loan programs, a rental or investment property, a car, a wedding, a renovation, any large planned purchase | Cash Flow Analyst |
 | Income tax, withholding and estimates, deductions and credits (the premium tax credit included), account types, capital gains, notices; gifts and loans to family and the gift tax return; estate and gift tax thresholds | Tax Strategist |
+| Stock compensation: RSUs, ISOs and NSOs, ESPP, early exercise and 83(b) elections, AMT, when to exercise, hold or sell, the option window on leaving a job | Tax Strategist |
 | Investing, allocation, fees, retirement projections and drawdown, Social Security (survivor and disability benefits included), a pension's lump sum or annuity, retirement plans for self-employment income, education savings and college aid, investing an HSA balance, products and advisers | Investment & Retirement Analyst |
+| Workplace benefits: open enrollment and life-event elections, the 401(k) match, vesting and plan choices, HSA and FSA eligibility and contributions (an HSA with an eligible Marketplace plan included), the dependent care FSA, job offers on total compensation, leaving a job (the match forfeited, a plan loan, the rollover, the plan's COBRA dates) | Investment & Retirement Analyst |
 | Choosing a health plan, COBRA or the Marketplace, Medicare, disability, life, property, liability and long-term care coverage, medical bills and insurance appeals; wills, beneficiaries, powers of attorney, trusts | Insurance & Estate Specialist |
-| Workplace elections, the retirement plan's match and vesting, HSA and FSA eligibility and contributions (an HSA with an eligible Marketplace plan included), the dependent care FSA, RSUs, options, ESPP, job offers, leaving a job (equity, severance, the plan's COBRA dates) | Equity & Benefits Specialist |
-| Rent or buy, how much house, the down payment and loan programs, a rental or investment property, a car, a wedding, a renovation, any large planned purchase | Home & Major Purchases Analyst |
 | The gate on any consequential draft | Plan Reviewer |
 
 The Financial Planning Lead frames, synthesizes and decides between seats on every standard and deep run. The skill embodies the lead: the top-level context reads the lead's spec and runs as the Financial Planning Lead, since only the orchestrator can dispatch, so the lead is never itself dispatched as a subagent.
@@ -32,7 +33,7 @@ The Financial Planning Lead frames, synthesizes and decides between seats on eve
 ## Dependency order
 
 1. The Cash Flow Analyst first when the answer depends on how much money is free each month.
-2. The Insurance & Estate Specialist before the Equity & Benefits Specialist when a health plan choice is in play, since the Equity & Benefits Specialist's elections follow her plan choice.
+2. The Insurance & Estate Specialist before the Investment & Retirement Analyst's workplace elections when a health plan choice is in play, since the HSA and FSA elections follow her plan choice.
 3. For account choice, the Investment & Retirement Analyst's projection first, then the Tax Strategist's marginal-rate comparison, then the lead sets the order.
 4. The lead sets each remaining seat's provisional share of the surplus in its brief, and the independent seats run in parallel, in one message.
 5. The Tax Strategist after any seat whose move has a tax effect (a rollover, a sale, an exercise, a conversion, a settled debt, a home sale), with that seat's return as input.
@@ -51,7 +52,7 @@ The run workspace is an ephemeral folder outside any repository's tree: the sess
 
 ## The self-contained brief
 
-A subagent sees none of this conversation. Every dispatch restates, in full, in the `templates/brief.md` shape: the role spec to read, the objective and its success test, the inputs (the fact sheet inline, the recorded paths to read in a private money repository, the jurisdiction and tax year), the output contract, the tools and sources to prefer, and the boundaries. An incomplete brief is a common dispatch failure: the worker improvises the gap. Role specs are in this skill's `agents/` folder, read as `<skill>/agents/<Role>.md` by the absolute path of the skill's folder; the lead's file is `★ Financial Planning Lead.md`, and mind the ampersands in five file names.
+A subagent sees none of this conversation. Every dispatch restates, in full, in the `templates/brief.md` shape: the role spec to read, the objective and its success test, the inputs (the fact sheet inline, the recorded paths to read in a private money repository, the jurisdiction and tax year), the output contract, the tools and sources to prefer, and the boundaries. An incomplete brief is a common dispatch failure: the worker improvises the gap. Role specs are in this skill's `agents/` folder, read as `<skill>/agents/<Role>.md` by the absolute path of the skill's folder; the lead's file is `★ Financial Planning Lead.md`, and mind the ampersands in two file names.
 
 ## The computation check
 

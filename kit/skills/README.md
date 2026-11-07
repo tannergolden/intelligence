@@ -84,8 +84,8 @@ departments run as their own groups.
 
 ### Group Sizes
 
-Each department keeps at most six agents, its lead included, and `kit.py`
-refuses a roster with more. With the Chief of Staff added, the groups are:
+Each department keeps at most six agents, its lead included, as does every
+skill's own team, and `kit.py` refuses a roster with more. With the Chief of Staff added, the groups are:
 
 | Group                        | Department's agents | With the Chief of Staff |
 | :--------------------------- | :-----------------: | :---------------------: |
@@ -132,7 +132,7 @@ department's group.
 | [`editorial/`](editorial/) | Writes, edits and formats prose, with the Editorial team.                                                           |
 | [`finance/`](finance/)     | Advises on personal and household money, with the Finance team.                                                     |
 | [`identify/`](identify/)   | Interviews the user with validated frameworks into a profile they approve line by line.                             |
-| [`research/`](research/)   | Runs multi-source, fact-checked research, with the Research team and the Librarian.                                 |
+| [`research/`](research/)   | Runs multi-source, fact-checked research, with the Research team.                                                   |
 | [`visualize/`](visualize/) | Makes charts, diagrams and other visuals, with the Design team.                                                     |
 | [`README.md`](README.md)   | This file.                                                                                                          |
 

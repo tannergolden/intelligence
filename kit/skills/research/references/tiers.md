@@ -8,7 +8,7 @@ The tier is chosen from this table, not by feel. The lead applies it and announc
 |--------------------|------|-----|
 | a single current fact with one authoritative source plausible (a version, date, price, definition, "is X still true") | **quick** | one good source answers it; a team is waste |
 | multi-angle but bounded: 2-4 distinct sub-questions, no strong disagreement expected | **standard** | a small parallel fan-out covers it, one verifier confirms |
-| contested (credible sources will disagree), decision-grade (drives a costly-to-reverse choice), data-carrying (a number carries the conclusion), or sensitive / external-facing | **deep** | needs independent search review, full fan-out, and a blind adversarial gate |
+| contested (credible sources will disagree), decision-grade (drives a costly-to-reverse choice), data-carrying (a number carries the conclusion), or sensitive / external-facing | **deep** | needs a self-checked search strategy the lead approves, full fan-out, and a blind adversarial gate |
 
 When two rows fit, take the higher tier. When genuinely ambiguous, ask the user through the structured ask tool when available, otherwise in chat, rather than guessing.
 
@@ -24,12 +24,12 @@ These thresholds are from Anthropic's multi-agent research system: simple fact-f
 
 - **Contested** (you expect credible sources to disagree) -> at least deep, and decompose **by viewpoint** (perspective lanes: regulator, incumbent, challenger, practitioner, affected user), not only by subtopic, because a subtopic split silently inherits one side's framing.
 - **Decision-grade / high stakes** (the answer drives a choice that is costly to reverse) -> deep.
-- **Load-bearing numbers** (an effect size, trend, or comparison carries the conclusion) -> keep the tier and add the **Statistician**.
+- **Load-bearing numbers** (an effect size, trend, or comparison carries the conclusion) -> keep the tier and brief the **Fact-Checker** to add its quantitative review (sample, method, effect size, base rates).
 - **Sensitive or external-facing** output -> add the **Standards Reviewer**.
 
 ## Triggers that drop the tier down
 
-- **A current report exists.** The Knowledge Manager Step-0 check finds a filed report (where the repository's instructions point) on the canonicalized topic within its freshness window -> reuse it (a quick confirmation refreshes the window), do not re-run. This is the single largest token saver.
+- **A current report exists.** The Research Lead's Step-0 check finds a filed report (where the repository's instructions point) on the canonicalized topic within its freshness window -> reuse it (a quick confirmation refreshes the window), do not re-run. This is the single largest token saver.
 - **The web is unreachable.** Answer from model knowledge with an explicit currency disclaimer and offer to retry; never fan out into nothing.
 
 ## The cost the tier buys

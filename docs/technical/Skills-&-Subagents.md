@@ -63,15 +63,14 @@ a vault generated from tannergolden/knowledge, states it once in its
 
 ### The Agent Resources (AR) workforce
 
-`board` dispatches the AR workforce, a company's departments as named
-agents, each with a star lead, kept as `board`'s own team in
+`board` dispatches the AR workforce, a company's departments as agents
+known by their role titles alone, each with a star lead, kept as `board`'s own team in
 [`kit/skills/board/agents/`](../../kit/skills/board/agents/): one roster for
-each department and one file for each agent. **A department keeps at most
-its six most critical agents, its lead included**, and `kit.py` refuses a
-roster with more. Deeper specialists are not kept on disk: a present chief
-stands in for them. `identify` embodies the R&D department's interviewer, and
-`research` keeps the Librarian, dispatched only where a repository keeps a
-reference collection.
+each department and one file for each agent. **Every team keeps at most
+its six most critical agents, its lead included**, each AR department and
+each skill's own team alike, and `kit.py` refuses a roster with more.
+Deeper specialists are not kept on disk: a present lead stands in for them.
+`identify` embodies the R&D department's interviewer.
 
 **The checks.** `.github/scripts/kit.py` holds every skill, every agent and
 every team to `develop`'s own `validate.py`, and every name and title is

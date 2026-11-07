@@ -51,7 +51,7 @@ The owner decided the knowledge repository should hold no agent instruction file
 - **Universal**: a skill works in any repository, or in a conversation with no repository, and never assumes a vault's layout.
 - **A vault still works**, with the skills placing their work where the vault keeps it.
 - **No personal context in a repository** that was not made to hold it (SEC-003).
-- **Each department stays lean**: at most six agents, its lead included.
+- **Each team stays lean**: at most six agents, its lead included.
 
 ---
 
@@ -71,9 +71,9 @@ The owner decided the knowledge repository should hold no agent instruction file
 
 - **The hub authors every skill in `kit/skills/`.** `faculties.py`, `kit/faculties.json` and `make faculties` are gone. Each skill's trigger test in `evals/skills/` is drawn from the one it ships in `assets/trigger-evals.json` by `evals.py --draw`, and `evals.py --check` fails when the two differ; `develop`'s stays written here.
 - **The skills are universal.** Where a skill persists anything is set by the repository's own instructions, which it reads first. With none, it works in the conversation and writes a file only where the user asks. Personal context goes only into a repository whose instructions say it was made to hold it.
-- **`board` keeps the AR workforce as its team**, in its `agents/` folder: one roster per department, at most six agents each, its lead included. `kit.py` holds every skill, agent and team to `develop`'s validator and refuses a department over six.
+- **`board` keeps the AR workforce as its team**, in its `agents/` folder: one roster per department, at most six agents each, its lead included. `kit.py` holds every skill, agent and team to `develop`'s validator and refuses any team over six, a skill's own team included.
 - **`identify` keeps its interview** and writes the approved profile only into a repository made to hold it; anywhere else it returns the profile in the conversation.
-- **The Librarian joins the `research` team**, dispatched only where a repository keeps a reference collection.
+- **Every team keeps its six most critical agents.** The `research` team drops from eleven to six and `finance` from nine to six, each retired seat's duties folded into a survivor; the vault's Librarian retires with them, and a repository's reference collection is searched by the research team's analysts.
 - **The hand-over rule and the loader probe's `--handover` canary are retired**: no vault keeps a copy for a home copy to give way to.
 - **A vault supplies its layout** in its own `AGENTS.md`: where ventures, reports, ideas, visuals and profile facets go, and which checks to run after a write.
 

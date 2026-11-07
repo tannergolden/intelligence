@@ -8,24 +8,19 @@ The contract that wires this skill to the standing Research team, whose specs sh
 
 | Agent (name) | Runs on | Input | Returns | Template |
 |--------------|---------|-------|---------|----------|
-| **Research Lead** | every run, as orchestrator | the user's verbatim question | the findings-first answer, and `draft.md` for review | the chat shape in `reporting.md`; `report.md` when filed |
-| **Knowledge Manager** | before every non-quick run (Step-0), when the repository's instructions point to filed reports | the topic | the library verdict: canonical report or gap, freshness vs `review_by`, prior findings | `reporting.md` Step-0 (inline) |
-| **Librarian** | every non-quick run, after Step-0, only when the repository's instructions name a reference collection or offline knowledge base | the question, the collection's location, and any search-command results the skill fetched | the holdings found, cited, the gaps, and any follow-up query for the skill to run | inline (its Output contract) |
-| **Information Specialist** | deep | the lanes | the source strategy per lane | `templates/source-strategy.md` |
-| **Search Peer-Reviewer** | deep, before the fan-out | the source strategy | the search audit: PASS or REVISE, with the sentinel check | `templates/search-audit.md` |
-| **All-Source Analyst** xN | standard, deep | one lane (the five lane fields) | the lane findings brief | `templates/lane-brief.md` |
-| **Fact-Checker** | standard, deep | `draft.md` | the claim ledger | `templates/verification.md` |
+| **Research Lead** | every run, as orchestrator; Step-0 before every non-quick run when the repository's instructions point to filed reports; the search approval on deep runs; the final polish when a report file ships | the user's verbatim question; the filed reports; the source strategy; the verified draft | the Step-0 verdict (canonical report reused, refreshed, or merged, or the gap); APPROVE or REVISE on the strategy; the findings-first answer, and `draft.md` for review; the polished report with an edit note | `reporting.md` Step-0 (inline); the chat shape in `reporting.md`; `report.md` when filed |
+| **Information Specialist** | deep, before the fan-out | the lanes | the source strategy per lane with its self-check (sentinel check, coverage gaps, biased or low-recall queries) | `templates/source-strategy.md` |
+| **All-Source Analyst** xN | standard, deep; one lane grounds locally first, only when the repository's instructions name a reference collection or offline knowledge base | one lane (the five lane fields); on the local-grounding lane, the collection's location and any search-command results the skill fetched | the lane findings brief; on the local-grounding lane, the holdings found, cited, the gaps, and any follow-up query for the skill to run | `templates/lane-brief.md` |
+| **Fact-Checker** | standard, deep | `draft.md` | the claim ledger, plus the number ledger (or NONE) when load-bearing numbers carry the conclusion | `templates/verification.md` |
 | **Devil's Advocate** | deep; standard when contested | `draft.md` | the objection set | `templates/critique.md` |
-| **Statistician** | when load-bearing numbers carry the conclusion | `draft.md` | the number ledger, or NONE | `templates/statistical-review.md` |
 | **Standards Reviewer** | sensitive or external-facing output | the draft | the exposure ledger: BLOCK / REVISE / CLEAR per exposure | the ledger shape below (inline) |
-| **Editor** | only when a report file ships | the draft report | the polished report plus an edit note (the lead applies it) | `templates/report.md` |
 
 ## Verdict vocabularies (so the lead applies a return mechanically)
 
-- **Search Peer-Reviewer:** PASS (fan out) / REVISE (back to the Information Specialist once, then re-review).
-- **Fact-Checker:** SUPPORTED / WEAK-BASIS / UNSUPPORTED / NEEDS-CITATION / CONTRADICTED. Apply: keep / soften to stated confidence / cut / add the citation / reverse the claim (CONTRADICTED, the source says the opposite).
+- **Research Lead, on the source strategy:** APPROVE (fan out) / REVISE (back to the Information Specialist once with the named fix; a second REVISE proceeds with the gap logged as a coverage limitation).
+- **Fact-Checker, claims:** SUPPORTED / WEAK-BASIS / UNSUPPORTED / NEEDS-CITATION / CONTRADICTED. Apply: keep / soften to stated confidence / cut / add the citation / reverse the claim (CONTRADICTED, the source says the opposite).
+- **Fact-Checker, load-bearing numbers:** SUPPORTED / UNSUPPORTED-NUMBER / NOT-COMPARABLE / OVERSTATED, or NONE when the draft carries no load-bearing numbers. Apply: keep / cut or source / recompute on a common basis / soften.
 - **Devil's Advocate:** FATAL / MATERIAL / MINOR. Respond to every FATAL and MATERIAL: accept (adjust the conclusion) or rebut (with the citation that settles it).
-- **Statistician:** SUPPORTED / UNSUPPORTED-NUMBER / NOT-COMPARABLE / OVERSTATED, or NONE when the draft carries no load-bearing numbers.
 - **Standards Reviewer:** BLOCK (do not ship) / REVISE (the named change) / CLEAR.
 
 ## The Standards Reviewer exposure ledger (its inline shape)
@@ -34,4 +29,4 @@ A by-demand seat with no template file; it returns one row per exposure: `exposu
 
 ## Blind pairing
 
-The Fact-Checker and the Devil's Advocate, plus the Statistician when the draft carries load-bearing numbers, are dispatched in one message, each reading only `draft.md`, never the lead's reasoning or each other's return. The rule and its rationale live in `dispatch.md`.
+The Fact-Checker (briefed to add its quantitative review when the draft carries load-bearing numbers) and the Devil's Advocate are dispatched in one message, each reading only `draft.md`, never the lead's reasoning or each other's return. The rule and its rationale live in `dispatch.md`.

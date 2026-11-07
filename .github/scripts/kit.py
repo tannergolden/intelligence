@@ -14,9 +14,9 @@ all under `kit/`:
 
 It also holds each source to the strictest rule any target app enforces,
 because a skill with a bad name loads nowhere and says nothing, and holds
-every skill, agent and team to develop's own validator, with no department
-of the Agent Resources (AR) workforce, the board skill's team, over six
-agents. `render.py`
+every skill, agent and team to develop's own validator, with no team over
+six agents: neither a department of the Agent Resources (AR) workforce nor
+a skill's own team. `render.py`
 calls it, so `make render` writes the bundle and `make check` fails on a
 stale one.
 
@@ -41,11 +41,11 @@ GUARD_FILE = 'kit/guard.py'
 SKILLS_DIR = 'kit/skills'
 SUBAGENTS_DIR = 'kit/subagents'
 VALIDATOR = 'kit/skills/develop/scripts/validate.py'  # develop's gate 1, which every skill and agent here passes
-# The Agent Resources (AR) workforce, one roster per department, which the
-# board skill dispatches: each department keeps at most its six most
-# critical agents, its lead included, by the owner's decision (ADR-0037).
+# Every team, each department of the Agent Resources (AR) workforce the
+# board skill dispatches and each skill's own team, keeps at most its six
+# most critical agents, its lead included, by the owner's decision (ADR-0037).
 WORKFORCE_DIR = 'kit/skills/board/agents'
-MAX_DEPARTMENT = 6
+MAX_TEAM = 6
 
 # The line that marks a file or folder as the kit's own. The installer
 # replaces what carries it and refuses to touch what does not.
@@ -228,7 +228,7 @@ def load_validator(root: pathlib.Path):
 
 
 def check_teams(root: pathlib.Path, found: list[str]) -> None:
-    """Every skill, agent and team against develop's validator, and every department at most six agents."""
+    """Every skill, agent and team against develop's validator, and every team at most six agents."""
     validate = load_validator(ROOT)  # the hub's own copy, whichever tree it checks
     base = root / SKILLS_DIR
     if not base.is_dir():
@@ -240,13 +240,13 @@ def check_teams(root: pathlib.Path, found: list[str]) -> None:
         validate.check_skill(folder, homes, report)
     prefix = f'{root.as_posix().rstrip("/")}/'
     found += [error.replace(prefix, '') for error in report.errors]
-    workforce = root / WORKFORCE_DIR
-    _, rosters = validate.collect([workforce], validate.Report()) if workforce.is_dir() else ([], [])
+    _, rosters = validate.collect(homes, validate.Report())
     for roster in rosters:
         members = roster.fields.get('members') or []
-        if len(members) > MAX_DEPARTMENT:
-            found.append(f'{WORKFORCE_DIR}/{roster.path.name}: {len(members)} agents; a department keeps at most '
-                         f'its {MAX_DEPARTMENT} most critical, its lead included')
+        if len(members) > MAX_TEAM:
+            where = roster.path.relative_to(root).as_posix()
+            found.append(f'{where}: {len(members)} agents; a team keeps at most its {MAX_TEAM} most critical, '
+                         'its lead included')
 
 
 def bundle(root: pathlib.Path) -> tuple[dict, list[str]]:
