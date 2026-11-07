@@ -40,8 +40,9 @@ in the hub. A release reaches it by either of two routes, through
 - The marker carries a hash of its block, so a release that leaves the block
   unchanged opens no pull requests at all.
 - `make audit` reports any repository whose rules block was edited by hand,
-  whose `docs/Prompts.md` is missing, and whether it carries the stub; the next
-  sync repairs both.
+  whose prompts page is missing, and whether it carries the stub; the next
+  sync repairs both. A repository whose docs live in a hidden `.docs/` folder
+  keeps its page at `.docs/Prompts.md`.
 
 Every repository you own takes part, except the two golden path templates,
 `repo` and `path`, forks and archived ones, and the hub, which holds the
@@ -94,7 +95,8 @@ the Monday after:
 # whenever you run it, it proposes the latest release's block as one pull
 # request on `chore/intelligence`, and leaves every section this repository
 # owns as it was. A first sync creates AGENTS.md, and docs/Prompts.md, an
-# empty page for this repository's own prompts that sync never changes; the
+# empty page for this repository's own prompts that sync never changes,
+# unless the repository already keeps one there or in .docs/Prompts.md; the
 # universal prompts stay in the hub. Merging stays yours.
 #
 # It runs on this repository's own GITHUB_TOKEN, with no App and no key, so

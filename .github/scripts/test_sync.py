@@ -547,6 +547,13 @@ class TestPromptsPage(SyncTestCase):
             self.assertIn(f'{name}: current', out)
         self.assertEqual(self.gh.writes, [])
 
+    def test_a_page_in_a_hidden_docs_folder_counts_as_its_own(self) -> None:
+        # A vault made from the knowledge template keeps its docs, and its prompts page, in .docs/.
+        self.gh.add('alpha', self.current(**{'.docs/Prompts.md': '# Our own prompts\n'}))
+        _code, out = self.run_sync('sync')
+        self.assertIn('alpha: current', out)
+        self.assertEqual(self.gh.writes, [])
+
     def test_a_dry_run_names_the_page(self) -> None:
         self.gh.add('alpha', self.current())
         _code, out = self.run_sync('sync', '--dry-run')
@@ -577,6 +584,7 @@ class TestPromptsPage(SyncTestCase):
         self.gh.add('alpha', self.current(**{self.TARGET: PAGE}))
         self.gh.add('beta', self.current(**{self.TARGET: '# Ours\n'}))
         self.gh.add('gamma', self.current(), topics=['no-intelligence-prompts'])
+        self.gh.add('delta', self.current(**{'.docs/Prompts.md': '# Ours\n'}))
         code, out = self.run_sync('audit')
         self.assertEqual(code, 0, out)
 
@@ -815,6 +823,15 @@ class TestApply(unittest.TestCase):
         _code, out = self.run_apply()
         self.assertIn('alpha: current', out)
         self.assertEqual((self.checkout / sync.prompts.TARGET).read_text(encoding='utf-8'), '# Ours\n')
+
+    def test_a_page_in_a_hidden_docs_folder_keeps_the_page_out_of_the_checkout(self) -> None:
+        self.ship_page()
+        (self.checkout / 'AGENTS.md').write_text('# Alpha\n\n' + CURRENT, encoding='utf-8')
+        (self.checkout / '.docs').mkdir()
+        (self.checkout / '.docs' / 'Prompts.md').write_text('# Ours\n', encoding='utf-8')
+        _code, out = self.run_apply()
+        self.assertIn('alpha: current', out)
+        self.assertFalse((self.checkout / sync.prompts.TARGET).exists())
 
     def test_the_topic_keeps_the_page_out_of_the_checkout(self) -> None:
         self.ship_page()

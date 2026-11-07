@@ -26,8 +26,10 @@ The commands:
   Invariant, a missing `docs/Prompts.md`, and whether the stub is there.
 - `sync` opens or updates one pull request per repository. A first sync
   creates `AGENTS.md`, or inserts the block into one that has none, and
-  folds any `CLAUDE.md` into it. A repository without `docs/Prompts.md` gets
-  the empty page, unless it has the `no-intelligence-prompts` topic.
+  folds any `CLAUDE.md` into it. A repository without a prompts page, at
+  `docs/Prompts.md` or, where its docs live in a hidden `.docs/` folder, at
+  `.docs/Prompts.md`, gets the empty page at `docs/Prompts.md`, unless it
+  has the `no-intelligence-prompts` topic.
 - `merge` merges each sync pull request whose diff is exactly the rules block
   and whose checks passed. Anything bigger, such as a first sync or a new
   `docs/Prompts.md`, waits for the owner to review it by hand. A pull request the default token opened has
@@ -643,7 +645,7 @@ def sync_one(gh: GitHub, repo: dict, region: str, ref: str, signer: tuple[str, s
     change = adopt(name, agents[0] if agents else None, claude[0] if claude else None, region)
     current = None
     if page is not None and not prompts.opted_out(repo):
-        current = gh.file(name, prompts.TARGET, base)
+        current = next(filter(None, (gh.file(name, place, base) for place in prompts.PLACES)), None)
         change = with_prompts(change, current[0] if current else None, page)
     rules = not agents or change.agents != agents[0] or change.delete_claude
     if not rules and change.prompts_file is None:
@@ -680,7 +682,8 @@ def audit_one(gh: GitHub, repo: dict, current: str, known: dict[str, str], invar
     found: list[str] = []
     if gh.file(name, CLAUDE, base):
         found.append('a CLAUDE.md sits beside AGENTS.md, so Claude Code may skip AGENTS.md')
-    if page is not None and not prompts.opted_out(repo) and gh.file(name, prompts.TARGET, base) is None:
+    if (page is not None and not prompts.opted_out(repo)
+            and all(gh.file(name, place, base) is None for place in prompts.PLACES)):
         found.append('no docs/Prompts.md')
     if agents is None:
         return ['no AGENTS.md', *found]
@@ -864,7 +867,8 @@ def apply(gh: GitHub, full: str, checkout: pathlib.Path, region: str, ref: str, 
         agents, claude = local_file(checkout, AGENTS), local_file(checkout, CLAUDE)
         change = adopt(name, agents, claude, region)
         if page is not None and not prompts.opted_out(settings):
-            change = with_prompts(change, local_file(checkout, prompts.TARGET), page)
+            found = (local_file(checkout, place) for place in prompts.PLACES)
+            change = with_prompts(change, next((text for text in found if text is not None), None), page)
     except (GitHubError, ApplyError, ValueError) as error:
         return fail(f'{name}: {error}')
     rules = agents is None or change.agents != agents or change.delete_claude

@@ -9,7 +9,8 @@ repository. They stay in the hub. Every repository that takes part in sync
 gets `docs/Prompts.md` once, from `setup/Prompts.md`: an empty page for its
 own prompts, the ones that only make sense there, such as ones for using it,
 changing it or understanding it, under sections its owner makes. Sync never
-changes that page again.
+changes that page again. A repository whose docs live in a hidden `.docs/`
+folder keeps its page at `.docs/Prompts.md`, and gets none beside it.
 
 WHAT --check HOLDS THE HUB TO. Everyone copies the universal prompts from
 here, so `--check` names each problem a reader would miss, with its line:
@@ -65,6 +66,10 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 UNIVERSAL = 'docs/Prompts.md'  # the universal prompts, in the hub
 TEMPLATE = 'setup/Prompts.md'  # the page a repository first gets
 TARGET = 'docs/Prompts.md'  # where a repository keeps its own prompts
+# Where a repository's own page can already be: a repository that keeps its docs
+# in a hidden `.docs/` folder, as the knowledge template and every vault made from
+# it do, keeps the page there, and sync counts it and adds none beside it.
+PLACES = (TARGET, '.docs/Prompts.md')
 OPT_OUT = 'no-intelligence-prompts'
 # The marker a release from before the page used, when its setup/Prompts.md
 # held the universal prompts for sync to seal into each repository.

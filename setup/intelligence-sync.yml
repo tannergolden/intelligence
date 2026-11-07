@@ -6,7 +6,8 @@
 # whenever you run it, it proposes the latest release's block as one pull
 # request on `chore/intelligence`, and leaves every section this repository
 # owns as it was. A first sync creates AGENTS.md, and docs/Prompts.md, an
-# empty page for this repository's own prompts that sync never changes; the
+# empty page for this repository's own prompts that sync never changes,
+# unless the repository already keeps one there or in .docs/Prompts.md; the
 # universal prompts stay in the hub. Merging stays yours.
 #
 # It runs on this repository's own GITHUB_TOKEN, with no App and no key, so

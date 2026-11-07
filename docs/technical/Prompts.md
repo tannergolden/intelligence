@@ -116,6 +116,9 @@ either route, the stub or `make sync`:
   since its owner makes both. You review it by hand: `make merge` leaves a
   pull request that adds `docs/Prompts.md` alone;
 - after that the page is the repository's own, and sync never touches it;
+- a repository that keeps its docs in a hidden `.docs/` folder, as the
+  knowledge template and every vault made from it do, keeps its page at
+  `.docs/Prompts.md`, and sync adds none beside it;
 - a `no-intelligence-prompts` topic keeps sync from adding the page to a
   repository that still takes the rules.
 
