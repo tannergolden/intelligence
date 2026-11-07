@@ -1,5 +1,5 @@
-<!-- Situation brief. The lead fills this in Phase 0 (intake) from the situation read, BEFORE the first
-     drafting dispatch, then threads it into every Writer and Editor brief so the draft is written to
+<!-- Situation brief. The lead fills this in Phase 0 (intake) from the situation read, BEFORE it
+     drafts, then drafts to it and threads it into every Editor brief so the draft is written to
      the real situation and the Editor gates against it. See references/intake.md for the method.
      Any field left unstated by the user takes the sensible default noted in the intake spine; an unstated
      field gets its default, not a clarifying question. Load the voice separately per

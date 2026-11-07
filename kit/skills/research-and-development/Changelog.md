@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**`2.0.1`**
+**`2.0.2`**
 
 The version is SemVer, per standards' [versioning policy](https://github.com/tannergolden/standards/blob/Development/docs/distribution/Releases-&-Versioning.md#-versioning-policy-semver). It matches `metadata.version` in `SKILL.md`, and this skill's validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
 
@@ -57,6 +57,10 @@ Added the knowledge-base read step to local grounding and tightened the knowledg
 
 > Fixes, wording, reference tweaks. Most recent 4 entries.
 
+### `2.0.2` - 2026-11-07
+
+- In the profile interview, the UX and Design Research Lead hands its ledger to the public-relations skill's Editor, which now composes the proposal batch in place of that skill's retired Writer, and the blind reviewer never sees the Editor's brief (`agents/UX and Design Research Lead.md`). `references/architecture.md` says there is no standalone subagent: every agent belongs to a department's team.
+
 ### `2.0.1` - 2026-11-07
 
 - `references/architecture.md` says a team, and a skill's own `agents/`, holds at most five agents, its lead included, so a build keeps a team to its most critical seats.
@@ -68,10 +72,4 @@ A repository with no agent instructions now explains itself in its `README.md` f
 ### `1.5.3` - 2026-10-19
 
 - A report's three-month window ends on its `review_by` date, since the hidden frontmatter retired `updated` (`references/reporting.md`, `templates/report.md`).
-
-### `1.5.2` - 2026-10-19
-
-- References point at `AGENTS.md` (Start here holds the retrieval order) and the folder notes' Rules instead of the retired root rule files.
-- The licence is MIT, and the versioning rules link to tannergolden/standards instead of restating them.
-- Versions are plain SemVer: `01.05.01` is now `1.5.1`.
 

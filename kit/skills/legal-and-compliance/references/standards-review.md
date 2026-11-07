@@ -61,7 +61,7 @@ Every proposal batch the profile interview composes, every run, on a sensitive f
 
 ### Blindness is the lever
 
-The reviewer receives the batch and the law only: the rules in the human-resources skill's `references/provenance.md`, a profile repository's own profile rules when there is one (where the two differ, the stricter wins), and SEC-003. Never the interview ledger, the interviewer's reasoning, the plan or the brief to the public-relations skill's Writer: a reviewer who saw how the batch was assembled cannot audit whether each line is truly traceable. If a brief carries them, the reviewer sets them aside unread and says so.
+The reviewer receives the batch and the law only: the rules in the human-resources skill's `references/provenance.md`, a profile repository's own profile rules when there is one (where the two differ, the stricter wins), and SEC-003. Never the interview ledger, the interviewer's reasoning, the plan or the brief to the composer, the public-relations skill's Editor: a reviewer who saw how the batch was assembled cannot audit whether each line is truly traceable. If a brief carries them, the reviewer sets them aside unread and says so.
 
 ### What each line is checked against
 

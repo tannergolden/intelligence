@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**`2.0.0`**
+**`2.0.1`**
 
 Semantic versioning, `MAJOR.MINOR.PATCH`, with no leading zeros, as [SemVer 2.0.0](https://semver.org) requires. This value matches `metadata.version` in `SKILL.md`, and the validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
 
@@ -38,4 +38,6 @@ _None yet._
 
 > Fixes and clarifications. Most recent 4 entries.
 
-_None yet._
+### `2.0.1` - 2026-11-07
+
+- The blind profile review names its composer as the public-relations skill's Editor, which composes the human-resources skill's proposal batch now that public-relations has retired its Writer: the Privacy & Data Protection Counsel still never sees the interview reasoning, the ledger, the plan or the brief to the composer (`SKILL.md`, the roster, `agents/Privacy & Data Protection Counsel.md`, `references/dispatch.md`, `references/standards-review.md`, `references/deliverables.md`).

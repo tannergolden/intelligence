@@ -1,4 +1,5 @@
-<!-- the public-relations skill's Writer RETURNS one of these at the profile pipeline's step 7 (persists nothing);
+<!-- the public-relations skill's Editor, the borrowed composer, RETURNS one of these at the profile pipeline's
+     step 7 (persists nothing, and never reviews what it composed);
      the legal-and-compliance skill's Privacy & Data Protection Counsel reviews it blind at step 8; the embodied
      interviewer presents the reviewed version in chat at step 9 for line-item approval,
      then keeps the approved lines at step 10 (written into a profile repository, or returned in the

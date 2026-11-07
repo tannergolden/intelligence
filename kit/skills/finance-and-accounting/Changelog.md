@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**`2.0.0`**
+**`2.0.1`**
 
 The version is SemVer, per standards' [versioning policy](https://github.com/tannergolden/standards/blob/Development/docs/distribution/Releases-&-Versioning.md#-versioning-policy-semver). It matches `metadata.version` in `SKILL.md`, and the research-and-development skill's validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
 
@@ -51,6 +51,10 @@ The Finance team now ships inside the skill, in `agents/`, instead of living in 
 ## Patch Updates
 
 > Fixes and clarifications. Most recent 4 entries.
+
+### `2.0.1` - 2026-11-07
+
+- A letter, an email or a call script for the user to send is drafted by the public-relations skill's ★ Chief Communications Officer, now that public-relations has retired its Writer (`SKILL.md`, the roster, `agents/Cash Flow Analyst.md`).
 
 ### `1.0.2` - 2026-10-23
 

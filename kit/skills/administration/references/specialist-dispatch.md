@@ -15,7 +15,7 @@ Either way the department composes and returns, the chair holds the seams betwee
 
 ## Why the dispatch reaches below the lead tier
 
-Leads orchestrate and never labor (the rules for every agent, `workforce.md`: "leads orchestrate, they do not labor"). A lead carries `Task` and can dispatch; a specialist carries only the read tools and does the hands-on work. DECIDE only ever convenes leads, because a decision needs judgment, not a built artifact. That is exactly why DECIDE cannot produce: a lead returns advice, not a contract. The producers are the specialists beneath each lead (the Commercial Counsel, the Privacy & Data Protection Counsel, the Marketing Manager, the Process Analyst, the Writer). An operate run that stops at the lead tier returns a plan or an opinion and nothing lands. To produce a real deliverable the run must reach the specialist who builds it, and the lead must dispatch that specialist rather than do the work itself. A lead doing the labor is the same failure as a chair grading their own view: the orchestrator collapses into the worker, and the seam where the work gets checked disappears.
+Leads orchestrate and never labor (the rules for every agent, `workforce.md`: "leads orchestrate, they do not labor"). A lead carries `Task` and can dispatch; a specialist carries only the read tools and does the hands-on work. DECIDE only ever convenes leads, because a decision needs judgment, not a built artifact. That is exactly why DECIDE cannot produce: a lead returns advice, not a contract. The producers are the specialists beneath each lead (the Commercial Counsel, the Privacy & Data Protection Counsel, the Marketing Manager, the Process Analyst, the Media Relations Manager). An operate run that stops at the lead tier returns a plan or an opinion and nothing lands. To produce a real deliverable the run must reach the specialist who builds it, and the lead must dispatch that specialist rather than do the work itself. A lead doing the labor is the same failure as a chair grading their own view: the orchestrator collapses into the worker, and the seam where the work gets checked disappears.
 
 Two consequences follow, and both hold on every operate run:
 
@@ -89,7 +89,7 @@ The same loop produces every artifact, only the seats change: an SOP is the oper
 
 ## The rules that do not bend
 
-- **Leads orchestrate, specialists produce.** A lead frames the brief and approves; it never types the artifact. Reaching below the lead tier is required, because the producers live there.
+- **Leads orchestrate, specialists produce.** A lead frames the brief and approves; it never types the artifact, except the public-relations skill's ★ Chief Communications Officer, which drafts prose and leaves its gate to the Editor. Reaching below the lead tier is required, because the producers live there.
 - **No producer verifies its own work.** The specialist builds it, the quality-assurance skill's ★ Head of Quality checks it, and consequential output does not land unverified. Self-checking is not verification.
 - **Administration is the sole writer in its runs.** Agents and the department skills compose and return; administration persists, behind the write-gate. The irreversible-action gate is never bypassed.
 - **Every angle heard, one owner accountable.** Every craft and every department the work needs is produced; the result is one deliverable per part with one accountable lead.

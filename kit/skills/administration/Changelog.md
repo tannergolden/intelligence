@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**`4.0.1`**
+**`4.0.2`**
 
 The version is SemVer, per standards' [versioning policy](https://github.com/tannergolden/standards/blob/Development/docs/distribution/Releases-&-Versioning.md#-versioning-policy-semver). It matches `metadata.version` in `SKILL.md`, and the validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
 
@@ -56,6 +56,10 @@ Aligned the skill to the 2026-07-02 workforce lean build. Four AR departments di
 
 > Fixes and clarifications. Most recent 4 entries.
 
+### `4.0.2` - 2026-11-07
+
+- The public-relations skill retired its Writer, so its team is four agents and the workforce 50 (`references/workforce.md`). A single piece of prose is drafted by that skill's ★ Chief Communications Officer and read fresh by its Editor (`references/workforce.md`, `references/modes-router.md`), and the producers named in `references/specialist-dispatch.md` give its Media Relations Manager as the example. `references/workforce.md` and `references/specialist-dispatch.md` name that lead's drafting as the one exception to "leads orchestrate, they do not labor".
+
 ### `4.0.1` - 2026-11-07
 
 - A temporary working group holds at most five seats and the Chief of Staff, so it fits a Grok Bot group of six; a job that needs more seats is split into parts, a group for each (`agents/Chief of Staff.md`, `references/workforce.md`).
@@ -70,9 +74,4 @@ Aligned the skill to the 2026-07-02 workforce lean build. Four AR departments di
 
 - The description routes the Founder's personal and household money to the new `finance` skill ("personal money is finance"), so a personal "should I" no longer competes with a business one, and Boundaries says where the two meet. "Fortune 500" left the description to keep it under the 1,024-character limit; the body is unchanged.
 - Two near-miss trigger tests route personal money questions to `finance`.
-
-### `2.1.3` - 2026-10-19
-
-- Founding gives each copied venture file its real `title`, `description` and `type`, the vault's hidden frontmatter, in place of rewriting the retired `id` and `path` (`SKILL.md`, `references/modes-router.md`, `references/write-gate.md`).
-- The callouts in `references/metrics-and-kpis.md` and `templates/qbr-sixpager.md` are GitHub alerts.
 

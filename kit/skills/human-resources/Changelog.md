@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**`2.0.0`**
+**`2.1.0`**
 
 Semantic versioning, `MAJOR.MINOR.PATCH`, with no leading zeros, as [SemVer 2.0.0](https://semver.org) requires. This value matches `metadata.version` in `SKILL.md`, and the validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
 
@@ -32,7 +32,9 @@ Initial build of the people skill: the Human Resources (HR) department of the bo
 
 > Backward-compatible additions. Most recent 4 entries.
 
-_None yet._
+### `2.1.0` - 2026-11-07
+
+The profile interview's composer is now the public-relations skill's Editor, since that skill retired its Writer. It is still a borrowed seat whose spec stays in public-relations' `agents/`: it composes the proposal batch from the interview ledger alone, in the user's own voice, every inference marked, in the shape of `templates/proposal-batch.md` and following `references/provenance.md`, and persists nothing. It composes the batch and never reviews it, so the three-way separation holds: the interviewer (the skill, as the research-and-development skill's UX and Design Research Lead) is not the composer, and the blind reviewer (the legal-and-compliance skill's Privacy & Data Protection Counsel) never sees the ledger or the composer's brief. The Editor's brief gains an OBJECTIVE that names the composing duty. `SKILL.md`, the roster and the lead's spec, `references/roster.md`, `interviewing.md`, `dispatch.md`, `deliverables.md` and `question-maps.md`, the brief, interview plan and proposal batch templates, and the guard of the regression case `profile-rc-001` follow.
 
 ## Patch Updates
 

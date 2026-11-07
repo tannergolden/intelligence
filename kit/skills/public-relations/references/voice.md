@@ -56,7 +56,7 @@ When a voice is captured (from samples, or by the human-resources skill's profil
 
 ## In the dispatch brief
 
-The lead passes the loaded voice (the concrete features, or the explicit "no voice loaded: neutral defaults, do not invent a voice" note) into every Writer and Editor brief, so the worker drafts to the real signal or the honest default, never to a guess. The Editor checks voice conformance only when there is a real voice to check against; with no real voice loaded, it checks clarity and slop and notes that voice conformance is not yet checkable.
+The lead drafts in the loaded voice (the concrete features, or the explicit "no voice loaded: neutral defaults, do not invent a voice" note) and passes it into every Editor brief, so the draft is written to the real signal or the honest default, never to a guess, and read against the same. The Editor checks voice conformance only when there is a real voice to check against; with no real voice loaded, it checks clarity and slop and notes that voice conformance is not yet checkable.
 
 ## When the piece speaks for a company
 

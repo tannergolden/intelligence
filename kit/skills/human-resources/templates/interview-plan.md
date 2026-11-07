@@ -3,7 +3,7 @@
      are found, before the interview loop. It is a working scaffold held in the interviewer's context, never
      persisted. Draw every item from references/question-maps.md; obey references/interviewing.md for
      delivery, batching, the skip rules, and the stop on a crisis. Order is fixed: up to 2 confirm-pass
-     items first, then the highest-signal unfilled sections, Snapshot never asked (the Writer composes it
+     items first, then the highest-signal unfilled sections, Snapshot never asked (the Editor composes it
      last). Cap: about 10 questions, 6 to 8 on a sensitive facet. No em dashes; plain paths, no wikilinks. -->
 
 # Profile interview plan: [Facet name]
@@ -30,7 +30,7 @@ Confirm-pass items first (max 2), then highest-signal unfilled sections, Snapsho
 | 2 | [confirm-pass, if any] | [...] | tool | [...] | [always] |
 | 3 | [highest-signal section] | [one construct] | tool / prose / cluster | [item text; for tool, the 3-point scale plus skip] | [required if sensitive or sensitive-adjacent] |
 | ... | [...] | [...] | [...] | [...] | [...] |
-| N | [Snapshot] | NOT ASKED | - | composed by the Writer from the run's material, proposed like any other line | - |
+| N | [Snapshot] | NOT ASKED | - | composed by the Editor from the run's material, proposed like any other line | - |
 
 **Delivery notes.** Scaled items (tool) batch up to 4 per call within one framework block; max 4 options each. Narrative items (prose) go one at a time, never stacked. A fact cluster (cluster) is one compact chat question. Every sensitive-facet item and every sensitive-adjacent item carries an explicit "Prefer not to say" option, never the tool's free-text Other as the skip.
 

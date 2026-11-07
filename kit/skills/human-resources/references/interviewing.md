@@ -64,11 +64,11 @@ verbatim answer (stated) or the observation and its evidence (observed)
 - **observed**: what the interviewer noticed rather than was told (pattern across answers, tone, an aside), always with a confidence grade. Observed rows can only ever become marked, `unconfirmed` lines.
 - Skipped question ids are listed at the ledger's foot (session-only, so the run does not re-ask); the fact of the skip is never composed into anything.
 
-The ledger is the Writer's sole factual input: if it is not in the ledger, it does not exist to the composer. The UX and Design Research Lead's discipline, applied: observed and stated are different species of evidence and never blur, and an assumed claim (in neither column) does not exist at all.
+The ledger is the sole factual input of the composer, the public-relations skill's Editor (`roster.md`): if it is not in the ledger, it does not exist to the composer. The UX and Design Research Lead's discipline, applied: observed and stated are different species of evidence and never blur, and an assumed claim (in neither column) does not exist at all.
 
 ## Question order within a run
 
 1. Confirm-pass items first (max 2): existing `unconfirmed` markers in the target facet, asked as short confirmations ("I have you down as X, does that hold?"). Confirmed markers shorten to `confirmed`; corrected ones become new stated facts; a shrug leaves the marker untouched.
 2. Highest-signal unfilled sections next, per the facet's question map: the sections that most change how an assistant helps the user come before completionism.
 3. Warm-up before depth on any facet with narrative items: one easy scaled block before the first open prompt.
-4. Snapshot never asked: it is composed by the Writer from the run's material and proposed like any other line (`question-maps.md`, the Snapshot-fills-last rule).
+4. Snapshot never asked: it is composed by the Editor from the run's material and proposed like any other line (`question-maps.md`, the Snapshot-fills-last rule).

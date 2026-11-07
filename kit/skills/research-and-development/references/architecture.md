@@ -28,7 +28,7 @@ Decide who should have the skill before writing it, because that decides where i
 
 Never ship the same skill name at two levels: two copies leave it to the app which one runs. A repository adjusts a universal skill through its own rules, never through a second copy; tannergolden/intelligence writes every universal skill, and a repository made from the knowledge template keeps none of its own (tannergolden/intelligence ADR-0037).
 
-The **agent home** is where a repository keeps agent specs: the folders its rules name, such as a knowledge vault's team folders. A repository with none keeps a skill's team inside the published skill, in `agents/`, as this skill does. In tannergolden/intelligence every universal skill keeps its own team in its own `agents/`, which `.github/scripts/kit.py` requires, and a seat another department needs is borrowed by title from the skill it lives in, never copied. A subagent every repository should have lives in tannergolden/intelligence's `kit/subagents/`, which renders it for each app.
+The **agent home** is where a repository keeps agent specs: the folders its rules name, such as a knowledge vault's team folders. A repository with none keeps a skill's team inside the published skill, in `agents/`, as this skill does. In tannergolden/intelligence every universal skill keeps its own team in its own `agents/`, which `.github/scripts/kit.py` requires, and a seat another department needs is borrowed by title from the skill it lives in, never copied. There is no standalone subagent: every agent belongs to a department's team, in its skill's own `agents/`.
 
 ## Where the build mode writes
 

@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**`2.0.0`**
+**`3.0.0`**
 
 Semantic versioning, `MAJOR.MINOR.PATCH`, with no leading zeros, as [SemVer 2.0.0](https://semver.org) requires. This value matches `metadata.version` in `SKILL.md`, and the validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
 
@@ -19,6 +19,10 @@ Semantic versioning, `MAJOR.MINOR.PATCH`, with no leading zeros, as [SemVer 2.0.
 ## Major Updates
 
 > Breaking changes, restructured pipeline, incompatible output. Most recent 4 entries.
+
+### `3.0.0` - 2026-11-07
+
+The Writer (`agents/Writer.md`) is removed, and the team is four agents: the ★ Chief Communications Officer, the Crisis & Issues Communications Manager, the Media Relations Manager and the Editor. The lead now drafts every piece at every tier, in the loaded voice and the register the piece needs (everyday, long-form, technical): the named exception to the workforce's rule that leads orchestrate and do not labor, stated in the roster and the lead's spec. The generate-then-critique split stays, because the lead drafts and the Editor, a dispatched subagent, reads fresh, and the lead never gates its own draft. Quick is unchanged; standard is the lead's draft, the Editor's gate (structure, then the line), and the lead verifying the flagged claims, applying only the cited edits and shipping; deep is the Editor's structural pass, the lead's draft to its plan, the Editor's line pass, fresh, the lead's proof and verification, and the quality-assurance skill's verification before the piece is presented as ready. A cited issue the lead would contest in its own draft goes to the user, never overruled by the lead. The Writer's craft moves to a new `references/drafting.md`, written as how the lead drafts: the three registers, the method and its decision rules, what a finished draft carries, the before-and-after examples, the recovery rules, every load-bearing claim flagged and no fact added that the brief lacks. In the public-voice mode, the prose inside a deliverable (an internal announcement's body, an op-ed, a speech, a bio, the user's own statement) is drafted by the lead or by the specialist that owns the deliverable, and the Editor reads it, always when the lead drafted it. The human-resources skill's profile interview now borrows the Editor to compose its proposal batch, which the Editor composes and never reviews; `agents/Editor.md` carries the duty. `SKILL.md`, the roster, the lead's spec, `references/writing-dispatch.md`, `dispatch.md`, `deliverables.md`, `intake.md`, `voice.md` and `difficult-messages.md`, and the brief, communications plan and situation brief templates follow.
 
 ### `2.0.0` - 2026-11-07
 

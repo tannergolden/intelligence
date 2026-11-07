@@ -70,7 +70,7 @@ holds its department and the Chief of Staff within six bots:
 | `business-intelligence`    | Business Intelligence (BI)   |   4    |            5            |
 | `quality-assurance`        | Quality Assurance (QA)       |   5    |            6            |
 | `customer-experience`      | Customer Experience (CX)     |   3    |            4            |
-| `public-relations`         | Public Relations (PR)        |   5    |            6            |
+| `public-relations`         | Public Relations (PR)        |   4    |            5            |
 
 > [!IMPORTANT]
 > **A Grok Bot group holds at most six bots.** So every skill keeps at most

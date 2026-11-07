@@ -24,7 +24,7 @@ DEPENDS ON: [the positioning from the sales-and-marketing skill; the confirmed f
 |-------|------|----------|--------|
 | Press release and press kit | Media Relations Manager | `templates/press-release.md` | [status] |
 | Pitches and interview prep | Media Relations Manager | `templates/media-brief.md` | [status] |
-| Internal announcement | ★ Chief Communications Officer (the Writer drafts its prose; the Editor reads it) | the section below | [status] |
+| Internal announcement | ★ Chief Communications Officer (drafts its prose; the Editor reads it) | the section below | [status] |
 | Reactive lines for what could go wrong | Crisis & Issues Communications Manager | `templates/crisis-plan.md` | [status] |
 | The campaign, ads and social promotion | the sales-and-marketing skill | its own | [status] |
 

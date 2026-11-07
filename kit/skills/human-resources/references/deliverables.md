@@ -71,7 +71,7 @@ The department's producing map: each deliverable, the seat that produces it, wha
 ## The user's own deliverables
 
 ### The approved profile batch
-- **Seats:** the skill, embodied as the research-and-development skill's UX and Design Research Lead, interviews and keeps the ledger; the public-relations skill's Writer composes the batch; the legal-and-compliance skill's Privacy & Data Protection Counsel reviews it blind (`roster.md`, `templates/proposal-batch.md`).
+- **Seats:** the skill, embodied as the research-and-development skill's UX and Design Research Lead, interviews and keeps the ledger; the public-relations skill's Editor composes the batch and never reviews it; the legal-and-compliance skill's Privacy & Data Protection Counsel reviews it blind (`roster.md`, `templates/proposal-batch.md`).
 - **Trigger:** "interview me", "fill out my profile", "confirm my unconfirmed profile entries", a facet the user names, or a facet found thin.
 - **Completion evidence:** every unmarked line is verbatim-traceable to a stated ledger answer, and every inference carries the full marker and `unconfirmed` (`provenance.md`); the blind review's verdicts are applied, one round; no skip or refusal appears anywhere; no person, event, date or decision sits in a profile line; a sensitive facet was opened only on the user's opt-in; the user approved each kept line explicitly; afterward, a search for `unconfirmed` finds every pending proposal.
 - **Goes to:** a profile repository, where its instructions put each facet, with its checks run; anywhere else, the conversation. Record offers go only where a profile repository's instructions keep such records, after the analyst's uniqueness check.

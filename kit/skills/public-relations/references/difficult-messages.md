@@ -1,6 +1,6 @@
 # Difficult messages - the per-situation playbook
 
-The hard correspondence: bad news, an apology, a refusal, a complaint response, a de-escalation. Each is a known shape with a known set of moves and a known set of ways to get it wrong. The lead names the message type in the situation read (`references/intake.md`); the Writer loads this reference when the situation is a hard message and drafts to the matching section. The cross-cutting principle runs through all five: **lead with the reader's frame, not yours.** Buffer, validate, or acknowledge before the hard content; state the hard thing clearly enough that it cannot be missed; always leave a path forward. The calm-warm-firm register from the tone-calibration rule carries every one of these.
+The hard correspondence: bad news, an apology, a refusal, a complaint response, a de-escalation. Each is a known shape with a known set of moves and a known set of ways to get it wrong. The lead names the message type in the situation read (`references/intake.md`) and, when the situation is a hard message, drafts to the matching section. The cross-cutting principle runs through all five: **lead with the reader's frame, not yours.** Buffer, validate, or acknowledge before the hard content; state the hard thing clearly enough that it cannot be missed; always leave a path forward. The calm-warm-firm register from the tone-calibration rule carries every one of these.
 
 ## Bad news
 
