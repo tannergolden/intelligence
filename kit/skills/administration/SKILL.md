@@ -3,7 +3,7 @@ name: administration
 description: "Use when founding or running a company the user runs, or steering the user's own life: goals, priorities, big decisions, calendar and commitments, life strategy. Its team convenes the other departments in five modes: found a venture; strategize the thesis and OKRs, or the user's goals for the year; decide, each department heard apart with dissent, to one call and one owner, for a company or a life choice (a move, a job offer, a big purchase); operate work across departments, verified before it lands; review the cadence, from the QBR to the user's weekly review. Fires on start a company, set our strategy, should we, go or no-go, should I take this job, should I move, set my goals, what should I focus on this week, how is the company doing. Money, contracts, outside messages and deletes wait for the user. One department's work alone goes to its skill: finance-and-accounting for money, research-and-development for research, ideas and building, public-relations for writing, business-intelligence for charts."
 license: MIT
 allowed-tools: Read, Grep, Glob
-metadata: { team: "Administration", version: "4.0.0", author: Tanner Golden, status: active }
+metadata: { team: "Administration", version: "4.0.1", author: Tanner Golden, status: active }
 ---
 
 # 🏛️ Administration - the executive office, for the company and the Founder's own life

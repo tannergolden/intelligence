@@ -5,7 +5,7 @@ Read this before any build. It is the shape of the system the build mode produce
 ## Three kinds of thing
 
 - **Agent**: one Markdown file in `<agent-home>/<team>/<role>.md`, living in its home team folder. One capability. Its `description` is the routing key; its `title` (the role) is its identity, unique across every agent home; an agent carries no personal name. The folder groups by real professional team; it is cosmetic to invocation (the model routes by title and description) but is the human-browsable org chart.
-- **Team**: a folder named for a real professional team, carrying a namesake roster `<agent-home>/<team>/<team>.md`. The roster lists `members` (agent titles) and a `lead`. A team owns no agents elsewhere; it references them, and a roster may name a member whose home is another team folder. The body holds dispatch order and conflict rules.
+- **Team**: a folder named for a real professional team, carrying a namesake roster `<agent-home>/<team>/<team>.md`. The roster lists `members` (agent titles) and a `lead`. A team owns no agents elsewhere; it references them, and a roster may name a member whose home is another team folder. A team, and a skill's own `agents/`, holds at most five agents, its lead included: its most critical seats, so the team and the one orchestrator that connects teams fit a group chat of six. The body holds dispatch order and conflict rules.
 - **Skill**: a folder whose name is the skill's `name`, holding a `SKILL.md`. It names its team in `metadata.team` and scales dispatch in its body. Where it lives depends on who should have it (below).
 
 ## Four rules that govern the model

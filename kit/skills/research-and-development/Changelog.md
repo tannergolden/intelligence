@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**`2.0.0`**
+**`2.0.1`**
 
 The version is SemVer, per standards' [versioning policy](https://github.com/tannergolden/standards/blob/Development/docs/distribution/Releases-&-Versioning.md#-versioning-policy-semver). It matches `metadata.version` in `SKILL.md`, and this skill's validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
 
@@ -57,6 +57,10 @@ Added the knowledge-base read step to local grounding and tightened the knowledg
 
 > Fixes, wording, reference tweaks. Most recent 4 entries.
 
+### `2.0.1` - 2026-11-07
+
+- `references/architecture.md` says a team, and a skill's own `agents/`, holds at most five agents, its lead included, so a build keeps a team to its most critical seats.
+
 ### `1.8.1` - 2026-11-07
 
 A repository with no agent instructions now explains itself in its `README.md` files: the skill reads the root one and the one in each folder it writes into.
@@ -71,6 +75,3 @@ A repository with no agent instructions now explains itself in its `README.md` f
 - The licence is MIT, and the versioning rules link to tannergolden/standards instead of restating them.
 - Versions are plain SemVer: `01.05.01` is now `1.5.1`.
 
-### `1.5.1` - 2026-10-19
-
-Moved local grounding and the preflight off the retired engine: the offline knowledge bases are searched with the vault's knowledge-base script when one is installed, a report overwrite starts from a committed state, and the vault's update and check scripts replace `sync` and `health`. The archive now carries the Research team, vendored when it is built.

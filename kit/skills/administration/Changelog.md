@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**`4.0.0`**
+**`4.0.1`**
 
 The version is SemVer, per standards' [versioning policy](https://github.com/tannergolden/standards/blob/Development/docs/distribution/Releases-&-Versioning.md#-versioning-policy-semver). It matches `metadata.version` in `SKILL.md`, and the validator fails when they differ. Each section shows the 4 most recent entries; older entries age out. Newest on top.
 
@@ -56,6 +56,10 @@ Aligned the skill to the 2026-07-02 workforce lean build. Four AR departments di
 
 > Fixes and clarifications. Most recent 4 entries.
 
+### `4.0.1` - 2026-11-07
+
+- A temporary working group holds at most five seats and the Chief of Staff, so it fits a Grok Bot group of six; a job that needs more seats is split into parts, a group for each (`agents/Chief of Staff.md`, `references/workforce.md`).
+
 ### `2.1.5` - 2026-10-26
 
 - The skill source moved from the vault's unpackaged skills folder to `.agents/skills/`, where the agent apps read a repository's skills, with a copy in `.claude/skills/` for Claude Code, so the vault's own sessions load it.
@@ -72,8 +76,3 @@ Aligned the skill to the 2026-07-02 workforce lean build. Four AR departments di
 - Founding gives each copied venture file its real `title`, `description` and `type`, the vault's hidden frontmatter, in place of rewriting the retired `id` and `path` (`SKILL.md`, `references/modes-router.md`, `references/write-gate.md`).
 - The callouts in `references/metrics-and-kpis.md` and `templates/qbr-sixpager.md` are GitHub alerts.
 
-### `2.1.2` - 2026-10-19
-
-- References point at `AGENTS.md`, the folder notes' Rules and the vault's docs folder instead of the retired root rule files.
-- The licence is MIT, and the versioning rules link to tannergolden/standards instead of restating them.
-- Versions are plain SemVer: `02.01.01` is now `2.1.1`.

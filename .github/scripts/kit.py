@@ -40,9 +40,10 @@ GUARD_FILE = 'kit/guard.py'
 SKILLS_DIR = 'kit/skills'
 SUBAGENTS_DIR = 'kit/subagents'
 VALIDATOR = 'kit/skills/research-and-development/scripts/validate.py'  # the skill validator every skill and agent here passes
-# Every team, one for each of the twelve departments, keeps at most its five
-# most critical agents, its lead included (ADR-0039), so a Grok Bot group of
-# six holds a department and the Chief of Staff. The owner's ceiling is six.
+# Every skill, one for each of the twelve departments, keeps at most its five
+# most critical agents, its lead included (ADR-0039): a Grok Bot group holds
+# at most six bots, a department's five and the Chief of Staff. Every agent in
+# a skill's own agents/ counts, on its roster or not.
 WORKFORCE_DIR = 'kit/skills/administration/agents'
 MAX_TEAM = 5
 # Every skill is laid out alike: it dispatches its own team, whose roster is
@@ -232,7 +233,7 @@ def load_validator(root: pathlib.Path):
 
 
 def check_teams(root: pathlib.Path, found: list[str]) -> None:
-    """Every skill, agent and team against the skill validator, and every team at most five agents."""
+    """Every skill, agent and team against the skill validator, and every team and skill at most five agents."""
     validate = load_validator(ROOT)  # the hub's own copy, whichever tree it checks
     base = root / SKILLS_DIR
     if not base.is_dir():
@@ -251,6 +252,12 @@ def check_teams(root: pathlib.Path, found: list[str]) -> None:
             where = roster.path.relative_to(root).as_posix()
             found.append(f'{where}: {len(members)} agents; a team keeps at most its {MAX_TEAM} most critical, '
                          'its lead included')
+    for home in homes:
+        agents, _ = validate.collect([home], validate.Report())
+        if len(agents) > MAX_TEAM:
+            where = home.relative_to(root).as_posix()
+            found.append(f'{where}: {len(agents)} agents; a skill keeps at most {MAX_TEAM}, its lead included, '
+                         'so its Grok Bot group of six holds them and the Chief of Staff')
 
 
 def check_layout(root: pathlib.Path, found: list[str]) -> None:

@@ -187,6 +187,15 @@ class TestTeams(Hub):
         self.department(6, 'kit/skills/processing-invoices/agents')
         self.assertProblem('processing-invoices/agents/Sales.md: 6 agents')
 
+    def test_an_agent_left_off_its_roster_still_counts(self) -> None:
+        # A Grok Bot group holds six: a skill's five agents and the Chief of Staff, roster or not.
+        # The skill already has its own lead; four more make five, and one on no roster a sixth.
+        home = 'kit/skills/processing-invoices/agents'
+        self.department(4, home)
+        self.assertEqual(self.problems(), [])
+        self.write(f'{home}/Sales Seat 9.md', SPEC.format(title='Sales Seat 9'))
+        self.assertProblem('processing-invoices/agents: 6 agents; a skill keeps at most 5')
+
     def test_an_agent_breaking_develops_standard_is_refused(self) -> None:
         self.department(2)
         self.write(f'{kit.WORKFORCE_DIR}/Sales Seat 1.md', SPEC.format(title='Sales Seat 1')

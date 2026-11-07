@@ -3,7 +3,7 @@ name: research-and-development
 description: "Research & Development for a company the user runs and for their own life: cited, fact-checked research; ideas generated wide and ranked by a fair pairwise tournament; and building skills, agents, teams and tools behind a validator and independent reviewers. Use when the user says research X, look into, dig into, find out about, what is the current state of, get me sources on, brainstorm, brainstorm ideas for, give me ideas, how might we, what are my options for, ways to, make a skill, create an agent or a team of agents, turn this workflow into a skill, package this skill, fix the skill that never loads, an agent keeps getting this wrong, build me a tool, plan user interviews, make me a learning plan, or ideas for a side project, and proactively when an answer turns on post-cutoff or contested facts or a problem calls for options, even if they never say research or skill. Choosing among options goes to administration, writing to public-relations, charts and metrics to business-intelligence."
 license: MIT
 allowed-tools: Read, Grep, Glob, WebSearch, WebFetch
-metadata: { team: "Research & Development (R&D)", version: "2.0.0", author: Tanner Golden, status: active }
+metadata: { team: "Research & Development (R&D)", version: "2.0.1", author: Tanner Golden, status: active }
 ---
 
 # 🔬 Research & Development - find out, think up, build

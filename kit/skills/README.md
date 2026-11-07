@@ -72,11 +72,16 @@ holds its department and the Chief of Staff within six bots:
 | `customer-experience`      | Customer Experience (CX)     |   3    |            4            |
 | `public-relations`         | Public Relations (PR)        |   5    |            6            |
 
+> [!IMPORTANT]
+> **A Grok Bot group holds at most six bots.** So every skill keeps at most
+> five agents, its lead included, and its group holds them and the Chief of
+> Staff. The hub's checks fail a skill with a sixth agent, on its roster or
+> not.
+
 > [!WARNING]
-> **The group rules are unconfirmed.** Reports on Grok Bot's early beta say a
-> group chat holds two to six bots, and do not say whether one bot can sit in
-> several groups. The setup prompt has the Chief of Staff test both before it
-> builds anything, and stop if one bot cannot join several groups.
+> **One bot in several groups is unconfirmed.** This design needs the Chief of
+> Staff in every group. The setup prompt has it test that before it builds
+> anything, and stop if one bot cannot join several groups.
 
 ### How Messages Move
 
@@ -85,8 +90,9 @@ holds its department and the Chief of Staff within six bots:
   makes sense without the other group's conversation.
 - When a job needs seats from several departments, such as research checked
   by Quality Assurance's Fact-Checker, the Chief of Staff forms a temporary
-  working group holding only those seats and itself, and closes it when the
-  job is done.
+  working group holding only those seats, at most five, and itself, and
+  closes it when the job is done. A job that needs more seats is split into
+  parts, a group for each.
 - When two departments disagree, the Chief of Staff takes both answers to
   the Chief Executive Officer in Administration, and never picks one itself.
 - Only the Chief of Staff writes to your knowledge repository: decisions,
@@ -112,7 +118,7 @@ You are the Chief of Staff for my company and my own affairs. Your task now is t
 
 1. Ask me first, and wait for both answers before anything else: is GitHub connected for you, and which GitHub repository holds my PKM, my knowledge vault made from the tannergolden/knowledge template? If GitHub is not connected, tell me how to connect it in Grok Bot and stop until it is. Then confirm you can read tannergolden/intelligence and read and write my vault, and that my vault is private.
 
-2. Test the group rules before you build. Make two throwaway bots and two throwaway groups, and find out whether one bot can sit in several groups and how many bots one group can hold. Then delete them. If one bot cannot sit in several groups, stop and tell me, because this design needs you in every group.
+2. Test the group rules before you build. Make two throwaway bots and two throwaway groups, and confirm that one bot can sit in several groups and that a group holds six bots, a department's five agents and you. Then delete them. If one bot cannot sit in several groups, stop and tell me, because this design needs you in every group.
 
 3. Learn the layout. Read kit/skills/README.md, which explains this setup. Each folder in kit/skills/ is one department's skill: its SKILL.md is the procedure, and its agents/ folder holds the department's team, one roster (the file whose frontmatter lists members and a lead) and one file per agent.
 
@@ -121,7 +127,7 @@ You are the Chief of Staff for my company and my own affairs. Your task now is t
 5. Install every skill. For each folder in kit/skills/, install a Grok Bot skill from its SKILL.md, with the files beside it (references/, templates/, assets/) available to it. If a skill of that name is already installed, update it to match the files.
 
 6. Create every department, Administration first, then the other eleven in the order of the table in kit/skills/README.md. For each department's roster:
-   a. Create one bot for each member, or, if a bot of that name already exists, update it to match its file. Name it by the agent's title, the file name, with the star for a lead. Its main job is the file's description. Its instructions are the body of its agent file followed by its roster's Global rules section. Agents have no personal names; never give one.
+   a. Create one bot for each member, or, if a bot of that name already exists, update it to match its file. A roster lists at most five members; if one lists more, stop on that department and report it. Name it by the agent's title, the file name, with the star for a lead. Its main job is the file's description. Its instructions are the body of its agent file followed by its roster's Global rules section. Agents have no personal names; never give one.
    b. Create a group named for the roster's title, holding every member and you.
    c. If the app refuses to add you because the group is full, leave the group without you, and create a two-bot group named "<department> Liaison" holding you and that department's lead. If it refuses one of the department's own members, stop on that department and report it; never leave an agent out silently.
 
