@@ -300,7 +300,8 @@ class TestTheRealKit(unittest.TestCase):
                        'operations-and-logistics', 'public-relations', 'quality-assurance',
                        'research-and-development', 'sales-and-marketing']
         self.assertEqual(sorted(bundle['skills']), departments)
-        self.assertEqual(sorted(bundle['subagents']), ['reviewer', 'worker'])
+        # Every agent belongs to a department's team, so the kit ships no standalone subagent (ADR-0040).
+        self.assertEqual(bundle['subagents'], {})
 
 
 if __name__ == '__main__':

@@ -39,7 +39,11 @@ the rules, each only where that app reads it:
   conversation
 - the skills, copied into `~/.agents/skills/`, `~/.claude/skills/` and
   Antigravity's own skills folder
-- the subagents, for Claude Code, Copilot and Codex
+- the subagents, for Claude Code, Copilot and Codex, when a release ships any
+
+A skill or a subagent an earlier release wrote and this one no longer ships,
+because it was dropped or renamed, is taken out: only a folder or a file that
+carries the kit's mark, so nothing of your own goes, whatever its name.
 
 SAFETY. Before changing a file, it records the setting's prior value, the
 ask rules it added, and whether it created the file. `uninstall` uses that
@@ -822,7 +826,56 @@ def install_kit(home: pathlib.Path, kit: Kit, cloud: bool, env: Mapping[str, str
     for name, files in sorted(kit.skills.items()):
         for app, root in skill_folders(home, cloud):
             failures += install_skill(f'{app} skill {name}', root / name, files, state, spath, dry_run)
+    retire_dropped(home, kit, cloud, env, state, spath, dry_run)
     return failures
+
+
+def agent_folders(home: pathlib.Path, cloud: bool, env: Mapping[str, str]) -> list[tuple[str, pathlib.Path, str]]:
+    """Where each app reads the kit's subagents, and the suffix each file there takes."""
+    folders = [('Claude Code subagent', home / '.claude' / 'agents', '.md')]
+    if not cloud:
+        folders += [('Copilot agent', home / '.copilot' / 'agents', '.agent.md'),
+                    ('Codex agent', codex_home(home, env) / 'agents', '.toml')]
+    return folders
+
+
+def retire_dropped(home: pathlib.Path, kit: Kit, cloud: bool, env: Mapping[str, str], state: dict,
+                   spath: pathlib.Path, dry_run: bool) -> None:
+    """Take out each skill and subagent an earlier release wrote that this one no longer ships.
+
+    A release that drops or renames one would otherwise leave the old copy loaded beside the
+    new ones. Only what carries the kit's mark goes: a subagent file with the mark, a skill
+    folder with its mark file. Whatever is yours stays, whatever its name.
+    """
+    def forget(group: str, path: pathlib.Path) -> None:
+        if not dry_run and str(path) in state[group]:
+            del state[group][str(path)]
+            save_state(spath, state)
+
+    for label, folder, suffix in agent_folders(home, cloud, env):
+        found = {pathlib.Path(p) for p in state['owned'] if pathlib.Path(p).parent == folder}
+        if folder.is_dir():
+            found |= {p for p in folder.iterdir() if p.is_file()}
+        for path in sorted(found):
+            if not path.name.endswith(suffix) or path.name[:-len(suffix)] in kit.subagents:
+                continue
+            if path.is_file() and is_kits(path, OWNED):
+                report('would retire' if dry_run else 'retired', f'{label} {path.name[:-len(suffix)]}: {path}')
+                if not dry_run:
+                    path.unlink()
+            forget('owned', path)
+    for app, root in skill_folders(home, cloud):
+        found = {pathlib.Path(p) for p in state['folders'] if pathlib.Path(p).parent == root}
+        if root.is_dir():
+            found |= {p for p in root.iterdir() if p.is_dir()}
+        for folder in sorted(found):
+            if folder.name in kit.skills:
+                continue
+            if (folder / SKILL_MARK).is_file():
+                report('would retire' if dry_run else 'retired', f'{app} skill {folder.name}: {folder}')
+                if not dry_run:
+                    shutil.rmtree(folder)
+            forget('folders', folder)
 
 
 def install_registration(registration: Registration, state: dict, spath: pathlib.Path,

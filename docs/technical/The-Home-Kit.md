@@ -55,10 +55,12 @@ The kit rides beside the rules in the same release, as one pinned file,
 | :---------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Guard hook, below                                     | Denies force-pushes, merges, `--no-verify`, AI sign-offs, irreversible commands, credential reads and unread downloads before they run                           | `~/.agents/hooks/`, registered in Claude Code's settings (read by Grok and Cursor), Codex's and Antigravity's `hooks.json`, and Copilot's `hooks/`; Claude Code also runs it after a compaction |
 | [The twelve department skills](Skills-&-Subagents.md) | One for each department, each with its own team, covering a company and the user's own life; `research-and-development` also builds and checks every other skill | `~/.agents/skills/`, `~/.claude/skills/` and Antigravity's skills folder                                                                                                                        |
-| [Worker and Reviewer](Skills-&-Subagents.md)          | Subagents that make one change, and check one without editing                                                                                                    | `~/.claude/agents/`, `~/.copilot/agents/` and `~/.codex/agents/`                                                                                                                                |
 
 Everything the kit writes carries its mark, so it replaces only its own files
-and `make agents-uninstall` takes back exactly what it added. A file that is a
+and `make agents-uninstall` takes back exactly what it added. An install also
+takes out a skill or a subagent an earlier release wrote and this one no
+longer ships, such as a renamed skill or the retired Worker and Reviewer, and
+only those that carry the mark. A file that is a
 symlink, as dotfiles often make `~/.claude/settings.json`, is written through,
 so it stays a link to the file the dotfiles keep.
 

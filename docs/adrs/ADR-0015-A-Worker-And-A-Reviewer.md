@@ -2,7 +2,7 @@
 title: '📄 ADR-0015: A WORKER AND A REVIEWER'
 description: 'The agent hierarchy begins with two subagents, a Worker that makes one change and proves it and a Reviewer that checks a change without editing it, rendered for Claude Code, Copilot and Codex.'
 type: record
-status: 'Proposed'
+status: 'Superseded'
 date: '2026-10-18'
 evidence: 'N/A'
 -->
@@ -19,6 +19,12 @@ evidence: 'N/A'
 _Do, then doubt, before anything ships._
 
 </div>
+
+> [!IMPORTANT]
+> **Superseded by [ADR-0040](ADR-0040-Every-Agent-Belongs-To-A-Department.md).** The kit
+> ships no standalone subagent: every agent belongs to a department's team,
+> and an install takes out the Worker and the Reviewer an earlier release
+> wrote.
 
 ---
 

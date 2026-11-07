@@ -1,6 +1,6 @@
 <!--
 title: '🧰 SKILLS & SUBAGENTS'
-description: 'The skills the home kit installs, twelve, one for each department, each written here, universal and laid out alike, the Worker and Reviewer subagents, the rules every skill here follows, and where each app reads them.'
+description: 'The skills the home kit installs, twelve, one for each department, each written here, universal and laid out alike, how each department's agents run as subagents, the rules every skill here follows, and where each app reads them.'
 type: guide
 -->
 
@@ -139,16 +139,15 @@ describes them.
 
 ## 👥 Subagents
 
-The agent hierarchy starts with two subagents a session can hand work to, in
-[`kit/subagents/`](../../kit/subagents/README.md):
+Every agent belongs to a department's team. A skill dispatches its own
+agents as subagents, from its own `agents/` folder, and borrows another
+department's by title. The kit ships no standalone subagent
+([ADR-0040](../adrs/ADR-0040-Every-Agent-Belongs-To-A-Department.md)): the Worker and the Reviewer it once carried
+are gone, and an install takes out the copies an earlier release wrote.
 
-| Subagent                                         | What it does                                                                                         | Tools                       |
-| :----------------------------------------------- | :--------------------------------------------------------------------------------------------------- | :-------------------------- |
-| [`worker.md`](../../kit/subagents/worker.md)     | Makes one well-defined change, runs the checks that cover it, never pushes, and reports the evidence | read, search, edit, execute |
-| [`reviewer.md`](../../kit/subagents/reviewer.md) | Reviews a change before it ships, runs the checks itself, and reports verified findings by severity  | read, search, execute       |
-
-Each source holds a `name`, a `description` and a list of abstract tools.
-`.github/scripts/kit.py` renders it three ways, and the home kit installs each:
+Should one return, its source is `kit/subagents/<name>.md`, holding a
+`name`, a `description` and a list of abstract tools, and
+`.github/scripts/kit.py` renders it three ways for the home kit to install:
 
 | App                   | Where                | Form                                         |
 | :-------------------- | :------------------- | :------------------------------------------- |
@@ -162,9 +161,6 @@ Each source holds a `name`, a `description` and a list of abstract tools.
 > prompt with `---` frontmatter, so they carry no hidden comment frontmatter
 > and no decorative header or footer.
 
-The Reviewer has no edit tools where an app lets that be enforced. Codex has
-no tool list, so there it is read-only by instruction.
-
 ---
 
 ## 🔗 See Also
@@ -173,7 +169,8 @@ no tool list, so there it is read-only by instruction.
 - [ADR-0037](../adrs/ADR-0037-The-Hub-Writes-Every-Skill.md): the hub writes every skill, universal, and the knowledge template keeps none
 - [ADR-0038](../adrs/ADR-0038-Each-Department-Is-A-Skill.md): each department is a skill, laid out like every other
 - [ADR-0039](../adrs/ADR-0039-Twelve-Departments-Twelve-Skills.md): twelve departments, twelve skills, covering a company and the user's own life
-- [ADR-0015](../adrs/ADR-0015-A-Worker-And-A-Reviewer.md): the hierarchy starts with a Worker and a Reviewer
+- [ADR-0040](../adrs/ADR-0040-Every-Agent-Belongs-To-A-Department.md): every agent belongs to a department, so the Worker, the Reviewer and Public Relations' Writer are gone
+- [ADR-0015](../adrs/ADR-0015-A-Worker-And-A-Reviewer.md): the Worker and the Reviewer, now retired
 - [The Home Kit](The-Home-Kit.md): how the kit reaches each app
 
 ---

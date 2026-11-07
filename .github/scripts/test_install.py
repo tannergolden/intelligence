@@ -629,6 +629,52 @@ class TestKitInstall(KitHome):
         self.assertEqual(code, 0, out)
 
 
+class TestKitRetires(KitHome):
+    """A skill or subagent an earlier release wrote, and this one no longer ships, is taken out."""
+
+    DROPPED = ['.claude/agents/worker.md', '.codex/agents/worker.toml', '.copilot/agents/worker.agent.md',
+               '.agents/skills/building-skills', '.claude/skills/building-skills',
+               '.gemini/antigravity-cli/skills/building-skills']
+
+    def later_release(self) -> None:
+        """A release that dropped the subagent and renamed the skill."""
+        self.kit_file = self.make_kit('later.json', subagents={},
+                                      skills={'making-skills': {'SKILL.md': SKILL.replace('building', 'making')}})
+
+    def test_what_a_release_dropped_is_taken_out(self) -> None:
+        self.install_kit()
+        self.later_release()
+        code, out = self.install_kit()
+        self.assertEqual(code, 0, out)
+        for rel in self.DROPPED:
+            with self.subTest(rel=rel):
+                self.assertFalse((self.home / rel).exists())
+        self.assertEqual(out.count('retired'), len(self.DROPPED), out)
+        self.assertTrue((self.home / '.claude/skills/making-skills/SKILL.md').is_file(), 'the new one installs')
+        state = json.loads(install.state_path(self.home, {}).read_text(encoding='utf-8'))
+        self.assertFalse([p for p in [*state['owned'], *state['folders']] if 'worker' in p or 'building' in p])
+
+    def test_your_own_skill_and_agent_stay_whatever_their_names(self) -> None:
+        self.install_kit()
+        mine = self.personal('.claude/agents/helper.md', b'my own agent\n')
+        mine_skill = self.personal('.claude/skills/my-skill/SKILL.md', b'my own skill\n')
+        self.later_release()
+        code, out = self.install_kit()
+        self.assertEqual(code, 0, out)
+        self.assertEqual(mine.read_bytes(), b'my own agent\n')
+        self.assertEqual(mine_skill.read_bytes(), b'my own skill\n')
+
+    def test_a_dry_run_only_says_what_would_go(self) -> None:
+        self.install_kit()
+        self.later_release()
+        code, out = self.install_kit('--dry-run')
+        self.assertEqual(code, 0, out)
+        self.assertIn('would retire', out)
+        for rel in self.DROPPED:
+            with self.subTest(rel=rel):
+                self.assertTrue((self.home / rel).exists())
+
+
 class TestKitRefusals(KitHome):
     """What is not the kit's stays exactly as it is."""
 

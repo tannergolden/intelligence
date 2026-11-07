@@ -1,6 +1,6 @@
 <!--
 title: '🧩 KIT'
-description: 'The sources of everything the home kit installs besides the rules: the guard hook, the skills and the subagents, rendered into home/kit.json.'
+description: 'The sources of everything the home kit installs besides the rules: the guard hook and the twelve department skills, each with its team, rendered into home/kit.json.'
 type: index
 -->
 
@@ -22,9 +22,9 @@ _Written here. Rendered once. Installed everywhere._
 
 The kit's sources, one entry for each part of `home/kit.json`:
 [`guard.py`](guard.py), the hook every app runs before a tool call;
-[`skills/`](skills/README.md), every skill the hub writes, each with
-its team; and [`subagents/`](subagents/README.md), the Worker and the
-Reviewer.
+and [`skills/`](skills/README.md), every skill the hub writes, each with
+its team. The kit ships no standalone subagent: every agent belongs to a
+department's team (ADR-0040).
 `.github/scripts/kit.py` checks each one and bundles them, and `make render`
 writes the bundle. What each part does and where it lands: [The Home
 Kit](../docs/technical/The-Home-Kit.md).
@@ -35,12 +35,11 @@ Kit](../docs/technical/The-Home-Kit.md).
 
 <!-- AUTO-INDEX:BEGIN dir=. style=log -->
 
-| Entry                               | Purpose                                                                                                               |
-| :---------------------------------- | :-------------------------------------------------------------------------------------------------------------------- |
-| [`skills/`](skills/README.md)       | The skills the home kit installs into every AI coding app, each a folder in the open Agent Skills format.             |
-| [`subagents/`](subagents/README.md) | The Worker and Reviewer subagents the home kit installs, each one source rendered for Claude Code, Copilot and Codex. |
-| [`guard.py`](guard.py)              | Block the few tool calls the universal rules forbid outright, before they run.                                        |
-| [`README.md`](README.md)            | This file.                                                                                                            |
+| Entry                         | Purpose                                                                                                   |
+| :---------------------------- | :-------------------------------------------------------------------------------------------------------- |
+| [`skills/`](skills/README.md) | The skills the home kit installs into every AI coding app, each a folder in the open Agent Skills format. |
+| [`guard.py`](guard.py)        | Block the few tool calls the universal rules forbid outright, before they run.                            |
+| [`README.md`](README.md)      | This file.                                                                                                |
 
 <!-- AUTO-INDEX:END -->
 

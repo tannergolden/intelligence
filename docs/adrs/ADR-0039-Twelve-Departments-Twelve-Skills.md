@@ -20,6 +20,12 @@ _Fewer seats, each doing more, none duplicated._
 
 </div>
 
+> [!IMPORTANT]
+> **Amended by [ADR-0040](ADR-0040-Every-Agent-Belongs-To-A-Department.md).**
+> Public Relations drops its Writer, whose drafting its lead now does, and the
+> kit drops the Worker and Reviewer subagents: fifty agents remain, every one
+> in a department.
+
 ---
 
 ## 📋 Meta Information

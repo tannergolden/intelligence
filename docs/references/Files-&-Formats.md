@@ -109,8 +109,9 @@ rules in
 [Skills & Subagents](../technical/Skills-&-Subagents.md#-what-every-skill-here-follows)
 or a subagent's source is out of shape. `kit.py --check` lists each problem.
 
-**A subagent's source** is `kit/subagents/<name>.md`: a `---` frontmatter
-fence holding these keys and no others, then the prompt it runs with:
+**A subagent's source**, should the kit carry one again (it ships none since
+ADR-0040), is `kit/subagents/<name>.md`: a `---` frontmatter fence holding
+these keys and no others, then the prompt it runs with:
 
 ```markdown
 ---

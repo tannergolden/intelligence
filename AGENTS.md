@@ -71,7 +71,7 @@ serves to this repository from its `.github` repository.
 | Path                                 | What                                                                                                                                                          |
 | :----------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | [`CONSTITUTION.md`](CONSTITUTION.md) | The source of every rule, and the order and budget of the block                                                                                               |
-| `kit/`                               | The kit's sources: the guard, every skill and its team (twelve, one for each department), and the Worker and Reviewer subagents                               |
+| `kit/`                               | The kit's sources: the guard, and every skill and its team (twelve, one for each department)                                                                  |
 | `home/`                              | Everything a machine downloads, rendered: the home file, the kit, the installer and their hashes, which every release tag serves                              |
 | `evals/`                             | Scenarios for every rule and every universal prompt, and the skill trigger tests                                                                              |
 | `setup/`                             | The Claude cloud setup script, the stub a repository carries, and the empty prompts page every repository gets                                                |

@@ -10,7 +10,9 @@ all under `kit/`:
 
 - `kit/guard.py`, the guard every app's pre-tool hook calls;
 - `kit/skills/<name>/`, each a folder in the open Agent Skills format;
-- `kit/subagents/<name>.md`, each rendered for Claude Code, Copilot and Codex.
+- `kit/subagents/<name>.md`, each rendered for Claude Code, Copilot and Codex,
+  when there are any: the kit ships none today (ADR-0040), since every agent
+  belongs to a department's team.
 
 It also holds each source to the strictest rule any target app enforces,
 because a skill with a bad name loads nowhere and says nothing, and holds
