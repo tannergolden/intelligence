@@ -1,0 +1,40 @@
+{
+  "//": "The trigger test for quality-assurance, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw. Never edit it by hand.",
+  "skill": "quality-assurance",
+  "runs": 3,
+  "threshold": 0.5,
+  "should_trigger": [
+    "check our investor update against the numbers before it goes out",
+    "QA this proposal before we send it to the client",
+    "verify this SOP against our definition of done before we adopt it",
+    "write the definition of done for our client reports",
+    "build a test plan for the launch of our new product catalog",
+    "run an independent test pass on the skill you just built against its requirements and tell me what breaks",
+    "triage these defects from our last batch of client deliverables",
+    "find the root cause of why our proposals keep going out with the same errors",
+    "fact-check the claims and figures in this press release before we publish it",
+    "double-check the contribution limits and tax figures in my retirement plan against the official sources before I act on it",
+    "play devil's advocate on our plan to expand into Europe",
+    "stress-test these five startup ideas and tell me which have a fatal flaw",
+    "is this chart in the board deck misleading? check it before the meeting",
+    "check this dashboard passes accessibility contrast rules before we share it",
+    "check my visa application against the requirements before I submit it",
+    "poke holes in my plan to quit my job and go freelance next spring"
+  ],
+  "should_not_trigger": [
+    "write unit tests for the login function in my app",
+    "fix the failing checkout test in our repository",
+    "research what the evidence says about four-day work weeks",
+    "brainstorm ideas for our next product line",
+    "make a chart of our defect counts by month",
+    "build our financial model for the seed round",
+    "proofread this report for typos and tone",
+    "a customer reported a bug in the app, reply to them",
+    "should we delay the launch to fix these quality issues",
+    "is the indemnity clause in this contract enforceable",
+    "check whether our privacy policy complies with GDPR",
+    "audit our cloud accounts for security misconfigurations",
+    "set up the CI pipeline that runs our test suite",
+    "write the SOP for how our team packs orders"
+  ]
+}

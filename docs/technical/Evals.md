@@ -50,7 +50,7 @@ the prompt is worth.
 make evals ARGS='--check'                                   # validate, no model calls
 make evals ARGS='--apps claude --dry-run'                   # the plan
 make evals ARGS='--apps claude --rules OPS-001 --runs 7'    # one rule, seven runs each way
-make evals ARGS='--apps claude --skill develop'             # a skill's trigger test
+make evals ARGS='--apps claude --skill human-resources'     # a skill's trigger test
 make evals ARGS='--apps claude --prompts'                   # every universal prompt, against its hurried request
 make evals ARGS='--apps claude --prompts fix-a-bug --runs 7'  # one prompt, seven runs each way
 ```
@@ -161,16 +161,16 @@ that triggers it. Each file in [`evals/skills/`](../../evals/skills/README.md) i
 - `should_not_trigger`: near misses that should not;
 - `runs` and `threshold`: each prompt runs at least three times, and passes
   when the skill loads in at least that share of runs;
-- `quality`: real tasks to run with the skill and without it.
+- `quality`, optional: real tasks to run with the skill and without it.
 
-`make evals ARGS='--apps claude --skill <name>'` runs one. The tests live
-there rather than in the skill's folder, so they never ship with it, and
-`make lint` fails while a skill has none.
+`make evals ARGS='--apps claude --skill <name>'` runs one, and `make lint`
+fails while a skill has none.
 
-Every other skill's test is not written here. The skill keeps it in its own
+No test is written here by hand. Each skill keeps its own in
 `assets/trigger-evals.json`, which ships with it, and `evals.py --draw`
-draws this one from it: the prompts on each side, with no `quality` tasks.
-`make lint` fails when it differs, so it changes only with the skill.
+draws the copy here from it: the prompts on each side, with no `quality`
+tasks. `make lint` fails when the two differ, so a test changes only with
+its skill.
 
 ---
 

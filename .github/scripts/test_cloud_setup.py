@@ -91,7 +91,7 @@ class CloudSetup(unittest.TestCase):
         self.assertEqual(done.returncode, 0, done.stderr)
         self.assertEqual(self.claude_md().read_bytes(), HOME_FILE.read_bytes(), 'the rules, and no facts beside them')
         self.assertTrue(self.guard().is_file())
-        self.assertTrue((self.home / '.claude' / 'skills' / 'develop' / 'SKILL.md').is_file())
+        self.assertTrue((self.home / '.claude' / 'skills' / 'research-and-development' / 'SKILL.md').is_file())
         self.assertTrue((self.home / '.claude' / 'agents' / 'reviewer.md').is_file())
         self.assertIn('intelligence-guard', (self.home / '.claude' / 'settings.json').read_text(encoding='utf-8'))
         self.assertFalse((self.home / '.codex').exists(), 'a cloud session gets Claude Code\'s files only')

@@ -20,6 +20,11 @@ _board convenes the company; each department does its own work._
 
 </div>
 
+> [!IMPORTANT]
+> **Amended by [ADR-0039](ADR-0039-Twelve-Departments-Twelve-Skills.md).** The
+> workforce is now twelve departments, each one skill named for it, with the
+> general-purpose skills folded in and duplicated seats merged.
+
 ---
 
 ## 📋 Meta Information
@@ -83,7 +88,7 @@ Option 1 keeps the departments callable only through `board`, unlike every other
 | :--------------- | :-------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Positive (+)** | Each department is called directly or convened by `board`; one owner for each kind of work; every skill alike, and a check that keeps them so |
 | **Negative (-)** | Nine more skill descriptions in every session's skill list; requests near two skills' borders need clear descriptions and trigger tests       |
-| **Neutral (~)**  | Thirty-five company agents remain, plus the faculties' teams; no team tops six                                                                 |
+| **Neutral (~)**  | Thirty-five company agents remain, plus the faculties' teams; no team tops six                                                                |
 
 ---
 

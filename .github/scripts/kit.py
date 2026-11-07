@@ -14,9 +14,8 @@ all under `kit/`:
 
 It also holds each source to the strictest rule any target app enforces,
 because a skill with a bad name loads nowhere and says nothing, and holds
-every skill, agent and team to develop's own validator, with no team over
-six agents: neither a department of the Agent Resources (AR) workforce nor
-a skill's own team. `render.py`
+every skill, agent and team to the skill validator, with no team over five
+agents. `render.py`
 calls it, so `make render` writes the bundle and `make check` fails on a
 stale one.
 
@@ -40,12 +39,12 @@ KIT_FILE = 'home/kit.json'
 GUARD_FILE = 'kit/guard.py'
 SKILLS_DIR = 'kit/skills'
 SUBAGENTS_DIR = 'kit/subagents'
-VALIDATOR = 'kit/skills/develop/scripts/validate.py'  # develop's gate 1, which every skill and agent here passes
-# Every team, each department of the Agent Resources (AR) workforce the
-# board skill dispatches and each skill's own team, keeps at most its six
-# most critical agents, its lead included, by the owner's decision (ADR-0037).
-WORKFORCE_DIR = 'kit/skills/board/agents'
-MAX_TEAM = 6
+VALIDATOR = 'kit/skills/research-and-development/scripts/validate.py'  # the skill validator every skill and agent here passes
+# Every team, one for each of the twelve departments, keeps at most its five
+# most critical agents, its lead included (ADR-0039), so a Grok Bot group of
+# six holds a department and the Chief of Staff. The owner's ceiling is six.
+WORKFORCE_DIR = 'kit/skills/administration/agents'
+MAX_TEAM = 5
 # Every skill is laid out alike: it dispatches its own team, whose roster is
 # in its own agents/, ships the trigger test its description is measured by,
 # and carries these metadata keys, no more and no fewer.
@@ -233,7 +232,7 @@ def load_validator(root: pathlib.Path):
 
 
 def check_teams(root: pathlib.Path, found: list[str]) -> None:
-    """Every skill, agent and team against develop's validator, and every team at most six agents."""
+    """Every skill, agent and team against the skill validator, and every team at most five agents."""
     validate = load_validator(ROOT)  # the hub's own copy, whichever tree it checks
     base = root / SKILLS_DIR
     if not base.is_dir():

@@ -1,0 +1,39 @@
+{
+  "skill": "legal-and-compliance",
+  "note": "Should-trigger phrasings for a company's legal and compliance work, the standards gate its Compliance Officer now keeps for every department (libel, privacy, IP and licensing, regulated claims, disclosure), and the user's own legal life (leases, contracts, disputes, wills, privacy); near misses are a neighbouring department's requests phrased close to these. Used by the description trigger check.",
+  "should_trigger": [
+    "review this vendor contract before we sign it",
+    "redline the NDA a prospect sent our company",
+    "draft terms of service and a privacy policy for our app",
+    "do we need a DPA with our analytics provider",
+    "should my startup be an LLC or a Delaware C-corp",
+    "a competitor sent us a cease and desist letter, what do we do",
+    "make sure our cofounders and contractors assign their IP to the company",
+    "set up a compliance calendar for our company's filings",
+    "check this blog post for libel or copyright problems before we publish it",
+    "can our ad say the supplement is clinically proven",
+    "do we have to disclose that this influencer post is sponsored",
+    "can I use a photo I found online in our newsletter",
+    "review my apartment lease before I sign it",
+    "my landlord won't return my security deposit, what are my rights",
+    "help me draft a simple will now that we have a baby",
+    "is the non-compete in my job offer enforceable",
+    "send a request to make this data broker delete my information",
+    "a contractor took my deposit and never finished the job, can I take him to small claims"
+  ],
+  "near_miss": [
+    {"query": "should we accept the acquisition offer for our company", "route": "administration"},
+    {"query": "model our cap table after the seed round", "route": "finance-and-accounting"},
+    {"query": "how much life insurance should I buy now that we have a baby", "route": "finance-and-accounting"},
+    {"query": "draft an offer letter for the engineer we want to hire", "route": "human-resources"},
+    {"query": "write the public statement about our data breach", "route": "public-relations"},
+    {"query": "make our blog post about the new pricing read better", "route": "public-relations"},
+    {"query": "fact-check the statistics in this article before we publish it", "route": "quality-assurance"},
+    {"query": "set up encryption and access controls for our customer database", "route": "information-technology"},
+    {"query": "someone got into my email account, help me lock everything down", "route": "information-technology"},
+    {"query": "build a cookie consent banner for our website", "route": "research-and-development"},
+    {"query": "my new laptop arrived broken, help me get a refund from the store", "route": "customer-experience"},
+    {"query": "find and hire a contractor to redo our kitchen", "route": "operations-and-logistics"},
+    {"query": "help me negotiate a higher salary in my job offer", "route": "sales-and-marketing"}
+  ]
+}

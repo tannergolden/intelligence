@@ -1,0 +1,40 @@
+{
+  "//": "The trigger test for sales-and-marketing, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw. Never edit it by hand.",
+  "skill": "sales-and-marketing",
+  "runs": 3,
+  "threshold": 0.5,
+  "should_trigger": [
+    "build our sales forecast for Q3",
+    "review my pipeline and tell me which deals will actually close this quarter",
+    "can I give this prospect a 25% discount if they sign by Friday",
+    "position our product against Competitor X for mid-market buyers",
+    "plan the launch of our new analytics add-on",
+    "plan a demand gen campaign to fill next quarter's pipeline",
+    "set up an email nurture sequence for trial users who never converted",
+    "how should we split our ad budget between search, LinkedIn and content",
+    "write a proof-of-concept plan for this enterprise prospect's security requirements",
+    "our CRM and our marketing tool count leads differently, give me one funnel",
+    "set quotas and territories for our three new reps",
+    "qualify this inbound lead for me, is it worth chasing",
+    "help me build my personal brand so recruiters find me",
+    "plan my job search for a senior product manager role",
+    "who in my network should I reach out to about finding a new job",
+    "help me negotiate a higher salary on this job offer",
+    "I'm buying a used car next week, help me negotiate the price"
+  ],
+  "should_not_trigger": [
+    "should we raise our list prices across the board next year",
+    "should I quit my job to start my own company",
+    "build the revenue line in our three-statement financial model",
+    "how much house can I afford on my new salary",
+    "draft a press release announcing our Series A",
+    "polish the wording of this cold email so it reads better",
+    "this customer wants to cancel, help me save the account",
+    "my phone company overcharged me, help me get the fee removed",
+    "how big is the market for HR software in Europe",
+    "fix the failing deploy step in our CI pipeline",
+    "chart our pipeline by stage from this CSV",
+    "which skills should I learn to move into data science",
+    "review the limitation of liability clause in this customer MSA"
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "skill": "information-technology",
+  "note": "Light trigger check set: should-trigger phrasings about a company's internal systems, accounts, access and their security, the threat model and security review of anything built (the build review the Security Engineer took over in 2.0.0), and the user's own devices, accounts and digital security; and near-miss negatives a neighbouring department owns, phrased close to this one's. Used by the description trigger check.",
+  "should_trigger": [
+    "set up SSO and MFA for all the tools our team uses",
+    "who should have admin access to our company Google Workspace",
+    "an employee leaves on Friday, plan the offboarding of their accounts",
+    "is it safe to connect this Zapier automation to our CRM",
+    "someone logged into our company email from another country last night, what do we do",
+    "write an access policy for our startup",
+    "list the tools our company runs on and who owns each one",
+    "we think an API key for our billing system leaked",
+    "automate the handoff from our website signup form to the support inbox",
+    "review the security risk of giving our marketing agency access to our ad accounts",
+    "threat-model the customer portal we just built before it goes live",
+    "review this pull request for security holes before we merge it",
+    "set up my new laptop and move everything over from the old one",
+    "my email account got hacked and it's sending spam to my contacts, what do I do",
+    "is this text from my bank a scam",
+    "set up a password manager for me and my partner",
+    "back up my phone photos so I never lose them",
+    "check whether my accounts have two-factor turned on and fix the weak spots",
+    "wipe my old phone safely before I sell it"
+  ],
+  "near_miss": [
+    {"query": "build an internal admin web app for our support team", "route": "research-and-development"},
+    {"query": "fix the failing CI pipeline in this repository", "route": "research-and-development"},
+    {"query": "write a script that renames my photo files by date", "route": "research-and-development"},
+    {"query": "QA test the new onboarding flow before we launch it", "route": "quality-assurance"},
+    {"query": "negotiate the renewal with our CRM vendor and compare its price to alternatives", "route": "operations-and-logistics"},
+    {"query": "what does GDPR require us to do with our customers' personal data", "route": "legal-and-compliance"},
+    {"query": "write my will so it says who gets my digital accounts", "route": "legal-and-compliance"},
+    {"query": "write the first-week onboarding plan for our new hire", "route": "human-resources"},
+    {"query": "draft the email telling customers about yesterday's outage", "route": "public-relations"},
+    {"query": "draw a diagram of how our tools connect to each other", "route": "business-intelligence"},
+    {"query": "should we cut our software budget to extend runway", "route": "administration"},
+    {"query": "my laptop died two months in, get the store to replace it under warranty", "route": "customer-experience"},
+    {"query": "cancel the streaming subscriptions I never use", "route": "customer-experience"},
+    {"query": "someone charged my credit card for things I didn't buy, how do I get the money back", "route": "finance-and-accounting"}
+  ]
+}

@@ -14,7 +14,7 @@ The skill trigger tests in `evals/skills/` run the same way: each prompt a
 few times, counting how often the app loads the skill. Each skill keeps its
 test in its own `assets/trigger-evals.json`, which ships with it, and
 `--draw` writes the one here from it; `--check` fails when the two differ.
-`develop`'s is written here by hand, richer than the one it ships.
+Every skill's is drawn; none is written here by hand.
 
 The prompt scenarios in `evals/prompts/` measure the universal prompts in
 the hub's `docs/Prompts.md`. Each sets up a repository where a hurried
@@ -47,7 +47,7 @@ Run it:
     python3 .github/scripts/evals.py --draw                    # rewrite each skill's trigger test from its own
     python3 .github/scripts/evals.py --apps claude --dry-run   # the plan
     python3 .github/scripts/evals.py --apps claude --rules OPS-001,SEC-001 --runs 7
-    python3 .github/scripts/evals.py --apps claude --skill develop
+    python3 .github/scripts/evals.py --apps claude --skill human-resources
     python3 .github/scripts/evals.py --apps claude --prompts fix-a-bug --runs 7
 """
 
@@ -78,7 +78,7 @@ HOME_FILE = ROOT / 'home' / 'intelligence.md'
 EVALS = ROOT / 'evals'  # the scenarios and the skill trigger tests
 SKILLS = ROOT / 'kit' / 'skills'
 TRIGGER_TEST = 'assets/trigger-evals.json'  # where a skill keeps the trigger test it ships
-HAND_WRITTEN = ('develop',)  # skills whose test in evals/skills/ is written here, not drawn from the skill
+HAND_WRITTEN: tuple[str, ...] = ()  # skills whose test in evals/skills/ is written here, not drawn from the skill
 MIN_PROMPTS = 5  # prompts each side of a trigger test needs
 
 # How each app runs a task headless with its tools on. Claude Code, Codex and

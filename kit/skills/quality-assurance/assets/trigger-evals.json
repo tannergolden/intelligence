@@ -1,0 +1,38 @@
+{
+  "skill": "quality-assurance",
+  "note": "Light trigger check set: should-trigger phrasings for every check the Quality Assurance (QA) team runs (verifying work against its standard, definitions of done, test plans and runs for releases and builds, defect root cause, fact-checking claims, numbers and financial plans, red-teaming conclusions and stress-testing ideas, reviewing visuals) for a company and for the user's own documents and plans; and near-miss negatives a neighbouring department owns, phrased close to this one's. Used by the description trigger check.",
+  "should_trigger": [
+    "check our investor update against the numbers before it goes out",
+    "QA this proposal before we send it to the client",
+    "verify this SOP against our definition of done before we adopt it",
+    "write the definition of done for our client reports",
+    "build a test plan for the launch of our new product catalog",
+    "run an independent test pass on the skill you just built against its requirements and tell me what breaks",
+    "triage these defects from our last batch of client deliverables",
+    "find the root cause of why our proposals keep going out with the same errors",
+    "fact-check the claims and figures in this press release before we publish it",
+    "double-check the contribution limits and tax figures in my retirement plan against the official sources before I act on it",
+    "play devil's advocate on our plan to expand into Europe",
+    "stress-test these five startup ideas and tell me which have a fatal flaw",
+    "is this chart in the board deck misleading? check it before the meeting",
+    "check this dashboard passes accessibility contrast rules before we share it",
+    "check my visa application against the requirements before I submit it",
+    "poke holes in my plan to quit my job and go freelance next spring"
+  ],
+  "near_miss": [
+    {"query": "write unit tests for the login function in my app", "route": "research-and-development"},
+    {"query": "fix the failing checkout test in our repository", "route": "research-and-development"},
+    {"query": "research what the evidence says about four-day work weeks", "route": "research-and-development"},
+    {"query": "brainstorm ideas for our next product line", "route": "research-and-development"},
+    {"query": "make a chart of our defect counts by month", "route": "business-intelligence"},
+    {"query": "build our financial model for the seed round", "route": "finance-and-accounting"},
+    {"query": "proofread this report for typos and tone", "route": "public-relations"},
+    {"query": "a customer reported a bug in the app, reply to them", "route": "customer-experience"},
+    {"query": "should we delay the launch to fix these quality issues", "route": "administration"},
+    {"query": "is the indemnity clause in this contract enforceable", "route": "legal-and-compliance"},
+    {"query": "check whether our privacy policy complies with GDPR", "route": "legal-and-compliance"},
+    {"query": "audit our cloud accounts for security misconfigurations", "route": "information-technology"},
+    {"query": "set up the CI pipeline that runs our test suite", "route": "information-technology"},
+    {"query": "write the SOP for how our team packs orders", "route": "operations-and-logistics"}
+  ]
+}

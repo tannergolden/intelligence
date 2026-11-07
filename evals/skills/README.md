@@ -29,26 +29,21 @@ with it. What each test holds: [Evals](../../docs/technical/Evals.md).
 
 <!-- AUTO-INDEX:BEGIN dir=. style=log -->
 
-| Entry                                        | Purpose                                                                                                           |
-| :------------------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
-| [`analytics.json`](analytics.json)           | The trigger test for analytics, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw.      |
-| [`board.json`](board.json)                   | The trigger test for board, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw.          |
-| [`communications.json`](communications.json) | The trigger test for communications, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw. |
-| [`customers.json`](customers.json)           | The trigger test for customers, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw.      |
-| [`develop.json`](develop.json)               | The trigger test for develop: when it should load, when it should not, and a task to judge it by.                 |
-| [`discover.json`](discover.json)             | The trigger test for discover, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw.       |
-| [`editorial.json`](editorial.json)           | The trigger test for editorial, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw.      |
-| [`finance.json`](finance.json)               | The trigger test for finance, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw.        |
-| [`identify.json`](identify.json)             | The trigger test for identify, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw.       |
-| [`legal.json`](legal.json)                   | The trigger test for legal, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw.          |
-| [`operations.json`](operations.json)         | The trigger test for operations, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw.     |
-| [`people.json`](people.json)                 | The trigger test for people, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw.         |
-| [`quality.json`](quality.json)               | The trigger test for quality, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw.        |
-| [`README.md`](README.md)                     | This file.                                                                                                        |
-| [`research.json`](research.json)             | The trigger test for research, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw.       |
-| [`sales.json`](sales.json)                   | The trigger test for sales, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw.          |
-| [`systems.json`](systems.json)               | The trigger test for systems, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw.        |
-| [`visualize.json`](visualize.json)           | The trigger test for visualize, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw.      |
+| Entry                                                            | Purpose                                                                                                                     |
+| :--------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------- |
+| [`administration.json`](administration.json)                     | The trigger test for administration, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw.           |
+| [`business-intelligence.json`](business-intelligence.json)       | The trigger test for business-intelligence, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw.    |
+| [`customer-experience.json`](customer-experience.json)           | The trigger test for customer-experience, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw.      |
+| [`finance-and-accounting.json`](finance-and-accounting.json)     | The trigger test for finance-and-accounting, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw.   |
+| [`human-resources.json`](human-resources.json)                   | The trigger test for human-resources, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw.          |
+| [`information-technology.json`](information-technology.json)     | The trigger test for information-technology, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw.   |
+| [`legal-and-compliance.json`](legal-and-compliance.json)         | The trigger test for legal-and-compliance, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw.     |
+| [`operations-and-logistics.json`](operations-and-logistics.json) | The trigger test for operations-and-logistics, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw. |
+| [`public-relations.json`](public-relations.json)                 | The trigger test for public-relations, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw.         |
+| [`quality-assurance.json`](quality-assurance.json)               | The trigger test for quality-assurance, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw.        |
+| [`README.md`](README.md)                                         | This file.                                                                                                                  |
+| [`research-and-development.json`](research-and-development.json) | The trigger test for research-and-development, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw. |
+| [`sales-and-marketing.json`](sales-and-marketing.json)           | The trigger test for sales-and-marketing, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw.      |
 
 <!-- AUTO-INDEX:END -->
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Tests for the develop skill's validator and packager.
+"""Tests for the research-and-development skill's validator and packager, which build every skill.
 
-WHY THIS EXISTS. `kit/skills/develop/scripts/validate.py` is Gate 1 for every
-skill and agent the develop skill builds, in every repository the home kit
+WHY THIS EXISTS. `kit/skills/research-and-development/scripts/validate.py` is Gate 1 for every
+skill and agent the research-and-development skill builds, in every repository the home kit
 reaches, and `package.py` builds the archive a person uploads to the Claude
 app. A check that passes a broken skill ships it everywhere; an archive that
 drops the team or changes its bytes on every rebuild cannot be trusted. The
@@ -29,7 +29,7 @@ import tempfile
 import unittest
 import zipfile
 
-SKILL_DIR = pathlib.Path(__file__).resolve().parents[2] / 'kit' / 'skills' / 'develop'
+SKILL_DIR = pathlib.Path(__file__).resolve().parents[2] / 'kit' / 'skills' / 'research-and-development'
 SCRIPTS = SKILL_DIR / 'scripts'
 sys.dont_write_bytecode = True  # keep the skill folder free of caches
 
@@ -279,7 +279,7 @@ class TestSkill(Fixture):
         self.assertError('needs a ## Boundaries section')
         self.setUp()
         self.edit('sample/SKILL.md', 'Body.', 'Body.\n\n## Bootstrap\n\nHow it began.')
-        self.assertError('belongs to develop alone')
+        self.assertError('belongs to research-and-development alone')
         self.setUp()
         self.edit('sample/SKILL.md', 'Body.', 'Read C:\\skills\\x first.')
         self.assertError('forward slashes')

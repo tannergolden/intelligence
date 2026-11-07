@@ -159,7 +159,7 @@ class TestSkills(Hub):
 
 
 class TestTeams(Hub):
-    """Every skill, agent and team passes develop's validator, and no team tops six agents."""
+    """Every skill, agent and team passes the skill validator, and no team tops five agents."""
 
     def department(self, size: int, home: str = kit.WORKFORCE_DIR) -> None:
         team = 'Sales'
@@ -175,17 +175,17 @@ class TestTeams(Hub):
         self.write(f'kit/skills/{skill}/Changelog.md', CHANGELOG)
         self.write(f'kit/skills/{skill}/assets/trigger-evals.json', TRIGGERS)
 
-    def test_a_department_of_six_is_sound(self) -> None:
-        self.department(6)
+    def test_a_department_of_five_is_sound(self) -> None:
+        self.department(5)
         self.assertEqual(self.problems(), [])
 
-    def test_a_department_of_seven_is_refused(self) -> None:
-        self.department(7)
-        self.assertProblem('7 agents; a team keeps at most its 6 most critical')
+    def test_a_department_of_six_is_refused(self) -> None:
+        self.department(6)
+        self.assertProblem('6 agents; a team keeps at most its 5 most critical')
 
-    def test_a_skills_own_team_of_seven_is_refused(self) -> None:
-        self.department(7, 'kit/skills/processing-invoices/agents')
-        self.assertProblem('processing-invoices/agents/Sales.md: 7 agents')
+    def test_a_skills_own_team_of_six_is_refused(self) -> None:
+        self.department(6, 'kit/skills/processing-invoices/agents')
+        self.assertProblem('processing-invoices/agents/Sales.md: 6 agents')
 
     def test_an_agent_breaking_develops_standard_is_refused(self) -> None:
         self.department(2)
@@ -284,13 +284,13 @@ class TestTheRealKit(unittest.TestCase):
         self.assertEqual(kit.problems(self.root), [])
 
     def test_the_hub_writes_every_skill(self) -> None:
-        # The hub writes every skill and agent the kit carries (ADR-0037), the company's departments among
-        # them, each a skill of its own (ADR-0038); none is copied from elsewhere.
+        # The hub writes every skill the kit carries (ADR-0037): twelve, one for each department (ADR-0039).
         bundle, _ = kit.bundle(self.root)
-        faculties = ['develop', 'discover', 'editorial', 'finance', 'identify', 'research', 'visualize']
-        company = ['analytics', 'board', 'communications', 'customers', 'legal', 'operations', 'people', 'quality',
-                   'sales', 'systems']
-        self.assertEqual(sorted(bundle['skills']), sorted(faculties + company))
+        departments = ['administration', 'business-intelligence', 'customer-experience', 'finance-and-accounting',
+                       'human-resources', 'information-technology', 'legal-and-compliance',
+                       'operations-and-logistics', 'public-relations', 'quality-assurance',
+                       'research-and-development', 'sales-and-marketing']
+        self.assertEqual(sorted(bundle['skills']), departments)
         self.assertEqual(sorted(bundle['subagents']), ['reviewer', 'worker'])
 
 

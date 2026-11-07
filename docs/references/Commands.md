@@ -207,14 +207,14 @@ python3 kit/guard.py --remind
 
 ---
 
-## 🧰 The develop Skill's Scripts
+## 🧰 The Skill Builder's Scripts
 
-The skill carries its own validator and packager, which work from any
-repository; their docstrings give every option.
+`research-and-development` carries the validator and packager every skill
+is built with, which work from any repository; their docstrings give every option.
 
 ```bash
-python3 kit/skills/develop/scripts/validate.py skill kit/skills/develop
-python3 kit/skills/develop/scripts/package.py kit/skills/develop --dry-run
+python3 kit/skills/research-and-development/scripts/validate.py skill kit/skills/research-and-development
+python3 kit/skills/research-and-development/scripts/package.py kit/skills/research-and-development --dry-run
 ```
 
 `validate.py` checks a `skill`, an `agent`, a `team` or a `library`, and exits

@@ -1,0 +1,41 @@
+{
+  "//": "The trigger test for legal-and-compliance, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw. Never edit it by hand.",
+  "skill": "legal-and-compliance",
+  "runs": 3,
+  "threshold": 0.5,
+  "should_trigger": [
+    "review this vendor contract before we sign it",
+    "redline the NDA a prospect sent our company",
+    "draft terms of service and a privacy policy for our app",
+    "do we need a DPA with our analytics provider",
+    "should my startup be an LLC or a Delaware C-corp",
+    "a competitor sent us a cease and desist letter, what do we do",
+    "make sure our cofounders and contractors assign their IP to the company",
+    "set up a compliance calendar for our company's filings",
+    "check this blog post for libel or copyright problems before we publish it",
+    "can our ad say the supplement is clinically proven",
+    "do we have to disclose that this influencer post is sponsored",
+    "can I use a photo I found online in our newsletter",
+    "review my apartment lease before I sign it",
+    "my landlord won't return my security deposit, what are my rights",
+    "help me draft a simple will now that we have a baby",
+    "is the non-compete in my job offer enforceable",
+    "send a request to make this data broker delete my information",
+    "a contractor took my deposit and never finished the job, can I take him to small claims"
+  ],
+  "should_not_trigger": [
+    "should we accept the acquisition offer for our company",
+    "model our cap table after the seed round",
+    "how much life insurance should I buy now that we have a baby",
+    "draft an offer letter for the engineer we want to hire",
+    "write the public statement about our data breach",
+    "make our blog post about the new pricing read better",
+    "fact-check the statistics in this article before we publish it",
+    "set up encryption and access controls for our customer database",
+    "someone got into my email account, help me lock everything down",
+    "build a cookie consent banner for our website",
+    "my new laptop arrived broken, help me get a refund from the store",
+    "find and hire a contractor to redo our kitchen",
+    "help me negotiate a higher salary in my job offer"
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "skill": "administration",
+  "note": "The write-gate in data form. Within an administration run the administration skill is the sole writer; this matrix gates the pen. The departments compose and return; administration writes the autonomous items and escalates the founder_gated items. A department skill called on its own holds its own records to the same matrix, and so does the Chief of Staff when it writes the Founder's knowledge repository with no skill holding the pen. See references/write-gate.md.",
+  "autonomous": [
+    "draft or update internal venture context files (Overview, Goals, Strategy, Log, and the department .md files)",
+    "compose models, plans, SOPs, drafts, memos, and analyses as returned content",
+    "append a decision or a completed deliverable to Log.md",
+    "file a decision memo to Administration/Decisions.md",
+    "update the venture stage in Overview.md when the real signals warrant",
+    "write the Founder's own goals, priorities, personal decision memos and commitment log, only into a repository whose instructions say it is a private one made to hold them, where its root and folder README.md files say; anywhere else they stay in the conversation",
+    "propose the Founder's week: the priorities, the calendar's conflicts, and what to decline or move"
+  ],
+  "founder_gated": [
+    "move, send, commit, or convert money or any financial asset, the Founder's own included (a payment, a purchase, a deposit)",
+    "sign, send, or agree to a contract, terms, or legal commitment, including accepting a job offer or signing a lease of the Founder's own",
+    "publish or send any external communication (press, a customer email, a public post, a personal email or message, a calendar invitation, acceptance or decline sent on the Founder's behalf)",
+    "change the Founder's calendar or act on their accounts",
+    "delete or overwrite a file you did not just create",
+    "change equity, the cap table, or ownership",
+    "create or delete a top-level folder",
+    "any irreversible external action"
+  ],
+  "never": [
+    "write the Founder's personal context into a repository whose instructions do not say it is a private one made to hold it"
+  ],
+  "backup_required_before": "editing any existing venture file, or any file of the Founder's own records, in a repository: its last state is committed first, since git history is the backup",
+  "founder_gated_note": "The first three founder_gated items, with the delete and the equity items, are the five red categories named in references/write-gate.md (the calendar item is the external-communication category applied to the Founder's own calendar and accounts); the last two (creating or deleting a top-level folder, and any irreversible external action) are the repository's structural boundary and the catch-all, so the list is longer than five by design, not a mismatch.",
+  "by_stage": {
+    "found": {"rule": "protect runway; nearly every consequential or unbudgeted action escalates to the Founder"},
+    "scale": {"rule": "within the approved budget line the owning department lead decides; unbudgeted or irreversible escalates"},
+    "maintain": {"rule": "within plan the department decides; cross-horizon reallocation or anything touching the core escalates"},
+    "personal": {"rule": "no stage and no autonomous threshold: every call about the Founder's own life is the Founder's, and every act that carries it out (paying, signing, accepting, sending, changing the calendar) waits for the Founder's confirmation"}
+  },
+  "thresholds": {
+    "note": "Concrete autonomous ceilings are Founder-set per venture; a seed startup and a scaled company carry very different numbers. Set them here when a venture is founded. Until a number is set, treat every spend, hire, and external action as Founder-gated (the safe default). The by_stage entries are the posture; these are the numbers. The Founder's own money has no autonomous ceiling.",
+    "found":    {"autonomous_spend_ceiling": "Founder-set (default 0: every spend escalates)", "autonomous_hires": 0},
+    "scale":    {"autonomous_spend_ceiling": "Founder-set, in-budget only", "autonomous_hires": "Founder-set, within the approved headcount plan"},
+    "maintain": {"autonomous_spend_ceiling": "Founder-set, in-plan only", "autonomous_hires": "Founder-set, within the approved headcount plan"},
+    "personal": {"autonomous_spend_ceiling": 0, "autonomous_commitments": 0}
+  },
+  "decider": {"reversible_and_in_mandate": "CEO", "irreversible_or_major": "Founder", "personal": "Founder"}
+}

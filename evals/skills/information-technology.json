@@ -1,0 +1,43 @@
+{
+  "//": "The trigger test for information-technology, taken from its assets/trigger-evals.json by .github/scripts/evals.py --draw. Never edit it by hand.",
+  "skill": "information-technology",
+  "runs": 3,
+  "threshold": 0.5,
+  "should_trigger": [
+    "set up SSO and MFA for all the tools our team uses",
+    "who should have admin access to our company Google Workspace",
+    "an employee leaves on Friday, plan the offboarding of their accounts",
+    "is it safe to connect this Zapier automation to our CRM",
+    "someone logged into our company email from another country last night, what do we do",
+    "write an access policy for our startup",
+    "list the tools our company runs on and who owns each one",
+    "we think an API key for our billing system leaked",
+    "automate the handoff from our website signup form to the support inbox",
+    "review the security risk of giving our marketing agency access to our ad accounts",
+    "threat-model the customer portal we just built before it goes live",
+    "review this pull request for security holes before we merge it",
+    "set up my new laptop and move everything over from the old one",
+    "my email account got hacked and it's sending spam to my contacts, what do I do",
+    "is this text from my bank a scam",
+    "set up a password manager for me and my partner",
+    "back up my phone photos so I never lose them",
+    "check whether my accounts have two-factor turned on and fix the weak spots",
+    "wipe my old phone safely before I sell it"
+  ],
+  "should_not_trigger": [
+    "build an internal admin web app for our support team",
+    "fix the failing CI pipeline in this repository",
+    "write a script that renames my photo files by date",
+    "QA test the new onboarding flow before we launch it",
+    "negotiate the renewal with our CRM vendor and compare its price to alternatives",
+    "what does GDPR require us to do with our customers' personal data",
+    "write my will so it says who gets my digital accounts",
+    "write the first-week onboarding plan for our new hire",
+    "draft the email telling customers about yesterday's outage",
+    "draw a diagram of how our tools connect to each other",
+    "should we cut our software budget to extend runway",
+    "my laptop died two months in, get the store to replace it under warranty",
+    "cancel the streaming subscriptions I never use",
+    "someone charged my credit card for things I didn't buy, how do I get the money back"
+  ]
+}
