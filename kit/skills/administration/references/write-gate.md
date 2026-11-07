@@ -25,7 +25,7 @@ The skill may write these into the venture's record (wherever the repository's i
 - **`Overview.md` and `Goals.md` updates** when the stage advances or the goals change, written by a review run.
 - **The `Administration/` governance record**: the decision memo (`references/memo.md`), the QBR pre-read, the operating-cadence record.
 - **Founding scaffold**: scaffold from the repository's venture template if its instructions name one, else from this skill's `templates/`, give each new file the frontmatter and naming the repository requires (`SKILL.md`, Where it runs), and stand up `Overview.md`/`Goals.md`/`Strategy.md` at the starting stage.
-- **The Founder's own records**, only in a repository whose instructions say it is a private one made to hold them, where its root and folder `README.md` files say each record goes: their goals and priorities, a personal decision memo, the commitment log, a proposed week. Anywhere else they stay in the conversation, and nothing about the Founder is written into a repository not made to hold it (the Constitution's SEC-003).
+- **The Founder's own records**, only in a repository whose instructions say it is a private one made to hold them, where those instructions say each record goes: their goals and priorities, a personal decision memo, the commitment log, a proposed week. Anywhere else they stay in the conversation, and nothing about the Founder is written into a repository not made to hold it (the Constitution's SEC-003).
 
 ### The four green preconditions (all must hold)
 

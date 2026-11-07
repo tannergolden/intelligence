@@ -49,7 +49,7 @@ The setup prompt below has the Chief of Staff install it all in one pass.
 | Its main job                | The agent's `description`                                                                                                                                                                                                                        |
 | Its instructions            | The body of its agent file, followed by its roster's "Global rules" section                                                                                                                                                                      |
 | The orchestrator            | [`administration/agents/Chief of Staff.md`](administration/agents/Chief%20of%20Staff.md), with [`administration/references/workforce.md`](administration/references/workforce.md) and [`write-gate.md`](administration/references/write-gate.md) |
-| Where records go            | Your knowledge repository's `README.md` files: the root one, and the one in each folder, which says what belongs there and how                                                                                                                   |
+| Where records go            | Your knowledge repository's `AGENTS.md`, the rules every AI follows there, then the `README.md` files it names: the root one, and the one in each folder, which says what belongs there and how                                                  |
 
 ### Departments And Group Sizes
 
@@ -90,8 +90,9 @@ holds its department and the Chief of Staff within six bots:
 - When two departments disagree, the Chief of Staff takes both answers to
   the Chief Executive Officer in Administration, and never picks one itself.
 - Only the Chief of Staff writes to your knowledge repository: decisions,
-  deliverables and the commitments they create, where that folder's
-  README.md says. Every other agent composes its work and hands it back.
+  deliverables and the commitments they create, by its `AGENTS.md` and
+  where that folder's README.md says. Every other agent composes its work
+  and hands it back.
 - Moving money, signing or sending a contract, sending anything outside
   the company or your household, deleting a file, and changing equity all
   wait for you to confirm in the conversation. No bot does them on its own.
@@ -124,7 +125,7 @@ You are the Chief of Staff for my company and my own affairs. Your task now is t
    b. Create a group named for the roster's title, holding every member and you.
    c. If the app refuses to add you because the group is full, leave the group without you, and create a two-bot group named "<department> Liaison" holding you and that department's lead. If it refuses one of the department's own members, stop on that department and report it; never leave an agent out silently.
 
-7. Work through my knowledge repository's READMEs. Before you write into any folder there, read the repository's root README.md and that folder's README.md: they say what belongs there and how. Only you write to it; every other bot gets only what you hand it. Nothing about me goes anywhere else.
+7. Work through my knowledge repository's own rules. Read its AGENTS.md first and follow it: the universal rules, then the rules for working with my personal knowledge. Before you write into any folder there, read the repository's root README.md and that folder's README.md: they say what belongs there and how. Only you write to it; every other bot gets only what you hand it. Nothing about me goes anywhere else.
 
 8. Hold the write-gate throughout. Change nothing in tannergolden/intelligence. Write nothing into my knowledge repository during setup. Move no money, sign or send nothing, and contact no one outside the company.
 

@@ -67,9 +67,11 @@ one and the one in each folder written into, which the skill reads first,
 along with the checks they name. With neither, it works in the conversation
 and writes a file only where the user asks. Every skill writes the user's
 personal context only into a repository that says it was made to hold it
-(SEC-003); anywhere else that stays in the conversation. So a vault
-generated from tannergolden/knowledge, which holds no AI instructions,
-explains each folder in its README, and every skill follows it.
+(SEC-003); anywhere else that stays in the conversation. So in a vault
+generated from tannergolden/knowledge, every skill reads its `AGENTS.md`,
+the universal rules and then the rules for working with personal knowledge,
+and the `README.md` files it names: the root one, which says where each
+kind of work goes, and the one in each folder the skill writes into.
 
 ### The departments' teams
 

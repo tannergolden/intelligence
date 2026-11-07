@@ -7,7 +7,7 @@
     "append a decision or a completed deliverable to Log.md",
     "file a decision memo to Administration/Decisions.md",
     "update the venture stage in Overview.md when the real signals warrant",
-    "write the Founder's own goals, priorities, personal decision memos and commitment log, only into a repository whose instructions say it is a private one made to hold them, where its root and folder README.md files say; anywhere else they stay in the conversation",
+    "write the Founder's own goals, priorities, personal decision memos and commitment log, only into a repository whose instructions say it is a private one made to hold them, where its instructions say; anywhere else they stay in the conversation",
     "propose the Founder's week: the priorities, the calendar's conflicts, and what to decline or move"
   ],
   "founder_gated": [
