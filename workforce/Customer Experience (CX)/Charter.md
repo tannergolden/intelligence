@@ -2,12 +2,12 @@
 name: 'customer-experience'
 title: 'Customer Experience (CX)'
 kind: 'department'
-description: "Each venture's customers after the sale: onboarding, success, support, renewals and the voice of the customer, and the owner as a customer: subscriptions, complaints, returns and warranties."
+description: 'Onboarding, success, support, renewals, members and community for whoever each venture serves, and the owner as a customer: subscriptions, complaints, refunds, returns and claims.'
 director: '⭐ Director of Customer Experience'
 members:
   [
     '⭐ Director of Customer Experience',
-    'Customer Success Manager',
+    'Customer & Member Success Manager',
     'Support Specialist',
   ]
 version: '1.0.0'
@@ -15,28 +15,30 @@ version: '1.0.0'
 
 ## Mission
 
-Get customers to the value they paid for, solve their problems once, and turn what they say into changes, and stand up for the owner when they are the customer.
+Get customers to the value they paid for, solve their problems once, turn what they say into changes, and stand up for the owner when they are the customer.
 
 ## Scope
 
 ### Ventures
 
-- Onboarding, account health and renewals, support, knowledge base, playbooks and the voice of the customer.
+- The service model, onboarding, account health and renewals, members and community, support on every channel, the knowledge base, playbooks and the voice of the customer.
 
 ### Personal
 
-- Subscriptions and service plans, renewal and cancel-by dates, complaints, returns, warranties and claims.
+- Subscriptions, memberships and service plans, renewal and cancel-by dates, complaints, refunds, returns, warranties, claims and booking changes.
 
 ## Who Owns What
 
-| Function                                                                    | Owner                              |
-| :-------------------------------------------------------------------------- | :--------------------------------- |
-| Service standards, triage priorities, voice of the customer, retention risk | ⭐ Director of Customer Experience |
-| The owner's advocate as a customer                                          | ⭐ Director of Customer Experience |
-| Onboarding, health, renewals, account reviews                               | Customer Success Manager           |
-| The owner's subscriptions, renewals and return windows                      | Customer Success Manager           |
-| Tickets, diagnoses, replies, knowledge base                                 | Support Specialist                 |
-| The owner's complaints, returns and claims                                  | Support Specialist                 |
+| Function                                                                                 | Owner                              |
+| :--------------------------------------------------------------------------------------- | :--------------------------------- |
+| Service standards, triage priorities, voice of the customer, retention risk              | ⭐ Director of Customer Experience |
+| The service model for whoever the venture serves                                         | ⭐ Director of Customer Experience |
+| The owner's advocate as a customer                                                       | ⭐ Director of Customer Experience |
+| Onboarding, training, health, renewals, account reviews                                  | Customer & Member Success Manager  |
+| Loyalty, referral, community and membership programs                                     | Customer & Member Success Manager  |
+| The owner's subscriptions, memberships, renewals and return windows                      | Customer & Member Success Manager  |
+| Tickets on every channel, diagnoses, replies, warranties and returns, the knowledge base | Support Specialist                 |
+| The owner's complaints, refunds, returns, claims and booking changes                     | Support Specialist                 |
 
 Anything in the department's scope that no row names belongs to the ⭐ Director of Customer Experience.
 
@@ -44,7 +46,7 @@ Anything in the department's scope that no row names belongs to the ⭐ Director
 
 - **Intake.** The Chief of Staff delivers requests from other departments to the ⭐ Director of Customer Experience, who assigns each to one seat.
 - **Mesh.** Any seat here may message any other directly to collaborate, review or hand work over.
-- **Review.** The Customer Success Manager reads each pattern the Support Specialist logs for its effect on account health.
+- **Review.** The Customer & Member Success Manager reads each pattern the Support Specialist logs for its effect on account health.
 - **Review.** The Support Specialist checks each onboarding plan for the problems it will cause.
 - **Disagreement.** The ⭐ Director of Customer Experience decides, and records the trade-off.
 
@@ -55,6 +57,7 @@ Always through the Chief of Staff, never directly:
 - Sales & Marketing, for expansion and renewal pricing.
 - Research & Development, for product defects and requests.
 - Legal & Compliance, for a dispute with a seller or a customer.
+- Operations & Logistics, for replacements and returned goods.
 
 ## Where The Work Lands
 

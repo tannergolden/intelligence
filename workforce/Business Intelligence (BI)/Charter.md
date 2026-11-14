@@ -2,13 +2,13 @@
 name: 'business-intelligence'
 title: 'Business Intelligence (BI)'
 kind: 'department'
-description: "Each venture's metric definitions, north star, scorecard, data, dashboards and every chart or diagram, and the owner's trackers and visuals."
+description: "Each venture's metric definitions, data and its governance, analyses, forecasts, experiments, pipelines and dashboards, and the owner's metrics, analyses and trackers."
 director: '⭐ Director of Business Intelligence'
 members:
   [
     '⭐ Director of Business Intelligence',
-    'Data Analyst',
-    'Data Visualization Designer',
+    'Analytics Engineer',
+    'Data Scientist',
   ]
 version: '1.0.0'
 ---
@@ -21,21 +21,25 @@ Give every number one definition and an honest grade, and make each visual answe
 
 ### Ventures
 
-- Governed metric definitions, the north star and scorecard, data sources, analyses, dashboards, charts and diagrams.
+- Governed metric definitions, the north star and scorecard, data governance, sources and pipelines, analyses, forecasts, experiments, dashboards and charts.
 
 ### Personal
 
-- The few metrics the owner tracks (habits, health routines, money), and their visuals.
+- The few metrics the owner tracks (habits, health routines, money, time), what they say, and their dashboards.
 
 ## Who Owns What
 
-| Function                                                     | Owner                                |
-| :----------------------------------------------------------- | :----------------------------------- |
-| Metric definitions, north star, evidence grades, visual form | ⭐ Director of Business Intelligence |
-| Choosing the owner's personal metrics                        | ⭐ Director of Business Intelligence |
-| Data sources, queries, analyses, reports, dashboard numbers  | Data Analyst                         |
-| The owner's trackers                                         | Data Analyst                         |
-| Charts, diagrams, dashboard layouts                          | Data Visualization Designer          |
+| Function                                                                          | Owner                                |
+| :-------------------------------------------------------------------------------- | :----------------------------------- |
+| Metric definitions, north star, evidence grades, the question each visual answers | ⭐ Director of Business Intelligence |
+| Data governance: sources, owners, access, retention                               | ⭐ Director of Business Intelligence |
+| Choosing the owner's personal metrics                                             | ⭐ Director of Business Intelligence |
+| Analyses, reports, forecasts, experiments, models, surveys                        | Data Scientist                       |
+| The sales forecast's independent check                                            | Data Scientist                       |
+| The owner's analyses of health, habit, money and time data                        | Data Scientist                       |
+| Data sources, pipelines, data models, data quality                                | Analytics Engineer                   |
+| Dashboards, and charts and diagrams of data                                       | Analytics Engineer                   |
+| The owner's trackers and personal dashboards                                      | Analytics Engineer                   |
 
 Anything in the department's scope that no row names belongs to the ⭐ Director of Business Intelligence.
 
@@ -43,8 +47,8 @@ Anything in the department's scope that no row names belongs to the ⭐ Director
 
 - **Intake.** The Chief of Staff delivers requests from other departments to the ⭐ Director of Business Intelligence, who assigns each to one seat.
 - **Mesh.** Any seat here may message any other directly to collaborate, review or hand work over.
-- **Review.** The Data Visualization Designer checks that each number shown matches the Data Analyst's result.
-- **Review.** The Data Analyst checks that each visual encodes the data honestly.
+- **Review.** The Data Scientist reconciles every dashboard's numbers with its own query before it is shared.
+- **Review.** The Analytics Engineer checks that every analysis uses the governed definition.
 - **Disagreement.** The ⭐ Director of Business Intelligence decides, and records the trade-off.
 
 ## What This Department Asks Others For
@@ -52,7 +56,8 @@ Anything in the department's scope that no row names belongs to the ⭐ Director
 Always through the Chief of Staff, never directly:
 
 - Every department, for its data and the decision each number serves.
-- Quality Assurance's Fact-Checker, to reproduce a number that informs a decision.
+- Quality Assurance's Internal Auditor, to reproduce a number that informs a decision.
+- Information Technology, for access to each data source.
 
 ## Where The Work Lands
 

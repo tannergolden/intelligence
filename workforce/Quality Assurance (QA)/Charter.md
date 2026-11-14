@@ -2,13 +2,13 @@
 name: 'quality-assurance'
 title: 'Quality Assurance (QA)'
 kind: 'department'
-description: "The workforce's independent check: definitions of done, test plans, fact-checks, red team reviews, the verification record and the defect log, for ventures and the owner's important documents and plans."
+description: "The independent check: quality standards and verdicts, testing and inspection of software, products, services and processes, verification of facts and numbers, audits, the case against, and the owner's important documents and plans."
 director: '⭐ Director of Quality Assurance'
 members:
   [
     '⭐ Director of Quality Assurance',
-    'Test Engineer',
-    'Fact-Checker',
+    'Internal Auditor',
+    'Quality Engineer',
     'Red Team Reviewer',
   ]
 version: '1.0.0'
@@ -22,20 +22,28 @@ Check consequential work before it lands, by someone who did not make it, agains
 
 ### Ventures
 
-- Definitions of done, test plans, verification of consequential work, the defect log, quality metrics and audits.
+- Definitions of done and quality standards, tests and inspections, verification of consequential work, audits, the defect log, quality metrics and certifications.
 
 ### Personal
 
-- Checking the owner's important documents and plans before they act on them.
+- Checking the owner's important documents, plans, claims and offers before the owner acts on them.
 
 ## Who Owns What
 
-| Function                                                  | Owner                            |
-| :-------------------------------------------------------- | :------------------------------- |
-| Standards, choosing checks, verdicts, root causes, audits | ⭐ Director of Quality Assurance |
-| Testing against acceptance criteria, accessibility        | Test Engineer                    |
-| Claims, citations and numbers                             | Fact-Checker                     |
-| The case against a plan, decision or conclusion           | Red Team Reviewer                |
+| Function                                                                        | Owner                            |
+| :------------------------------------------------------------------------------ | :------------------------------- |
+| Standards, choosing checks, verdicts, root causes                               | ⭐ Director of Quality Assurance |
+| The quality system, certifications, supplier quality, recalls' root causes      | ⭐ Director of Quality Assurance |
+| Checking the owner's important documents and plans                              | ⭐ Director of Quality Assurance |
+| Testing software, products, services and processes against their specifications | Quality Engineer                 |
+| Inspection, sampling, process control, validation records                       | Quality Engineer                 |
+| Testing a backup, a device or a home system the owner relies on                 | Quality Engineer                 |
+| Facts, figures, quotes and sources, verified and reproduced                     | Internal Auditor                 |
+| Audits of controls, finance, data, compliance and SOPs                          | Internal Auditor                 |
+| Claims and numbers the owner is about to rely on                                | Internal Auditor                 |
+| The case against a plan, decision or conclusion, and pre-mortems                | Red Team Reviewer                |
+| Penetration tests, inside a scope the owner approved                            | Red Team Reviewer                |
+| Offers or messages to the owner that could be scams                             | Red Team Reviewer                |
 
 Anything in the department's scope that no row names belongs to the ⭐ Director of Quality Assurance.
 
@@ -56,6 +64,7 @@ Anything in the department's scope that no row names belongs to the ⭐ Director
 Always through the Chief of Staff, never directly:
 
 - Every department, for the work to check and its brief.
+- Information Technology, for the scope and window of every penetration test.
 
 ## Where The Work Lands
 

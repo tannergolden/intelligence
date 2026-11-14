@@ -11,6 +11,10 @@
             "type": "string",
             "description": "The receiving agent's id."
           },
+          "venture": {
+            "type": "string",
+            "description": "The venture this is for: its folder name under Ventures/ in the owner's vault, personal for the owner's own life, or workforce for work on the workforce itself."
+          },
           "type": {
             "type": "string",
             "enum": [
@@ -70,6 +74,7 @@
         },
         "required": [
           "to",
+          "venture",
           "type",
           "thread",
           "subject",
@@ -234,6 +239,10 @@
             "type": "string",
             "description": "What is to be done, starting with a verb."
           },
+          "venture": {
+            "type": "string",
+            "description": "The venture this is for: its folder name under Ventures/ in the owner's vault, personal for the owner's own life, or workforce for work on the workforce itself."
+          },
           "owner": {
             "type": "string",
             "description": "The agent id or 'owner' who does it."
@@ -251,7 +260,7 @@
             "description": "Context, links and the done-test."
           }
         },
-        "required": ["title", "owner", "due", "remind_at", "notes"],
+        "required": ["title", "venture", "owner", "due", "remind_at", "notes"],
         "additionalProperties": false
       }
     },

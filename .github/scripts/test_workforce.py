@@ -107,14 +107,42 @@ class TheRealWorkforce(unittest.TestCase):
         folders = sorted(p.name for p in REAL.iterdir() if p.is_dir())
         self.assertEqual(folders, sorted(wf.DEPARTMENTS + (wf.CATCH_ALL, wf.SCHEMAS)))
 
-    def test_each_department_has_one_starred_director_and_at_most_four_specialists(self) -> None:
+    def test_each_department_has_one_starred_director_and_at_most_four_more(self) -> None:
         for folder in wf.DEPARTMENTS:
             team = self.workforce.team(folder)
             directors = [a for a in team if a.role == 'director']
             self.assertEqual(len(directors), 1, folder)
-            self.assertTrue(directors[0].name.startswith('\u2b50 Director of '), folder)
+            expected = '\u2b50 Chief Executive Officer' if folder == wf.EXECUTIVE_TEAM else '\u2b50 Director of '
+            self.assertTrue(directors[0].name.startswith(expected), folder)
+            # Five in a department, and the Chief of Staff, fill a Grok Bot group of six.
             self.assertLessEqual(len(team), 5, folder)
             self.assertIs(team[0], directors[0], folder)
+
+    def test_the_executive_team_runs_the_workforce_like_a_company(self) -> None:
+        team = self.workforce.team(wf.EXECUTIVE_TEAM)
+        ceo = team[0]
+        self.assertEqual(ceo.fields['reports_to'], 'owner')
+        for chief in team[1:]:
+            self.assertEqual(chief.role, 'executive')
+            self.assertTrue(chief.name.startswith('Chief '), chief.name)
+            self.assertEqual(chief.fields['reports_to'], ceo.id)
+            self.assertTrue(self.workforce.portfolio(chief), chief.name)
+        overseen = [f for m in team for f in self.workforce.portfolio(m)]
+        self.assertEqual(sorted(overseen), sorted(f for f in wf.DEPARTMENTS if f != wf.EXECUTIVE_TEAM))
+
+    def test_only_agents_that_change_files_carry_the_repository_standards(self) -> None:
+        for agent in self.workforce.agents:
+            prompt = wf.compose(self.workforce, agent)
+            self.assertEqual('# Repository Standards' in prompt, 'edit' in agent.fields['tools'], agent.name)
+
+    def test_the_chief_of_staff_routes_from_every_row_of_every_charter(self) -> None:
+        prompt = wf.compose(self.workforce, self.workforce.agent('chief-of-staff'))
+        for folder, charter in self.workforce.charters.items():
+            director = self.workforce.director(folder).name
+            for function, owner in wf.coverage_rows(charter.body):
+                label = 'Director' if owner == director else owner
+                line = re.escape(f'**{folder}**: ') + r'[^\n]*' + re.escape(f'{label}: ') + r'[^\n]*'
+                self.assertRegex(prompt, line + re.escape(function), folder)
 
     def test_the_root_holds_the_orchestrator_and_the_vault_manager(self) -> None:
         roots = sorted(a.name for a in self.workforce.agents if not a.department)
@@ -148,14 +176,19 @@ class TheTopology(unittest.TestCase):
         return {a.id for a in wf.peers(self.workforce, self.workforce.agent(key))}
 
     def test_a_specialist_reaches_its_department_and_the_hub_only(self) -> None:
-        reach = self.ids('controller')
-        team = {a.id for a in self.workforce.team('Finance & Accounting (F&A)')} - {'controller'}
+        reach = self.ids('financial-analyst')
+        team = {a.id for a in self.workforce.team('Finance & Accounting (F&A)')} - {'financial-analyst'}
         self.assertEqual(reach, team | {'chief-of-staff'})
 
-    def test_a_director_reaches_no_other_department(self) -> None:
+    def test_a_director_reaches_no_other_department_and_not_its_chief(self) -> None:
         reach = self.ids('director-of-operations')
         self.assertNotIn('director-of-finance', reach)
+        self.assertNotIn('chief-operating-officer', reach)
         self.assertIn('chief-of-staff', reach)
+
+    def test_a_chief_reaches_the_executive_team_and_the_hub(self) -> None:
+        team = {a.id for a in self.workforce.team(wf.EXECUTIVE_TEAM)} - {'chief-financial-officer'}
+        self.assertEqual(self.ids('chief-financial-officer'), team | {'chief-of-staff'})
 
     def test_the_vault_manager_reaches_the_hub_alone(self) -> None:
         self.assertEqual(self.ids('knowledge-vault-manager'), {'chief-of-staff'})
@@ -176,7 +209,7 @@ class EachCheckFails(unittest.TestCase):
             text = old.read_text(encoding='utf-8').replace('\u2b50 Director', 'Director')
             old.unlink()
             (folder / 'Director of Quality Assurance.md').write_text(text, encoding='utf-8')
-            self.assertProblem(root, 'only a Director, takes the star')
+            self.assertProblem(root, 'only its Director, takes the star')
 
     def test_a_star_with_a_variation_selector(self) -> None:
         with Copy() as root:
@@ -199,24 +232,24 @@ class EachCheckFails(unittest.TestCase):
 
     def test_a_sixth_agent(self) -> None:
         with Copy() as root:
-            folder = root / wf.SOURCE / 'Finance & Accounting (F&A)'
-            text = (folder / 'Controller.md').read_text(encoding='utf-8')
-            (folder / 'Auditor.md').write_text(text.replace('Controller', 'Auditor'), encoding='utf-8')
-            set_field(folder / 'Auditor.md', 'name', 'auditor')
+            folder = root / wf.SOURCE / 'Sales & Marketing (S&M)'
+            text = (folder / 'Account Executive.md').read_text(encoding='utf-8')
+            (folder / 'Sales Engineer.md').write_text(text.replace('Account Executive', 'Sales Engineer'), encoding='utf-8')
+            set_field(folder / 'Sales Engineer.md', 'name', 'sales-engineer')
             self.assertProblem(root, 'holds 6 agents')
 
     def test_a_charter_that_misses_an_agent(self) -> None:
         with Copy() as root:
             charter = root / wf.SOURCE / 'Human Resources (HR)' / 'Charter.md'
             members = wf.parse(charter.read_text(encoding='utf-8'))[0]['members']
-            set_field(charter, 'members', [m for m in members if m != 'Wellbeing Specialist'])
+            set_field(charter, 'members', [m for m in members if m != 'Health & Wellbeing Manager'])
             self.assertProblem(root, 'members must list exactly')
 
     def test_an_owner_from_another_department(self) -> None:
         with Copy() as root:
             charter = root / wf.SOURCE / 'Human Resources (HR)' / 'Charter.md'
             text = charter.read_text(encoding='utf-8')
-            text, count = re.subn(r'^(\| Wellbeing program[^|]*\|)[^|]*\|$', r'\1 Controller |', text, flags=re.M)
+            text, count = re.subn(r'^(\| The wellbeing program[^|]*\|)[^|]*\|$', r'\1 Financial Analyst |', text, flags=re.M)
             self.assertEqual(count, 1)
             charter.write_text(text, encoding='utf-8')
             self.assertProblem(root, 'outside the department')
@@ -271,10 +304,39 @@ class EachCheckFails(unittest.TestCase):
             edit(root / wf.SOURCE / 'Public Relations (PR)' / 'Editor.md', '## Mission', '# Editor\n\n## Mission')
             self.assertProblem(root, 'holds a top-level heading')
 
+    def test_an_executive_outside_the_executive_team(self) -> None:
+        with Copy() as root:
+            set_field(root / wf.SOURCE / 'Public Relations (PR)' / 'Editor.md', 'role', 'executive')
+            self.assertProblem(root, 'executives sit in Administration')
+            self.assertProblem(root, 'title starts with Chief')
+
+    def test_a_director_that_reports_to_a_specialist(self) -> None:
+        with Copy() as root:
+            set_field(root / wf.SOURCE / 'Finance & Accounting (F&A)' / '\u2b50 Director of Finance.md',
+                      'reports_to', 'financial-analyst')
+            self.assertProblem(root, 'must name the member of Administration')
+
+    def test_a_chief_with_no_departments(self) -> None:
+        with Copy() as root:
+            for folder in ('Information Technology (IT)', 'Research & Development (R&D)', 'Business Intelligence (BI)'):
+                [director] = (root / wf.SOURCE / folder).glob('\u2b50 *.md')
+                set_field(director, 'reports_to', 'chief-operating-officer')
+            self.assertProblem(root, 'oversees no department')
+
+    def test_a_missing_module(self) -> None:
+        with Copy() as root:
+            (root / wf.SOURCE / 'Repository Standards.md').unlink()
+            self.assertProblem(root, 'Repository Standards.md: is missing')
+
     def test_a_missing_section(self) -> None:
         with Copy() as root:
             edit(root / wf.SOURCE / 'Public Relations (PR)' / 'Editor.md', '## Done When', '## Finished')
             self.assertProblem(root, 'missing sections Done When')
+
+    def test_a_chief_of_staff_that_stops_keeping_the_workforce_current(self) -> None:
+        with Copy() as root:
+            edit(root / wf.SOURCE / 'Chief of Staff.md', '## Keeping The Workforce Current', '## Updates')
+            self.assertProblem(root, 'missing sections Keeping The Workforce Current')
 
     def test_a_bare_value(self) -> None:
         with Copy() as root:
@@ -365,14 +427,14 @@ class Rendering(unittest.TestCase):
     def test_claude_tools_follow_the_capabilities(self) -> None:
         files = self.render('claude')
         self.assertIn('tools: Read, Grep, Glob, WebFetch, WebSearch, Edit, Write, Bash\n',
-                      files['software-engineer.md'])
+                      files['full-stack-engineer.md'])
         self.assertIn('Agent', files['chief-of-staff.md'].split('---')[1])
-        self.assertNotIn('Edit', files['controller.md'].split('---')[1])
+        self.assertNotIn('Edit', files['financial-analyst.md'].split('---')[1])
 
     def test_a_grant_reaches_only_agents_with_the_capability(self) -> None:
         files = self.render('claude', grant=['mail=mcp__mail__search,mcp__mail__draft'])
         self.assertIn('mcp__mail__search, mcp__mail__draft', files['account-executive.md'].split('---')[1])
-        self.assertNotIn('mcp__mail', files['controller.md'].split('---')[1])
+        self.assertNotIn('mcp__mail', files['financial-analyst.md'].split('---')[1])
 
     def test_grok_build_agents_inherit_their_tools(self) -> None:
         for text in self.render('grok-build').values():
@@ -384,10 +446,10 @@ class Rendering(unittest.TestCase):
         except ImportError:
             self.skipTest('tomllib arrived in Python 3.11')
         files = self.render('codex')
-        data = tomllib.loads(files['tax-strategist.toml'])
-        self.assertEqual(data['name'], 'tax-strategist')
+        data = tomllib.loads(files['tax-accountant.toml'])
+        self.assertEqual(data['name'], 'tax-accountant')
         self.assertEqual(data['developer_instructions'],
-                         wf.compose(self.workforce, self.workforce.agent('tax-strategist')))
+                         wf.compose(self.workforce, self.workforce.agent('tax-accountant')))
 
     def test_the_bundle_holds_every_agent_tool_and_route(self) -> None:
         bundle = json.loads(self.render('bundle')['workforce.json'])
@@ -399,6 +461,8 @@ class Rendering(unittest.TestCase):
             self.assertLessEqual(set(agent['tools']), defined, agent['name'])
             self.assertLessEqual(set(agent['may_message']), ids, agent['name'])
         self.assertIn('\u2b50 Director of Finance', {agent['title'] for agent in bundle['agents']})
+        finance = next(d for d in bundle['departments'] if d['title'] == 'Finance & Accounting (F&A)')
+        self.assertEqual((finance['director'], finance['overseen_by']), ('director-of-finance', 'chief-financial-officer'))
         self.assertIn('properties', bundle['envelope'])
 
     def test_each_flavor_wraps_tools_its_own_way(self) -> None:
@@ -416,7 +480,7 @@ class Rendering(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.render('ollama')
         files = self.render('ollama', model='local-model')
-        self.assertTrue(files['controller.Modelfile'].split('\n')[1] == 'FROM local-model')
+        self.assertTrue(files['financial-analyst.Modelfile'].split('\n')[1] == 'FROM local-model')
 
     def test_text_mirrors_the_source_names(self) -> None:
         files = self.render('text')
@@ -427,9 +491,9 @@ class Rendering(unittest.TestCase):
         plain = self.render('antigravity')
         self.assertTrue(all('\ntools:' not in text.split('\n---\n')[0] for text in plain.values()))
         self.assertIn('mainAgent: true', plain['chief-of-staff.md'].split('\n---\n')[0])
-        self.assertNotIn('mainAgent', plain['controller.md'].split('\n---\n')[0])
+        self.assertNotIn('mainAgent', plain['financial-analyst.md'].split('\n---\n')[0])
         granted = self.render('antigravity', grant=['read=read_file'])
-        self.assertIn('tools: ["read_file"]', granted['controller.md'])
+        self.assertIn('tools: ["read_file"]', granted['financial-analyst.md'])
 
     def test_grok_bot_pins_the_checkout_commit_by_default(self) -> None:
         commit = wf.commit_of(wf.ROOT)
@@ -445,6 +509,7 @@ class Rendering(unittest.TestCase):
             message = wf.binding(self.workforce, agent, 'v1.0.0')
             self.assertLessEqual(len(message), 2000, agent.name)
             self.assertIn('/blob/v1.0.0/workforce/', message)
+            self.assertEqual('Repository%20Standards.md' in message, 'edit' in agent.fields['tools'], agent.name)
             for url in re.findall(r'https://\S+', message):
                 self.assertNotRegex(url, r'[ &()\u2b50]', url)
 
@@ -455,9 +520,9 @@ class TheGuide(unittest.TestCase):
     def test_the_guide_template_keeps_every_fixed_line_of_the_binding(self) -> None:
         guide = (wf.ROOT / 'docs' / 'technical' / 'The-Workforce.md').read_text(encoding='utf-8')
         workforce = wf.problems_in(REAL)[0]
-        message = wf.binding(workforce, workforce.agent('controller'), 'v1.0.0')
+        message = wf.binding(workforce, workforce.agent('financial-analyst'), 'v1.0.0')
         fixed = [line.lstrip('- ').strip() for line in message.split('\n')
-                 if line.strip() and 'Controller' not in line and 'workforce/' not in line
+                 if line.strip() and 'Financial Analyst' not in line and 'workforce/' not in line
                  and 'Finance' not in line]
         self.assertTrue(fixed)
         for line in fixed:
@@ -486,10 +551,10 @@ class Installing(unittest.TestCase):
 
     def test_install_never_overwrites_a_file_that_is_not_its_own(self) -> None:
         self.agents.mkdir(parents=True)
-        mine = self.agents / 'controller.md'
-        mine.write_text('my own controller\n', encoding='utf-8')
+        mine = self.agents / 'financial-analyst.md'
+        mine.write_text('my own analyst\n', encoding='utf-8')
         self.assertEqual(self.run_main('install', '--target', 'claude'), 1)
-        self.assertEqual(mine.read_text(encoding='utf-8'), 'my own controller\n')
+        self.assertEqual(mine.read_text(encoding='utf-8'), 'my own analyst\n')
 
     def test_install_removes_what_it_no_longer_ships_and_keeps_the_rest(self) -> None:
         self.agents.mkdir(parents=True)

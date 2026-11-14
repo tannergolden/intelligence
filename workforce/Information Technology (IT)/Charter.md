@@ -2,13 +2,13 @@
 name: 'information-technology'
 title: 'Information Technology (IT)'
 kind: 'department'
-description: "Each venture's systems, access, backups, security program, runbooks and incidents, and the owner's devices, accounts, home network and digital security."
+description: "Each venture's systems, tools, access, help desk, backups, domains and security, and the owner's devices, accounts, home network, tech support and personal security."
 director: '⭐ Director of Information Technology'
 members:
   [
     '⭐ Director of Information Technology',
-    'Systems Administrator',
     'Security Engineer',
+    'Systems Administrator',
   ]
 version: '1.0.0'
 ---
@@ -21,22 +21,24 @@ Know every system, keep it running and recoverable, let in only the right people
 
 ### Ventures
 
-- The systems register and architecture, setup and access, backups and runbooks, domains, the security program and incidents.
+- The systems register and architecture, tools and their administration, setup and access, the help desk, backups and runbooks, domains and email sending, the security program and incidents.
 
 ### Personal
 
-- The owner's devices, accounts and tools, backups, the home network, and security checkups, scams and breaches.
+- The owner's devices, accounts and tools, backups, the home network and smart home, tech support, and security checkups, scams, breaches and identity theft.
 
 ## Who Owns What
 
-| Function                                                         | Owner                                 |
-| :--------------------------------------------------------------- | :------------------------------------ |
-| Systems register, architecture, system choices, security program | ⭐ Director of Information Technology |
-| The owner's device and account inventory                         | ⭐ Director of Information Technology |
-| Setup, access, backups, runbooks, domains, outages               | Systems Administrator                 |
-| The owner's devices, backups and home network                    | Systems Administrator                 |
-| Threat and access reviews, vulnerabilities, incidents            | Security Engineer                     |
-| The owner's security checkups, scams and breaches                | Security Engineer                     |
+| Function                                                                            | Owner                                 |
+| :---------------------------------------------------------------------------------- | :------------------------------------ |
+| Systems register, architecture, system choices, security program                    | ⭐ Director of Information Technology |
+| Software licenses, single sign-on, the workforce's own tool access                  | ⭐ Director of Information Technology |
+| The owner's device and account inventory                                            | ⭐ Director of Information Technology |
+| Setup, access, backups, runbooks, domains, email sending, outages                   | Systems Administrator                 |
+| The help desk, and each tool's administration, the CRM included                     | Systems Administrator                 |
+| The owner's devices, backups, home network, smart home and tech support             | Systems Administrator                 |
+| Threat and access reviews, vulnerabilities, incidents, privacy's technical controls | Security Engineer                     |
+| The owner's security checkups, scams, breaches and identity theft                   | Security Engineer                     |
 
 Anything in the department's scope that no row names belongs to the ⭐ Director of Information Technology.
 
@@ -56,9 +58,10 @@ Anything in the department's scope that no row names belongs to the ⭐ Director
 
 Always through the Chief of Staff, never directly:
 
-- Legal & Compliance, for privacy and breach-notification duties.
+- Legal & Compliance, for privacy and breach-notification duties, and continuity plans.
 - Human Resources, for joiners and leavers.
 - Research & Development, for software builds to review.
+- Quality Assurance, for penetration tests inside an approved scope.
 
 ## Where The Work Lands
 

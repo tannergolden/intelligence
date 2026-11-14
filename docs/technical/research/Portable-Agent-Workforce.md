@@ -224,6 +224,15 @@ Keep each agent as one Markdown file with flat, quoted frontmatter: `name` as th
 
 ---
 
+## 📅 Log Entry: 2026-11-14 - The Grok Bot App
+
+- **Re-checked**: the Grok Bot claims, for an owner who sets the workforce up in the app rather than through the API, against six of xAI's pages fetched directly: [get started](https://docs.x.ai/grok-bot/get-started), [Bots](https://docs.x.ai/grok-bot/bots), [chat and collaboration](https://docs.x.ai/grok-bot/chat-and-collaboration), [computer and apps](https://docs.x.ai/grok-bot/computer-and-apps), [how Grok Bot works](https://docs.x.ai/grok-bot/how-grok-bot-works) and the [FAQ](https://docs.x.ai/grok-bot/faq).
+- **Held**: a personal Bot takes its job in its first message and keeps it in memory, which is not a source of truth; a group holds two to six Bots; every Bot reply counts toward the weekly usage; the primary Bot coordinates the others.
+- **Drifted**: nothing was wrong, but the app's steps were missing. Grok Bot runs in its own desktop app (macOS, Windows, Linux) and phone apps, signed in with a Cursor account, and the FAQ lists no browser app; the grok.com release notes add Bots there for SuperGrok Heavy and SuperGrok Plus only. The app creates a first Bot named Grok Bot; the primary Bot is chosen at "Introducing your primary Bot" or replaced with "Replace with different Bot"; existing Bots "can also suggest or create a focused Bot", while a Bot creating a group chat is not documented; apps connect for every Bot from Connect apps; and an "Ask first" rule under Settings, General, Bot, Custom Rules stops every matching action until the owner approves its card.
+- **Outcome**: verified date unchanged, 2026-11-14; [The Workforce](../The-Workforce.md#-setting-up-grok-bot-in-the-app) now carries the app's steps.
+
+---
+
 ## ♻️ Reverification
 
 > [!NOTE]

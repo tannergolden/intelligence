@@ -2,14 +2,14 @@
 name: 'research-and-development'
 title: 'Research & Development (R&D)'
 kind: 'department'
-description: "Each venture's product vision, roadmap, requirements, experiments, research and builds, and the owner's research, learning, ideas and side projects."
+description: "Each venture's product vision, roadmap, requirements, research, design, brand identity, experiments and builds, and the owner's research, learning, ideas, designs and side projects."
 director: '⭐ Director of Research & Development'
 members:
   [
     '⭐ Director of Research & Development',
+    'Full-Stack Engineer',
+    'Product & Brand Designer',
     'Research Analyst',
-    'Product Designer',
-    'Software Engineer',
   ]
 version: '1.0.0'
 ---
@@ -22,21 +22,24 @@ Learn what is true, decide what is worth building, and build it, on evidence, fo
 
 ### Ventures
 
-- Product vision, roadmap and release plan, research, user research and design, requirements, experiments and software.
+- Product vision, roadmap and release plan, outside research, user research and design, the visual identity, requirements, experiments and software, for whatever the venture makes: an app, a website, a physical product, a menu, a course or a service.
 
 ### Personal
 
-- Research on any question, learning, ideas and side projects.
+- Research on any question, purchase or choice, learning, ideas, designs and side projects.
 
 ## Who Owns What
 
-| Function                                                         | Owner                                 |
-| :--------------------------------------------------------------- | :------------------------------------ |
-| Vision, roadmap, priorities, release plan, experiments, ideation | ⭐ Director of Research & Development |
-| The owner's research agenda and side projects                    | ⭐ Director of Research & Development |
-| Research reports and briefs, for ventures and the owner          | Research Analyst                      |
-| User research, requirements, design, prototypes                  | Product Designer                      |
-| Software, integrations, automations, agent skills                | Software Engineer                     |
+| Function                                                                                                               | Owner                                 |
+| :--------------------------------------------------------------------------------------------------------------------- | :------------------------------------ |
+| Vision, roadmap, priorities, release plan, experiments, ideation, for whatever the venture makes                       | ⭐ Director of Research & Development |
+| The owner's research agenda, learning, hobbies and side projects                                                       | ⭐ Director of Research & Development |
+| Outside research for every department: markets, competitors, technologies, suppliers, funding                          | Research Analyst                      |
+| Research behind any purchase or choice the owner makes, and recommendations                                            | Research Analyst                      |
+| User research, requirements, journeys, interface, product and packaging design, prototypes                             | Product & Brand Designer              |
+| The brand's visual identity and the design system                                                                      | Product & Brand Designer              |
+| Software end to end: websites, apps, APIs, data, integrations, automations, AI features, agent skills, their pipelines | Full-Stack Engineer                   |
+| The owner's personal website code, scripts and home automations                                                        | Full-Stack Engineer                   |
 
 Anything in the department's scope that no row names belongs to the ⭐ Director of Research & Development.
 
@@ -44,8 +47,8 @@ Anything in the department's scope that no row names belongs to the ⭐ Director
 
 - **Intake.** The Chief of Staff delivers requests from other departments to the ⭐ Director of Research & Development, who assigns each to one seat.
 - **Mesh.** Any seat here may message any other directly to collaborate, review or hand work over.
-- **Review.** The Product Designer checks every build against its design intent before it goes to Quality Assurance.
-- **Review.** The Research Analyst checks the evidence behind every requirement the Product Designer writes.
+- **Review.** The Product & Brand Designer checks every build against its design intent before it goes to Quality Assurance.
+- **Review.** The Research Analyst checks the evidence behind every requirement the Product & Brand Designer writes.
 - **Disagreement.** The ⭐ Director of Research & Development decides, and records the trade-off.
 
 ## What This Department Asks Others For
@@ -54,7 +57,8 @@ Always through the Chief of Staff, never directly:
 
 - Quality Assurance, to verify every build and every research report that informs a decision.
 - Customer Experience, for the voice of the customer.
-- Information Technology, for a security review of what is built.
+- Information Technology, for a security review of what is built, and the platforms it runs on.
+- Sales & Marketing, for positioning before the visual identity changes.
 
 ## Where The Work Lands
 

@@ -2,44 +2,47 @@
 name: 'operations-and-logistics'
 title: 'Operations & Logistics (O&L)'
 kind: 'department'
-description: "How each venture runs: processes and SOPs, programs, vendors and their costs, recurring tasks, logistics and the operations KPIs, and the owner's household, routines, travel, moves and contractors."
+description: "How each venture runs: processes and automations, programs and events, sourcing, inventory and logistics, sites, equipment and fleet, and the owner's household, routines, trips, moves, vehicles, pets and help at home."
 director: '⭐ Director of Operations'
 members:
   [
     '⭐ Director of Operations',
-    'Process Analyst',
+    'Process & Systems Analyst',
     'Program Manager',
-    'Vendor Manager',
+    'Property & Facilities Manager',
+    'Supply Chain & Procurement Manager',
   ]
 version: '1.0.0'
 ---
 
 ## Mission
 
-Make delivery reliable and cheap: find the constraint, write down how work runs, carry each change to done, and buy from the right suppliers.
+Make delivery reliable and cheap: find the constraint, write down how work runs, carry each change to done, buy and ship well, and keep every place and asset working.
 
 ## Scope
 
 ### Ventures
 
-- The operating model and KPIs, processes and SOPs, programs, vendors, recurring tasks, supply and logistics.
+- The operating model and KPIs, processes, SOPs and automations, programs and events, sourcing, inventory, production and logistics, and sites, equipment and fleet.
 
 ### Personal
 
-- The household as a system, routines and errands, a move, a trip or an event, and contractors and service providers.
+- The household as a system, routines and errands, trips, celebrations and moves, shopping and gifts, contractors, the home, vehicles, pets and help at home.
 
 ## Who Owns What
 
-| Function                                                | Owner                     |
-| :------------------------------------------------------ | :------------------------ |
-| Operating model, constraint, KPIs, supply and logistics | ⭐ Director of Operations |
-| The household as a system                               | ⭐ Director of Operations |
-| Processes, SOPs, runbooks, recurring tasks              | Process Analyst           |
-| The owner's routines, errands and checklists            | Process Analyst           |
-| Programs and projects to done                           | Program Manager           |
-| A move, a trip, a renovation or an event                | Program Manager           |
-| Vendors, procurement, the vendor register               | Vendor Manager            |
-| Contractors and service providers                       | Vendor Manager            |
+| Function                                                                                               | Owner                              |
+| :----------------------------------------------------------------------------------------------------- | :--------------------------------- |
+| Operating model, constraint, KPIs, the playbook for the venture's kind of business                     | ⭐ Director of Operations          |
+| The household as a system                                                                              | ⭐ Director of Operations          |
+| Processes, SOPs, runbooks, workflow maps, the records program, automation specifications               | Process & Systems Analyst          |
+| The owner's routines, errands and checklists                                                           | Process & Systems Analyst          |
+| Programs and projects to done, events, conferences, offsites                                           | Program Manager                    |
+| The owner's trips, celebrations and renovations                                                        | Program Manager                    |
+| Sourcing, purchasing, the vendor register, inventory, production planning, shipping, import and export | Supply Chain & Procurement Manager |
+| Contractors, service providers, shopping, gifts and deliveries                                         | Supply Chain & Procurement Manager |
+| Sites, maintenance, utilities, equipment, fleet, physical security, property                           | Property & Facilities Manager      |
+| The owner's homes, moves, vehicles, pets and help at home                                              | Property & Facilities Manager      |
 
 Anything in the department's scope that no row names belongs to the ⭐ Director of Operations.
 
@@ -47,17 +50,18 @@ Anything in the department's scope that no row names belongs to the ⭐ Director
 
 - **Intake.** The Chief of Staff delivers requests from other departments to the ⭐ Director of Operations, who assigns each to one seat.
 - **Mesh.** Any seat here may message any other directly to collaborate, review or hand work over.
-- **Review.** The Program Manager walks each new SOP before it is adopted.
-- **Review.** The Process Analyst reviews each program plan for the handoffs it creates.
+- **Review.** The Program Manager walks each new SOP before it is adopted; the Process & Systems Analyst reviews each program plan for the handoffs it creates.
+- **Review.** The Supply Chain & Procurement Manager compares quotes for every repair or renovation the Property & Facilities Manager plans.
 - **Disagreement.** The ⭐ Director of Operations decides, and records the trade-off.
 
 ## What This Department Asks Others For
 
 Always through the Chief of Staff, never directly:
 
-- Legal & Compliance, for vendor contract terms.
-- Finance & Accounting, for budgets and costs.
+- Legal & Compliance, for supplier and lease terms, permits and the safety program.
+- Finance & Accounting, for budgets, costs and payments.
 - Information Technology, for tools and automations.
+- Sales & Marketing, for the demand behind inventory and the online stores it ships for.
 
 ## Where The Work Lands
 

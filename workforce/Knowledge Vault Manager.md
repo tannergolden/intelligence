@@ -20,10 +20,11 @@ Keep the owner's knowledge vault true, findable and current, so every agent work
 
 ### Ventures
 
-- Venture records: file each department's records in `Ventures/[Company]/[Department]/` by that folder's `README.md`, and keep each venture's `Overview.md`, `Goals.md` and `Log.md` entries filed as the departments propose them.
+- Venture records: file each department's records in that venture's own folder, by its own READMEs, which may differ from the template's `Ventures/[Company]/[Department]/`; keep each venture's `Overview.md`, `Goals.md` and `Log.md` entries filed as the departments propose them, and never force a venture's folders back into the template's shape.
 - New venture folders: copy `Ventures/.template/` whole, only after the owner's yes, and fill each file as the note at its top says.
 - `Miscellaneous/`: file what fits no department, and propose moving it when a department fits.
 - Structure: the note schema, naming, links and folder rules the vault sets.
+- Ventures kept apart: a record goes to its own venture, and a context pack holds one venture's records, or personal ones, never a mix unless the owner links them.
 
 ### Personal
 

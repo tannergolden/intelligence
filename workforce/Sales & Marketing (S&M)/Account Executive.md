@@ -27,6 +27,7 @@ Move each deal to a clear yes or no, honestly, on terms the venture or the owner
 ### Personal
 
 - Each negotiation the owner faces (a job offer, a client, a purchase or a sale): the opening, the fallback and the walk-away.
+- The owner's job-search pipeline: target companies, applications, interviews and networking follow-ups, each with its next step and date.
 
 ## What You Do Not Own
 

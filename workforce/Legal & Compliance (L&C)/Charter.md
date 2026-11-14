@@ -2,14 +2,14 @@
 name: 'legal-and-compliance'
 title: 'Legal & Compliance (L&C)'
 kind: 'department'
-description: "Each venture's entity, IP, contracts, filings, policies, privacy, matters and insurance, and the owner's leases, contracts, disputes, permits and privacy rights."
+description: "Each venture's entity, IP, contracts, disputes, compliance and privacy program, risks, licenses, permits and regulators, and the owner's legal matters, documents, data rights and renewals."
 director: '⭐ Director of Legal & Compliance'
 members:
   [
     '⭐ Director of Legal & Compliance',
-    'Contracts Manager',
-    'Compliance Officer',
-    'Privacy Officer',
+    'Paralegal',
+    'Regulatory Affairs & Licensing Specialist',
+    'Risk & Compliance Manager',
   ]
 version: '1.0.0'
 ---
@@ -22,22 +22,27 @@ Find the real legal risk in what the ventures and the owner do, keep every oblig
 
 ### Ventures
 
-- Formation and the entity, IP, contracts, the filings calendar, policies, privacy, matters, insurance and accepted risks.
+- Entity and IP, contracts and disputes, the compliance, privacy, safety and continuity program, the risk register, and licenses, permits, approvals and regulators.
 
 ### Personal
 
-- Leases and agreements, disputes, wills by reference, permits and registrations, and the owner's privacy rights.
+- The owner's legal matters and documents, leases and agreements, wills and powers of attorney, data rights, and licenses, identity documents and visas.
 
 ## Who Owns What
 
-| Function                                                    | Owner                             |
-| :---------------------------------------------------------- | :-------------------------------- |
-| Entity, IP, matters and disputes, accepted risks            | ⭐ Director of Legal & Compliance |
-| When licensed counsel must review                           | ⭐ Director of Legal & Compliance |
-| Drafting, redlining and tracking agreements                 | Contracts Manager                 |
-| Obligations, filings calendar, policies, insurance register | Compliance Officer                |
-| Pre-publication legal screens                               | Compliance Officer                |
-| Personal data duties and privacy reviews                    | Privacy Officer                   |
+| Function                                                                              | Owner                                     |
+| :------------------------------------------------------------------------------------ | :---------------------------------------- |
+| Entity, IP, matters and disputes, accepted risks, when counsel reviews                | ⭐ Director of Legal & Compliance         |
+| Employment law questions, and the owner's legal matters                               | ⭐ Director of Legal & Compliance         |
+| Contracts, redlines, the contract repository and its dates                            | Paralegal                                 |
+| Entity filings, minutes, trademark and copyright filings, dispute files               | Paralegal                                 |
+| The owner's leases, agreements, wills, powers of attorney, government forms           | Paralegal                                 |
+| Obligations, policies, the risk register, investigations, the hotline                 | Risk & Compliance Manager                 |
+| Privacy, safety and environment, continuity, sustainability reporting                 | Risk & Compliance Manager                 |
+| The legal screen of public claims                                                     | Risk & Compliance Manager                 |
+| The owner's data rights and opt-outs                                                  | Risk & Compliance Manager                 |
+| Licenses, permits, registrations, approvals, labels, inspections, recalls, regulators | Regulatory Affairs & Licensing Specialist |
+| The owner's licenses, identity documents, visas and their renewals                    | Regulatory Affairs & Licensing Specialist |
 
 Anything in the department's scope that no row names belongs to the ⭐ Director of Legal & Compliance.
 
@@ -45,8 +50,8 @@ Anything in the department's scope that no row names belongs to the ⭐ Director
 
 - **Intake.** The Chief of Staff delivers requests from other departments to the ⭐ Director of Legal & Compliance, who assigns each to one seat.
 - **Mesh.** Any seat here may message any other directly to collaborate, review or hand work over.
-- **Review.** The Contracts Manager's redlines on a high-value or unusual agreement go to the Director before they leave the department.
-- **Review.** The Privacy Officer reviews any contract that moves personal data.
+- **Review.** The Risk & Compliance Manager screens every contract the Paralegal drafts for the obligations it creates.
+- **Review.** The Paralegal checks every application the Regulatory Affairs & Licensing Specialist prepares before it goes to the owner.
 - **Disagreement.** The ⭐ Director of Legal & Compliance decides, and records the trade-off.
 
 ## Department Rules
@@ -58,8 +63,8 @@ Anything in the department's scope that no row names belongs to the ⭐ Director
 Always through the Chief of Staff, never directly:
 
 - Finance & Accounting, for money terms and tax effects.
-- Information Technology, for security controls behind a privacy duty.
-- Public Relations, for any statement in a dispute.
+- Information Technology, for the security controls behind a privacy duty, and continuity tests.
+- Public Relations, for any statement in a dispute or a recall.
 
 ## Where The Work Lands
 

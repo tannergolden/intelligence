@@ -4,7 +4,10 @@
   "title": "Workforce message",
   "type": "object",
   "properties": {
-    "id": { "type": "string", "description": "This message's unique id." },
+    "id": {
+      "type": "string",
+      "description": "This message's unique id."
+    },
     "thread": {
       "type": "string",
       "description": "The id of the request this message belongs to; a new request's own id."
@@ -30,11 +33,18 @@
       "type": "string",
       "description": "The receiving agent's id, or owner."
     },
+    "venture": {
+      "type": "string",
+      "description": "The venture this is for: its folder name under Ventures/ in the owner's vault, personal for the owner's own life, or workforce for work on the workforce itself."
+    },
     "via": {
       "type": "string",
       "description": "chief-of-staff when the Chief of Staff relayed it between departments; empty otherwise."
     },
-    "subject": { "type": "string", "description": "One line naming the work." },
+    "subject": {
+      "type": "string",
+      "description": "One line naming the work."
+    },
     "context": {
       "type": "string",
       "description": "Everything the receiver needs, restated, never 'see above'."
@@ -76,7 +86,9 @@
     },
     "attachments": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "Paths or links, each with its date."
     },
     "sent": {
@@ -90,6 +102,7 @@
     "type",
     "from",
     "to",
+    "venture",
     "subject",
     "context",
     "gate",

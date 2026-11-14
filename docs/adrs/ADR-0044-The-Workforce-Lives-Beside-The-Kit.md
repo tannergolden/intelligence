@@ -1,6 +1,6 @@
 <!--
 title: '📄 ADR-0044: THE WORKFORCE LIVES BESIDE THE KIT'
-description: 'The hub holds an agent workforce in workforce/: a Chief of Staff, a Knowledge Vault Manager and the venture template''s twelve departments of at most five agents, one Markdown file each, rendered for local apps, API orchestrators and Grok by workforce.py, and installed only on request, never by the home kit.'
+description: 'The hub holds an agent workforce in workforce/: a Chief of Staff, a Knowledge Vault Manager and the venture template''s twelve departments of at most five agents, run as a company by an executive team, one Markdown file each, rendered for local apps, API orchestrators and Grok by workforce.py, and installed only on request, never by the home kit.'
 type: record
 status: 'Proposed'
 date: '2026-11-14'
@@ -14,7 +14,7 @@ evidence: '[Portable Agent Workforce](https://github.com/tannergolden/intelligen
 
 <a name="top"></a>
 
-**Forty-five agents, written once in the hub, installed only where someone asks for them.**
+**Forty-eight agents, written once in the hub, installed only where someone asks for them.**
 
 _Beside the kit, never inside it._
 
@@ -39,6 +39,8 @@ _Beside the kit, never inside it._
 
 [ADR-0041](ADR-0041-The-Kit-Carries-No-Skills.md) took the twelve department skills and their teams out of the kit, and with them every agent the owner used, leaving the hub to the rules, `AGENTS.md` and the sync. The owner then asked for a workforce of agents stored in the hub and laid out like the departments of the venture template in tannergolden/knowledge: one Chief of Staff orchestrating every department, a ⭐ Director and up to four specialists in each, a Knowledge Vault Manager for the owner's vault, a mesh inside each department and a hub between them, every agent serving the ventures and the owner's own life, and the whole workforce installable by the Chief of Staff locally, in the cloud and on Grok.
 
+The owner then shaped it further: run it as a corporation, with Chiefs who run the workforce beside the Chief of Staff instead of a Director of Administration; serve several ventures of any kind, each with its own context in the vault's `Ventures/`; cover every function any business needs and every kind of help a person needs, with broad roles in place of narrow ones and at most five agents to a department; have every agent that works in a repository know the owner's engineering standards in tannergolden/standards; and have the Chief of Staff check the hub every week and update the workforce itself.
+
 `AGENTS.md` asks first before any skill or subagent joins the kit, because the kit installs into every app on every machine, and ADR-0041 gave the reason: about 2.5 MB of skills that every install carried, and machinery that served nothing else.
 
 ---
@@ -48,7 +50,9 @@ _Beside the kit, never inside it._
 - **The owner's request**: the agent files live in the hub, mirror the venture template's departments, carry the names the owner reads, and install in three environments.
 - **The kit stays the guard alone**: nothing reaches a machine that did not ask for it, and `make agents` neither installs nor removes an agent.
 - **One source**: each agent written once, every environment's copy rendered from it and checked.
-- **Each seat earns its place**: the fewest agents that cover every function of each department, with one owner for each function.
+- **Run as a company**: an executive team over the departments, each Director reporting to one Chief, and every message between departments still through one hub.
+- **Any business, many ventures, and the owner's life**: every function covered once, whatever the venture's industry, and no venture's facts carried into another's work.
+- **Each seat earns its place**: the fewest agents that cover every function of each department, with one owner for each function and broad roles where one seat can cover what several narrow ones did, inside the roughly fifty Bots Grok Bot allows.
 - **Rules held in code where an app allows it**: who may message whom, and which acts wait on the owner.
 
 ---
@@ -69,7 +73,11 @@ _Beside the kit, never inside it._
 
 - **`workforce/` mirrors `Ventures/.template/`**: the twelve department folders under the template's own names, `Miscellaneous/` with no team, and the Chief of Staff and the Knowledge Vault Manager at the root.
 - **One Markdown file per agent**, its file named for the role with spaces, a Director's led by the star U+2B50. Its frontmatter's `name` is the ASCII id every app calls it by, and `title` the persona's name. Its prompt is composed of the agent, its department's charter and `Protocol.md`, so no rule is written twice.
-- **Forty-five agents**: the two at the root and forty-three in the departments, a seat added beside the Director only for independence, expertise with a high cost of error, or a cadence of its own. Only Finance & Accounting fills five seats.
+- **Forty-eight agents**: the two at the root and forty-six in the departments, a seat added beside the Director only for independence, expertise with a high cost of error, or a cadence of its own, and a broad role preferred over narrow ones.
+- **An executive team**: Administration holds the ⭐ Chief Executive Officer and four Chiefs, for finance, operations, technology and revenue. Every other Director reports to the Chief who oversees its department, and reaches it, as anyone outside the department does, through the Chief of Staff; `workforce.py check` holds every reporting line.
+- **Many ventures**: every message names its venture or says it is personal, and every agent reads that venture's own files first, since its folders may differ from the template's.
+- **The standards where the work is**: every agent that changes files carries `Repository Standards.md`, which says where the owner's engineering standards are, which guide to read before each kind of change and which rule wins.
+- **Kept current by the Chief of Staff**: it checks the hub's newest release at least once a week and updates every installed copy and Bot itself, the protocol's one standing yes; deleting a Bot still waits on the owner.
 - **Hub and spoke between departments, a mesh inside each**: the Chief of Staff carries every message between departments, word for word on the way back, and is the only way to the Knowledge Vault Manager, the vault's one writer. Money, contracts, outside messages, deletions, equity, live systems and the owner's profile wait on the owner's yes for the exact act.
 - **`.github/scripts/workforce.py` checks and renders it** for Claude Code (whose folder VS Code and Cursor also read), Grok Build, Copilot, Codex, Antigravity, an API bundle for OpenAI, xAI, Anthropic and local servers, Ollama, plain text, and Grok Bot's first messages. `make lint` runs its check. Every copy carries a mark of its own, not the kit's, so the kit's sweep never touches it, and `install` never overwrites a file it did not write.
 - **The Chief of Staff installs it**, from a bootstrap prompt for a terminal and one for Grok Bot, in [The Workforce](../technical/The-Workforce.md).
@@ -93,7 +101,7 @@ Option 1 brings back what ADR-0041 removed: every agent in every app on every ma
 ### Option 1: Back In The Kit
 
 - ✅ Every machine has the workforce with nothing more to run
-- ❌ Every app on every machine loads forty-five agents, and the kit grows back the machinery ADR-0041 removed
+- ❌ Every app on every machine loads forty-eight agents, and the kit grows back the machinery ADR-0041 removed
 
 ### Option 2: Beside The Kit
 
@@ -111,6 +119,7 @@ Option 1 brings back what ADR-0041 removed: every agent in every app on every ma
 
 - [The Workforce](../technical/The-Workforce.md): the layout, the agent file, the seats, the protocol and the installs
 - [Portable Agent Workforce](../technical/research/Portable-Agent-Workforce.md): the research behind the format, the names and the Grok setup
+- [Broad Roles For The Workforce](../technical/research/Broad-Roles-For-The-Workforce.md): the research behind the seats, and what each covers
 - [ADR-0041](ADR-0041-The-Kit-Carries-No-Skills.md): the kit carries no skills, which this leaves as it is
 - [ADR-0040](ADR-0040-Every-Agent-Belongs-To-A-Department.md): the last workforce, whose seats this one was measured against
 

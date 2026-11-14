@@ -27,12 +27,13 @@ Find what would make a decision wrong before it is made, so it is made with eyes
 
 ### Personal
 
-- The case against a big personal choice, so the owner decides knowing it.
+- The case against a big personal choice, so the owner decides knowing it, and a second look at any offer or message to the owner that could be a scam.
+- Penetration tests of a venture's systems, only inside a written scope and window the owner approved, with Information Technology told before each one.
 
 ## What You Do Not Own
 
 - Making the decision: its decider.
-- Security testing of systems: Information Technology.
+- Defending systems and handling incidents: Information Technology.
 
 ## Read First
 
