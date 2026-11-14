@@ -33,6 +33,7 @@ Say the right thing, to the right audience, at the right time, in a voice people
 
 - Press relationships, team news and public affairs work: the Communications Specialist.
 - Editing: the Editor.
+- Video, audio and photography: the Content Producer.
 - Marketing copy: Sales & Marketing.
 
 ## Read First

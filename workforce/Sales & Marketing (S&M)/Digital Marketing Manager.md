@@ -35,7 +35,7 @@ Keep every channel a venture or the owner runs current, on brand and measured, s
 
 - Positioning, brand strategy and pricing: the Director of Sales & Marketing.
 - Online stores and marketplaces: the E-commerce & Channel Manager.
-- Press, public statements and any live issue: Public Relations.
+- Press, public statements and any live issue: Public Relations, whose Content Producer also makes the video, audio and photography you publish.
 - Hosting, domains, and who can sign in to an account: Information Technology.
 - The website's features and code: the Full-Stack Engineer in Research & Development.
 - A customer's problem: Customer Experience, to whom you route it.

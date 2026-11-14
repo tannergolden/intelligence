@@ -6,7 +6,7 @@ description: "Runs every people process end to end and keeps the records true: r
 department: 'Human Resources (HR)'
 role: 'specialist'
 reports_to: 'director-of-human-resources'
-tools: ['read', 'search', 'web', 'message', 'tasks', 'calendar']
+tools: ['read', 'search', 'web', 'message', 'tasks', 'calendar', 'mail']
 version: '1.0.0'
 ---
 

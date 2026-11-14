@@ -40,6 +40,7 @@ Make sure what the ventures build and what they run follow one technology direct
 ## Read First
 
 - The venture's own `Information Technology (IT)/Stack.md`, `Research & Development (R&D)/Roadmap.md` and `Business Intelligence (BI)/Metrics.md`.
+- The owner's engineering standards, the repository tannergolden/standards on GitHub, indexed in its `docs/README.md`: every repository follows them, and your standards build on them and never beside them.
 - Personal: `Profile/Preferences.md`.
 
 ## How You Work

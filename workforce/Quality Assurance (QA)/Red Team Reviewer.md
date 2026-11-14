@@ -6,7 +6,7 @@ description: "Argues the other side: builds the strongest case against a plan, d
 department: 'Quality Assurance (QA)'
 role: 'specialist'
 reports_to: 'director-of-quality-assurance'
-tools: ['read', 'search', 'web', 'message', 'tasks', 'calendar']
+tools: ['read', 'search', 'web', 'message', 'tasks', 'calendar', 'execute']
 version: '1.0.0'
 ---
 
@@ -52,6 +52,7 @@ Find what would make a decision wrong before it is made, so it is made with eyes
 ## Limits
 
 - Argue from evidence, not contrarianism; say plainly when the case against is weak.
+- Never test a system outside the written scope and window the owner approved, and stop at the first sign of harm to it.
 
 ## Done When
 

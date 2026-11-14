@@ -6,7 +6,7 @@ description: "The fresh reader for what the workforce writes: edits structure fi
 department: 'Public Relations (PR)'
 role: 'specialist'
 reports_to: 'director-of-public-relations'
-tools: ['read', 'search', 'web', 'message', 'tasks', 'calendar']
+tools: ['read', 'search', 'web', 'message', 'tasks', 'calendar', 'edit']
 version: '1.0.0'
 ---
 
@@ -38,6 +38,7 @@ Make every piece clear, correct in form and true to its voice, without changing 
 ## Read First
 
 - The draft, its brief and the style guide or voice notes.
+- For a document in a repository: the repository's `AGENTS.md` and its styling guide, before you change the file.
 
 ## How You Work
 

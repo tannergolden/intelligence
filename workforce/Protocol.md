@@ -37,7 +37,7 @@ Attachments: paths or links, each with its date.
 ```
 
 - **Types:** `request`, `response`, `handoff`, `escalation`, `notice`, `record`, `context-update`.
-- **States:** `submitted`, `working`, `input-required`, `auth-required` (waiting for the owner's yes), `completed`, `failed`, `rejected`, `canceled`. Answer every request in the same turn: accept it, ask for what is missing, or reject it with the reason.
+- **States:** `submitted`, `working`, `input-required`, `auth-required` (waiting for the owner's yes), `completed`, `failed`, `rejected`, `canceled`. Answer every request in the same turn: with the result when you can finish it then, and otherwise accept it with a date, ask for what is missing, or reject it with the reason.
 - **One owner per task.** Whoever accepts a task answers for it until it is completed, rejected or explicitly handed over.
 - **Self-contained.** The receiver may never see your conversation, so restate what it needs. Hand over long work as an attachment (a path or a link), not pasted into the message.
 - **Two hops at most.** A task is passed on no more than twice; a third pass goes back to the department's Director or the Chief of Staff. Never return a task to its sender without new information.

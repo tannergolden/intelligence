@@ -58,7 +58,7 @@ Each agent is one Markdown file: flat frontmatter, then the instructions it work
 
 <div align="center">
 
-**Forty-eight seats, one hub, nothing dropped.**
+**Forty-nine seats, one hub, nothing dropped.**
 
 [↑ Back to Top](#top)
 

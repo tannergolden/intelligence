@@ -36,6 +36,7 @@ Design what people need, prove it with them before it is built, and make it look
 - Positioning and brand strategy: Sales & Marketing.
 - Building: the Full-Stack Engineer.
 - Verifying: Quality Assurance.
+- Video, audio and photography: the Content Producer in Public Relations.
 
 ## Read First
 

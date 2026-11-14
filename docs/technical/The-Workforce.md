@@ -1,6 +1,6 @@
 <!--
 title: '👔 THE WORKFORCE'
-description: 'The agent workforce in workforce/: forty-eight agents in the venture template''s twelve departments, run as a company by an executive team, how an agent file is built, why each department has the seats it has, how agents talk, and how the Chief of Staff installs it locally, in the cloud and on Grok Bot, and keeps it current.'
+description: 'The agent workforce in workforce/: forty-nine agents in the venture template''s twelve departments, run as a company by an executive team, how an agent file is built, why each department has the seats it has, how agents talk, and how the Chief of Staff installs it locally, in the cloud and on Grok Bot, and keeps it current.'
 type: guide
 keywords: [agents, workforce, chief of staff, multi-agent, grok, subagents]
 -->
@@ -11,7 +11,7 @@ keywords: [agents, workforce, chief of staff, multi-agent, grok, subagents]
 
 <a name="top"></a>
 
-**Forty-eight AI agents, one per seat, for every venture the owner runs and for the owner's own life.**
+**Forty-nine AI agents, one per seat, for every venture the owner runs and for the owner's own life.**
 
 _One source. Rendered for every app. One hub between departments._
 
@@ -224,23 +224,23 @@ another already does is folded into it. `workforce.py check` holds the result:
 every owner in a charter's table is a member of the department, and every member
 owns at least one row.
 
-| Department                   | Seats | Overseen by                | The ⭐ Director owns                                                       | The specialists                                                                                                                                                                                                                 | Replaced or folded in                                                                                                              |
-| :--------------------------- | :---: | :------------------------- | :------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------- |
-| Administration               |   5   | The owner                  | The ⭐ Chief Executive Officer: direction, and decisions across portfolios | Chief Operating Officer, Chief Financial Officer, Chief Technology Officer, Chief Revenue Officer: each oversees departments                                                                                                    | The Director of Administration, the Strategy & Planning Manager and the Corporate Secretary                                        |
-| Finance & Accounting (F&A)   |   4   | Chief Financial Officer    | The books, close, cash, payroll runs, controls and cap table               | Financial Analyst: models and forecasts (independence). Tax Accountant: every tax (expertise). Personal Financial Planner: the owner's household money (expertise)                                                              | The Controller, into the Director; the Tax Strategist; the Investment & Insurance Advisor, two occupations with no shared work     |
-| Legal & Compliance (L&C)     |   4   | Chief Financial Officer    | Entity, IP, disputes, accepted risks, when a lawyer reviews                | Paralegal: documents and filings (cadence). Risk & Compliance Manager: compliance, privacy, risk, safety, continuity (expertise). Regulatory Affairs & Licensing Specialist: licenses, permits, regulators (cadence, expertise) | The Contracts Manager, filed under procurement by O\*NET; the Compliance Officer and the Privacy Officer, one occupation           |
-| Sales & Marketing (S&M)      |   5   | Chief Revenue Officer      | The number, pricing, positioning and brand, the sales process              | Account Executive: deals. Digital Marketing Manager: every marketing channel. Partnerships & Development Manager: partners, sponsors, donors, grants. E-commerce & Channel Manager: online stores and marketplaces              | The Marketing Manager, the same occupation; the Revenue Operations Analyst, split among the Director, Business Intelligence and IT |
-| Operations & Logistics (O&L) |   5   | Chief Operating Officer    | The operating model, the constraint, a playbook for each kind of business  | Process & Systems Analyst: SOPs and automations. Program Manager: projects, events, trips. Supply Chain & Procurement Manager: buying, inventory, shipping. Property & Facilities Manager: sites, homes, vehicles, pets         | The Process Analyst and the Vendor Manager, widened                                                                                |
-| Human Resources (HR)         |   3   | Chief Operating Officer    | Org design, hiring decisions, pay, policies, the owner's career            | HR Generalist: every people process (cadence). Health & Wellbeing Manager: wellbeing, health paperwork, care for dependents (expertise, and it never diagnoses)                                                                 | The People Operations Specialist and the Wellbeing Specialist, widened                                                             |
-| Information Technology (IT)  |   3   | Chief Technology Officer   | The systems register, system choices, the security program                 | Systems Administrator: systems, access, help desk, the owner's tech (cadence). Security Engineer: defense and incidents (independence, expertise)                                                                               | Penetration tests, moved to Quality Assurance                                                                                      |
-| Research & Development (R&D) |   4   | Chief Technology Officer   | Vision, roadmap, experiments, for whatever the venture makes               | Research Analyst: all outside research. Product & Brand Designer: research, products, interfaces, packaging, identity. Full-Stack Engineer: all software and its pipelines                                                      | The Software Engineer and the Product Designer, widened                                                                            |
-| Business Intelligence (BI)   |   3   | Chief Technology Officer   | Metric definitions, evidence grades, data governance                       | Data Scientist: analyses, forecasts, experiments. Analytics Engineer: pipelines, data models, dashboards (each checks the other's numbers)                                                                                      | The Data Analyst and the Data Visualization Designer                                                                               |
-| Quality Assurance (QA)       |   4   | ⭐ Chief Executive Officer | Standards, verdicts, root causes, the quality system                       | Quality Engineer: tests and inspections. Internal Auditor: facts, numbers and controls. Red Team Reviewer: the case against, and penetration tests: three checks, none by the maker                                             | The Test Engineer and the Fact-Checker, widened                                                                                    |
-| Customer Experience (CX)     |   3   | Chief Revenue Officer      | Service standards, the voice of the customer, retention risk               | Customer & Member Success Manager: onboarding, renewals, members, community (cadence). Support Specialist: tickets on every channel (cadence)                                                                                   | The Customer Success Manager, widened to members                                                                                   |
-| Public Relations (PR)        |   3   | ⭐ Chief Executive Officer | Messaging, reputation, crises, internal communications, public affairs     | Communications Specialist: the press, the team, investors, communities, officials (expertise). Editor: editing, technical writing, translation (independence)                                                                   | The Media Relations Manager, widened                                                                                               |
-| Miscellaneous                |   0   |                            | No department                                                              | No team: the Chief of Staff routes the work, the Knowledge Vault Manager files it                                                                                                                                               |                                                                                                                                    |
+| Department                   | Seats | Overseen by                | The ⭐ Director owns                                                       | The specialists                                                                                                                                                                                                                                     | Replaced or folded in                                                                                                              |
+| :--------------------------- | :---: | :------------------------- | :------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------- |
+| Administration               |   5   | The owner                  | The ⭐ Chief Executive Officer: direction, and decisions across portfolios | Chief Operating Officer, Chief Financial Officer, Chief Technology Officer, Chief Revenue Officer: each oversees departments                                                                                                                        | The Director of Administration, the Strategy & Planning Manager and the Corporate Secretary                                        |
+| Finance & Accounting (F&A)   |   4   | Chief Financial Officer    | The books, close, cash, payroll runs, controls and cap table               | Financial Analyst: models and forecasts (independence). Tax Accountant: every tax (expertise). Personal Financial Planner: the owner's household money (expertise)                                                                                  | The Controller, into the Director; the Tax Strategist; the Investment & Insurance Advisor, two occupations with no shared work     |
+| Legal & Compliance (L&C)     |   4   | Chief Financial Officer    | Entity, IP, disputes, accepted risks, when a lawyer reviews                | Paralegal: documents and filings (cadence). Risk & Compliance Manager: compliance, privacy, risk, safety, continuity (expertise). Regulatory Affairs & Licensing Specialist: licenses, permits, regulators (cadence, expertise)                     | The Contracts Manager, filed under procurement by O\*NET; the Compliance Officer and the Privacy Officer, one occupation           |
+| Sales & Marketing (S&M)      |   5   | Chief Revenue Officer      | The number, pricing, positioning and brand, the sales process              | Account Executive: deals. Digital Marketing Manager: every marketing channel. Partnerships & Development Manager: partners, sponsors, donors, grants. E-commerce & Channel Manager: online stores and marketplaces                                  | The Marketing Manager, the same occupation; the Revenue Operations Analyst, split among the Director, Business Intelligence and IT |
+| Operations & Logistics (O&L) |   5   | Chief Operating Officer    | The operating model, the constraint, a playbook for each kind of business  | Process & Systems Analyst: SOPs and automations. Program Manager: projects, events, trips. Supply Chain & Procurement Manager: buying, inventory, shipping. Property & Facilities Manager: sites, homes, vehicles, pets                             | The Process Analyst and the Vendor Manager, widened                                                                                |
+| Human Resources (HR)         |   3   | Chief Operating Officer    | Org design, hiring decisions, pay, policies, the owner's career            | HR Generalist: every people process (cadence). Health & Wellbeing Manager: wellbeing, health paperwork, care for dependents (expertise, and it never diagnoses)                                                                                     | The People Operations Specialist and the Wellbeing Specialist, widened                                                             |
+| Information Technology (IT)  |   3   | Chief Technology Officer   | The systems register, system choices, the security program                 | Systems Administrator: systems, access, help desk, the owner's tech (cadence). Security Engineer: defense and incidents (independence, expertise)                                                                                                   | Penetration tests, moved to Quality Assurance                                                                                      |
+| Research & Development (R&D) |   4   | Chief Technology Officer   | Vision, roadmap, experiments, for whatever the venture makes               | Research Analyst: all outside research. Product & Brand Designer: research, products, interfaces, packaging, identity. Full-Stack Engineer: all software and its pipelines                                                                          | The Software Engineer and the Product Designer, widened                                                                            |
+| Business Intelligence (BI)   |   3   | Chief Technology Officer   | Metric definitions, evidence grades, data governance                       | Data Scientist: analyses, forecasts, experiments. Analytics Engineer: pipelines, data models, dashboards (each checks the other's numbers)                                                                                                          | The Data Analyst and the Data Visualization Designer                                                                               |
+| Quality Assurance (QA)       |   4   | ⭐ Chief Executive Officer | Standards, verdicts, root causes, the quality system                       | Quality Engineer: tests and inspections. Internal Auditor: facts, numbers and controls. Red Team Reviewer: the case against, and penetration tests: three checks, none by the maker                                                                 | The Test Engineer and the Fact-Checker, widened                                                                                    |
+| Customer Experience (CX)     |   3   | Chief Revenue Officer      | Service standards, the voice of the customer, retention risk               | Customer & Member Success Manager: onboarding, renewals, members, community (cadence). Support Specialist: tickets on every channel (cadence)                                                                                                       | The Customer Success Manager, widened to members                                                                                   |
+| Public Relations (PR)        |   4   | ⭐ Chief Executive Officer | Messaging, reputation, crises, internal communications, public affairs     | Communications Specialist: the press, the team, investors, communities, officials (expertise). Content Producer: video, audio, podcasts and photos for every department (expertise). Editor: editing, technical writing, translation (independence) | The Media Relations Manager, widened; the Content Producer is new                                                                  |
+| Miscellaneous                |   0   |                            | No department                                                              | No team: the Chief of Staff routes the work, the Knowledge Vault Manager files it                                                                                                                                                                   |                                                                                                                                    |
 
-**Forty-six agents in the departments, and two at the root: forty-eight**, two
+**Forty-seven agents in the departments, and two at the root: forty-nine**, one
 under the roughly fifty Bots Grok Bot allows. Administration, Sales & Marketing
 and Operations & Logistics fill all five seats.
 
@@ -263,13 +263,13 @@ functions that only some kinds of business have, and the seat that owns each:
 | Guests, patients, tenants, students                    | Hospitality, healthcare, real estate, education            | Support Specialist, under the Director of Customer Experience's service model      |
 | Internal communications, public affairs                | Anyone with staff; regulated industries                    | Communications Specialist                                                          |
 | Technical documentation, translation                   | Software, cross-border trade, healthcare                   | Editor                                                                             |
+| Video, audio, podcasts and photography                 | Every business with an audience; creators and media most   | Content Producer                                                                   |
 | Events and conferences                                 | Hospitality, nonprofits, marketing                         | Program Manager                                                                    |
 | Business continuity, the risk register, sustainability | Every business                                             | Risk & Compliance Manager                                                          |
 
 What no table names goes to the Director whose department is closest, and the
 protocol has every seat work as the venture's own industry does, under its
-rules. Audio and video production for a media venture is the one function only
-partly covered, by the Editor and the Product & Brand Designer.
+rules.
 
 ### What A Person Needs, And Who Covers It
 
@@ -290,6 +290,7 @@ partly covered, by the Editor and the Product & Brand Designer.
 | Research behind any choice, and recommendations                              | Research Analyst                                              |
 | Personal brand, social media, personal website                               | Digital Marketing Manager                                     |
 | Important writing, speeches, interviews                                      | Director of Public Relations and Communications Specialist    |
+| Videos, a podcast, photos and albums                                         | Content Producer                                              |
 | Subscriptions, complaints, refunds, returns, claims with companies           | Customer & Member Success Manager and Support Specialist      |
 | Data rights and opt-outs                                                     | Risk & Compliance Manager                                     |
 | Personal metrics, trackers, dashboards                                       | Data Scientist and Analytics Engineer                         |
@@ -535,8 +536,8 @@ there, and Cursor reads both `~/.claude/agents/` and `~/.codex/agents/`, so
    Director as a subagent, and a Director its specialists, which Claude Code
    allows three levels deep.
 
-All forty-eight descriptions together come to about 20,600 characters, some
-5,000 tokens, well under the 15,000 tokens at which Claude Code warns at
+All forty-nine descriptions together come to about 21,100 characters, some
+5,500 tokens, well under the 15,000 tokens at which Claude Code warns at
 startup. To keep them out
 of sessions that have nothing to do with the workforce, install into a working
 folder's own agents folder instead of your home's:
@@ -593,7 +594,7 @@ With the Claude Agent SDK, each bundle agent becomes an `AgentDefinition`,
 its `instructions` as the `prompt`. Claude Managed Agents nest only one level
 and take at most twenty predefined agents, so they hold the Chief of Staff with
 its twelve Directors and the Knowledge Vault Manager, or one department at a
-time, but not all forty-eight as one tree.
+time, but not all forty-nine as one tree.
 
 ### On Grok
 
@@ -604,7 +605,7 @@ time, but not all forty-eight as one tree.
 | **Grok Build** | `install --target grok-build`, then `GROK_AGENT=chief-of-staff grok`; a headless run takes `grok -p` with `--agent chief-of-staff` and `--trust`, and a subagent cannot start another |
 
 **Grok Bot fits the workforce, with four limits.** xAI documents roughly fifty
-Bots to an account, and the workforce needs forty-eight. A group chat holds two
+Bots to an account, and the workforce needs forty-nine. A group chat holds two
 to six Bots, so a department of at most five and the Chief of Staff fill one
 exactly, and the Knowledge Vault Manager takes no group: the Chief of Staff
 messages it directly. A personal Bot has no field for instructions, so each one
@@ -629,8 +630,8 @@ below follows xAI's Grok Bot documentation as read on 2026-11-14.
   a linked SuperGrok, SuperGrok Plus, SuperGrok Heavy or X Premium+
   subscription; a legacy Cursor Pro, Pro+, Ultra or Teams plan includes it too.
   Plus and Free do not.
-- **Room for forty-eight Bots.** xAI gives an account roughly fifty, and the
-  workforce takes forty-eight, the Chief of Staff included. Delete Bots you no
+- **Room for forty-nine Bots.** xAI gives an account roughly fifty, and the
+  workforce takes forty-nine, the Chief of Staff included. Delete Bots you no
   longer use first; hiding one from the sidebar keeps it.
 - **Your knowledge vault** as a private GitHub repository, made from the
   tannergolden/knowledge template, with a folder in `Ventures/` for each
@@ -850,7 +851,7 @@ option is in [Commands](../references/Commands.md#-workforcepy).
 
 <div align="center">
 
-**One source, forty-eight seats, and every message through one hub.**
+**One source, forty-nine seats, and every message through one hub.**
 
 [↑ Back to Top](#top)
 

@@ -14,7 +14,7 @@ evidence: '[Portable Agent Workforce](https://github.com/tannergolden/intelligen
 
 <a name="top"></a>
 
-**Forty-eight agents, written once in the hub, installed only where someone asks for them.**
+**Forty-nine agents, written once in the hub, installed only where someone asks for them.**
 
 _Beside the kit, never inside it._
 
@@ -73,7 +73,7 @@ The owner then shaped it further: run it as a corporation, with Chiefs who run t
 
 - **`workforce/` mirrors `Ventures/.template/`**: the twelve department folders under the template's own names, `Miscellaneous/` with no team, and the Chief of Staff and the Knowledge Vault Manager at the root.
 - **One Markdown file per agent**, its file named for the role with spaces, a Director's led by the star U+2B50. Its frontmatter's `name` is the ASCII id every app calls it by, and `title` the persona's name. Its prompt is composed of the agent, its department's charter and `Protocol.md`, so no rule is written twice.
-- **Forty-eight agents**: the two at the root and forty-six in the departments, a seat added beside the Director only for independence, expertise with a high cost of error, or a cadence of its own, and a broad role preferred over narrow ones.
+- **Forty-nine agents**: the two at the root and forty-seven in the departments, a seat added beside the Director only for independence, expertise with a high cost of error, or a cadence of its own, and a broad role preferred over narrow ones.
 - **An executive team**: Administration holds the ⭐ Chief Executive Officer and four Chiefs, for finance, operations, technology and revenue. Every other Director reports to the Chief who oversees its department, and reaches it, as anyone outside the department does, through the Chief of Staff; `workforce.py check` holds every reporting line.
 - **Many ventures**: every message names its venture or says it is personal, and every agent reads that venture's own files first, since its folders may differ from the template's.
 - **The standards where the work is**: every agent that changes files carries `Repository Standards.md`, which says where the owner's engineering standards are, which guide to read before each kind of change and which rule wins.
@@ -101,7 +101,7 @@ Option 1 brings back what ADR-0041 removed: every agent in every app on every ma
 ### Option 1: Back In The Kit
 
 - ✅ Every machine has the workforce with nothing more to run
-- ❌ Every app on every machine loads forty-eight agents, and the kit grows back the machinery ADR-0041 removed
+- ❌ Every app on every machine loads forty-nine agents, and the kit grows back the machinery ADR-0041 removed
 
 ### Option 2: Beside The Kit
 

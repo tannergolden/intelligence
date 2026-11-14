@@ -24,7 +24,7 @@ _Every claim sourced. Every report dated._
 ## 🎯 Bottom Line
 
 > [!IMPORTANT]
-> **Replace narrow seats with the broad occupations whose task lists cover them, fold the seats that repeat one occupation, and spend the freed seats on the functions the old roster missed.** O\*NET 31.0 shows the Marketing Manager and the Digital Marketing Manager are one occupation, the Director of Finance and the Controller share most of their work, and the Compliance Officer and the Privacy Officer are titles of one occupation, while a Full-Stack Engineer, a Supply Chain Manager, a Quality Engineer and an HR Generalist each cover what two narrower seats did. That frees seats for facilities, licensing, partnerships and fundraising, and online stores, and keeps the workforce at forty-eight agents, under the roughly fifty Bots Grok Bot allows. Licensed roles lend their analysis and drafting, never their license. Confidence is medium: the task lists are official, but the breadth counts are this research's own measure.
+> **Replace narrow seats with the broad occupations whose task lists cover them, fold the seats that repeat one occupation, and spend the freed seats on the functions the old roster missed.** O\*NET 31.0 shows the Marketing Manager and the Digital Marketing Manager are one occupation, the Director of Finance and the Controller share most of their work, and the Compliance Officer and the Privacy Officer are titles of one occupation, while a Full-Stack Engineer, a Supply Chain Manager, a Quality Engineer and an HR Generalist each cover what two narrower seats did. That frees seats for facilities, licensing, partnerships and fundraising, and online stores, and keeps the workforce under the roughly fifty Bots Grok Bot allows: forty-eight agents as first filed, forty-nine with the Content Producer the pass left as an option. Licensed roles lend their analysis and drafting, never their license. Confidence is medium: the task lists are official, but the breadth counts are this research's own measure.
 
 ---
 
@@ -119,6 +119,15 @@ Adopt the broad roles: forty-six agents in the departments and forty-eight in al
 - **Overall confidence**: Medium
 - **What would change this conclusion**: a venture whose work one seat cannot carry, which would earn a seat elsewhere or split a department; xAI documenting a Bot limit other than about fifty, or that group chats count toward it.
 - **Known gaps**: the Chief Revenue Officer, the Analytics Engineer, the Partnerships & Development Manager and the Red Team Reviewer beyond penetration testing combine documented occupations, since no task list carries those titles; audio and video production for a media venture is only partly covered.
+
+---
+
+## 📅 Log Entry: 2026-11-14 - Reverification
+
+- **Re-checked**: the one gap the filing entry left open, audio and video production, against the pass's own notes: it listed a Content Producer as an optional forty-ninth seat, on O\*NET's [Producers and Directors](https://www.onetonline.org/link/summary/27-2012.00) task list.
+- **Held**: every finding, and every other seat.
+- **Drifted**: the conclusion's count. An audit of the workforce on the same day seated the Content Producer in Public Relations, since video, audio and photography serve every department and no seat owned them: forty-seven agents in the departments and forty-nine in all, one under Grok Bot's roughly fifty.
+- **Outcome**: verified date unchanged, 2026-11-14; [The Workforce](../The-Workforce.md#-the-minimum-viable-workforce) carries the roster.
 
 ---
 
