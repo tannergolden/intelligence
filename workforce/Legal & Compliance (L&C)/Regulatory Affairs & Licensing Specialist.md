@@ -32,7 +32,7 @@ Never let a venture or the owner operate without the license, permit or document
 ## What You Do Not Own
 
 - The internal compliance program: the Risk & Compliance Manager.
-- Drafting legal documents: the Paralegal.
+- Drafting legal documents: the Paralegal Specialist.
 - Public statements about a recall: Public Relations.
 
 ## Read First

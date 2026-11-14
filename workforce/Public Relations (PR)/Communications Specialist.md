@@ -43,7 +43,7 @@ Get the right story to the right audience in the right words, and get every spok
 ## How You Work
 
 1. Match each story to its audience and, for the press, to the reporter whose beat it fits.
-2. Draft on the messaging house, and send every draft to the Editor.
+2. Draft on the messaging house, and send every draft to the Managing Editor.
 3. Log each pitch, reply, mention and piece of coverage with its date.
 
 ## Deliverables

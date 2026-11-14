@@ -7,7 +7,7 @@
     "Controller": "⭐ Director of Finance",
     "Tax Strategist": "Tax Accountant",
     "Investment & Insurance Advisor": "Personal Financial Planner",
-    "Contracts Manager": "Paralegal",
+    "Contracts Manager": "Paralegal Specialist",
     "Compliance Officer": "Risk & Compliance Manager",
     "Privacy Officer": "Risk & Compliance Manager",
     "Marketing Manager": "Digital Marketing Manager",
@@ -23,6 +23,8 @@
     "Test Engineer": "Quality Engineer",
     "Fact-Checker": "Internal Auditor",
     "Customer Success Manager": "Customer & Member Success Manager",
-    "Media Relations Manager": "Communications Specialist"
+    "Media Relations Manager": "Communications Specialist",
+    "Editor": "Managing Editor",
+    "Paralegal": "Paralegal Specialist"
   }
 }

@@ -163,6 +163,11 @@ class TheRealWorkforce(unittest.TestCase):
                 line = re.escape(f'**{folder}**: ') + r'[^\n]*' + re.escape(f'{label}: ') + r'[^\n]*'
                 self.assertRegex(prompt, line + re.escape(function), folder)
 
+    def test_every_title_has_at_least_two_words(self) -> None:
+        for agent in self.workforce.agents:
+            words = [word for word in agent.name.split() if re.search('[A-Za-z0-9]', word)]
+            self.assertGreaterEqual(len(words), 2, agent.name)
+
     def test_the_root_holds_the_orchestrator_and_the_vault_manager(self) -> None:
         roots = sorted(a.name for a in self.workforce.agents if not a.department)
         self.assertEqual(roots, ['Chief of Staff', 'Knowledge Vault Manager'])
@@ -237,15 +242,23 @@ class EachCheckFails(unittest.TestCase):
             old.rename(folder / '\u2b50\ufe0f Director of Quality Assurance.md')
             self.assertProblem(root, 'variation selector')
 
+    def test_a_title_of_one_word(self) -> None:
+        with Copy() as root:
+            path = root / wf.SOURCE / 'Public Relations (PR)' / 'Managing Editor.md'
+            set_field(path, 'title', 'Editor')
+            set_field(path, 'name', 'editor')
+            path.rename(path.with_name('Editor.md'))
+            self.assertProblem(root, r'Editor\.md: a title takes at least two words')
+
     def test_a_decomposed_name(self) -> None:
         with Copy() as root:
-            path = root / wf.SOURCE / 'Public Relations (PR)' / 'Editor.md'
+            path = root / wf.SOURCE / 'Public Relations (PR)' / 'Managing Editor.md'
             path.rename(path.with_name('Re\u0301sume\u0301 Editor.md'))
             self.assertProblem(root, 'not NFC')
 
     def test_an_underscore_in_a_name(self) -> None:
         with Copy() as root:
-            path = root / wf.SOURCE / 'Public Relations (PR)' / 'Editor.md'
+            path = root / wf.SOURCE / 'Public Relations (PR)' / 'Managing Editor.md'
             path.rename(path.with_name('Copy_Editor.md'))
             self.assertProblem(root, 'underscore')
 
@@ -275,13 +288,13 @@ class EachCheckFails(unittest.TestCase):
 
     def test_a_name_that_is_not_the_slug_of_the_title(self) -> None:
         with Copy() as root:
-            set_field(root / wf.SOURCE / 'Public Relations (PR)' / 'Editor.md', 'name', 'copy-editor')
-            self.assertProblem(root, 'name must be "editor"')
+            set_field(root / wf.SOURCE / 'Public Relations (PR)' / 'Managing Editor.md', 'name', 'copy-editor')
+            self.assertProblem(root, 'name must be "managing-editor"')
 
     def test_names_that_differ_only_in_case(self) -> None:
         # Names only, never the disk: a case-insensitive filesystem would hold one file, not two.
-        found = wf.name_problems(['workforce/Public Relations (PR)/Editor.md',
-                                  'workforce/Public Relations (PR)/EDITOR.md'])
+        found = wf.name_problems(['workforce/Public Relations (PR)/Managing Editor.md',
+                                  'workforce/Public Relations (PR)/MANAGING EDITOR.md'])
         self.assertTrue(any('only in case' in problem for problem in found), found)
 
     def test_files_the_system_drops_never_fail_the_check(self) -> None:
@@ -293,39 +306,39 @@ class EachCheckFails(unittest.TestCase):
 
     def test_a_windows_device_name(self) -> None:
         with Copy() as root:
-            path = root / wf.SOURCE / 'Public Relations (PR)' / 'Editor.md'
+            path = root / wf.SOURCE / 'Public Relations (PR)' / 'Managing Editor.md'
             path.rename(path.with_name('Con.md'))
             self.assertProblem(root, 'device name')
 
     def test_a_path_too_long_for_windows(self) -> None:
         with Copy() as root:
-            path = root / wf.SOURCE / 'Public Relations (PR)' / 'Editor.md'
+            path = root / wf.SOURCE / 'Public Relations (PR)' / 'Managing Editor.md'
             path.rename(path.with_name('Editor ' + 'Of Very Long Titles ' * 8 + 'Today.md'))
             self.assertProblem(root, 'path is over 200')
 
     def test_an_unknown_capability(self) -> None:
         with Copy() as root:
-            set_field(root / wf.SOURCE / 'Public Relations (PR)' / 'Editor.md', 'tools', ['teleport', 'read', 'message'])
+            set_field(root / wf.SOURCE / 'Public Relations (PR)' / 'Managing Editor.md', 'tools', ['teleport', 'read', 'message'])
             self.assertProblem(root, 'unknown tools teleport')
 
     def test_a_specialist_that_delegates(self) -> None:
         with Copy() as root:
-            set_field(root / wf.SOURCE / 'Public Relations (PR)' / 'Editor.md', 'tools', ['delegate', 'read', 'message'])
+            set_field(root / wf.SOURCE / 'Public Relations (PR)' / 'Managing Editor.md', 'tools', ['delegate', 'read', 'message'])
             self.assertProblem(root, 'only the Chief of Staff and the Directors delegate')
 
     def test_an_em_dash(self) -> None:
         with Copy() as root:
-            edit(root / wf.SOURCE / 'Public Relations (PR)' / 'Editor.md', '## Mission\n\n', '## Mission\n\n\u2014 ')
+            edit(root / wf.SOURCE / 'Public Relations (PR)' / 'Managing Editor.md', '## Mission\n\n', '## Mission\n\n\u2014 ')
             self.assertProblem(root, 'em dash')
 
     def test_a_second_title(self) -> None:
         with Copy() as root:
-            edit(root / wf.SOURCE / 'Public Relations (PR)' / 'Editor.md', '## Mission', '# Editor\n\n## Mission')
+            edit(root / wf.SOURCE / 'Public Relations (PR)' / 'Managing Editor.md', '## Mission', '# Editor\n\n## Mission')
             self.assertProblem(root, 'holds a top-level heading')
 
     def test_an_executive_outside_the_executive_team(self) -> None:
         with Copy() as root:
-            set_field(root / wf.SOURCE / 'Public Relations (PR)' / 'Editor.md', 'role', 'executive')
+            set_field(root / wf.SOURCE / 'Public Relations (PR)' / 'Managing Editor.md', 'role', 'executive')
             self.assertProblem(root, 'executives sit in Administration')
             self.assertProblem(root, 'title starts with Chief')
 
@@ -349,7 +362,7 @@ class EachCheckFails(unittest.TestCase):
 
     def test_a_file_that_names_a_retired_seat(self) -> None:
         with Copy() as root:
-            edit(root / wf.SOURCE / 'Public Relations (PR)' / 'Editor.md', '## Mission\n\n',
+            edit(root / wf.SOURCE / 'Public Relations (PR)' / 'Managing Editor.md', '## Mission\n\n',
                  '## Mission\n\nSend every claim to the Fact-Checker. ')
             self.assertProblem(root, r'Editor\.md: names Fact-Checker, retired')
 
@@ -360,8 +373,8 @@ class EachCheckFails(unittest.TestCase):
 
     def test_a_retired_title_an_agent_still_carries(self) -> None:
         with Copy() as root:
-            retire(root, 'Editor', '')
-            self.assertProblem(root, '"Editor" is a title an agent carries')
+            retire(root, 'Managing Editor', '')
+            self.assertProblem(root, '"Managing Editor" is a title an agent carries')
 
     def test_a_retired_title_whose_successor_has_no_seat(self) -> None:
         with Copy() as root:
@@ -398,7 +411,7 @@ class EachCheckFails(unittest.TestCase):
 
     def test_a_missing_section(self) -> None:
         with Copy() as root:
-            edit(root / wf.SOURCE / 'Public Relations (PR)' / 'Editor.md', '## Done When', '## Finished')
+            edit(root / wf.SOURCE / 'Public Relations (PR)' / 'Managing Editor.md', '## Done When', '## Finished')
             self.assertProblem(root, 'missing sections Done When')
 
     def test_a_chief_of_staff_that_stops_keeping_the_workforce_current(self) -> None:
@@ -408,7 +421,7 @@ class EachCheckFails(unittest.TestCase):
 
     def test_a_bare_value(self) -> None:
         with Copy() as root:
-            set_raw(root / wf.SOURCE / 'Public Relations (PR)' / 'Editor.md', 'role', 'specialist')
+            set_raw(root / wf.SOURCE / 'Public Relations (PR)' / 'Managing Editor.md', 'role', 'specialist')
             self.assertProblem(root, 'must hold a quoted string')
 
     def test_a_tool_keyword_one_api_rejects(self) -> None:
@@ -428,7 +441,7 @@ class EachCheckFails(unittest.TestCase):
 
     def test_a_team_in_the_catch_all(self) -> None:
         with Copy() as root:
-            shutil.copy(root / wf.SOURCE / 'Public Relations (PR)' / 'Editor.md',
+            shutil.copy(root / wf.SOURCE / 'Public Relations (PR)' / 'Managing Editor.md',
                         root / wf.SOURCE / 'Miscellaneous' / 'Editor.md')
             self.assertProblem(root, 'it has no team')
 
@@ -745,7 +758,7 @@ class Installing(unittest.TestCase):
 
     def test_check_fails_on_a_broken_source(self) -> None:
         with Copy() as root:
-            set_field(root / wf.SOURCE / 'Public Relations (PR)' / 'Editor.md', 'role', 'editor')
+            set_field(root / wf.SOURCE / 'Public Relations (PR)' / 'Managing Editor.md', 'role', 'editor')
             self.assertEqual(quiet(wf.main, ['check'], root=root), 1)
             self.assertEqual(quiet(wf.main, ['install', '--target', 'claude'], root=root, home=self.home), 1)
             self.assertFalse(self.agents.exists())

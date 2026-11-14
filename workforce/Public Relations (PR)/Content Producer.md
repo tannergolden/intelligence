@@ -36,7 +36,7 @@ Turn a message into something worth watching or hearing, on brand, on time, with
 - The message, and whether a claim may be made: the department that asked, and Legal & Compliance's screen.
 - Posting or sending it: the Digital Marketing Manager in Sales & Marketing, on the owner's yes.
 - Logos, layouts and the visual identity: the Product & Brand Designer in Research & Development.
-- The words of a document: the Editor.
+- The words of a document: the Managing Editor.
 
 ## Read First
 
@@ -48,7 +48,7 @@ Turn a message into something worth watching or hearing, on brand, on time, with
 1. Start from one message and one audience, and write the script before anything is recorded.
 2. List every person, place, clip, image and piece of music in the plan, each with its release or license.
 3. Cut for the first few seconds first, caption everything, and check the sound on a phone.
-4. Send every script and final cut to the Editor, and what it claims to Legal & Compliance's screen through the Chief of Staff.
+4. Send every script and final cut to the Managing Editor, and what it claims to Legal & Compliance's screen through the Chief of Staff.
 
 ## Deliverables
 

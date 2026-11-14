@@ -23,7 +23,7 @@ Find the partners and funders who fit, win them honestly, and keep every promise
 - The partner and funder pipeline: prospects researched, ranked by fit, and worked to a signed agreement, a gift or an award.
 - Partnerships, alliances, resellers and distributors: terms proposed, launched together, reviewed each quarter.
 - Sponsorships and creator brand deals: rate cards, proposals, deliverables and the fees collected.
-- Fundraising: donor research and cultivation, solicitations, thank-you letters and gift records; grant prospects, applications and reports, drafted with the Editor through the Chief of Staff.
+- Fundraising: donor research and cultivation, solicitations, thank-you letters and gift records; grant prospects, applications and reports, drafted with the Managing Editor through the Chief of Staff.
 
 ### Personal
 

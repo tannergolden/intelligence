@@ -7,7 +7,7 @@ director: '⭐ Director of Legal & Compliance'
 members:
   [
     '⭐ Director of Legal & Compliance',
-    'Paralegal',
+    'Paralegal Specialist',
     'Regulatory Affairs & Licensing Specialist',
     'Risk & Compliance Manager',
   ]
@@ -34,9 +34,9 @@ Find the real legal risk in what the ventures and the owner do, keep every oblig
 | :------------------------------------------------------------------------------------ | :---------------------------------------- |
 | Entity, IP, matters and disputes, accepted risks, when counsel reviews                | ⭐ Director of Legal & Compliance         |
 | Employment law questions, and the owner's legal matters                               | ⭐ Director of Legal & Compliance         |
-| Contracts, redlines, the contract repository and its dates                            | Paralegal                                 |
-| Entity filings, minutes, trademark and copyright filings, dispute files               | Paralegal                                 |
-| The owner's leases, agreements, wills, powers of attorney, government forms           | Paralegal                                 |
+| Contracts, redlines, the contract repository and its dates                            | Paralegal Specialist                      |
+| Entity filings, minutes, trademark and copyright filings, dispute files               | Paralegal Specialist                      |
+| The owner's leases, agreements, wills, powers of attorney, government forms           | Paralegal Specialist                      |
 | Obligations, policies, the risk register, investigations, the hotline                 | Risk & Compliance Manager                 |
 | Privacy, safety and environment, continuity, sustainability reporting                 | Risk & Compliance Manager                 |
 | The legal screen of public claims                                                     | Risk & Compliance Manager                 |
@@ -50,8 +50,8 @@ Anything in the department's scope that no row names belongs to the ⭐ Director
 
 - **Intake.** The Chief of Staff delivers requests from other departments to the ⭐ Director of Legal & Compliance, who assigns each to one seat.
 - **Mesh.** Any seat here may message any other directly to collaborate, review or hand work over.
-- **Review.** The Risk & Compliance Manager screens every contract the Paralegal drafts for the obligations it creates.
-- **Review.** The Paralegal checks every application the Regulatory Affairs & Licensing Specialist prepares before it goes to the owner.
+- **Review.** The Risk & Compliance Manager screens every contract the Paralegal Specialist drafts for the obligations it creates.
+- **Review.** The Paralegal Specialist checks every application the Regulatory Affairs & Licensing Specialist prepares before it goes to the owner.
 - **Disagreement.** The ⭐ Director of Legal & Compliance decides, and records the trade-off.
 
 ## Department Rules

@@ -9,7 +9,7 @@ members:
     '⭐ Director of Public Relations',
     'Communications Specialist',
     'Content Producer',
-    'Editor',
+    'Managing Editor',
   ]
 version: '1.0.0'
 ---
@@ -40,9 +40,9 @@ Say the right thing, in a trusted voice, to the right audience, and hold the lin
 | The owner's press, interviews, talks and podcasts                                           | Communications Specialist       |
 | Scripts, video, audio, podcasts, photos, captions, the media library and its rights         | Content Producer                |
 | The owner's own videos, podcast and photos                                                  | Content Producer                |
-| Editing everything, the style guide                                                         | Editor                          |
-| Technical documentation, translation and localization, plain language                       | Editor                          |
-| Polishing the owner's emails, posts and documents                                           | Editor                          |
+| Editing everything, the style guide                                                         | Managing Editor                 |
+| Technical documentation, translation and localization, plain language                       | Managing Editor                 |
+| Polishing the owner's emails, posts and documents                                           | Managing Editor                 |
 
 Anything in the department's scope that no row names belongs to the ⭐ Director of Public Relations.
 
@@ -50,7 +50,7 @@ Anything in the department's scope that no row names belongs to the ⭐ Director
 
 - **Intake.** The Chief of Staff delivers requests from other departments to the ⭐ Director of Public Relations, who assigns each to one seat.
 - **Mesh.** Any seat here may message any other directly to collaborate, review or hand work over.
-- **Review.** The Editor reads every draft the Director or the Communications Specialist writes; no one approves their own draft.
+- **Review.** The Managing Editor reads every draft the Director or the Communications Specialist writes; no one approves their own draft.
 - **Review.** The Communications Specialist checks each statement, and each final cut the Content Producer makes, for how its audience will read it.
 - **Disagreement.** The ⭐ Director of Public Relations decides, and records the trade-off.
 

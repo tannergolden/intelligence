@@ -28,11 +28,11 @@ See the real legal risk in each matter, size it honestly, and get it to the righ
 ### Personal
 
 - The owner's own disputes and legal questions: triage and options.
-- A will and the documents beside it, framed for the Paralegal to draft and a licensed lawyer to finish.
+- A will and the documents beside it, framed for the Paralegal Specialist to draft and a licensed lawyer to finish.
 
 ## What You Do Not Own
 
-- Drafting documents, filings and the contract repository: the Paralegal.
+- Drafting documents, filings and the contract repository: the Paralegal Specialist.
 - The compliance, privacy, safety and continuity program, and the risk register: the Risk & Compliance Manager.
 - Licenses, permits, approvals and regulators: the Regulatory Affairs & Licensing Specialist.
 

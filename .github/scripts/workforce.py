@@ -587,6 +587,9 @@ def check_agent(doc: Doc, root: pathlib.Path, problems: List[str]) -> None:
         return
     if name != doc.path.stem:
         problems.append(f'{where}: title "{name}" must equal the file name')
+    # A seat is known by its title alone, in every chat and every list, so one word is never enough.
+    if sum(1 for word in name.split() if re.search('[A-Za-z0-9]', word)) < 2:
+        problems.append(f'{where}: a title takes at least two words')
     if fields.get('name') != slug(name):
         problems.append(f'{where}: name must be "{slug(name)}", its title as a slug')
     role = fields.get('role')
