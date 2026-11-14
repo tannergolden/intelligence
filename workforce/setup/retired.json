@@ -1,0 +1,28 @@
+{
+  "//": "Titles the workforce no longer has, each with the seat that took over its work, or an empty string when its work was split among several. workforce.py check refuses any of them in an agent's file, a charter, a module or a setup file, and the Chief of Staff renames a Bot that still carries one when its successor has no Bot yet.",
+  "retired": {
+    "⭐ Director of Administration": "⭐ Chief Executive Officer",
+    "Strategy & Planning Manager": "Chief Operating Officer",
+    "Corporate Secretary": "",
+    "Controller": "⭐ Director of Finance",
+    "Tax Strategist": "Tax Accountant",
+    "Investment & Insurance Advisor": "Personal Financial Planner",
+    "Contracts Manager": "Paralegal",
+    "Compliance Officer": "Risk & Compliance Manager",
+    "Privacy Officer": "Risk & Compliance Manager",
+    "Marketing Manager": "Digital Marketing Manager",
+    "Revenue Operations Analyst": "",
+    "Process Analyst": "Process & Systems Analyst",
+    "Vendor Manager": "Supply Chain & Procurement Manager",
+    "People Operations Specialist": "HR Generalist",
+    "Wellbeing Specialist": "Health & Wellbeing Manager",
+    "Software Engineer": "Full-Stack Engineer",
+    "Product Designer": "Product & Brand Designer",
+    "Data Analyst": "Data Scientist",
+    "Data Visualization Designer": "Analytics Engineer",
+    "Test Engineer": "Quality Engineer",
+    "Fact-Checker": "Internal Auditor",
+    "Customer Success Manager": "Customer & Member Success Manager",
+    "Media Relations Manager": "Communications Specialist"
+  }
+}

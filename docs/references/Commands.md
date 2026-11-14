@@ -155,14 +155,15 @@ target is for and how the Chief of Staff installs it.
 | `install --target T`          | Write `claude`, `grok-build`, `copilot`, `codex` or `antigravity` into that app's agents folder, refusing any file it did not write                |
 | `uninstall --target T`        | Take out every file the workforce wrote in that app's agents folder, and nothing else                                                              |
 
-| Option                           | What it does                                                                                                                                       |
-| :------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--dest DIR`                     | `install` and `uninstall`: the agents folder to use, in place of the app's own in your home folder                                                 |
-| `--dry-run`                      | `install` and `uninstall`: say what would change, and change nothing                                                                               |
-| `--grant CAPABILITY=TOOL[,TOOL]` | `render` and `install`, for `claude`, `copilot` and `antigravity`: grant a capability, such as `calendar`, through named tools; repeat it for more |
-| `--flavor F`                     | `render --target bundle`: wrap each tool for `neutral`, `responses`, `chat`, `anthropic` or `mcp`; `neutral` by default                            |
-| `--model M`                      | `render --target ollama`: the local model each Modelfile builds on; required                                                                       |
-| `--ref REF`                      | `render --target grok-bot`: the tag, branch or commit each Bot reads its files at; the checkout's commit by default                                |
+| Option                           | What it does                                                                                                                                                 |
+| :------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--dest DIR`                     | `install` and `uninstall`: the agents folder to use, in place of the app's own in your home folder                                                           |
+| `--dry-run`                      | `install` and `uninstall`: say what would change, and change nothing                                                                                         |
+| `--grant CAPABILITY=TOOL[,TOOL]` | `render` and `install`, for `claude`, `copilot` and `antigravity`: grant a capability, such as `calendar`, through named tools; repeat it for more           |
+| `--flavor F`                     | `render --target bundle`: wrap each tool for `neutral`, `responses`, `chat`, `anthropic` or `mcp`; `neutral` by default                                      |
+| `--model M`                      | `render --target ollama`: the local model each Modelfile builds on; required                                                                                 |
+| `--ref REF`                      | `render --target grok-bot`: the tag, branch or commit each Bot reads its files at; the checkout's commit by default                                          |
+| `--vault OWNER/NAME`             | `render --target grok-bot`: the private repository that holds the owner's vault, written into the prompt and each first message; a placeholder when left out |
 
 Every command checks the source first and exits 1, writing nothing, when it
 fails. `install` also exits 1 when it refused a file, after writing the rest.

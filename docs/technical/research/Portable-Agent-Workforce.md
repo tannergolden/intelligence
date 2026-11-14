@@ -30,15 +30,15 @@ _Every claim sourced. Every report dated._
 
 ## 📋 Report Meta
 
-| Attribute               | Detail                                                                                    |
-| :---------------------- | :---------------------------------------------------------------------------------------- |
-| **Question**            | How to define a workforce of agents once and run it locally, in the cloud and on Grok     |
-| **Decision it informs** | The format, layout, names, protocol and installer of `workforce/`                         |
-| **Verified**            | 2026-11-14, equal to the newest log entry below                                           |
-| **Confidence**          | Medium - official documentation throughout, but no app was run against the rendered files |
-| **Sources**             | 45 fetched directly / 48 total, itemized under Sources & Provenance                       |
-| **Supersedes**          | N/A                                                                                       |
-| **Graduated to**        | [ADR-0044](../../adrs/ADR-0044-The-Workforce-Lives-Beside-The-Kit.md)                     |
+| Attribute               | Detail                                                                                          |
+| :---------------------- | :---------------------------------------------------------------------------------------------- |
+| **Question**            | How to define a workforce of agents once and run it locally, in the cloud and on Grok           |
+| **Decision it informs** | The format, layout, names, protocol and installer of `workforce/`                               |
+| **Verified**            | 2026-11-14, equal to the newest log entry below                                                 |
+| **Confidence**          | Medium - official documentation throughout, but no app was run against the rendered files       |
+| **Sources**             | 47 fetched directly / 50 total, itemized under Sources & Provenance and in the entries after it |
+| **Supersedes**          | N/A                                                                                             |
+| **Graduated to**        | [ADR-0044](../../adrs/ADR-0044-The-Workforce-Lives-Beside-The-Kit.md)                           |
 
 ---
 
@@ -230,6 +230,15 @@ Keep each agent as one Markdown file with flat, quoted frontmatter: `name` as th
 - **Held**: a personal Bot takes its job in its first message and keeps it in memory, which is not a source of truth; a group holds two to six Bots; every Bot reply counts toward the weekly usage; the primary Bot coordinates the others.
 - **Drifted**: nothing was wrong, but the app's steps were missing. Grok Bot runs in its own desktop app (macOS, Windows, Linux) and phone apps, signed in with a Cursor account, and the FAQ lists no browser app; the grok.com release notes add Bots there for SuperGrok Heavy and SuperGrok Plus only. The app creates a first Bot named Grok Bot; the primary Bot is chosen at "Introducing your primary Bot" or replaced with "Replace with different Bot"; existing Bots "can also suggest or create a focused Bot", while a Bot creating a group chat is not documented; apps connect for every Bot from Connect apps; and an "Ask first" rule under Settings, General, Bot, Custom Rules stops every matching action until the owner approves its card.
 - **Outcome**: verified date unchanged, 2026-11-14; [The Workforce](../The-Workforce.md#-setting-up-grok-bot-in-the-app) now carries the app's steps.
+
+---
+
+## 📅 Log Entry: 2026-11-14 - Approvals, Routines And The Shared Computer
+
+- **Re-checked**: what holds a gated act in the Grok Bot app, and how a Bot schedules work, against two more of xAI's pages fetched directly: [approvals, security and privacy](https://docs.x.ai/grok-bot/approvals-security-and-privacy) and [skills, routines and automations](https://docs.x.ai/grok-bot/skills-routines-and-automations).
+- **Held**: every earlier Grok Bot claim.
+- **Drifted**: nothing was wrong, but four facts were missing, and the setup now rests on them. An account takes up to twenty **Ask first** rules of 1,000 characters each, saved to the account, and "Ask first wins" over an Allow rule. An approval card raised by a routine or other background work expires after 30 minutes, while one raised from a chat does not. "All of your Bots share one cloud computer", its files, browser sessions and credentials, and xAI says "Do not use separate Bots as a security boundary"; a card saved in the Vault pays at checkout "without a separate approval each time". And a Bot makes a routine when asked, up to fifty to a Bot, with results in its own chat.
+- **Outcome**: verified date unchanged, 2026-11-14; the steps in `workforce/setup/Grok Bot.md` and [The Workforce](../The-Workforce.md#-setting-up-grok-bot-in-the-app) carry them: seven Ask first rules, a ledger on the shared computer that holds nothing private, and a weekly routine that leaves gated acts for the owner.
 
 ---
 

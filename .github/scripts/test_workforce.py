@@ -88,6 +88,18 @@ def set_field(path: pathlib.Path, key: str, value) -> None:
     path.write_text('\n'.join(lines), encoding='utf-8')
 
 
+def problems_of(source: pathlib.Path) -> list:
+    return wf.problems_in(source)[1]
+
+
+def retire(root: pathlib.Path, old: str, new: str) -> None:
+    """Add one title to the copy's list of retired titles."""
+    path = root / wf.SOURCE / wf.SETUP / wf.RETIRED
+    data = json.loads(path.read_text(encoding='utf-8'))
+    data['retired'][old] = new
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8')
+
+
 def set_raw(path: pathlib.Path, key: str, raw: str) -> None:
     """Replace one frontmatter line with raw text, quoting and all."""
     text = path.read_text(encoding='utf-8')
@@ -105,7 +117,14 @@ class TheRealWorkforce(unittest.TestCase):
 
     def test_mirrors_the_venture_template(self) -> None:
         folders = sorted(p.name for p in REAL.iterdir() if p.is_dir())
-        self.assertEqual(folders, sorted(wf.DEPARTMENTS + (wf.CATCH_ALL, wf.SCHEMAS)))
+        self.assertEqual(folders, sorted(wf.DEPARTMENTS + (wf.CATCH_ALL, wf.SCHEMAS, wf.SETUP)))
+
+    def test_every_retired_title_is_gone_and_its_successor_has_a_seat(self) -> None:
+        self.assertTrue(self.workforce.retired)
+        titles = {agent.name for agent in self.workforce.agents}
+        for old, new in self.workforce.retired.items():
+            self.assertNotIn(old, titles)
+            self.assertTrue(new == '' or new in titles, (old, new))
 
     def test_each_department_has_one_starred_director_and_at_most_four_more(self) -> None:
         for folder in wf.DEPARTMENTS:
@@ -328,6 +347,55 @@ class EachCheckFails(unittest.TestCase):
             (root / wf.SOURCE / 'Repository Standards.md').unlink()
             self.assertProblem(root, 'Repository Standards.md: is missing')
 
+    def test_a_file_that_names_a_retired_seat(self) -> None:
+        with Copy() as root:
+            edit(root / wf.SOURCE / 'Public Relations (PR)' / 'Editor.md', '## Mission\n\n',
+                 '## Mission\n\nSend every claim to the Fact-Checker. ')
+            self.assertProblem(root, r'Editor\.md: names Fact-Checker, retired')
+
+    def test_a_retired_title_inside_a_current_one_is_not_a_mention(self) -> None:
+        # Marketing Manager is retired, and Digital Marketing Manager is a seat that names it in full.
+        self.assertIn('Marketing Manager', wf.problems_in(REAL)[0].retired)
+        self.assertEqual(problems_of(REAL), [])
+
+    def test_a_retired_title_an_agent_still_carries(self) -> None:
+        with Copy() as root:
+            retire(root, 'Editor', '')
+            self.assertProblem(root, '"Editor" is a title an agent carries')
+
+    def test_a_retired_title_whose_successor_has_no_seat(self) -> None:
+        with Copy() as root:
+            retire(root, 'Town Crier', 'Herald')
+            self.assertProblem(root, '"Town Crier" names "Herald" as the seat that took over')
+
+    def test_a_setup_folder_missing_a_file(self) -> None:
+        with Copy() as root:
+            (root / wf.SOURCE / wf.SETUP / 'Terminal.md').unlink()
+            self.assertProblem(root, 'setup/: must hold exactly')
+
+    def test_a_setup_prompt_that_loses_a_part(self) -> None:
+        with Copy() as root:
+            edit(root / wf.SOURCE / wf.SETUP / 'Grok Bot.md', '</done_when>', '</done>')
+            self.assertProblem(root, 'must open and close context, task, constraints, done_when once each')
+
+    def test_a_setup_prompt_with_a_placeholder_nobody_is_told_to_fill(self) -> None:
+        with Copy() as root:
+            edit(root / wf.SOURCE / wf.SETUP / 'Grok Bot.md', '<task>\n', '<task>\nFor {{OWNER_NAME}}: ')
+            self.assertProblem(root, 'must name exactly the placeholders the prompt holds')
+
+    def test_a_setup_step_that_names_a_file_the_workforce_lacks(self) -> None:
+        with Copy() as root:
+            edit(root / wf.SOURCE / wf.SETUP / 'Grok Bot.md', '`workforce/setup/retired.json`',
+                 '`workforce/schemas/retired.json`')
+            self.assertProblem(root, 'names workforce/schemas/retired.json, which the workforce does not hold')
+
+    def test_a_setup_prompt_that_does_not_name_its_own_steps(self) -> None:
+        with Copy() as root:
+            path = root / wf.SOURCE / wf.SETUP / 'Terminal.md'
+            text = path.read_text(encoding='utf-8')
+            path.write_text(text.replace('workforce/setup/Terminal.md', 'the setup file'), encoding='utf-8')
+            self.assertProblem(root, 'the prompt must name this file')
+
     def test_a_missing_section(self) -> None:
         with Copy() as root:
             edit(root / wf.SOURCE / 'Public Relations (PR)' / 'Editor.md', '## Done When', '## Finished')
@@ -504,29 +572,117 @@ class Rendering(unittest.TestCase):
 
     def test_grok_bot_bindings_are_short_and_link_the_source(self) -> None:
         page = self.render('grok-bot', ref='v1.0.0')['Grok Bot Setup.md']
-        self.assertEqual(page.count('\n## '), len(self.workforce.agents))
+        self.assertEqual(len(re.findall(r'^### \d+\. ', page, re.M)), len(self.workforce.agents))
         for agent in self.workforce.agents:
-            message = wf.binding(self.workforce, agent, 'v1.0.0')
+            message = wf.binding(self.workforce, agent, 'v1.0.0', 'owner-name/knowledge-vault')
             self.assertLessEqual(len(message), 2000, agent.name)
             self.assertIn('/blob/v1.0.0/workforce/', message)
             self.assertEqual('Repository%20Standards.md' in message, 'edit' in agent.fields['tools'], agent.name)
             for url in re.findall(r'https://\S+', message):
                 self.assertNotRegex(url, r'[ &()\u2b50]', url)
+            # Every path a URL would have to encode comes with its link.
+            for path in re.findall(r'^\d+\. (.+)$', message, re.M):
+                self.assertEqual(bool(re.search(r'[^A-Za-z0-9/._-]', path)),
+                                 f'{path}\n   https://' in message, path)
+
+    def test_grok_bot_page_holds_the_prompt_with_the_version_filled_in(self) -> None:
+        page = self.render('grok-bot', ref='v1.0.0')['Grok Bot Setup.md']
+        prompt = page.split('## The Prompt', 1)[1].split('## The First Messages', 1)[0]
+        self.assertIn('at the version v1.0.0.', prompt)
+        self.assertNotIn('{{VERSION}}', page)
+        # The vault is private, so a page rendered without its name leaves the placeholder to fill.
+        self.assertIn('{{VAULT_REPOSITORY}}', prompt)
+        named = self.render('grok-bot', ref='v1.0.0', vault='owner-name/knowledge-vault')['Grok Bot Setup.md']
+        self.assertNotIn('{{', named)
+        self.assertEqual(named.count('private GitHub repository owner-name/knowledge-vault'),
+                         len(self.workforce.agents) + 1)
+
+    def test_grok_bot_refuses_a_vault_that_is_not_a_repository_name(self) -> None:
+        with self.assertRaises(SystemExit):
+            quiet(self.render, 'grok-bot', ref='v1.0.0', vault='https://github.com/owner/vault')
+
+    def test_only_the_vault_manager_is_told_it_writes_the_vault(self) -> None:
+        for agent in self.workforce.agents:
+            message = wf.binding(self.workforce, agent, 'v1.0.0', 'owner-name/knowledge-vault')
+            self.assertEqual('you alone write to it' in message, agent.role == 'vault-manager', agent.name)
+            self.assertEqual('never write to it' in message, agent.role != 'vault-manager', agent.name)
+            # Every Bot but the Chief of Staff takes a new version from it, and nothing else.
+            self.assertEqual('If the Chief of Staff sends this message again' in message,
+                             agent.role != 'orchestrator', agent.name)
 
 
-class TheGuide(unittest.TestCase):
-    """The Grok Bot prompt in the guide restates the binding's rules, so the two must say the same."""
+NUMBERS = ('one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine')
+TENS = {40: 'forty', 50: 'fifty', 60: 'sixty'}
 
-    def test_the_guide_template_keeps_every_fixed_line_of_the_binding(self) -> None:
-        guide = (wf.ROOT / 'docs' / 'technical' / 'The-Workforce.md').read_text(encoding='utf-8')
-        workforce = wf.problems_in(REAL)[0]
-        message = wf.binding(workforce, workforce.agent('financial-analyst'), 'v1.0.0')
+
+def spelled(number: int) -> str:
+    """A count from 40 to 69 as the documents write it."""
+    tens, ones = number - number % 10, number % 10
+    return TENS[tens] + (f'-{NUMBERS[ones - 1]}' if ones else '')
+
+
+class TheDocuments(unittest.TestCase):
+    """What the guide repeats from the source, it must repeat exactly: prompts, seats, lines and counts."""
+
+    def setUp(self) -> None:
+        self.workforce = wf.problems_in(REAL)[0]
+        self.guide = (wf.ROOT / 'docs' / 'technical' / 'The-Workforce.md').read_text(encoding='utf-8')
+
+    def row(self, first: str) -> list:
+        """The cells of the guide's table row that opens with this cell, and holds at least `width` cells."""
+        rows = [line for line in self.guide.split('\n') if line.startswith(f'| {first} ')]
+        self.assertTrue(rows, first)
+        return [[cell.strip() for cell in line.strip('|').split('|')] for line in rows]
+
+    def test_the_guide_holds_each_setup_prompt_as_its_file_does(self) -> None:
+        self.assertEqual(sorted(self.workforce.setups), sorted(wf.SETUPS))
+        for name, setup in self.workforce.setups.items():
+            prompt = wf.prompt_of(setup)
+            self.assertTrue(prompt, name)
+            self.assertIn(f'```text\n{prompt}\n```', self.guide, name)
+
+    def test_the_first_message_template_keeps_every_fixed_line_of_the_binding(self) -> None:
+        steps = self.workforce.setups['grok-bot'].body
+        message = wf.binding(self.workforce, self.workforce.agent('financial-analyst'), 'v1.0.0')
         fixed = [line.lstrip('- ').strip() for line in message.split('\n')
                  if line.strip() and 'Financial Analyst' not in line and 'workforce/' not in line
-                 and 'Finance' not in line]
-        self.assertTrue(fixed)
+                 and 'Finance' not in line and '{{' not in line]
+        self.assertGreaterEqual(len(fixed), 5)
         for line in fixed:
-            self.assertIn(line, guide)
+            self.assertIn(line, steps)
+
+    def test_the_guide_gives_each_chief_the_departments_it_oversees(self) -> None:
+        others = [f for f in wf.DEPARTMENTS if f != wf.EXECUTIVE_TEAM]
+        for member in self.workforce.team(wf.EXECUTIVE_TEAM):
+            oversees = self.workforce.portfolio(member)
+            rows = [cells for cells in self.row(member.name) if len(cells) == 2]
+            self.assertEqual(len(rows), 1, member.name)
+            self.assertEqual([f for f in others if f in rows[0][1]], oversees, member.name)
+
+    def test_the_guide_seats_each_department_as_the_source_does(self) -> None:
+        for folder in wf.DEPARTMENTS:
+            team = self.workforce.team(folder)
+            rows = [cells for cells in self.row(folder) if len(cells) == 6]
+            self.assertEqual(len(rows), 1, folder)
+            seats, overseer, _, specialists = rows[0][1:5]
+            self.assertEqual(seats, str(len(team)), folder)
+            expected = 'The owner' if folder == wf.EXECUTIVE_TEAM else self.workforce.overseer(folder).name
+            self.assertEqual(overseer, expected, folder)
+            for agent in team[1:]:
+                self.assertIn(agent.name, specialists, folder)
+
+    def test_every_document_counts_the_agents_the_workforce_has(self) -> None:
+        total = len(self.workforce.agents)
+        seated = len([agent for agent in self.workforce.agents if agent.department])
+        allowed = {spelled(total), spelled(seated)}
+        count = re.compile(r'\b(?:forty|fifty|sixty)-(?:' + '|'.join(NUMBERS) + r')\b', re.I)
+        # The research logs keep the counts of the day each entry was filed, so they are not held to this.
+        for path in ('docs/technical/The-Workforce.md', 'docs/adrs/ADR-0044-The-Workforce-Lives-Beside-The-Kit.md',
+                     'workforce/README.md', 'README.md'):
+            text = (wf.ROOT / path).read_text(encoding='utf-8')
+            for found in count.findall(text):
+                self.assertIn(found.lower(), allowed, f'{path} counts {found}')
+        self.assertIn(spelled(total).capitalize(), self.guide)
 
 
 class Installing(unittest.TestCase):
