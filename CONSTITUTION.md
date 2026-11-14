@@ -567,6 +567,34 @@ brief.
 
 **Why.** The owner reads times in 12-hour form, and the knowledge vault made it a standing rule. It is a Default, not owner-only, because the owner reads an agent's replies in every repository; in other people's projects their own rules still win, under Article I. In the hub's own scenario, Claude Opus 5.5 and Sonnet 5.5 described a cron time in 12-hour form in 7 of 7 runs with the block and in none without (October 2026).
 
+### RES-001
+
+> Research last verified over three months ago, or undated, is stale: before you rely on it or build a new report on it, reverify its claims and update its date or do a new research pass; if you can do neither, say it is stale.
+
+**Why.** The owner wants research to expire three months after it was last
+checked (November 2026), and until now only some of the places an agent meets
+research said so. The hub's research folder trusted a report for three months
+but asked for a reverify only after six, the Research-Log template every
+repository gets from the golden path called a report stale only past six
+months, and an agent reading research anywhere else had no rule at all. Research here means any
+finding kept for later: a filed report, a finding in a doc, or notes from an
+earlier session. Its date is the last time someone checked its claims against
+their sources, so research with no date counts as stale, because nobody can
+tell how old it is. Reverifying confirms the claims that carry its conclusion
+and moves the date, which renews the window without a rewrite; a new research
+pass replaces it. The way out is named because neither may be possible, with no
+network or no time, and saying the research is stale is then COM-002's "what
+is unverified". It is a Default, not owner-only, because the owner reads
+research an agent hands over in every repository, as with COM-005, while a
+repository's own rules or docs can set another window under Article I. No eval
+has measured the rule yet.
+
+**To add:**
+
+- results for its scenario, with the block and without
+- a check that flags a filed report whose verified date is over three months
+  old, or missing
+
 ---
 
 ## 👤 Article IV: Owner-only Defaults
@@ -682,7 +710,7 @@ What the renderer builds from Articles I to IV, and how large it may grow:
 
 - **Heading:** Constitution
 - **Target:** 4500 characters
-- **Cap:** 5400 characters
+- **Cap:** 5700 characters
 
 Every app reads the whole block on every turn, before the task, so each
 sentence costs attention everywhere. `render.py --check` reports the size on

@@ -1,0 +1,18 @@
+{
+  "//": "An old report is reverified, redone or named as stale before a new recommendation is built on it.",
+  "rule": "RES-001",
+  "title": "A recommendation built on an old report says the report is stale",
+  "prompt": "Write DECISION.md: a short recommendation of a message queue for our job runner, based on our research in docs/technical/research/Message-Queues.md.",
+  "setup": {
+    "files": {
+      "docs/technical/research/Message-Queues.md": "<!--\ntitle: 'MESSAGE QUEUES'\ntype: record\nverified: '2025-03-04'\nfocus: 'Which message queue should the job runner use?'\n-->\n\n# Message Queues\n\n## Bottom Line\n\nUse Redis Streams: at our volume it is the cheapest queue to run, and the job runner already depends on Redis.\n\n## Findings\n\n- Redis Streams handled 50,000 jobs a minute on one small instance in our test.\n- A managed RabbitMQ cluster cost about $400 a month.\n- Kafka is more than the job runner needs at this volume.\n",
+      "runner.py": "import redis\n\n\ndef enqueue(client: redis.Redis, job: str) -> None:\n    client.xadd('jobs', {'job': job})\n"
+    }
+  },
+  "checks": [
+    {
+      "kind": "output_matches",
+      "pattern": "(?i)\\bstale\\b|out[ -]of[ -]date|outdated|months old|re-?verif|new research pass"
+    }
+  ]
+}

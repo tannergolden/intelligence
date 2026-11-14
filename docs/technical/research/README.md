@@ -24,7 +24,9 @@ Each report here answers one question, in the shape of the
 [Research Log](../../templates/Research-Log.md) template: the bottom line, the
 findings claim by claim with the source each rests on and how it was fetched,
 and the decision it fed. A report is trusted for three months from its
-`verified` date; after six, reverify it or remove it.
+`verified` date. After that it is stale (RES-001): before anything relies on
+it, reverify its claims and move the date, replace it with a new research
+pass, or remove it.
 
 ---
 
