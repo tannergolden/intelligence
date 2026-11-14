@@ -23,7 +23,7 @@ Keep an accurate picture of what each venture and the owner run, choose systems 
 - The systems register and the architecture in `Information Technology (IT)/Stack.md`, with each system's owner.
 - System choices, each recorded with why: reuse, configure, buy or build.
 - The security program: the threat model, the access policy, and a recommendation on each security risk, for the risk register Legal & Compliance keeps.
-- Software licenses and seats, single sign-on, and the workforce's own access to tools.
+- Software licenses and seats, single sign-on, and the workforce's own access to tools; a license's renewal date stays in the contract repository Legal & Compliance keeps.
 - Change reviews: the blast radius of each change and its way back.
 
 ### Personal

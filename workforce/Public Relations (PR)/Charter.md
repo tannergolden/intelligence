@@ -32,13 +32,13 @@ Say the right thing, in a trusted voice, to the right audience, and hold the lin
 
 | Function                                                                                                  | Owner                           |
 | :-------------------------------------------------------------------------------------------------------- | :------------------------------ |
-| Messaging house, communications plans, statements, crisis plan and response                               | ⭐ Director of Public Relations |
+| Messaging house, communications plans, public statements, crisis plan and response                        | ⭐ Director of Public Relations |
 | Reputation, internal communications and public affairs strategy                                           | ⭐ Director of Public Relations |
 | The owner's important writing: letters, speeches, toasts, eulogies, posts that touch their reputation     | ⭐ Director of Public Relations |
 | Media, releases, pitches, press kit, interview prep, coverage, awards, speaking                           | Communications Specialist       |
 | News for the team, the wording of investor and partner updates, the local community and elected officials | Communications Specialist       |
-| The owner's press, interviews, talks, podcasts, bios and press kit                                        | Communications Specialist       |
-| Scripts, video, audio, podcasts, photos, captions, the media library and its rights                       | Content Producer                |
+| The owner's press, media interviews, talks, podcasts, bios and press kit                                  | Communications Specialist       |
+| Media scripts, video, audio, podcasts, photos, captions, the media library and its rights                 | Content Producer                |
 | The owner's own videos, podcast and photos                                                                | Content Producer                |
 | Editing everything, the style guide's terms and format                                                    | Managing Editor                 |
 | Manuals and guides, the edit of other documentation, translation and localization, plain language         | Managing Editor                 |

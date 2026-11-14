@@ -171,7 +171,7 @@ runs on is composed when it is rendered, in this order:
    department's table of who owns what, so it can route without reading a
    file.
 
-The longest composed prompt, the Chief of Staff's, is about 29,600 characters,
+The longest composed prompt, the Chief of Staff's, is about 29,700 characters,
 and `workforce.py check` caps every one at 30,000, the most GitHub's Copilot
 agents take.
 

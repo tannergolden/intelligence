@@ -40,7 +40,7 @@ Produce one honest sales forecast and the pipeline behind it, from every channel
 | The owner's job-search pipeline and networking follow-ups                                                    | Account Executive                  |
 | Campaigns, content, social media accounts, website content, search, business listings and reviews            | Digital Marketing Manager          |
 | Email and SMS marketing, paid ads, affiliates, influencers, channel analytics                                | Digital Marketing Manager          |
-| The owner's social media accounts and personal website                                                       | Digital Marketing Manager          |
+| The owner's social media accounts and personal website content                                               | Digital Marketing Manager          |
 | Partners, resellers, sponsorships, creator brand deals                                                       | Partnerships & Development Manager |
 | Donors, major gifts and grants                                                                               | Partnerships & Development Manager |
 | The owner's sponsorships, brand deals and paid appearances                                                   | Partnerships & Development Manager |

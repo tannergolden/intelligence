@@ -40,7 +40,7 @@ Run the workforce as a company's executive team runs a company: set the directio
 | The owner's goals, quarter and week                                                        | Chief Operating Officer    |
 | Capital, runway, investors and lenders, budget approval, the reporting package             | Chief Financial Officer    |
 | Risk appetite, and the policy for money between the owner and the ventures                 | Chief Financial Officer    |
-| Technology, data and AI strategy, standards, security risk appetite                        | Chief Technology Officer   |
+| Technology, data and AI strategy, technology standards, security risk appetite             | Chief Technology Officer   |
 | The owner's technology choices                                                             | Chief Technology Officer   |
 | Revenue targets, the total commit, pricing policy, acquisition against retention           | Chief Revenue Officer      |
 | The owner's income strategy                                                                | Chief Revenue Officer      |

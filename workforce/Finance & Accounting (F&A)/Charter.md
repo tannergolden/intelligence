@@ -32,7 +32,7 @@ Keep the money true, foreseen and protected: correct books, an honest forecast, 
 
 | Function                                                                                                                     | Owner                      |
 | :--------------------------------------------------------------------------------------------------------------------------- | :------------------------- |
-| Books, close, statements, cash, banking, controls, audit readiness                                                           | ⭐ Director of Finance     |
+| Books, close, financial statements, cash, banking, controls, audit readiness                                                 | ⭐ Director of Finance     |
 | Invoicing, collections, payables, payroll runs, expenses, the travel policy, inventory valuation, fixed assets               | ⭐ Director of Finance     |
 | Refunds and chargebacks paid, a till's daily cash-up                                                                         | ⭐ Director of Finance     |
 | The cap table and business insurance                                                                                         | ⭐ Director of Finance     |
@@ -41,7 +41,7 @@ Keep the money true, foreseen and protected: correct books, an honest forecast, 
 | Unit economics, pricing models, business cases, raise and deal financials                                                    | Financial Analyst          |
 | Models for the owner's big decisions                                                                                         | Financial Analyst          |
 | Every tax and its calendar: income, sales and use, VAT, payroll, property                                                    | Tax Accountant             |
-| The owner's returns, estimated payments, notices, household employment tax                                                   | Tax Accountant             |
+| The owner's tax returns, estimated payments, notices, household employment tax                                               | Tax Accountant             |
 | The founder's own pay, benefit elections and liquidity                                                                       | Personal Financial Planner |
 | The owner's budget, bills, accounts, debt, borrowing and credit, emergency fund                                              | Personal Financial Planner |
 | The owner's insurance and every insurance claim, investing, retirement, education savings, giving, estate, household payroll | Personal Financial Planner |

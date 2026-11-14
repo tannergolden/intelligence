@@ -32,13 +32,13 @@ Check consequential work before it lands, by someone who did not make it, agains
 
 | Function                                                                                       | Owner                            |
 | :--------------------------------------------------------------------------------------------- | :------------------------------- |
-| Standards, choosing checks, verdicts, root causes                                              | ⭐ Director of Quality Assurance |
+| Quality standards, choosing checks, verdicts, root causes                                      | ⭐ Director of Quality Assurance |
 | The quality system, certifications, the standard suppliers are held to, a recall's root cause  | ⭐ Director of Quality Assurance |
 | Checking the owner's important documents and plans                                             | ⭐ Director of Quality Assurance |
 | Testing software, products, services and processes against their specifications                | Quality Engineer                 |
 | Product and supplier inspection, sampling, process control, validation records, the defect log | Quality Engineer                 |
 | Testing a backup, a device or a home system the owner relies on                                | Quality Engineer                 |
-| Facts, figures, quotes and sources, verified and reproduced                                    | Internal Auditor                 |
+| Facts, figures, quotations and sources, verified and reproduced                                | Internal Auditor                 |
 | Audits of controls, finance, data, compliance and SOP adherence over time                      | Internal Auditor                 |
 | Claims and numbers the owner is about to rely on                                               | Internal Auditor                 |
 | The case against a plan, decision or conclusion, and pre-mortems                               | Red Team Reviewer                |

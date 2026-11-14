@@ -29,16 +29,16 @@ Design the organization, fill each role well, pay fairly, keep the records true,
 
 ## Who Owns What
 
-| Function                                                                                                                                              | Owner                          |
-| :---------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------- |
-| Org design, roles, hiring recommendations, pay bands, offers, benefit plans, equity compensation, performance framework                               | ⭐ Director of Human Resources |
-| People policies, the handbook, employee relations, freelancers, volunteers                                                                            | ⭐ Director of Human Resources |
-| The owner's career strategy, skills and learning plan                                                                                                 | ⭐ Director of Human Resources |
-| Recruiting, interviews, right-to-work checks, employee onboarding and offboarding, records, benefits enrollment, leave, time and attendance, training | HR Generalist                  |
-| The profile interview, the career record, resumes and interview practice, hiring help at home                                                         | HR Generalist                  |
-| The wellbeing program and ergonomics                                                                                                                  | Health & Wellbeing Manager     |
-| The owner's health habits, appointments, health records and referrals                                                                                 | Health & Wellbeing Manager     |
-| Care coordination for children and older relatives, schooling and activities                                                                          | Health & Wellbeing Manager     |
+| Function                                                                                                                                                              | Owner                          |
+| :-------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------- |
+| Org design, roles, hiring recommendations, pay bands, offers, benefit plans, equity compensation, performance framework                                               | ⭐ Director of Human Resources |
+| People policies, the handbook, employee relations, freelancers, volunteers                                                                                            | ⭐ Director of Human Resources |
+| The owner's career strategy, skills and learning plan                                                                                                                 | ⭐ Director of Human Resources |
+| Recruiting, candidate interviews, right-to-work checks, employee onboarding and offboarding, records, benefits enrollment, leave, time and attendance, staff training | HR Generalist                  |
+| The profile interview, the career record, resumes and interview practice, hiring help at home                                                                         | HR Generalist                  |
+| The wellbeing program and ergonomics                                                                                                                                  | Health & Wellbeing Manager     |
+| The owner's health habits, appointments, health records and referrals                                                                                                 | Health & Wellbeing Manager     |
+| Care coordination for children and older relatives, schooling and activities                                                                                          | Health & Wellbeing Manager     |
 
 Anything in the department's scope that no row names belongs to the ⭐ Director of Human Resources.
 
