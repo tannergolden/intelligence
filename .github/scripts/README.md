@@ -65,8 +65,10 @@ request is not the first place you hear about them.
 | [`test_sync.py`](test_sync.py)                                 | Tests for repository sync, audit, merge and apply.                                                             |
 | [`test_validate_repository.py`](test_validate_repository.py)   | Tests for the repository validator.                                                                            |
 | [`test_verify_stub_ceilings.py`](test_verify_stub_ceilings.py) | Tests for the stub ceiling checker.                                                                            |
+| [`test_workforce.py`](test_workforce.py)                       | Tests for the workforce checker, renderer and installer.                                                       |
 | [`validate-repository.py`](validate-repository.py)             | Validate this repository's own configuration.                                                                  |
 | [`verify-stub-ceilings.py`](verify-stub-ceilings.py)           | Check every stub's permission ceiling against the workflow it calls.                                           |
+| [`workforce.py`](workforce.py)                                 | Check the agent workforce in `workforce/`, and render or install it for every environment it runs in.          |
 
 <!-- AUTO-INDEX:END -->
 

@@ -1,0 +1,412 @@
+{
+  "//": "The workforce's portable tools, in the neutral shape every API wraps its own way: a name, a description and a JSON Schema object of parameters. They keep to the subset OpenAI (strict mode included), xAI, Anthropic, Gemini and MCP all accept: an object root, every parameter required, additionalProperties false, string enums only, and an empty string where a value is optional. The host that runs the agents implements each one.",
+  "tools": [
+    {
+      "name": "send_message",
+      "description": "Send a message envelope to another agent. The host delivers it only to an agent in the sender's may_message list, so a request for another department goes to the Chief of Staff.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "string",
+            "description": "The receiving agent's id."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "request",
+              "response",
+              "handoff",
+              "escalation",
+              "notice",
+              "record",
+              "context-update"
+            ],
+            "description": "What the message does."
+          },
+          "thread": {
+            "type": "string",
+            "description": "The id of the request this message belongs to; empty for a new request."
+          },
+          "subject": {
+            "type": "string",
+            "description": "One line naming the work."
+          },
+          "context": {
+            "type": "string",
+            "description": "Everything the receiver needs, restated, never 'see above'."
+          },
+          "ask": {
+            "type": "string",
+            "description": "One task, starting with a verb; empty for a notice."
+          },
+          "done_when": {
+            "type": "string",
+            "description": "The check that proves the task is finished."
+          },
+          "due": {
+            "type": "string",
+            "description": "The due date as YYYY-MM-DD; empty when there is none."
+          },
+          "gate": {
+            "type": "string",
+            "enum": ["none", "owner"],
+            "description": "owner when the work waits on the owner's yes."
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "submitted",
+              "working",
+              "input-required",
+              "auth-required",
+              "completed",
+              "failed",
+              "rejected",
+              "canceled"
+            ],
+            "description": "The task's state as of this message."
+          }
+        },
+        "required": [
+          "to",
+          "type",
+          "thread",
+          "subject",
+          "context",
+          "ask",
+          "done_when",
+          "due",
+          "gate",
+          "state"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "read_file",
+      "description": "Read a file from the agent's workspace.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "The file's path in the workspace."
+          }
+        },
+        "required": ["path"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "search_vault",
+      "description": "Search the owner's knowledge vault and return matching notes with their paths and dates.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "What to look for."
+          },
+          "folder": {
+            "type": "string",
+            "description": "A vault folder to search within; empty for the whole vault."
+          }
+        },
+        "required": ["query", "folder"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "read_vault",
+      "description": "Read one note from the owner's knowledge vault.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "The note's path from the vault root."
+          }
+        },
+        "required": ["path"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "write_vault",
+      "description": "Write a note into the owner's knowledge vault and commit it. Only the Knowledge Vault Manager holds this tool.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "The note's path from the vault root."
+          },
+          "content": {
+            "type": "string",
+            "description": "The note's whole new content."
+          },
+          "message": {
+            "type": "string",
+            "description": "The commit message, as type(scope): subject."
+          }
+        },
+        "required": ["path", "content", "message"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "write_file",
+      "description": "Create or replace a file in the agent's workspace, never in the vault.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "The file's path in the workspace."
+          },
+          "content": {
+            "type": "string",
+            "description": "The file's whole new content."
+          }
+        },
+        "required": ["path", "content"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "web_search",
+      "description": "Search the public web.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "What to search for."
+          }
+        },
+        "required": ["query"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "web_fetch",
+      "description": "Fetch one public web page as text.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "The page's full https URL."
+          }
+        },
+        "required": ["url"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "run_code",
+      "description": "Run code in the host's sandbox and return its output.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "language": {
+            "type": "string",
+            "enum": ["python", "bash"],
+            "description": "The language of the code."
+          },
+          "code": {
+            "type": "string",
+            "description": "The code to run."
+          }
+        },
+        "required": ["language", "code"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "create_task",
+      "description": "Create a task or reminder in the owner's task list.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "What is to be done, starting with a verb."
+          },
+          "owner": {
+            "type": "string",
+            "description": "The agent id or 'owner' who does it."
+          },
+          "due": {
+            "type": "string",
+            "description": "The due date as YYYY-MM-DD; empty when there is none."
+          },
+          "remind_at": {
+            "type": "string",
+            "description": "When to remind, as YYYY-MM-DDTHH:MM with the owner's time zone; empty for no reminder."
+          },
+          "notes": {
+            "type": "string",
+            "description": "Context, links and the done-test."
+          }
+        },
+        "required": ["title", "owner", "due", "remind_at", "notes"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "list_tasks",
+      "description": "List open tasks and reminders.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "owner": {
+            "type": "string",
+            "description": "An agent id or 'owner'; empty for everyone."
+          },
+          "due_before": {
+            "type": "string",
+            "description": "Only tasks due before this date, as YYYY-MM-DD; empty for all."
+          }
+        },
+        "required": ["owner", "due_before"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "list_events",
+      "description": "List the owner's calendar events in a window.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "description": "The window's start, as YYYY-MM-DDTHH:MM."
+          },
+          "end": {
+            "type": "string",
+            "description": "The window's end, as YYYY-MM-DDTHH:MM."
+          }
+        },
+        "required": ["start", "end"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "propose_event",
+      "description": "Propose a calendar event. It is held for the owner's yes and never added or sent by itself.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "The event's title."
+          },
+          "start": {
+            "type": "string",
+            "description": "When it starts, as YYYY-MM-DDTHH:MM."
+          },
+          "end": {
+            "type": "string",
+            "description": "When it ends, as YYYY-MM-DDTHH:MM."
+          },
+          "attendees": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Email addresses to invite; empty for a private block."
+          },
+          "why": {
+            "type": "string",
+            "description": "What the time is for, and what it serves."
+          }
+        },
+        "required": ["title", "start", "end", "attendees", "why"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "search_mail",
+      "description": "Search the owner's mail and return matching messages.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "What to look for."
+          }
+        },
+        "required": ["query"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "draft_mail",
+      "description": "Save a draft email for the owner to review. It is never sent by this tool.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Recipient email addresses."
+          },
+          "subject": {
+            "type": "string",
+            "description": "The subject line."
+          },
+          "body": {
+            "type": "string",
+            "description": "The message body, plain text."
+          },
+          "reply_to": {
+            "type": "string",
+            "description": "The id of the message this replies to; empty for a new message."
+          }
+        },
+        "required": ["to", "subject", "body", "reply_to"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "request_owner_approval",
+      "description": "Ask the owner to approve a gated act and wait for the answer. Only the Chief of Staff holds this tool.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "money",
+              "contract",
+              "external",
+              "delete",
+              "equity",
+              "live-system",
+              "profile"
+            ],
+            "description": "Which gate the act falls under."
+          },
+          "action": {
+            "type": "string",
+            "description": "Exactly what will be done, by whom, if approved."
+          },
+          "details": {
+            "type": "string",
+            "description": "Why, the amounts, parties and dates, and what was checked."
+          },
+          "thread": {
+            "type": "string",
+            "description": "The request this belongs to."
+          }
+        },
+        "required": ["category", "action", "details", "thread"],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

@@ -13,7 +13,7 @@ VERSION ?=
 
 # Every target is phony. For setup it matters: make would otherwise take the
 # setup/ folder beside this file for that target, already built, and skip it.
-.PHONY: help setup check lint test render probe evals audit sync merge pins cloud-setup
+.PHONY: help setup check lint test render probe evals workforce audit sync merge pins cloud-setup
 
 help: ## List every target
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | sed -E 's/:.*## /|/' | awk -F '|' '{ printf "  %-12s %s\n", $$1, $$2 }'
@@ -23,11 +23,12 @@ setup: ## Install PyYAML, which the repository validator needs; CI runs this fir
 
 check: lint test ## Everything CI checks
 
-lint: ## The repository validator, every rendered copy checked against its source, the prompts, and the evals
+lint: ## The repository validator, every rendered copy checked against its source, the prompts, the evals and the workforce
 	$(PYTHON) $(SCRIPTS)/validate-repository.py
 	$(PYTHON) $(SCRIPTS)/render.py --check
 	$(PYTHON) $(SCRIPTS)/prompts.py --check
 	$(PYTHON) $(SCRIPTS)/evals.py --check
+	$(PYTHON) $(SCRIPTS)/workforce.py check
 
 test: ## Every test in the repository
 	$(PYTHON) -m unittest discover -s $(SCRIPTS) -p 'test_*.py'
@@ -40,6 +41,9 @@ probe: ## Prove which files each installed app loads, one model call per check
 
 evals: ## Measure each rule and universal prompt, with it and without; ARGS='--apps claude --dry-run'
 	$(PYTHON) $(SCRIPTS)/evals.py $(ARGS)
+
+workforce: ## Check, render or install the agent workforce; ARGS='install --target claude --dry-run'
+	$(PYTHON) $(SCRIPTS)/workforce.py $(or $(ARGS),check)
 
 audit: ## Report what every repository carries, against the latest release
 	$(PYTHON) $(SCRIPTS)/sync.py audit $(ARGS)

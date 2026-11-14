@@ -1,0 +1,100 @@
+{
+  "//": "The envelope every workforce message carries, as a JSON Schema an orchestrator validates each message against: who sends it to whom, what it asks, when it is due, whether it waits on the owner, and the task's state.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Workforce message",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string", "description": "This message's unique id." },
+    "thread": {
+      "type": "string",
+      "description": "The id of the request this message belongs to; a new request's own id."
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "request",
+        "response",
+        "handoff",
+        "escalation",
+        "notice",
+        "record",
+        "context-update"
+      ],
+      "description": "What the message does."
+    },
+    "from": {
+      "type": "string",
+      "description": "The sending agent's id, or owner."
+    },
+    "to": {
+      "type": "string",
+      "description": "The receiving agent's id, or owner."
+    },
+    "via": {
+      "type": "string",
+      "description": "chief-of-staff when the Chief of Staff relayed it between departments; empty otherwise."
+    },
+    "subject": { "type": "string", "description": "One line naming the work." },
+    "context": {
+      "type": "string",
+      "description": "Everything the receiver needs, restated, never 'see above'."
+    },
+    "ask": {
+      "type": "string",
+      "description": "One task, starting with a verb, and the shape of the answer; empty for a notice."
+    },
+    "done_when": {
+      "type": "string",
+      "description": "The check that proves the task is finished."
+    },
+    "due": {
+      "type": "string",
+      "description": "The due date as YYYY-MM-DD; empty when there is none."
+    },
+    "gate": {
+      "type": "string",
+      "enum": ["none", "owner"],
+      "description": "owner when the work waits on the owner's yes."
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "submitted",
+        "working",
+        "input-required",
+        "auth-required",
+        "completed",
+        "failed",
+        "rejected",
+        "canceled"
+      ],
+      "description": "The task's state as of this message."
+    },
+    "hops": {
+      "type": "integer",
+      "description": "How many times the task has been passed on; never more than 2."
+    },
+    "attachments": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Paths or links, each with its date."
+    },
+    "sent": {
+      "type": "string",
+      "description": "When it was sent, as ISO 8601 with the time zone offset."
+    }
+  },
+  "required": [
+    "id",
+    "thread",
+    "type",
+    "from",
+    "to",
+    "subject",
+    "context",
+    "gate",
+    "state",
+    "hops"
+  ],
+  "additionalProperties": false
+}

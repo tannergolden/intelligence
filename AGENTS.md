@@ -40,12 +40,13 @@ serves to this repository from its `.github` repository.
 ## Commands
 
 - `make setup`: install PyYAML, which the repository validator in `make lint` needs. CI runs it before the checks.
-- `make check`: everything CI checks, which are the repository validator, `render.py --check`, `prompts.py --check`, `evals.py --check` and every test.
+- `make check`: everything CI checks, which are the repository validator, `render.py --check`, `prompts.py --check`, `evals.py --check`, `workforce.py check` and every test.
 - `make test`: the tests alone, every `test_*.py` in `.github/scripts/`.
 - `make render`: rewrite `home/` from `CONSTITUTION.md`, the kit's sources in `kit/` and the installer.
 - `make probe`: prove which instruction files each installed app loads. It makes one model call per check.
 - `make evals`: measure each rule with the block and without it, and each universal prompt against the hurried request it replaces. Real runs make model calls; `ARGS=--dry-run` makes none.
 - `python3 kit/guard.py --command '<command>'`: see what the guard hook would say about one command.
+- `make workforce`, or `python3 .github/scripts/workforce.py check`, `render` or `install`: check the agent workforce in `workforce/`, and render or install it for one environment.
 - `make audit`, `make sync` and `make merge`: reach every repository the owner owns, through the owner's `gh` login. `make merge` also starts the checks a stub's pull request waits on.
 
 ## Definition of done
@@ -66,23 +67,24 @@ serves to this repository from its `.github` repository.
 
 ## Where things live
 
-| Path                                 | What                                                                                                                                                          |
-| :----------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`CONSTITUTION.md`](CONSTITUTION.md) | The source of every rule, and the order and budget of the block                                                                                               |
-| `kit/`                               | The kit's source: the guard hook every app's pre-tool hook runs                                                                                               |
-| `home/`                              | Everything a machine downloads, rendered: the home file, the kit, the installer and their hashes, which every release tag serves                              |
-| `evals/`                             | Scenarios for every rule and every universal prompt                                                                                                           |
-| `setup/`                             | The Claude cloud setup script, the stub a repository carries, and the empty prompts page every repository gets                                                |
-| `docs/Prompts.md`                    | The universal prompts, which stay in the hub: anyone copies one from here into any agent                                                                      |
-| `.github/scripts/`                   | Every script, with its test beside it: `render.py`, `kit.py`, `install.py`, `sync.py`, `prompts.py`, `evals.py`, `loader-probe.py`, and the template's checks |
-| `.github/actions/`                   | The action a repository's stub runs, through `.github/workflows/sync.yml`                                                                                     |
-| `docs/introduction/`                 | Where to start: `How-It-Works.md`, which shows how the pieces fit, and the roadmap                                                                            |
-| `docs/distribution/`                 | Every step of a release, from a green `Development` to every machine and repository                                                                           |
-| `docs/technical/`                    | How every part of the hub works, one document each                                                                                                            |
-| `docs/operations/`                   | The controls and risks behind the rules, and what to do when a sync or an install goes wrong                                                                  |
-| `docs/references/`                   | Pages to look up: the glossary, the commands, the files and formats, and the eval scenario format                                                             |
-| `docs/library/`                      | Material to learn from, as the standards keep it: the prompt engineering best practices                                                                       |
-| `docs/adrs/`                         | Every decision behind the plan                                                                                                                                |
+| Path                                 | What                                                                                                                                                                          |
+| :----------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`CONSTITUTION.md`](CONSTITUTION.md) | The source of every rule, and the order and budget of the block                                                                                                               |
+| `kit/`                               | The kit's source: the guard hook every app's pre-tool hook runs                                                                                                               |
+| `workforce/`                         | The agent workforce: the Chief of Staff, the Knowledge Vault Manager and the venture template's twelve departments, installed only on request                                 |
+| `home/`                              | Everything a machine downloads, rendered: the home file, the kit, the installer and their hashes, which every release tag serves                                              |
+| `evals/`                             | Scenarios for every rule and every universal prompt                                                                                                                           |
+| `setup/`                             | The Claude cloud setup script, the stub a repository carries, and the empty prompts page every repository gets                                                                |
+| `docs/Prompts.md`                    | The universal prompts, which stay in the hub: anyone copies one from here into any agent                                                                                      |
+| `.github/scripts/`                   | Every script, with its test beside it: `render.py`, `kit.py`, `install.py`, `sync.py`, `prompts.py`, `evals.py`, `loader-probe.py`, `workforce.py`, and the template's checks |
+| `.github/actions/`                   | The action a repository's stub runs, through `.github/workflows/sync.yml`                                                                                                     |
+| `docs/introduction/`                 | Where to start: `How-It-Works.md`, which shows how the pieces fit, and the roadmap                                                                                            |
+| `docs/distribution/`                 | Every step of a release, from a green `Development` to every machine and repository                                                                                           |
+| `docs/technical/`                    | How every part of the hub works, one document each                                                                                                                            |
+| `docs/operations/`                   | The controls and risks behind the rules, and what to do when a sync or an install goes wrong                                                                                  |
+| `docs/references/`                   | Pages to look up: the glossary, the commands, the files and formats, and the eval scenario format                                                                             |
+| `docs/library/`                      | Material to learn from, as the standards keep it: the prompt engineering best practices                                                                                       |
+| `docs/adrs/`                         | Every decision behind the plan                                                                                                                                                |
 
 ## Gotchas
 

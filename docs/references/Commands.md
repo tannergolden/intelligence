@@ -35,21 +35,22 @@ own subscriptions, or the files in your home folder.
 
 ## ⚙️ The Make Targets
 
-| Target             | Runs                                                                                    | Reaches                                                                                              |
-| :----------------- | :-------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
-| `make help`        | Lists every target with its summary                                                     | Nothing                                                                                              |
-| `make setup`       | `pip install pyyaml==6.0.3`, for the repository validator; CI runs it first             | The Python package index                                                                             |
-| `make check`       | `make lint`, then `make test`: everything CI checks                                     | Nothing                                                                                              |
-| `make lint`        | `validate-repository.py`, `render.py --check`, `prompts.py --check`, `evals.py --check` | Nothing                                                                                              |
-| `make test`        | Every `test_*.py` in `.github/scripts/`, through `unittest`                             | Nothing: GitHub and the apps are stand-ins                                                           |
-| `make render`      | `render.py --write`, which rewrites `home/`                                             | Nothing                                                                                              |
-| `make probe`       | `loader-probe.py` with `ARGS`                                                           | Every installed app, one model call per check, and your home folder, which it restores               |
-| `make evals`       | `evals.py` with `ARGS`, which must name `--apps` unless it holds `--check`              | The apps named, one model call per run; nothing with `--check` or `--dry-run`                        |
-| `make audit`       | `sync.py audit` with `ARGS`                                                             | Every repository you own, read only                                                                  |
-| `make sync`        | `sync.py sync` with `ARGS`                                                              | Every repository you own: moves `chore/intelligence`, commits to it, opens or updates a pull request |
-| `make merge`       | `sync.py merge` with `ARGS`                                                             | Every sync pull request: approves or reopens to start held checks, and merges the green ones         |
-| `make pins`        | `render.py --pins` for `VERSION`, or for this checkout without it                       | Nothing: it reads the tag from your checkout                                                         |
-| `make cloud-setup` | `render.py --setup` for `VERSION`, which it requires                                    | Nothing: it reads the tag from your checkout                                                         |
+| Target             | Runs                                                                                                          | Reaches                                                                                              |
+| :----------------- | :------------------------------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------- |
+| `make help`        | Lists every target with its summary                                                                           | Nothing                                                                                              |
+| `make setup`       | `pip install pyyaml==6.0.3`, for the repository validator; CI runs it first                                   | The Python package index                                                                             |
+| `make check`       | `make lint`, then `make test`: everything CI checks                                                           | Nothing                                                                                              |
+| `make lint`        | `validate-repository.py`, `render.py --check`, `prompts.py --check`, `evals.py --check`, `workforce.py check` | Nothing                                                                                              |
+| `make test`        | Every `test_*.py` in `.github/scripts/`, through `unittest`                                                   | Nothing: GitHub and the apps are stand-ins                                                           |
+| `make render`      | `render.py --write`, which rewrites `home/`                                                                   | Nothing                                                                                              |
+| `make probe`       | `loader-probe.py` with `ARGS`                                                                                 | Every installed app, one model call per check, and your home folder, which it restores               |
+| `make evals`       | `evals.py` with `ARGS`, which must name `--apps` unless it holds `--check`                                    | The apps named, one model call per run; nothing with `--check` or `--dry-run`                        |
+| `make workforce`   | `workforce.py` with `ARGS`, or `check` without them                                                           | Nothing with `check` or `render`; `install` and `uninstall` change an app's agents folder            |
+| `make audit`       | `sync.py audit` with `ARGS`                                                                                   | Every repository you own, read only                                                                  |
+| `make sync`        | `sync.py sync` with `ARGS`                                                                                    | Every repository you own: moves `chore/intelligence`, commits to it, opens or updates a pull request |
+| `make merge`       | `sync.py merge` with `ARGS`                                                                                   | Every sync pull request: approves or reopens to start held checks, and merges the green ones         |
+| `make pins`        | `render.py --pins` for `VERSION`, or for this checkout without it                                             | Nothing: it reads the tag from your checkout                                                         |
+| `make cloud-setup` | `render.py --setup` for `VERSION`, which it requires                                                          | Nothing: it reads the tag from your checkout                                                         |
 
 Four variables change what a target runs:
 
@@ -138,6 +139,34 @@ python3 install.py uninstall --dry-run
 A scenario run exits 1 when any run with the block fails, and a prompt
 scenario run when any run with the prompt fails; the runs without them never
 fail the command.
+
+---
+
+## 👔 workforce.py
+
+`make workforce` runs it, and `make lint` runs its `check`. [The
+Workforce](../technical/The-Workforce.md) explains what it checks, what each
+target is for and how the Chief of Staff installs it.
+
+| Command                       | What it does                                                                                                                        |
+| :---------------------------- | :---------------------------------------------------------------------------------------------------------------------------------- |
+| `check`                       | Hold `workforce/` to its rules, list every problem, and print the roster when there is none                                         |
+| `render --target T --out DIR` | Write the workforce for one target into `DIR`: `claude`, `grok-build`, `copilot`, `codex`, `bundle`, `ollama`, `text` or `grok-bot` |
+| `install --target T`          | Write `claude`, `grok-build`, `copilot` or `codex` into that app's agents folder, refusing any file it did not write                |
+| `uninstall --target T`        | Take out every file the workforce wrote in that app's agents folder, and nothing else                                               |
+
+| Option                           | What it does                                                                                                                                  |
+| :------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--dest DIR`                     | `install` and `uninstall`: the agents folder to use, in place of the app's own in your home folder                                            |
+| `--dry-run`                      | `install` and `uninstall`: say what would change, and change nothing                                                                          |
+| `--grant CAPABILITY=TOOL[,TOOL]` | `render` and `install`, for `claude` and `copilot`: grant a capability, such as `calendar`, through named connector tools; repeat it for more |
+| `--flavor F`                     | `render --target bundle`: wrap each tool for `neutral`, `responses`, `chat`, `anthropic` or `mcp`; `neutral` by default                       |
+| `--model M`                      | `render --target ollama`: the local model each Modelfile builds on; required                                                                  |
+| `--ref REF`                      | `render --target grok-bot`: the tag or branch each Bot reads its files at; `Development` by default                                           |
+
+Every command checks the source first and exits 1, writing nothing, when it
+fails. `install` also exits 1 when it refused a file, after writing the rest.
+`codex` follows `CODEX_HOME` when it is set.
 
 ---
 
