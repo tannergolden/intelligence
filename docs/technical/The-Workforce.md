@@ -396,13 +396,13 @@ facts without anyone copying them around.
 reports to one Chief, who answers for that portfolio, and each Chief to the ⭐
 Chief Executive Officer, who reports to the owner:
 
-| Member of the executive team | Oversees                                                                         |
-| :--------------------------- | :------------------------------------------------------------------------------- |
-| ⭐ Chief Executive Officer   | Quality Assurance (QA) and Public Relations (PR), kept apart from the operators  |
-| Chief Financial Officer      | Finance & Accounting (F&A), Legal & Compliance (L&C), Business Intelligence (BI) |
-| Chief Operating Officer      | Operations & Logistics (O&L), Human Resources (HR)                               |
-| Chief Technology Officer     | Information Technology (IT), Research & Development (R&D)                        |
-| Chief Revenue Officer        | Sales & Marketing (S&M), Customer Experience (CX)                                |
+| Member of the executive team | Oversees                                                                              |
+| :--------------------------- | :------------------------------------------------------------------------------------ |
+| ⭐ Chief Executive Officer   | Quality Assurance (QA) and Public Relations (PR), kept apart from the operators       |
+| Chief Financial Officer      | Finance & Accounting (F&A), Legal & Compliance (L&C)                                  |
+| Chief Operating Officer      | Operations & Logistics (O&L), Human Resources (HR)                                    |
+| Chief Technology Officer     | Information Technology (IT), Research & Development (R&D), Business Intelligence (BI) |
+| Chief Revenue Officer        | Sales & Marketing (S&M), Customer Experience (CX)                                     |
 
 A reporting line carries decisions and escalations, never a shortcut past the
 hub: a Chief reaches the departments it oversees through the Chief of Staff,

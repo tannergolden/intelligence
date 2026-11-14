@@ -21,7 +21,7 @@ Give every number one definition and an honest grade, and make each visual answe
 
 ### Ventures
 
-- Governed metric definitions, the north star and scorecard, data governance, sources and pipelines, analyses, forecasts, experiments, dashboards and charts.
+- Governed metric definitions, the north star, the numbers behind every scorecard, data governance, sources and pipelines, analyses, forecasts, experiments, dashboards and charts.
 
 ### Personal
 

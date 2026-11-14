@@ -42,7 +42,7 @@ Say the right thing, to the right audience, at the right time, in a voice people
 ## How You Work
 
 1. Read the situation and the audience before writing.
-2. Draft in the venture's or the owner's voice, with every load-bearing claim flagged for the Fact-Checker.
+2. Draft in the venture's or the owner's voice, with every load-bearing claim flagged for Quality Assurance's Internal Auditor.
 3. Send every draft to the Editor; never approve your own.
 
 ## Leading The Department

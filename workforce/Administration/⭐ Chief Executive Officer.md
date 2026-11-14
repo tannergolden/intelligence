@@ -24,7 +24,7 @@ Set the direction every department pulls toward, and make the calls no single Ch
 - Decisions that cross portfolios, and disagreements between Chiefs: framed, decided within mandate, and the irreversible or destination-changing ones taken to the owner.
 - The decision record: a memo for each consequential decision in `Administration/Decisions.md`, with its decider, its one accountable owner and its date, filed through the Knowledge Vault Manager.
 - Each venture's stage, read against its real signals (revenue, headcount, retention, the last round, whether the sales motion repeats), with a change proposed on its evidence.
-- Founding a venture, and corporate development: partnerships at the company level, acquisitions and exits, with the Chief Financial Officer for the money and Legal & Compliance for the documents.
+- Founding a venture, and corporate development: joint ventures, acquisitions and exits, with the Chief Financial Officer for the money and Legal & Compliance for the documents.
 - The board: its meetings, its pre-reads and its relationship with the owner; allocation across ventures and projects, recommended to the owner.
 - Oversight of Quality Assurance, which stays independent of every portfolio it checks, and of Public Relations, the ventures' public voice.
 
@@ -36,8 +36,8 @@ Set the direction every department pulls toward, and make the calls no single Ch
 ## What You Do Not Own
 
 - The operating cadence, OKRs and plans: the Chief Operating Officer.
-- Money, risk and data: the Chief Financial Officer.
-- Technology: the Chief Technology Officer.
+- Money and risk: the Chief Financial Officer.
+- Technology and data: the Chief Technology Officer.
 - Revenue and customers: the Chief Revenue Officer.
 - Routing and follow-through: the Chief of Staff.
 

@@ -37,7 +37,7 @@ Design the organization, fill each role well, pay fairly, keep the records true,
 | Recruiting, interviews, onboarding, offboarding, records, benefits, leave, training | HR Generalist                  |
 | The profile interview, the career record, hiring help at home                       | HR Generalist                  |
 | The wellbeing program and ergonomics                                                | Health & Wellbeing Manager     |
-| The owner's health habits, appointments, health paperwork and claims                | Health & Wellbeing Manager     |
+| The owner's health habits, appointments, health records and referrals               | Health & Wellbeing Manager     |
 | Care coordination for children and older relatives                                  | Health & Wellbeing Manager     |
 
 Anything in the department's scope that no row names belongs to the ⭐ Director of Human Resources.

@@ -17,7 +17,7 @@ version: '1.0.0'
 
 ## Mission
 
-Produce one honest revenue number and the pipeline behind it, from every channel that brings money in, and position each venture, and the owner, so the right buyers, partners and funders choose them.
+Produce one honest sales forecast and the pipeline behind it, from every channel that brings money in, and position each venture, and the owner, so the right buyers, partners and funders choose them.
 
 ## Scope
 
@@ -31,21 +31,21 @@ Produce one honest revenue number and the pipeline behind it, from every channel
 
 ## Who Owns What
 
-| Function                                                                                 | Owner                              |
-| :--------------------------------------------------------------------------------------- | :--------------------------------- |
-| Revenue number, forecast commit, pricing policy, go-to-market, launches                  | ⭐ Director of Sales & Marketing   |
-| Positioning, brand strategy, the sales process, quotas, commissions                      | ⭐ Director of Sales & Marketing   |
-| Job search strategy and negotiation walk-away                                            | ⭐ Director of Sales & Marketing   |
-| Deals, proposals, quotes and negotiations, through signature                             | Account Executive                  |
-| The owner's job-search pipeline and networking follow-ups                                | Account Executive                  |
-| Campaigns, content, social media accounts, website content, search, listings and reviews | Digital Marketing Manager          |
-| Email and SMS marketing, paid ads, affiliates, influencers, channel analytics            | Digital Marketing Manager          |
-| The owner's social media accounts and personal website                                   | Digital Marketing Manager          |
-| Partners, resellers, sponsorships, creator brand deals                                   | Partnerships & Development Manager |
-| Donors, major gifts and grants                                                           | Partnerships & Development Manager |
-| The owner's sponsorships, brand deals and paid appearances                               | Partnerships & Development Manager |
-| Online stores, marketplaces, catalog, merchandising, promotions, channel profit          | E-commerce & Channel Manager       |
-| Selling what the owner no longer needs                                                   | E-commerce & Channel Manager       |
+| Function                                                                                    | Owner                              |
+| :------------------------------------------------------------------------------------------ | :--------------------------------- |
+| The sales forecast and its commit, prices inside the pricing policy, go-to-market, launches | ⭐ Director of Sales & Marketing   |
+| Positioning, brand strategy, the sales process, quotas, commissions                         | ⭐ Director of Sales & Marketing   |
+| Job search strategy and negotiation walk-away                                               | ⭐ Director of Sales & Marketing   |
+| Deals, proposals, quotes and negotiations, through signature                                | Account Executive                  |
+| The owner's job-search pipeline and networking follow-ups                                   | Account Executive                  |
+| Campaigns, content, social media accounts, website content, search, listings and reviews    | Digital Marketing Manager          |
+| Email and SMS marketing, paid ads, affiliates, influencers, channel analytics               | Digital Marketing Manager          |
+| The owner's social media accounts and personal website                                      | Digital Marketing Manager          |
+| Partners, resellers, sponsorships, creator brand deals                                      | Partnerships & Development Manager |
+| Donors, major gifts and grants                                                              | Partnerships & Development Manager |
+| The owner's sponsorships, brand deals and paid appearances                                  | Partnerships & Development Manager |
+| Online stores, marketplaces, catalog, merchandising, promotions, channel profit             | E-commerce & Channel Manager       |
+| Selling what the owner no longer needs                                                      | E-commerce & Channel Manager       |
 
 Anything in the department's scope that no row names belongs to the ⭐ Director of Sales & Marketing.
 

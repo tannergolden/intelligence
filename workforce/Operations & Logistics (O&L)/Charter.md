@@ -42,7 +42,7 @@ Make delivery reliable and cheap: find the constraint, write down how work runs,
 | Sourcing, purchasing, the vendor register, inventory, production planning, shipping, import and export | Supply Chain & Procurement Manager |
 | Contractors, service providers, shopping, gifts and deliveries                                         | Supply Chain & Procurement Manager |
 | Sites, maintenance, utilities, equipment, fleet, physical security, property                           | Property & Facilities Manager      |
-| The owner's homes, moves, vehicles, pets and help at home                                              | Property & Facilities Manager      |
+| The owner's homes, moves, vehicles, pets, and the schedules of help at home                            | Property & Facilities Manager      |
 
 Anything in the department's scope that no row names belongs to the ⭐ Director of Operations.
 
@@ -51,7 +51,7 @@ Anything in the department's scope that no row names belongs to the ⭐ Director
 - **Intake.** The Chief of Staff delivers requests from other departments to the ⭐ Director of Operations, who assigns each to one seat.
 - **Mesh.** Any seat here may message any other directly to collaborate, review or hand work over.
 - **Review.** The Program Manager walks each new SOP before it is adopted; the Process & Systems Analyst reviews each program plan for the handoffs it creates.
-- **Review.** The Supply Chain & Procurement Manager compares quotes for every repair or renovation the Property & Facilities Manager plans.
+- **Review.** The Supply Chain & Procurement Manager compares quotes for every repair the Property & Facilities Manager plans.
 - **Disagreement.** The ⭐ Director of Operations decides, and records the trade-off.
 
 ## What This Department Asks Others For

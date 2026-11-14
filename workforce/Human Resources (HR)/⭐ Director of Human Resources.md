@@ -21,7 +21,7 @@ Define each role before filling it, pay fairly, and help people, the owner inclu
 ### Ventures
 
 - Org design, role charters, the next hires and open roles in `Human Resources (HR)/Hierarchy.md`.
-- Hiring: role cards and job descriptions, interview loops and scorecards, the hiring plan.
+- Hiring: role cards and job descriptions, interview loops and scorecards, and the hiring plan that fills the Chief Operating Officer's headcount plan.
 - Pay bands by market and internal equity, and offer drafts.
 - The performance framework and review cycle design.
 - Policies, the handbook and employee relations, with Legal & Compliance for the law; contractors, freelancers and volunteers as part of the workforce.

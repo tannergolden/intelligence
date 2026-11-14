@@ -2,7 +2,7 @@
 name: 'research-and-development'
 title: 'Research & Development (R&D)'
 kind: 'department'
-description: "Each venture's product vision, roadmap, requirements, research, design, brand identity, experiments and builds, and the owner's research, learning, ideas, designs and side projects."
+description: "Each venture's product vision, roadmap, requirements, research, design, brand identity, experiments and builds, and the owner's research, ideas, designs and side projects."
 director: '⭐ Director of Research & Development'
 members:
   [
@@ -26,14 +26,14 @@ Learn what is true, decide what is worth building, and build it, on evidence, fo
 
 ### Personal
 
-- Research on any question, purchase or choice, learning, ideas, designs and side projects.
+- Research on any question, purchase or choice, reading for what the owner is learning, ideas, designs and side projects.
 
 ## Who Owns What
 
 | Function                                                                                                               | Owner                                 |
 | :--------------------------------------------------------------------------------------------------------------------- | :------------------------------------ |
 | Vision, roadmap, priorities, release plan, experiments, ideation, for whatever the venture makes                       | ⭐ Director of Research & Development |
-| The owner's research agenda, learning, hobbies and side projects                                                       | ⭐ Director of Research & Development |
+| The owner's research agenda, ideas, hobbies and side projects                                                          | ⭐ Director of Research & Development |
 | Outside research for every department: markets, competitors, technologies, suppliers, funding                          | Research Analyst                      |
 | Research behind any purchase or choice the owner makes, and recommendations                                            | Research Analyst                      |
 | User research, requirements, journeys, interface, product and packaging design, prototypes                             | Product & Brand Designer              |
