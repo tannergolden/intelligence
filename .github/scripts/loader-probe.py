@@ -39,28 +39,17 @@ Some surfaces have no headless mode, such as Copilot in VS Code and the
 Cursor editor. `--keep` writes the same files and fixtures, prints the
 question to ask by hand, and leaves everything in place until `--cleanup`.
 
-THE SKILL CANARY. With `--skills`, the probe also plants one skill under the
-same name in three skills folders, each copy with its own code: the shared
-`~/.agents/skills/`, Claude Code's `~/.claude/skills/` and Antigravity's
-`~/.gemini/antigravity-cli/skills/`. The home kit installs its skills as
-copies in all three, which is safe only if every app sees exactly one copy.
-Each app is asked which copies it can see; one copy passes, none or two
-fail. VS Code, which reads both `~/.claude/skills` and `~/.agents/skills`,
-is checked by hand with `--keep --skills`.
-
 SAFETY. The probe never overwrites a file it did not create. It records
 every change in a manifest before making it, and restores the original
 bytes when it finishes, fails, or is interrupted. A run that dies anyway
 leaves the manifest behind; `--cleanup` replays it. The probe makes one
-model call per check, eleven in a full run of every app; the skill canary
-adds one per app.
+model call per check, eleven in a full run of every app.
 
 Run it:
 
     python3 .github/scripts/loader-probe.py --dry-run     # show the plan, change nothing
     python3 .github/scripts/loader-probe.py               # every installed app
     python3 .github/scripts/loader-probe.py --apps claude,grok
-    python3 .github/scripts/loader-probe.py --skills      # add the skill canary
     python3 .github/scripts/loader-probe.py --keep        # set up a check by hand
     python3 .github/scripts/loader-probe.py --cleanup     # undo --keep, or a crash
 """
@@ -107,31 +96,6 @@ CLAUDE_READ_BOTH_SETTINGS = {
 }
 
 MASTER = '.agents/AGENTS.md'
-
-# The skill canary: one skill name, one copy per skills folder, a code each.
-SKILL = 'intelligence-probe-canary'
-SKILL_ROOTS = {
-    'PROBE_SKILL_SHARED': '.agents/skills',
-    'PROBE_SKILL_CLAUDE': '.claude/skills',
-    'PROBE_SKILL_ANTIGRAVITY': '.gemini/antigravity-cli/skills',
-}
-SKILL_NAMES = tuple(SKILL_ROOTS)
-SKILL_QUESTION = (
-    'Answer only from what you were given before this message. '
-    'Do not use any tools, read any files or run any commands. '
-    f'You may have skills named {SKILL}. For each copy whose description you can see, '
-    'reply with one line NAME=VALUE for the value that description gives. '
-    'If you see none, reply NONE. Reply with nothing else.'
-)
-# The copy each app should see: the one in its own folder, and only that one.
-# Grok Build and Cursor read both the shared folder and Claude's; either copy
-# passes, as long as they see one.
-SKILL_SEES = {
-    'claude': 'PROBE_SKILL_CLAUDE',
-    'codex': 'PROBE_SKILL_SHARED',
-    'copilot': 'PROBE_SKILL_SHARED',
-    'antigravity': 'PROBE_SKILL_ANTIGRAVITY',
-}
 
 # Each fixture is a scratch git repository whose AGENTS.md carries PROBE_REPO,
 # beside the file named here, which defines nothing.
@@ -208,23 +172,11 @@ class Check:
     expect: dict[str, bool | None]  # None means "not judged"
     extra_args: tuple[str, ...] = ()
     drop_env: tuple[str, ...] = ()
-    question: str = QUESTION
-    names: tuple[str, ...] = NAMES
-    exactly_one: bool = False  # passes only if exactly one of the names is seen
 
 
-def plan_checks(apps: Sequence[str], settings_path: str, claude_reads_both: bool = False,
-                skills: bool = False) -> list[Check]:
+def plan_checks(apps: Sequence[str], settings_path: str, claude_reads_both: bool = False) -> list[Check]:
     """Every check for the chosen apps, negative controls included."""
     checks: list[Check] = []
-    if skills:
-        for key in apps:
-            sees = SKILL_SEES.get(key)
-            expect: dict[str, bool | None] = (
-                {name: name == sees for name in SKILL_NAMES} if sees
-                else {**{name: None for name in SKILL_NAMES}, 'PROBE_SKILL_ANTIGRAVITY': False})
-            checks.append(Check(key, f'{APPS[key].name} skill copies', 'plain', expect,
-                                question=SKILL_QUESTION, names=SKILL_NAMES, exactly_one=True))
     for key in apps:
         app = APPS[key]
         reads_home = bool(app.home or app.reads_home_of)
@@ -264,18 +216,6 @@ def probe_block(name: str, code: str) -> str:
         'This is a temporary test written by the tannergolden/intelligence '
         f'phase 0 probe. The value of {name} is {code}.\n'
         f'{END}\n'
-    )
-
-
-def skill_text(name: str, code: str) -> str:
-    """One copy of the canary skill, whose description carries its code."""
-    return (
-        '---\n'
-        f'name: {SKILL}\n'
-        'description: A temporary test written by the tannergolden/intelligence loader probe. '
-        f'The value of {name} is {code}. Use when asked about {SKILL}.\n'
-        '---\n\n'
-        f'The value of {name} is {code}.\n'
     )
 
 
@@ -431,19 +371,17 @@ def build_argv(app: App, check: Check, overrides: dict[str, str]) -> list[str]:
         template = shlex.split(overrides[app.key])
     else:
         template = list(app.argv)
-    return [check.question if part == '{prompt}' else part for part in template] + list(check.extra_args)
+    return [QUESTION if part == '{prompt}' else part for part in template] + list(check.extra_args)
 
 
-def observe(output: str, codes: dict[str, str], names: Sequence[str] = NAMES) -> dict[str, bool]:
+def observe(output: str, codes: dict[str, str]) -> dict[str, bool]:
     """Which probe values an app's output contains, in any letter case."""
     output = output.lower()
-    return {name: codes[name].lower() in output for name in names}
+    return {name: codes[name].lower() in output for name in NAMES}
 
 
-def judge(expect: dict[str, bool | None], seen: dict[str, bool], exactly_one: bool = False) -> bool:
+def judge(expect: dict[str, bool | None], seen: dict[str, bool]) -> bool:
     """True when every judged value matches what the check expects."""
-    if exactly_one and sum(seen.values()) != 1:
-        return False
     return all(seen[name] == want for name, want in expect.items() if want is not None)
 
 
@@ -472,18 +410,18 @@ def run_check(app: App, check: Check, cwd: pathlib.Path, codes: dict[str, str],
     except OSError as error:
         output, exit_code = str(error), 127
     seconds = (datetime.datetime.now(datetime.timezone.utc) - started).total_seconds()
-    seen = observe(output, codes, check.names)
+    seen = observe(output, codes)
     if exit_code is None:
         status = 'timeout'
     elif exit_code != 0 and not any(seen.values()):
         status = 'error'
     else:
-        status = 'pass' if judge(check.expect, seen, check.exactly_one) else 'fail'
+        status = 'pass' if judge(check.expect, seen) else 'fail'
     return {
         'app': app.key, 'check': check.label, 'status': status,
         'exit_code': exit_code, 'seconds': round(seconds, 1),
-        'expected': check.expect, 'observed': seen, 'names': list(check.names),
-        'command': ['{question}' if part == check.question else part for part in argv],
+        'expected': check.expect, 'observed': seen,
+        'command': ['{question}' if part == QUESTION else part for part in argv],
         'output': output.strip()[:2000],
     }
 
@@ -496,24 +434,18 @@ def cell(want: bool | None, seen: bool) -> str:
 
 
 def matrix(results: Sequence[dict[str, object]]) -> str:
-    """The results as Markdown tables, ready to paste into an issue."""
-    tables = []
-    for names in (NAMES, SKILL_NAMES):
-        rows = [row for row in results if tuple(row.get('names') or NAMES) == names]
-        if not rows:
+    """The results as a Markdown table, ready to paste into an issue."""
+    lines = ['| Check | ' + ' | '.join(NAMES) + ' | Result |',
+             '| --- ' * (len(NAMES) + 2) + '|']
+    for row in results:
+        if row['status'] in ('skipped', 'timeout', 'error'):
+            lines.append(f"| {row['check']} | " + '- | ' * len(NAMES) + f"{row['status']} |")
             continue
-        lines = ['| Check | ' + ' | '.join(names) + ' | Result |',
-                 '| --- ' * (len(names) + 2) + '|']
-        for row in rows:
-            if row['status'] in ('skipped', 'timeout', 'error'):
-                lines.append(f"| {row['check']} | " + '- | ' * len(names) + f"{row['status']} |")
-                continue
-            expect = row['expected'] if isinstance(row['expected'], dict) else {}
-            seen = row['observed'] if isinstance(row['observed'], dict) else {}
-            cells = ' | '.join(cell(expect.get(name), bool(seen.get(name))) for name in names)
-            lines.append(f"| {row['check']} | {cells} | {row['status']} |")
-        tables.append('\n'.join(lines))
-    return '\n\n'.join(tables)
+        expect = row['expected'] if isinstance(row['expected'], dict) else {}
+        seen = row['observed'] if isinstance(row['observed'], dict) else {}
+        cells = ' | '.join(cell(expect.get(name), bool(seen.get(name))) for name in NAMES)
+        lines.append(f"| {row['check']} | {cells} | {row['status']} |")
+    return '\n'.join(lines)
 
 
 def default_state() -> pathlib.Path:
@@ -531,8 +463,8 @@ def parse_overrides(values: Sequence[str]) -> dict[str, str]:
     return overrides
 
 
-def planned_writes(apps: Sequence[str], home: pathlib.Path, codes: dict[str, str],
-                   skills: bool = False) -> list[tuple[pathlib.Path, str, str]]:
+def planned_writes(apps: Sequence[str], home: pathlib.Path,
+                   codes: dict[str, str]) -> list[tuple[pathlib.Path, str, str]]:
     """Every file the probe writes for these apps: path, text and mode."""
     writes = [(home / MASTER, probe_block('PROBE_MASTER', codes['PROBE_MASTER']), 'block')]
     owners = set(apps) | {APPS[key].reads_home_of for key in apps if APPS[key].reads_home_of}
@@ -540,9 +472,6 @@ def planned_writes(apps: Sequence[str], home: pathlib.Path, codes: dict[str, str
         app = APPS[key]
         if app.home:
             writes.append((home / app.home, home_text(key, codes['PROBE_HOME']), app.home_mode))
-    if skills:
-        for name, root in SKILL_ROOTS.items():
-            writes.append((home / root / SKILL / 'SKILL.md', skill_text(name, codes[name]), 'file'))
     return writes
 
 
@@ -564,8 +493,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument('--keep', action='store_true',
                         help='write the files and fixtures for a check by hand, '
                              'and leave them until --cleanup')
-    parser.add_argument('--skills', action='store_true',
-                        help='add the skill canary: one more model call per app')
     args = parser.parse_args(argv)
 
     manifest = Manifest(args.state or default_state())
@@ -601,13 +528,13 @@ def main(argv: Sequence[str] | None = None) -> int:
               file=sys.stderr)
         return 1
 
-    codes = {name: secrets.token_hex(6) for name in NAMES + SKILL_NAMES}
+    codes = {name: secrets.token_hex(6) for name in NAMES}
     # A check by hand needs no command line, so it writes for every app named.
-    writes = planned_writes(wanted if args.keep else installed, args.home, codes, args.skills)
+    writes = planned_writes(wanted if args.keep else installed, args.home, codes)
     both = claude_reads_both(args.home)
 
     if args.dry_run:
-        checks = plan_checks(installed, '<scratch>/claude-read-both.json', both, args.skills)
+        checks = plan_checks(installed, '<scratch>/claude-read-both.json', both)
         print('Would write, and leave in place until --cleanup:' if args.keep
               else 'Would write, then restore afterwards:')
         for path, _, mode in writes:
@@ -618,7 +545,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         print('Would run, each in a scratch git repository:')
         for check in checks:
             command = build_argv(APPS[check.app], check, overrides)
-            shown = ' '.join("'{question}'" if part == check.question else shlex.quote(part)
+            shown = ' '.join("'{question}'" if part == QUESTION else shlex.quote(part)
                              for part in command)
             print(f'  {check.label}: {shown}')
         for key in skipped:
@@ -637,7 +564,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     scratch = pathlib.Path(tempfile.mkdtemp(prefix=SCRATCH_PREFIX))
     manifest.remember_tree(scratch)
     settings_path = scratch / 'claude-read-both.json'
-    checks = plan_checks(installed, str(settings_path), both, args.skills)
+    checks = plan_checks(installed, str(settings_path), both)
     kept = False
     try:
         for path, text, mode in writes:
@@ -645,7 +572,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         settings_path.write_text(json.dumps(CLAUDE_READ_BOTH_SETTINGS), encoding='utf-8')
         fixtures = {name: make_fixture(scratch, name, codes['PROBE_REPO']) for name in FIXTURES}
         if args.keep:
-            explain_keep(writes, fixtures, settings_path, codes, args.skills)
+            explain_keep(writes, fixtures, settings_path, codes)
             kept = True
             return 0
         for check in checks:
@@ -685,7 +612,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 def explain_keep(writes: Sequence[tuple[pathlib.Path, str, str]],
                  fixtures: dict[str, pathlib.Path], settings_path: pathlib.Path,
-                 codes: dict[str, str], skills: bool = False) -> None:
+                 codes: dict[str, str]) -> None:
     """How to run the checks by hand against what --keep left in place."""
     print('Left in place until you run --cleanup:')
     for path, _, mode in writes:
@@ -705,14 +632,6 @@ def explain_keep(writes: Sequence[tuple[pathlib.Path, str, str]],
           'first, and remove it afterwards.')
     print('Claude Code skips AGENTS.md in the claude-md and claude-local fixtures, unless')
     print(f'it starts with `--settings {settings_path}`, which reads both.')
-    if skills:
-        print()
-        print('For the skill canary, start another new session and send this:')
-        print()
-        print('  ' + SKILL_QUESTION)
-        print()
-        print('A correct answer names exactly one of '
-              + ', '.join(f'{name}={codes[name]}' for name in SKILL_NAMES) + '.')
     print()
     print('When you are done: python3 .github/scripts/loader-probe.py --cleanup')
 

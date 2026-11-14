@@ -102,8 +102,7 @@ ships `assets/trigger-evals.json`, and its metadata holds exactly `team`,
 into `home/kit.json`, and the home kit copies each one into
 `~/.agents/skills/`, `~/.claude/skills/` and Antigravity's
 `~/.gemini/antigravity-cli/skills/`, with a mark that lets it replace its own
-folders and refuse anyone else's. The loader probe's `--skills` canary proves
-each app sees exactly one copy. To run the departments as Grok Bot agents
+folders and refuse anyone else's. To run the departments as Grok Bot agents
 instead, see [`kit/skills/README.md`](../../kit/skills/README.md).
 
 ---

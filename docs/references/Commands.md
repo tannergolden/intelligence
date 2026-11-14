@@ -150,7 +150,6 @@ explains each check and what it touches.
 | :--------------------- | :--------------------------------------------------------------------------------------------------------------------- |
 | `--apps LIST`          | Comma-separated, from `claude`, `codex`, `antigravity`, `copilot`, `grok` and `cursor`; every installed one by default |
 | `--dry-run`            | Print the plan, and change nothing                                                                                     |
-| `--skills`             | Add the skill canary: one more model call per app                                                                      |
 | `--keep`               | Write the files and fixtures for a check by hand, and leave them until `--cleanup`                                     |
 | `--cleanup`            | Restore what `--keep`, or a run that died, left behind                                                                 |
 | `--command 'APP=ARGV'` | Replace an app's command; it must keep `{prompt}`                                                                      |
