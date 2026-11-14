@@ -32,14 +32,15 @@ Learn what is true, decide what is worth building, and build it, on evidence, fo
 
 | Function                                                                                                               | Owner                                 |
 | :--------------------------------------------------------------------------------------------------------------------- | :------------------------------------ |
-| Vision, roadmap, priorities, release plan, experiments, ideation, for whatever the venture makes                       | ⭐ Director of Research & Development |
+| Vision, roadmap, priorities, release plan, the experiment portfolio, ideation, for whatever the venture makes          | ⭐ Director of Research & Development |
 | The owner's research agenda, ideas, hobbies and side projects                                                          | ⭐ Director of Research & Development |
 | Outside research for every department: markets, competitors, technologies, suppliers, funding                          | Research Analyst                      |
-| Research behind any purchase or choice the owner makes, and recommendations                                            | Research Analyst                      |
+| Research behind any question or choice the owner faces                                                                 | Research Analyst                      |
 | User research, requirements, journeys, interface, product and packaging design, prototypes                             | Product & Brand Designer              |
 | The brand's visual identity and the design system                                                                      | Product & Brand Designer              |
+| Designs for the owner's own projects                                                                                   | Product & Brand Designer              |
 | Software end to end: websites, apps, APIs, data, integrations, automations, AI features, agent skills, their pipelines | Full-Stack Engineer                   |
-| The owner's personal website code, scripts and home automations                                                        | Full-Stack Engineer                   |
+| The code of the owner's side projects and personal website, scripts and home automations                               | Full-Stack Engineer                   |
 
 Anything in the department's scope that no row names belongs to the ⭐ Director of Research & Development.
 

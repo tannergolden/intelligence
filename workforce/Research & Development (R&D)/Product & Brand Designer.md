@@ -20,7 +20,7 @@ Design what people need, prove it with them before it is built, and make it look
 
 ### Ventures
 
-- User and customer research: interviews, observation, usability tests and surveys, each finding tied to a decision.
+- Research with users and customers: interviews, observation and usability tests, each finding tied to a decision; a survey is designed and analysed by the Data Scientist.
 - Requirements, journeys and service blueprints, each requirement with acceptance criteria a tester can check.
 - Interfaces for web and mobile, and the design system that keeps them consistent.
 - Physical products and packaging, and the spaces a service runs in, from sketch to specification.

@@ -31,21 +31,21 @@ Produce one honest sales forecast and the pipeline behind it, from every channel
 
 ## Who Owns What
 
-| Function                                                                                    | Owner                              |
-| :------------------------------------------------------------------------------------------ | :--------------------------------- |
-| The sales forecast and its commit, prices inside the pricing policy, go-to-market, launches | ⭐ Director of Sales & Marketing   |
-| Positioning, brand strategy, the sales process, quotas, commissions                         | ⭐ Director of Sales & Marketing   |
-| Job search strategy and negotiation walk-away                                               | ⭐ Director of Sales & Marketing   |
-| Deals, proposals, quotes and negotiations, through signature                                | Account Executive                  |
-| The owner's job-search pipeline and networking follow-ups                                   | Account Executive                  |
-| Campaigns, content, social media accounts, website content, search, listings and reviews    | Digital Marketing Manager          |
-| Email and SMS marketing, paid ads, affiliates, influencers, channel analytics               | Digital Marketing Manager          |
-| The owner's social media accounts and personal website                                      | Digital Marketing Manager          |
-| Partners, resellers, sponsorships, creator brand deals                                      | Partnerships & Development Manager |
-| Donors, major gifts and grants                                                              | Partnerships & Development Manager |
-| The owner's sponsorships, brand deals and paid appearances                                  | Partnerships & Development Manager |
-| Online stores, marketplaces, catalog, merchandising, promotions, channel profit             | E-commerce & Channel Manager       |
-| Selling what the owner no longer needs                                                      | E-commerce & Channel Manager       |
+| Function                                                                                                     | Owner                              |
+| :----------------------------------------------------------------------------------------------------------- | :--------------------------------- |
+| The sales forecast and its commit, the demand plan, prices inside the pricing policy, go-to-market, launches | ⭐ Director of Sales & Marketing   |
+| Positioning, brand strategy and voice, the sales process, quotas, commissions                                | ⭐ Director of Sales & Marketing   |
+| Job search strategy, and the walk-away of each negotiation the owner faces                                   | ⭐ Director of Sales & Marketing   |
+| Prospecting and leads, deals, proposals, quotes and negotiations, through signature                          | Account Executive                  |
+| The owner's job-search pipeline and networking follow-ups                                                    | Account Executive                  |
+| Campaigns, content, social media accounts, website content, search, business listings and reviews            | Digital Marketing Manager          |
+| Email and SMS marketing, paid ads, affiliates, influencers, channel analytics                                | Digital Marketing Manager          |
+| The owner's social media accounts and personal website                                                       | Digital Marketing Manager          |
+| Partners, resellers, sponsorships, creator brand deals                                                       | Partnerships & Development Manager |
+| Donors, major gifts and grants                                                                               | Partnerships & Development Manager |
+| The owner's sponsorships, brand deals and paid appearances                                                   | Partnerships & Development Manager |
+| Online stores, marketplaces, product listings, merchandising, promotions, channel profit                     | E-commerce & Channel Manager       |
+| Selling what the owner no longer needs                                                                       | E-commerce & Channel Manager       |
 
 Anything in the department's scope that no row names belongs to the ⭐ Director of Sales & Marketing.
 
@@ -61,6 +61,7 @@ Anything in the department's scope that no row names belongs to the ⭐ Director
 ## Department Rules
 
 - Nothing reaches a buyer, a follower, a partner or a funder without the owner's yes.
+- A review, a comment or a public question is triaged by the Digital Marketing Manager, who drafts the reply to praise and general comments; a customer's problem goes to Customer Experience, and the press or anyone who is not a customer to Public Relations.
 
 ## What This Department Asks Others For
 
@@ -71,7 +72,7 @@ Always through the Chief of Staff, never directly:
 - Customer Experience, for renewals and expansion signals, and for questions and complaints that arrive on social media or in reviews.
 - Information Technology, for the website's hosting and domain, and access to each account and channel.
 - Public Relations, before any public reply to criticism.
-- Finance & Accounting, for margins, the revenue plan, and each gift's and grant's accounting.
+- Finance & Accounting, for margins, the budget, and each gift's and grant's accounting.
 - Business Intelligence, to check the forecast and attribute results to channels.
 - Operations & Logistics, for stock and fulfillment behind every online channel.
 

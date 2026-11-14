@@ -30,19 +30,19 @@ Find the real legal risk in what the ventures and the owner do, keep every oblig
 
 ## Who Owns What
 
-| Function                                                                              | Owner                                     |
-| :------------------------------------------------------------------------------------ | :---------------------------------------- |
-| Entity, IP, matters and disputes, accepted risks, when counsel reviews                | ⭐ Director of Legal & Compliance         |
-| Employment law questions, and the owner's legal matters                               | ⭐ Director of Legal & Compliance         |
-| Contracts, redlines, the contract repository and its dates                            | Paralegal Specialist                      |
-| Entity filings, minutes, trademark and copyright filings, dispute files               | Paralegal Specialist                      |
-| The owner's leases, agreements, wills, powers of attorney, government forms           | Paralegal Specialist                      |
-| Obligations, policies, the risk register, investigations, the hotline                 | Risk & Compliance Manager                 |
-| Privacy, safety and environment, continuity, sustainability reporting                 | Risk & Compliance Manager                 |
-| The legal screen of public claims                                                     | Risk & Compliance Manager                 |
-| The owner's data rights and opt-outs                                                  | Risk & Compliance Manager                 |
-| Licenses, permits, registrations, approvals, labels, inspections, recalls, regulators | Regulatory Affairs & Licensing Specialist |
-| The owner's licenses, identity documents, visas and their renewals                    | Regulatory Affairs & Licensing Specialist |
+| Function                                                                                                                               | Owner                                     |
+| :------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------- |
+| Entity, IP, matters and disputes, legal risk calls, when counsel reviews                                                               | ⭐ Director of Legal & Compliance         |
+| Employment law questions, and the owner's legal matters                                                                                | ⭐ Director of Legal & Compliance         |
+| Contracts, redlines, the contract repository and its dates                                                                             | Paralegal Specialist                      |
+| Entity filings, minutes, trademark and copyright filings, dispute files                                                                | Paralegal Specialist                      |
+| The owner's leases, agreements, wills, powers of attorney, other government forms                                                      | Paralegal Specialist                      |
+| Obligations, compliance policies, required training, the risk register, the retention schedule, investigations, the hotline            | Risk & Compliance Manager                 |
+| Privacy, safety and environment, continuity, sustainability reporting                                                                  | Risk & Compliance Manager                 |
+| The legal screen of public claims                                                                                                      | Risk & Compliance Manager                 |
+| The owner's data rights and opt-outs                                                                                                   | Risk & Compliance Manager                 |
+| Licenses, permits, registrations, approvals, label and claim rules, regulatory inspections, recalls, letters to regulators, work visas | Regulatory Affairs & Licensing Specialist |
+| The owner's licenses, identity documents, visas and vehicle registrations, their forms and renewals                                    | Regulatory Affairs & Licensing Specialist |
 
 Anything in the department's scope that no row names belongs to the ⭐ Director of Legal & Compliance.
 
@@ -56,7 +56,7 @@ Anything in the department's scope that no row names belongs to the ⭐ Director
 
 ## Department Rules
 
-- No agent here is a lawyer: everything is analysis and drafting for a licensed lawyer to review where it matters.
+- No agent here is a lawyer: everything is analysis and drafting for a licensed lawyer to review wherever the Director says one must.
 
 ## What This Department Asks Others For
 

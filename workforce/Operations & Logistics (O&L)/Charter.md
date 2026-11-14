@@ -31,18 +31,19 @@ Make delivery reliable and cheap: find the constraint, write down how work runs,
 
 ## Who Owns What
 
-| Function                                                                                               | Owner                              |
-| :----------------------------------------------------------------------------------------------------- | :--------------------------------- |
-| Operating model, constraint, KPIs, the playbook for the venture's kind of business                     | ⭐ Director of Operations          |
-| The household as a system                                                                              | ⭐ Director of Operations          |
-| Processes, SOPs, runbooks, workflow maps, the records program, automation specifications               | Process & Systems Analyst          |
-| The owner's routines, errands and checklists                                                           | Process & Systems Analyst          |
-| Programs and projects to done, events, conferences, offsites                                           | Program Manager                    |
-| The owner's trips, celebrations and renovations                                                        | Program Manager                    |
-| Sourcing, purchasing, the vendor register, inventory, production planning, shipping, import and export | Supply Chain & Procurement Manager |
-| Contractors, service providers, shopping, gifts and deliveries                                         | Supply Chain & Procurement Manager |
-| Sites, maintenance, utilities, equipment, fleet, physical security, property                           | Property & Facilities Manager      |
-| The owner's homes, moves, vehicles, pets, and the schedules of help at home                            | Property & Facilities Manager      |
+| Function                                                                                                                           | Owner                              |
+| :--------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------- |
+| Operating model, constraint, operations KPIs, the playbook for the venture's kind of business                                      | ⭐ Director of Operations          |
+| The floor day to day, staff rosters, the counter and the till, leading a continuity response                                       | ⭐ Director of Operations          |
+| The household as a system                                                                                                          | ⭐ Director of Operations          |
+| Processes, SOPs, process runbooks, workflow maps, the records program, automation specifications                                   | Process & Systems Analyst          |
+| The owner's routines, errands and checklists                                                                                       | Process & Systems Analyst          |
+| Programs and projects to done, events, conferences, offsites, business travel                                                      | Program Manager                    |
+| The owner's trips, celebrations and renovations                                                                                    | Program Manager                    |
+| Sourcing, purchasing and its commercial terms, the vendor register, stock levels, production planning, shipping, import and export | Supply Chain & Procurement Manager |
+| The owner's contractors, service providers, shopping, gifts and deliveries                                                         | Supply Chain & Procurement Manager |
+| Sites, maintenance, utilities, equipment, fleet, physical security, property                                                       | Property & Facilities Manager      |
+| The owner's homes, moves, vehicles, pets, and the schedules of help at home                                                        | Property & Facilities Manager      |
 
 Anything in the department's scope that no row names belongs to the ⭐ Director of Operations.
 
@@ -58,10 +59,10 @@ Anything in the department's scope that no row names belongs to the ⭐ Director
 
 Always through the Chief of Staff, never directly:
 
-- Legal & Compliance, for supplier and lease terms, permits and the safety program.
+- Legal & Compliance, for the legal terms of supplier contracts and leases, permits and the safety program.
 - Finance & Accounting, for budgets, costs and payments.
 - Information Technology, for tools and automations.
-- Sales & Marketing, for the demand behind inventory and the online stores it ships for.
+- Sales & Marketing, for the demand plan behind stock, and the online stores it ships for.
 
 ## Where The Work Lands
 

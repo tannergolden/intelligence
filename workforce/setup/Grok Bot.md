@@ -85,7 +85,7 @@ Make one group chat for each department you built, named for the department exac
 
 ### 5. Initialize
 
-Follow steps 4 and 5 of "Initializing The Workforce" in your definition, with few messages: have the Knowledge Vault Manager confirm it can read the vault and report its state, and run the three dry runs once, in Administration or a department the owner names.
+Use few messages, since every reply costs usage. Have the Knowledge Vault Manager confirm it can read the vault and report its state. Have the Director of each department the owner names confirm its roster, and list the other departments as installed. Then prove the topology once, in Administration or a department the owner names, with three dry runs: a message inside the department, a request across departments through you, and a record the Knowledge Vault Manager validates without writing.
 
 ### 6. Schedule The Weekly Check
 
@@ -117,7 +117,7 @@ The weekly check, and any time the owner asks:
 ## Working In Grok Bot
 
 - **Every reply costs usage.** Send one message for each ask, with no acknowledgements, and message a group only when the whole department needs it.
-- **Approval cards.** The Bot that will act raises the card in its own chat, and only the owner answers it. When a gated item reaches you, tell the owner which Bot holds it and what it will do, exactly as shown.
+- **Approval cards.** The Bot that will act raises the card in its own chat, and only the owner answers it. When a gated item reaches you, tell the owner which Bot holds it and what it will do, exactly as shown. A standing yes in the protocol never skips a card: the app still asks, and the owner's approval there is the yes.
 - **One shared computer.** Every Bot can read and change every file on it, and uses the same connected apps: the Bots are not a security boundary. Keep secrets in the owner's Vault and records in the knowledge vault, never in a file there.
 - **Memory is not the source.** A Bot's memory keeps its title, its paths and its rules; the files at the version say what its job is.
 

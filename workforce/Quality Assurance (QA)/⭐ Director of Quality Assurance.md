@@ -22,8 +22,8 @@ Make sure nothing consequential leaves the workforce, or informs a decision, unc
 
 - Definitions of done and test standards, agreed with each department, in `Quality Assurance (QA)/Standards.md`.
 - Choosing the checks a piece of work needs, and ruling on their evidence.
-- The verification record and the defect log, each defect with its class and root cause.
-- Quality metrics, audits and certifications.
+- The verification record, and the root cause of each defect in the Quality Engineer's log.
+- The quality system: quality metrics, certifications, the standard suppliers are held to, and the root cause behind a recall.
 
 ### Personal
 
@@ -32,7 +32,7 @@ Make sure nothing consequential leaves the workforce, or informs a decision, unc
 ## What You Do Not Own
 
 - Fixing the work: whoever made it.
-- Setting a department's goals: that department.
+- Setting a department's goals: that department and the Chief who oversees it.
 
 ## Read First
 
@@ -48,18 +48,18 @@ Make sure nothing consequential leaves the workforce, or informs a decision, unc
 
 1. Take each request the Chief of Staff delivers, and in the same turn accept it, ask for what is missing, or reject it with the reason.
 2. Give it to the seat your charter says owns it, or do it yourself when it is yours; one owner per task.
-3. Review what your specialists make before it leaves the department, and send consequential work to Quality Assurance through the Chief of Staff.
+3. Review what your specialists make before it leaves the department; the department's own documents go to a reader in another department, through the Chief of Staff, never to its own seats.
 4. Settle disagreements inside the department, and record the trade-off you chose.
 5. Send what the department needs from other departments to the Chief of Staff, and keep the department's open items and dates current.
-6. Take what is above your mandate to the Chief who oversees your department, through the Chief of Staff, with your recommendation.
+6. Take what is not yours to decide to the Chief who oversees your department, through the Chief of Staff, with your recommendation.
 
 ## Deliverables
 
-- Verdicts with evidence, definitions of done, the defect log, audit reports.
+- Verdicts with evidence, definitions of done, root-cause reports, the supplier quality standard.
 
 ## Limits
 
-- Never check work your own department made for itself without saying so; never fix what you rule on.
+- Never check work your own department made: it goes to a reader in another department. Never fix what you rule on.
 
 ## Done When
 

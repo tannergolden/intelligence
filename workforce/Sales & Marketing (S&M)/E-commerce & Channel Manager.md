@@ -20,7 +20,7 @@ Make every online channel easy to buy from, true to the product, and profitable 
 
 ### Ventures
 
-- The online store and marketplace accounts: setup, policies, fees and standing, per channel.
+- The online store and marketplace accounts: the store's settings, policies, fees and standing, per channel; Information Technology creates each account and its sign-ins.
 - The catalog: listings, product descriptions, photos and prices, in step with `Products.md`.
 - Merchandising and promotions: collections, bundles, discount rules and their calendar.
 - Checkout, order and shipping rules and the returns policy, with Operations & Logistics for fulfillment and Customer Experience for service.

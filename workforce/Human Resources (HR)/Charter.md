@@ -2,7 +2,7 @@
 name: 'human-resources'
 title: 'Human Resources (HR)'
 kind: 'department'
-description: "Each venture's org design, hiring, pay, people processes, policies, contractors and volunteers, and wellbeing, and the owner's profile, career, learning, health administration and care for dependents."
+description: "Each venture's org design, hiring, pay, people processes, policies, freelancers and volunteers, and wellbeing, and the owner's profile, career, learning, health administration and care for dependents."
 director: '⭐ Director of Human Resources'
 members:
   [
@@ -21,7 +21,7 @@ Design the organization, fill each role well, pay fairly, keep the records true,
 
 ### Ventures
 
-- Org design, roles and hiring, pay and performance, onboarding, records, benefits, training, policies and employee relations, contractors and volunteers, and wellbeing.
+- Org design, roles and hiring, pay and performance, onboarding, records, benefits, training, policies and employee relations, freelancers and volunteers, and wellbeing.
 
 ### Personal
 
@@ -29,16 +29,16 @@ Design the organization, fill each role well, pay fairly, keep the records true,
 
 ## Who Owns What
 
-| Function                                                                            | Owner                          |
-| :---------------------------------------------------------------------------------- | :----------------------------- |
-| Org design, roles, hiring decisions, pay, offers, performance framework             | ⭐ Director of Human Resources |
-| Policies, the handbook, employee relations, contractors, freelancers, volunteers    | ⭐ Director of Human Resources |
-| The owner's career strategy, skills and learning plan                               | ⭐ Director of Human Resources |
-| Recruiting, interviews, onboarding, offboarding, records, benefits, leave, training | HR Generalist                  |
-| The profile interview, the career record, hiring help at home                       | HR Generalist                  |
-| The wellbeing program and ergonomics                                                | Health & Wellbeing Manager     |
-| The owner's health habits, appointments, health records and referrals               | Health & Wellbeing Manager     |
-| Care coordination for children and older relatives                                  | Health & Wellbeing Manager     |
+| Function                                                                                                                                              | Owner                          |
+| :---------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------- |
+| Org design, roles, hiring recommendations, pay bands, offers, benefit plans, equity compensation, performance framework                               | ⭐ Director of Human Resources |
+| People policies, the handbook, employee relations, freelancers, volunteers                                                                            | ⭐ Director of Human Resources |
+| The owner's career strategy, skills and learning plan                                                                                                 | ⭐ Director of Human Resources |
+| Recruiting, interviews, right-to-work checks, employee onboarding and offboarding, records, benefits enrollment, leave, time and attendance, training | HR Generalist                  |
+| The profile interview, the career record, resumes and interview practice, hiring help at home                                                         | HR Generalist                  |
+| The wellbeing program and ergonomics                                                                                                                  | Health & Wellbeing Manager     |
+| The owner's health habits, appointments, health records and referrals                                                                                 | Health & Wellbeing Manager     |
+| Care coordination for children and older relatives, schooling and activities                                                                          | Health & Wellbeing Manager     |
 
 Anything in the department's scope that no row names belongs to the ⭐ Director of Human Resources.
 
@@ -58,8 +58,8 @@ Anything in the department's scope that no row names belongs to the ⭐ Director
 
 Always through the Chief of Staff, never directly:
 
-- Legal & Compliance, for employment law and agreements.
-- Finance & Accounting, for payroll, benefit costs and health claims.
+- Legal & Compliance, for employment law, agreements, work visas and investigations.
+- Finance & Accounting, for payroll, benefit costs and the filing of health claims.
 - Information Technology, for accounts when someone joins or leaves.
 - Operations & Logistics, for the schedules of help at home.
 

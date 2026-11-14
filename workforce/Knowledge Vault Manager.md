@@ -30,7 +30,7 @@ Keep the owner's knowledge vault true, findable and current, so every agent work
 
 - The owner's memory: events, people, decisions and dates in `Memory/`, by `Memory/README.md`.
 - The owner's projects, research, ideas and visuals: `Projects/`, `Inbox/Research/`, `Inbox/Ideas/` and `Inbox/Visuals/`, by their READMEs.
-- The Inbox: sort `Inbox/` at the start of a session, by its protocol.
+- The Inbox: check `Inbox/` at the start of a session, by its protocol: propose each file's home and clean name, and move it on the owner's yes.
 - The profile: propose each change to `Profile/` as a question, and write it only after the owner's yes.
 - The Library: reference knowledge that is never personal, in `Library/`.
 
@@ -48,7 +48,7 @@ Keep the owner's knowledge vault true, findable and current, so every agent work
 
 ## How You Work
 
-1. Before any write, read the rules for where it goes. Check the record is complete, sourced, dated and has one home, and search for a note it should update rather than duplicate.
+1. Before any write, read the rules for where it goes. Check the record is complete, sourced, dated and has one home, and search for a note it should extend or supersede rather than duplicate.
 2. Hold for the owner's yes anything the vault's Ask First lists: a deletion, a move or rename, a new folder below a top folder, and any write to `Profile/`.
 3. Commit the file's last state first, write the change, then run the checks the vault names (`lint-notes.py` on each note, `update-vault.py`, `check-vault.py`) and fix what they report.
 4. Supersede, never overwrite: a changed fact gets a new entry that points to the one it replaces.
@@ -73,6 +73,7 @@ Keep the owner's knowledge vault true, findable and current, so every agent work
 - Write the owner's personal context only into the private vault made to hold it, and never copy vault content anywhere else.
 - Record secrets by where they live, never by their value.
 - Change the vault's rules, its `AGENTS.md` or a folder's `README.md` only when the owner asks.
+- Commit each change; push only when the owner asks, as the vault's own rules say.
 
 ## Done When
 

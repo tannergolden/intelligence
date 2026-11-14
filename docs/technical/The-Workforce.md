@@ -165,13 +165,13 @@ runs on is composed when it is rendered, in this order:
    and in [tannergolden/standards](https://github.com/tannergolden/standards),
    which guide to read before each kind of change, which rule wins, and the
    rules met every day, each with its ID;
-5. a directory drawn from the charters: the executive team, every department
-   with its Director and the Chief who oversees it, and the agents this one may
-   message directly. The Chief of Staff's directory also holds every
+5. a directory drawn from the charters: every department with its Director and
+   the member of the executive team who oversees it, and the agents this one
+   may message directly. The Chief of Staff's directory also holds every
    department's table of who owns what, so it can route without reading a
    file.
 
-The longest composed prompt, the Chief of Staff's, is about 29,000 characters,
+The longest composed prompt, the Chief of Staff's, is about 29,600 characters,
 and `workforce.py check` caps every one at 30,000, the most GitHub's Copilot
 agents take.
 
@@ -230,21 +230,21 @@ another already does is folded into it. `workforce.py check` holds the result:
 every owner in a charter's table is a member of the department, and every member
 owns at least one row.
 
-| Department                   | Seats | Overseen by                | The ⭐ Director owns                                                       | The specialists                                                                                                                                                                                                                                              | Replaced or folded in                                                                                                              |
-| :--------------------------- | :---: | :------------------------- | :------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------- |
-| Administration               |   5   | The owner                  | The ⭐ Chief Executive Officer: direction, and decisions across portfolios | Chief Operating Officer, Chief Financial Officer, Chief Technology Officer, Chief Revenue Officer: each oversees departments                                                                                                                                 | The Director of Administration, the Strategy & Planning Manager and the Corporate Secretary                                        |
-| Finance & Accounting (F&A)   |   4   | Chief Financial Officer    | The books, close, cash, payroll runs, controls and cap table               | Financial Analyst: models and forecasts (independence). Tax Accountant: every tax (expertise). Personal Financial Planner: the owner's household money (expertise)                                                                                           | The Controller, into the Director; the Tax Strategist; the Investment & Insurance Advisor, two occupations with no shared work     |
-| Legal & Compliance (L&C)     |   4   | Chief Financial Officer    | Entity, IP, disputes, accepted risks, when a lawyer reviews                | Paralegal Specialist: documents and filings (cadence). Risk & Compliance Manager: compliance, privacy, risk, safety, continuity (expertise). Regulatory Affairs & Licensing Specialist: licenses, permits, regulators (cadence, expertise)                   | The Contracts Manager, filed under procurement by O\*NET; the Compliance Officer and the Privacy Officer, one occupation           |
-| Sales & Marketing (S&M)      |   5   | Chief Revenue Officer      | The number, pricing, positioning and brand, the sales process              | Account Executive: deals. Digital Marketing Manager: every marketing channel. Partnerships & Development Manager: partners, sponsors, donors, grants. E-commerce & Channel Manager: online stores and marketplaces                                           | The Marketing Manager, the same occupation; the Revenue Operations Analyst, split among the Director, Business Intelligence and IT |
-| Operations & Logistics (O&L) |   5   | Chief Operating Officer    | The operating model, the constraint, a playbook for each kind of business  | Process & Systems Analyst: SOPs and automations. Program Manager: projects, events, trips. Supply Chain & Procurement Manager: buying, inventory, shipping. Property & Facilities Manager: sites, homes, vehicles, pets                                      | The Process Analyst and the Vendor Manager, widened                                                                                |
-| Human Resources (HR)         |   3   | Chief Operating Officer    | Org design, hiring decisions, pay, policies, the owner's career            | HR Generalist: every people process (cadence). Health & Wellbeing Manager: wellbeing, health paperwork, care for dependents (expertise, and it never diagnoses)                                                                                              | The People Operations Specialist and the Wellbeing Specialist, widened                                                             |
-| Information Technology (IT)  |   3   | Chief Technology Officer   | The systems register, system choices, the security program                 | Systems Administrator: systems, access, help desk, the owner's tech (cadence). Security Engineer: defense and incidents (independence, expertise)                                                                                                            | Penetration tests, moved to Quality Assurance                                                                                      |
-| Research & Development (R&D) |   4   | Chief Technology Officer   | Vision, roadmap, experiments, for whatever the venture makes               | Research Analyst: all outside research. Product & Brand Designer: research, products, interfaces, packaging, identity. Full-Stack Engineer: all software and its pipelines                                                                                   | The Software Engineer and the Product Designer, widened                                                                            |
-| Business Intelligence (BI)   |   3   | Chief Technology Officer   | Metric definitions, evidence grades, data governance                       | Data Scientist: analyses, forecasts, experiments. Analytics Engineer: pipelines, data models, dashboards (each checks the other's numbers)                                                                                                                   | The Data Analyst and the Data Visualization Designer                                                                               |
-| Quality Assurance (QA)       |   4   | ⭐ Chief Executive Officer | Standards, verdicts, root causes, the quality system                       | Quality Engineer: tests and inspections. Internal Auditor: facts, numbers and controls. Red Team Reviewer: the case against, and penetration tests: three checks, none by the maker                                                                          | The Test Engineer and the Fact-Checker, widened                                                                                    |
-| Customer Experience (CX)     |   3   | Chief Revenue Officer      | Service standards, the voice of the customer, retention risk               | Customer & Member Success Manager: onboarding, renewals, members, community (cadence). Support Specialist: tickets on every channel (cadence)                                                                                                                | The Customer Success Manager, widened to members                                                                                   |
-| Public Relations (PR)        |   4   | ⭐ Chief Executive Officer | Messaging, reputation, crises, internal communications, public affairs     | Communications Specialist: the press, the team, investors, communities, officials (expertise). Content Producer: video, audio, podcasts and photos for every department (expertise). Managing Editor: editing, technical writing, translation (independence) | The Media Relations Manager, widened; the Content Producer is new                                                                  |
-| Miscellaneous                |   0   |                            | No department                                                              | No team: the Chief of Staff routes the work, the Knowledge Vault Manager files it                                                                                                                                                                            |                                                                                                                                    |
+| Department                   | Seats | Overseen by                | The ⭐ Director owns                                                                              | The specialists                                                                                                                                                                                                                                               | Replaced or folded in                                                                                                              |
+| :--------------------------- | :---: | :------------------------- | :------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------- |
+| Administration               |   5   | The owner                  | The ⭐ Chief Executive Officer: direction, and decisions across portfolios                        | Chief Operating Officer, Chief Financial Officer, Chief Technology Officer, Chief Revenue Officer: each oversees departments                                                                                                                                  | The Director of Administration, the Strategy & Planning Manager and the Corporate Secretary                                        |
+| Finance & Accounting (F&A)   |   4   | Chief Financial Officer    | The books, close, cash, payroll runs, controls and cap table                                      | Financial Analyst: models and forecasts (independence). Tax Accountant: every tax (expertise). Personal Financial Planner: the owner's household money (expertise)                                                                                            | The Controller, into the Director; the Tax Strategist; the Investment & Insurance Advisor, two occupations with no shared work     |
+| Legal & Compliance (L&C)     |   4   | Chief Financial Officer    | Entity, IP, disputes, legal risk calls, when a lawyer reviews                                     | Paralegal Specialist: documents and filings (cadence). Risk & Compliance Manager: compliance, privacy, risk, safety, continuity (expertise). Regulatory Affairs & Licensing Specialist: licenses, permits, regulators (cadence, expertise)                    | The Contracts Manager, filed under procurement by O\*NET; the Compliance Officer and the Privacy Officer, one occupation           |
+| Sales & Marketing (S&M)      |   5   | Chief Revenue Officer      | The sales forecast, prices inside the policy, positioning and brand, the sales process            | Account Executive: deals. Digital Marketing Manager: every marketing channel. Partnerships & Development Manager: partners, sponsors, donors, grants. E-commerce & Channel Manager: online stores and marketplaces                                            | The Marketing Manager, the same occupation; the Revenue Operations Analyst, split among the Director, Business Intelligence and IT |
+| Operations & Logistics (O&L) |   5   | Chief Operating Officer    | The operating model, the constraint, a playbook for each kind of business, the floor day to day   | Process & Systems Analyst: SOPs and automations. Program Manager: projects, events, trips. Supply Chain & Procurement Manager: buying, stock, shipping. Property & Facilities Manager: sites, homes, vehicles, pets                                           | The Process Analyst and the Vendor Manager, widened                                                                                |
+| Human Resources (HR)         |   3   | Chief Operating Officer    | Org design, hiring recommendations, pay bands, benefit plans, people policies, the owner's career | HR Generalist: every people process (cadence). Health & Wellbeing Manager: wellbeing, health paperwork, care for dependents (expertise, and it never diagnoses)                                                                                               | The People Operations Specialist and the Wellbeing Specialist, widened                                                             |
+| Information Technology (IT)  |   3   | Chief Technology Officer   | The systems register, system choices, the security program                                        | Systems Administrator: systems, access, help desk, the owner's tech (cadence). Security Engineer: defense and incidents (independence, expertise)                                                                                                             | Penetration tests, moved to Quality Assurance                                                                                      |
+| Research & Development (R&D) |   4   | Chief Technology Officer   | Vision, roadmap, experiments, for whatever the venture makes                                      | Research Analyst: all outside research. Product & Brand Designer: research, products, interfaces, packaging, identity. Full-Stack Engineer: all software and its pipelines                                                                                    | The Software Engineer and the Product Designer, widened                                                                            |
+| Business Intelligence (BI)   |   3   | Chief Technology Officer   | Metric definitions, evidence grades, analytics data governance                                    | Data Scientist: analyses, forecasts, experiments. Analytics Engineer: pipelines, data models, dashboards (each checks the other's numbers)                                                                                                                    | The Data Analyst and the Data Visualization Designer                                                                               |
+| Quality Assurance (QA)       |   4   | ⭐ Chief Executive Officer | Standards, verdicts, root causes, the quality system                                              | Quality Engineer: tests and inspections. Internal Auditor: facts, numbers and controls. Red Team Reviewer: the case against, and penetration tests: three checks, none by the maker                                                                           | The Test Engineer and the Fact-Checker, widened                                                                                    |
+| Customer Experience (CX)     |   3   | Chief Revenue Officer      | Service standards, the voice of the customer, retention risk                                      | Customer & Member Success Manager: onboarding, renewals, members, community (cadence). Support Specialist: tickets on every channel (cadence)                                                                                                                 | The Customer Success Manager, widened to members                                                                                   |
+| Public Relations (PR)        |   4   | ⭐ Chief Executive Officer | Messaging, reputation, crises, internal communications, public affairs                            | Communications Specialist: the press, the team, investors, communities, officials (expertise). Content Producer: video, audio, podcasts and photos for every department (expertise). Managing Editor: editing, manuals and guides, translation (independence) | The Media Relations Manager, widened; the Content Producer is new                                                                  |
+| Miscellaneous                |   0   |                            | No department                                                                                     | No team: the Chief of Staff routes the work, the Knowledge Vault Manager files it                                                                                                                                                                             |                                                                                                                                    |
 
 **Forty-seven agents in the departments, and two at the root: forty-nine**, one
 under the roughly fifty Bots Grok Bot allows. Administration, Sales & Marketing
@@ -255,23 +255,29 @@ and Operations & Logistics fill all five seats.
 The template's departments name what every company has. These are the
 functions that only some kinds of business have, and the seat that owns each:
 
-| Function                                               | Who needs it most                                          | Owner                                                                              |
-| :----------------------------------------------------- | :--------------------------------------------------------- | :--------------------------------------------------------------------------------- |
-| Sites, property, equipment, fleet, physical security   | Anyone with a site: hospitality, healthcare, manufacturing | Property & Facilities Manager                                                      |
-| Health, safety and environment                         | Manufacturing, food, hospitality, healthcare, construction | Risk & Compliance Manager, with the Property & Facilities Manager on site          |
-| Production, inventory, shipping, import and export     | Manufacturing, retail, e-commerce, food                    | Supply Chain & Procurement Manager                                                 |
-| Licenses, permits, approvals, labels, inspections      | Food, health, alcohol, finance, transport, education       | Regulatory Affairs & Licensing Specialist                                          |
-| Partnerships, sponsorships, creator brand deals        | Every business; creators and media most                    | Partnerships & Development Manager                                                 |
-| Donors, fundraising, grants                            | Nonprofits and research ventures                           | Partnerships & Development Manager, with the Managing Editor                       |
-| Members and community                                  | Associations, clubs, membership businesses                 | Customer & Member Success Manager                                                  |
-| Online stores and marketplaces                         | Retail, e-commerce, creators                               | E-commerce & Channel Manager                                                       |
-| Social media accounts and the website's content        | Every business                                             | Digital Marketing Manager; hosting and domains stay with the Systems Administrator |
-| Guests, patients, tenants, students                    | Hospitality, healthcare, real estate, education            | Support Specialist, under the Director of Customer Experience's service model      |
-| Internal communications, public affairs                | Anyone with staff; regulated industries                    | Communications Specialist                                                          |
-| Technical documentation, translation                   | Software, cross-border trade, healthcare                   | Managing Editor                                                                    |
-| Video, audio, podcasts and photography                 | Every business with an audience; creators and media most   | Content Producer                                                                   |
-| Events and conferences                                 | Hospitality, nonprofits, marketing                         | Program Manager                                                                    |
-| Business continuity, the risk register, sustainability | Every business                                             | Risk & Compliance Manager                                                          |
+| Function                                                                       | Who needs it most                                          | Owner                                                                                                               |
+| :----------------------------------------------------------------------------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------ |
+| Sites, property, equipment, fleet, physical security                           | Anyone with a site: hospitality, healthcare, manufacturing | Property & Facilities Manager                                                                                       |
+| Health, safety and environment                                                 | Manufacturing, food, hospitality, healthcare, construction | Risk & Compliance Manager, with the Property & Facilities Manager on site                                           |
+| Production planning, stock, shipping, import and export                        | Manufacturing, retail, e-commerce, food                    | Supply Chain & Procurement Manager; the Director of Operations runs the floor                                       |
+| Licenses, permits, approvals, labels, inspections, work visas                  | Food, health, alcohol, finance, transport, education       | Regulatory Affairs & Licensing Specialist                                                                           |
+| Partnerships, sponsorships, creator brand deals                                | Every business; creators and media most                    | Partnerships & Development Manager                                                                                  |
+| Donors, fundraising, grants                                                    | Nonprofits and research ventures                           | Partnerships & Development Manager, with the Managing Editor                                                        |
+| Members and community                                                          | Associations, clubs, membership businesses                 | Customer & Member Success Manager                                                                                   |
+| Online stores and marketplaces                                                 | Retail, e-commerce, creators                               | E-commerce & Channel Manager                                                                                        |
+| Social media accounts and the website's content                                | Every business                                             | Digital Marketing Manager; hosting and domains stay with the Systems Administrator                                  |
+| Guests, patients, tenants, students                                            | Hospitality, healthcare, real estate, education            | Support Specialist, under the Director of Customer Experience's service model                                       |
+| Bookings, reservations and appointments                                        | Restaurants, clinics, classes, rentals                     | Support Specialist                                                                                                  |
+| Refunds, credits and chargebacks                                               | Anyone who takes payment                                   | Support Specialist decides the remedy; the Director of Finance pays and records it                                  |
+| Staff rosters, the counter and the till                                        | Shops, restaurants, clinics                                | Director of Operations; the HR Generalist for hours worked, the Director of Finance for the till's cash-up          |
+| Leads and prospecting                                                          | Anyone who sells to a list                                 | Account Executive                                                                                                   |
+| Internal communications, public affairs                                        | Anyone with staff; regulated industries                    | Communications Specialist                                                                                           |
+| Manuals, guides and translation                                                | Software, cross-border trade, healthcare                   | Managing Editor; the Full-Stack Engineer writes repository documentation, the Support Specialist the knowledge base |
+| Video, audio, podcasts and photography                                         | Every business with an audience; creators and media most   | Content Producer                                                                                                    |
+| Events, conferences and business travel                                        | Hospitality, nonprofits, marketing                         | Program Manager                                                                                                     |
+| Business continuity, the risk register, the retention schedule, sustainability | Every business                                             | Risk & Compliance Manager; the Director of Operations leads a continuity response                                   |
+| Security monitoring and patching                                               | Every business with systems                                | Security Engineer and Systems Administrator                                                                         |
+| Benefit plans and equity compensation                                          | Anyone with staff                                          | Director of Human Resources, with the Director of Finance's cap table                                               |
 
 What no table names goes to the Director whose department is closest, and the
 protocol has every seat work as the venture's own industry does, under its
@@ -279,28 +285,29 @@ rules.
 
 ### What A Person Needs, And Who Covers It
 
-| Need                                                                         | Owner                                                                 |
-| :--------------------------------------------------------------------------- | :-------------------------------------------------------------------- |
-| Calendar, reminders, the inbox, the social calendar, the family's schedule   | Chief of Staff                                                        |
-| Notes, records, documents and their expiry dates in the vault                | Knowledge Vault Manager                                               |
-| Trips, celebrations, renovations                                             | Program Manager                                                       |
-| Shopping, groceries, gifts, deliveries, contractors                          | Supply Chain & Procurement Manager                                    |
-| The home, moves, vehicles, pets, the schedules of help at home               | Property & Facilities Manager; the HR Generalist hires help           |
-| Budget, bills, debt, insurance and claims, investing, retirement, the estate | Personal Financial Planner; a licensed adviser executes               |
-| Taxes                                                                        | Tax Accountant; a licensed preparer signs                             |
-| Health habits, appointments, health paperwork, care for children and parents | Health & Wellbeing Manager; a licensed clinician for medicine         |
-| Legal matters, leases, wills, powers of attorney, government forms           | Paralegal Specialist and the Director of Legal & Compliance; a lawyer |
-| Licenses, identity documents, visas                                          | Regulatory Affairs & Licensing Specialist                             |
-| Career, job search, learning                                                 | Director of Human Resources, with Sales & Marketing                   |
-| Devices, accounts, the home network, tech support, personal security         | Systems Administrator and Security Engineer                           |
-| Research behind any choice, and recommendations                              | Research Analyst                                                      |
-| Personal brand, social media, personal website                               | Digital Marketing Manager                                             |
-| Important writing, speeches, interviews                                      | Director of Public Relations and Communications Specialist            |
-| Videos, a podcast, photos and albums                                         | Content Producer                                                      |
-| Subscriptions, complaints, refunds, returns, claims with companies           | Customer & Member Success Manager and Support Specialist              |
-| Data rights and opt-outs                                                     | Risk & Compliance Manager                                             |
-| Personal metrics, trackers, dashboards                                       | Data Scientist and Analytics Engineer                                 |
-| A second opinion, or a message that could be a scam                          | Internal Auditor and Red Team Reviewer                                |
+| Need                                                                                                   | Owner                                                                                                                  |
+| :----------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
+| Calendar, reminders, the inbox, meeting briefs and notes, the social calendar, the family's schedule   | Chief of Staff                                                                                                         |
+| Notes, records, documents and their expiry dates in the vault                                          | Knowledge Vault Manager                                                                                                |
+| Trips, celebrations, renovations                                                                       | Program Manager                                                                                                        |
+| Shopping, groceries, gifts, deliveries, contractors                                                    | Supply Chain & Procurement Manager                                                                                     |
+| The home, moves, vehicles, pets, the schedules of help at home                                         | Property & Facilities Manager; the HR Generalist hires help                                                            |
+| Budget, bills, debt, borrowing and credit, insurance and its claims, investing, retirement, the estate | Personal Financial Planner; a licensed adviser executes                                                                |
+| Taxes                                                                                                  | Tax Accountant; a licensed preparer signs                                                                              |
+| Health habits, appointments, health paperwork, care for children and parents, schooling and activities | Health & Wellbeing Manager; a licensed clinician for medicine                                                          |
+| Legal matters, leases, wills, powers of attorney, government forms                                     | Paralegal Specialist and the Director of Legal & Compliance; a lawyer                                                  |
+| Licenses, identity documents, visas, vehicle registrations                                             | Regulatory Affairs & Licensing Specialist                                                                              |
+| Career, learning, a job search and its documents                                                       | Director of Human Resources; the HR Generalist for the resume and interview practice, Sales & Marketing for the search |
+| Devices, accounts, the home network, tech support, personal security                                   | Systems Administrator and Security Engineer                                                                            |
+| Research behind any question or choice                                                                 | Research Analyst; the Supply Chain & Procurement Manager compares what to buy                                          |
+| Personal brand, social media, personal website                                                         | Digital Marketing Manager                                                                                              |
+| Important writing, speeches, interviews                                                                | Director of Public Relations and Communications Specialist                                                             |
+| Videos, a podcast, photos and albums                                                                   | Content Producer                                                                                                       |
+| Subscriptions, complaints, refunds, returns, warranty claims, disputes with companies                  | Customer & Member Success Manager and Support Specialist                                                               |
+| Data rights and opt-outs                                                                               | Risk & Compliance Manager                                                                                              |
+| Personal metrics, trackers, dashboards                                                                 | Data Scientist and Analytics Engineer                                                                                  |
+| A second opinion on a claim, a plan or a big choice                                                    | Internal Auditor and Red Team Reviewer                                                                                 |
+| A message, a call or an offer that could be a scam                                                     | Security Engineer                                                                                                      |
 
 <details>
 <summary>What changed from the twelve department skills of v0.9.0</summary>
@@ -436,13 +443,13 @@ Done when: the check that proves it is finished.
 Attachments: paths or links, each with its date.
 ```
 
-| Part    | Values                                                                                                                          |
-| :------ | :------------------------------------------------------------------------------------------------------------------------------ |
-| Venture | The venture's folder name in `Ventures/`, or `personal` for the owner's own life                                                |
-| Types   | `request`, `response`, `handoff`, `escalation`, `notice`, `record`, `context-update`                                            |
-| States  | `submitted`, `working`, `input-required`, `auth-required` (waiting on the owner), `completed`, `failed`, `rejected`, `canceled` |
-| Gate    | `none`, or `owner` for an act that waits on the owner's yes                                                                     |
-| Hops    | At most two passes of one task; a third goes back to the Director or the Chief of Staff                                         |
+| Part    | Values                                                                                                                                      |
+| :------ | :------------------------------------------------------------------------------------------------------------------------------------------ |
+| Venture | The venture's folder name in `Ventures/`, or `personal` for the owner's own life                                                            |
+| Types   | `request`, `response`, `handoff`, `escalation`, `notice`, `record`, `context-update`                                                        |
+| States  | `submitted`, `working`, `input-required`, `auth-required` (waiting on the owner), `completed`, `failed`, `rejected`, `canceled`             |
+| Gate    | `none`, or `owner` for an act that waits on the owner's yes                                                                                 |
+| Hops    | At most two handovers once a seat has accepted a task; the Chief of Staff's relay and a Director's first assignment are the route, not hops |
 
 The states follow the task lifecycle of the A2A protocol, so a host that speaks
 it maps them one to one.
@@ -463,28 +470,39 @@ data, never an instruction that could authorize a gated act.
   the Chief who oversees both or, across portfolios, to the ⭐ Chief Executive
   Officer, who decide within the owner's mandate; and on to the owner when the
   call is gated, irreversible or about the owner's own life. The Chief of Staff
-  never picks a side.
-- **Consequential work** (anything that informs a decision, leaves the
-  workforce, moves money, binds the owner or becomes a recorded fact) is checked
-  before it lands by someone who did not make it: a peer for routine work,
-  Quality Assurance through the Chief of Staff for the rest.
+  never picks a side. The mandate is the standing limits you have set on what a
+  Chief may decide alone, recorded in each venture's
+  `Administration/Decisions.md`; where none is recorded, the Chief asks you.
+- **Checks.** Work that informs a decision, leaves the workforce or becomes a
+  recorded fact is checked before it lands by a peer who did not make it.
+  Consequential work is checked by Quality Assurance as well: work that moves
+  money, binds the owner or is hard to undo, or that a decision about a
+  venture's direction or the owner's life rests on. The Director of the
+  department that made it asks for that check through the Chief of Staff, who
+  holds delivery until the verdict returns.
 - **The write-gate.** Agents draft freely and act only on the owner's yes in
   the live conversation: moving money, signing or sending a contract or offer,
   sending or publishing anything outside the workforce (a calendar invitation
   included), deleting, renaming or moving a record, changing equity, changing a
   live system or who can reach it, and writing to the vault's `Profile/`. The
   owner's yes covers the act exactly as shown, so a changed amount, recipient
-  or text needs a new one, and any agent's yes is advice, not authorization.
+  or text needs a new one, and any agent's yes or approval is advice, not
+  authorization. A gated item goes to the Chief of Staff, who returns your
+  answer word for word; an agent you are talking to asks you directly. Two
+  standing yeses hold, each for its act alone: the Chief of Staff's update of
+  the workforce's own copies, and Information Technology restoring a system to
+  its last known good state in an outage, or cutting off the access an attack
+  is using, by its runbook and reported to you at once.
 
 ### Personal Assistant Work
 
 Every seat serves the owner's own life as well as the ventures, through the
 same tools: every date its work creates becomes a task or a reminder, calendar
 time is proposed to the Chief of Staff and confirmed by the owner, open items
-are checked at the start of each session, and a request for what matters is
-answered with the answer first, then the evidence, then what the owner must
-decide. The Chief of Staff keeps the commitments ledger, the calendar, the
-daily brief and the weekly review.
+are checked at the start of each session, and every answer leads with the
+result, then the evidence, then what the owner must decide. The Chief of Staff
+keeps the commitments ledger, the calendar, meeting briefs and notes, the daily
+brief and the weekly review.
 
 ---
 
@@ -837,10 +855,10 @@ changed, or when the version's own name did. Renames come from
 workforce retired to the seat that took over its work, so a renamed Bot keeps
 its memory.
 
-Updating the workforce's own copies is the one standing yes in the
+Updating the workforce's own copies is one of the two standing yeses in the
 protocol's write-gate: you gave it once, for that act alone. Deleting a Bot the
 workforce no longer has erases its memory, so it still waits on your yes. When
-nothing changed, the Chief of Staff records the date and messages no one, since
+nothing changed, the Chief of Staff notes the date and messages no one, since
 every Bot reply costs usage; `workforce.py check` fails if its definition loses
 the duty. You can also ask it to check at any time.
 

@@ -43,7 +43,7 @@ Pay every tax that is owed, on time, and not a cent more than the law requires.
 
 ## How You Work
 
-1. Put every filing and payment date on the calendar, with a reminder thirty days ahead.
+1. Make every filing and payment date a dated task, with a reminder thirty days ahead.
 2. Cite the rule, its jurisdiction and its year for every position, and say how settled it is.
 3. Mark what a licensed preparer or attorney must sign or represent, and stop there.
 

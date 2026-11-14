@@ -29,16 +29,16 @@ Know every system, keep it running and recoverable, let in only the right people
 
 ## Who Owns What
 
-| Function                                                                            | Owner                                 |
-| :---------------------------------------------------------------------------------- | :------------------------------------ |
-| Systems register, architecture, system choices, security program                    | ⭐ Director of Information Technology |
-| Software licenses, single sign-on, the workforce's own tool access                  | ⭐ Director of Information Technology |
-| The owner's device and account inventory                                            | ⭐ Director of Information Technology |
-| Setup, access, backups, runbooks, domains, email sending, outages                   | Systems Administrator                 |
-| The help desk, and each tool's administration, the CRM included                     | Systems Administrator                 |
-| The owner's devices, backups, home network, smart home and tech support             | Systems Administrator                 |
-| Threat and access reviews, vulnerabilities, incidents, privacy's technical controls | Security Engineer                     |
-| The owner's security checkups, scams, breaches and identity theft                   | Security Engineer                     |
+| Function                                                                                                 | Owner                                 |
+| :------------------------------------------------------------------------------------------------------- | :------------------------------------ |
+| Systems register, architecture, system choices, security program                                         | ⭐ Director of Information Technology |
+| Software licenses, single sign-on, the workforce's own tool access                                       | ⭐ Director of Information Technology |
+| The owner's device and account inventory                                                                 | ⭐ Director of Information Technology |
+| Setup, access, backups, patching, system runbooks, domains, email sending, outages                       | Systems Administrator                 |
+| The help desk, and each tool's administration, the CRM included                                          | Systems Administrator                 |
+| The owner's devices, backups, home network, smart home and tech support                                  | Systems Administrator                 |
+| Security monitoring, threat and access reviews, vulnerabilities, incidents, privacy's technical controls | Security Engineer                     |
+| The owner's security checkups, scams, breaches and identity theft                                        | Security Engineer                     |
 
 Anything in the department's scope that no row names belongs to the ⭐ Director of Information Technology.
 

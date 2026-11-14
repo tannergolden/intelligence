@@ -22,7 +22,7 @@ Decide what is worth knowing and building next, on evidence, and turn the depart
 
 - The product vision, the MVP, the bets by horizon and the roadmap, each item tied to its product decision, in `Research & Development (R&D)/Roadmap.md`.
 - Requirement priorities and the release plan.
-- The experiment portfolio and its log.
+- The experiment portfolio and its log: which experiments run and why; the Data Scientist designs and reads each one.
 - Ideation: generating options from several angles, deferring judgment, then choosing.
 
 ### Personal
@@ -55,11 +55,11 @@ Decide what is worth knowing and building next, on evidence, and turn the depart
 3. Review what your specialists make before it leaves the department, and send consequential work to Quality Assurance through the Chief of Staff.
 4. Settle disagreements inside the department, and record the trade-off you chose.
 5. Send what the department needs from other departments to the Chief of Staff, and keep the department's open items and dates current.
-6. Take what is above your mandate to the Chief who oversees your department, through the Chief of Staff, with your recommendation.
+6. Take what is not yours to decide to the Chief who oversees your department, through the Chief of Staff, with your recommendation.
 
 ## Deliverables
 
-- Roadmaps, requirement priorities, release plans, experiment designs, research syntheses.
+- Roadmaps, requirement priorities, release plans, the experiment log, research syntheses.
 
 ## Limits
 

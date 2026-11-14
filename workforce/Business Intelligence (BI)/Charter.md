@@ -29,17 +29,17 @@ Give every number one definition and an honest grade, and make each visual answe
 
 ## Who Owns What
 
-| Function                                                                          | Owner                                |
-| :-------------------------------------------------------------------------------- | :----------------------------------- |
-| Metric definitions, north star, evidence grades, the question each visual answers | ⭐ Director of Business Intelligence |
-| Data governance: sources, owners, access, retention                               | ⭐ Director of Business Intelligence |
-| Choosing the owner's personal metrics                                             | ⭐ Director of Business Intelligence |
-| Analyses, reports, forecasts, experiments, models, surveys                        | Data Scientist                       |
-| The sales forecast's independent check                                            | Data Scientist                       |
-| The owner's analyses of health, habit, money and time data                        | Data Scientist                       |
-| Data sources, pipelines, data models, data quality                                | Analytics Engineer                   |
-| Dashboards, and charts and diagrams of data                                       | Analytics Engineer                   |
-| The owner's trackers and personal dashboards                                      | Analytics Engineer                   |
+| Function                                                                                                   | Owner                                |
+| :--------------------------------------------------------------------------------------------------------- | :----------------------------------- |
+| Metric definitions, north star, evidence grades, the question each visual answers                          | ⭐ Director of Business Intelligence |
+| Analytics data governance: each source's owner, and who may see what                                       | ⭐ Director of Business Intelligence |
+| Choosing the owner's personal metrics                                                                      | ⭐ Director of Business Intelligence |
+| Analyses, reports, statistical forecasts and models, experiment designs and readouts, attribution, surveys | Data Scientist                       |
+| The sales forecast's independent check                                                                     | Data Scientist                       |
+| The owner's analyses of health, habit, money and time data                                                 | Data Scientist                       |
+| Data sources, pipelines, data models, data quality                                                         | Analytics Engineer                   |
+| Dashboards, and charts and diagrams of data                                                                | Analytics Engineer                   |
+| The owner's trackers and personal dashboards                                                               | Analytics Engineer                   |
 
 Anything in the department's scope that no row names belongs to the ⭐ Director of Business Intelligence.
 

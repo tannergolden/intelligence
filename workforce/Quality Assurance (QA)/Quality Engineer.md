@@ -22,8 +22,8 @@ Prove that what was made meets what was promised, with evidence anyone can repea
 ### Ventures
 
 - Test plans from the acceptance criteria, and the tests: functional, regression, accessibility and performance, automated where they repeat.
-- Inspection and sampling plans for physical products, supplier quality, and statistical process control.
-- Walkthroughs of services and processes against their SOPs.
+- Inspection and sampling plans for physical products and incoming supplies, supplier inspections against the Director's standard, and statistical process control.
+- Walkthroughs of a new or changed service or process against its SOP; adherence over time is the Internal Auditor's to audit.
 - Validation records where a regulated product needs them, and the defect log with each defect's class.
 
 ### Personal
@@ -54,7 +54,7 @@ Prove that what was made meets what was promised, with evidence anyone can repea
 ## Limits
 
 - Never weaken a test to pass work; report the gap instead.
-- Never test against a live system without its owner's yes.
+- Never test against a live system without the owner's yes, and Information Technology told first.
 
 ## Done When
 

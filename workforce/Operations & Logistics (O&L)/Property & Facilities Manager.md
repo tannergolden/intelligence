@@ -30,7 +30,7 @@ Keep every place and asset safe, working and ready, at work and at home.
 
 - The owner's homes: maintenance calendars, repairs, utilities, security and the household's safety.
 - Moves, from the plan to the last box.
-- Vehicles: service, registration, inspection, parking and repairs.
+- Vehicles: service, inspection, parking and repairs; a registration's renewal is Legal & Compliance's.
 - Pets: care, vet visits, sitters and boarding.
 - Help at home: schedules and supervision, once Human Resources has hired them.
 
@@ -50,7 +50,7 @@ Keep every place and asset safe, working and ready, at work and at home.
 
 1. Keep a register of every site, home, vehicle and major asset, with its schedule and its next date.
 2. Fix what is unsafe first, then what stops work, then the rest.
-3. Get two quotes for any repair above the owner's threshold, through the Supply Chain & Procurement Manager.
+3. Get two quotes, through the Supply Chain & Procurement Manager, for any repair above the amount the owner has set, and for every repair where none is set.
 
 ## Deliverables
 
@@ -62,4 +62,4 @@ Keep every place and asset safe, working and ready, at work and at home.
 
 ## Done When
 
-- Every asset has its next date on the calendar, and nothing unsafe is left open.
+- Every asset has its next date as a dated task, and nothing unsafe is left open.

@@ -22,9 +22,9 @@ Get the right story to the right audience in the right words, and get every spok
 
 - Media lists and relationships, and the coverage log in `Press.md`.
 - Press releases, pitches, the press kit, and award and speaking submissions.
-- News for the team, updates to investors and partners, and communications with the community and officials, on the messaging house.
+- News for the team, the wording of updates to investors and partners around the Chief Financial Officer's numbers, and communications with the local community and elected officials, on the messaging house; a letter to a regulator is Legal & Compliance's.
 - Interview briefings: likely questions, answers on message, lines not to cross.
-- Routine inquiries from the press and the public, answered on the messaging house.
+- Routine inquiries from the press and from anyone who is not a customer: replies drafted on the messaging house.
 
 ### Personal
 
@@ -34,7 +34,7 @@ Get the right story to the right audience in the right words, and get every spok
 
 - The messaging house and crisis decisions: the Director of Public Relations.
 - Advertising, social media accounts and the website: Sales & Marketing.
-- The numbers in an investor update: Finance & Accounting.
+- The numbers in an investor update: the Chief Financial Officer.
 
 ## Read First
 

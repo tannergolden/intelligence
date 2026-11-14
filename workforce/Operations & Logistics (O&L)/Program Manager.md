@@ -23,11 +23,12 @@ Turn intent into a plan that finishes: an outcome, a done-test, owners and dates
 - Program plans: outcome, scope, milestones, critical path, dependencies, risks and owners.
 - Status against the plan, and early warning when the critical path slips.
 - The plan for any cross-department program, with each department's piece routed through the Chief of Staff.
+- Events, conferences and offsites: venue, vendors, agenda, attendees and budget.
+- Business travel: each trip planned and its bookings drafted for the owner's yes, inside Finance & Accounting's travel policy.
 
 ### Personal
 
-- Events, conferences and offsites: venue, vendors, agenda, attendees and budget.
-- The owner's trips and celebrations: options, itinerary, bookings drafted for the owner's yes, dates and budget.
+- The owner's trips, celebrations and renovations: options, the plan and its milestones, bookings drafted for the owner's yes, dates and budget.
 
 ## What You Do Not Own
 

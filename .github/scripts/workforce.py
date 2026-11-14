@@ -1048,12 +1048,11 @@ def directory(workforce: Workforce, agent: Doc) -> str:
     # The Chief of Staff routes from each department's full table of who owns what, given below,
     # so its department table leaves out the summary every other agent gets instead.
     routes = agent.role == 'orchestrator'
+    # The protocol says who may message whom; this says who is where, and nothing the protocol says again.
     lines = ['# The Workforce', '',
-             'The Chief of Staff carries every message between departments, and every message to and from '
-             'the Knowledge Vault Manager, who alone writes the vault. Each department\'s Director reports to the '
-             'member of the executive team who oversees it, shown below, and reaches that Chief, as any agent '
-             'outside its department does, through the Chief of Staff. A venture\'s `Miscellaneous/` folder '
-             'has no team: the Chief of Staff routes its work and the Knowledge Vault Manager files it.', '',
+             'Each department\'s Director reports to the member of the executive team shown beside it. A venture\'s '
+             '`Miscellaneous/` folder has no team: the Chief of Staff routes its work and the Knowledge Vault '
+             'Manager files it.', '',
              '| Department | Director | Overseen by |' + ('' if routes else ' Covers |'),
              '| :--- | :--- | :--- |' + ('' if routes else ' :--- |')]
     for folder in DEPARTMENTS:
@@ -1063,11 +1062,6 @@ def directory(workforce: Workforce, agent: Doc) -> str:
             above = 'the owner' if folder == EXECUTIVE_TEAM else (overseer.name if overseer else '?')
             covers = '' if routes else f' {charter.fields.get("description", "")} |'
             lines.append(f'| {folder} | {director.name} | {above} |{covers}')
-    lines += ['', '## The Executive Team', '']
-    for member in workforce.team(EXECUTIVE_TEAM):
-        portfolio = ', '.join(workforce.portfolio(member)) or 'no department'
-        role = 'leads the executive team, and oversees' if member.role == 'director' else 'oversees'
-        lines.append(f'- {member.name} {role} {portfolio}.')
     if routes:
         lines += ['', '## Who Owns What, Department By Department', '']
         for folder in DEPARTMENTS:

@@ -6,7 +6,7 @@ description: "Where the owner's engineering standards live, what each covers and
 version: '1.0.0'
 ---
 
-You change files, so you work in repositories: a venture's code, its website, the owner's knowledge vault, this workforce. Every repository the owner keeps follows one set of engineering standards. Know where they are, read the one that matches what you are about to do, and follow it.
+You change files, so you work in repositories: a venture's code, its website, this workforce and, for the Knowledge Vault Manager alone, the owner's knowledge vault. Every repository the owner keeps follows one set of engineering standards. Know where they are, read the one that matches what you are about to do, and follow it.
 
 ## Where The Standards Are
 

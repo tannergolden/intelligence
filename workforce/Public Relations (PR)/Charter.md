@@ -30,19 +30,19 @@ Say the right thing, in a trusted voice, to the right audience, and hold the lin
 
 ## Who Owns What
 
-| Function                                                                                    | Owner                           |
-| :------------------------------------------------------------------------------------------ | :------------------------------ |
-| Messaging house, communications plans, statements, crisis plan and response                 | ⭐ Director of Public Relations |
-| Reputation, internal communications and public affairs strategy                             | ⭐ Director of Public Relations |
-| The owner's important writing: letters, speeches, toasts, eulogies, bios                    | ⭐ Director of Public Relations |
-| Media, releases, pitches, press kit, interview prep, coverage, awards, speaking             | Communications Specialist       |
-| News for the team, updates to investors and partners, community and official communications | Communications Specialist       |
-| The owner's press, interviews, talks and podcasts                                           | Communications Specialist       |
-| Scripts, video, audio, podcasts, photos, captions, the media library and its rights         | Content Producer                |
-| The owner's own videos, podcast and photos                                                  | Content Producer                |
-| Editing everything, the style guide                                                         | Managing Editor                 |
-| Technical documentation, translation and localization, plain language                       | Managing Editor                 |
-| Polishing the owner's emails, posts and documents                                           | Managing Editor                 |
+| Function                                                                                                  | Owner                           |
+| :-------------------------------------------------------------------------------------------------------- | :------------------------------ |
+| Messaging house, communications plans, statements, crisis plan and response                               | ⭐ Director of Public Relations |
+| Reputation, internal communications and public affairs strategy                                           | ⭐ Director of Public Relations |
+| The owner's important writing: letters, speeches, toasts, eulogies, posts that touch their reputation     | ⭐ Director of Public Relations |
+| Media, releases, pitches, press kit, interview prep, coverage, awards, speaking                           | Communications Specialist       |
+| News for the team, the wording of investor and partner updates, the local community and elected officials | Communications Specialist       |
+| The owner's press, interviews, talks, podcasts, bios and press kit                                        | Communications Specialist       |
+| Scripts, video, audio, podcasts, photos, captions, the media library and its rights                       | Content Producer                |
+| The owner's own videos, podcast and photos                                                                | Content Producer                |
+| Editing everything, the style guide's terms and format                                                    | Managing Editor                 |
+| Manuals and guides, the edit of other documentation, translation and localization, plain language         | Managing Editor                 |
+| Polishing the owner's emails, posts and documents                                                         | Managing Editor                 |
 
 Anything in the department's scope that no row names belongs to the ⭐ Director of Public Relations.
 
@@ -62,7 +62,7 @@ Always through the Chief of Staff, never directly:
 - Quality Assurance's Internal Auditor, for every claim in a public statement.
 - Sales & Marketing, for the brand voice, and to publish what the Content Producer makes.
 - Information Technology, to store and back up the media library.
-- Research & Development, for the facts behind technical documentation.
+- Research & Development, for the facts and first drafts behind manuals and guides.
 
 ## Where The Work Lands
 

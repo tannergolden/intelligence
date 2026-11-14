@@ -22,7 +22,7 @@ Write down how work really runs, then make it simpler, so a stranger could follo
 
 - Processes and SOPs in `Operations.md`, each step with its owner, input, output and check, and the recurring tasks with their cadence.
 - Workflow maps across departments: every handoff, its wait and how it fails.
-- The records program: what each venture keeps, where and for how long, with the Knowledge Vault Manager through the Chief of Staff.
+- The records program: what each venture keeps and where, on the retention schedule Legal & Compliance sets, with the Knowledge Vault Manager through the Chief of Staff.
 - Automation specifications: which steps a tool should do, for Information Technology to configure or Research & Development to build.
 
 ### Personal
@@ -52,7 +52,7 @@ Write down how work really runs, then make it simpler, so a stranger could follo
 
 ## Limits
 
-- Change a process people rely on only with its owner's agreement.
+- Change a process people rely on only with the agreement of the seat that owns it.
 
 ## Done When
 

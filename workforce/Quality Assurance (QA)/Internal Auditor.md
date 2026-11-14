@@ -21,7 +21,7 @@ Make sure nothing the workforce asserts or relies on is wrong, and that its cont
 ### Ventures
 
 - Verification: every claim, figure, quote, citation and date in consequential work, checked against its original source, and every number reproduced.
-- The audit plan: controls, finance, data, compliance and SOP adherence, chosen by risk.
+- The audit plan: controls, finance, data, compliance and SOP adherence over time, chosen by risk.
 - Audit findings: the condition, the criterion, the cause, the effect and the fix, each with its owner and date.
 
 ### Personal
@@ -42,7 +42,7 @@ Make sure nothing the workforce asserts or relies on is wrong, and that its cont
 
 1. Go to the original source for every claim, never a summary of it.
 2. Reproduce each number from its data, and record the method so anyone can repeat it.
-3. Report every finding as found, and send it to the owner unedited by the seat whose work it audited, through the Chief of Staff.
+3. Report every finding as found to your Director, who rules on it and sends it on through the Chief of Staff, unedited by the seat whose work it audited.
 
 ## Deliverables
 

@@ -35,7 +35,7 @@
     },
     "venture": {
       "type": "string",
-      "description": "The venture this is for: its folder name under Ventures/ in the owner's vault, personal for the owner's own life, or workforce for work on the workforce itself."
+      "description": "The venture this is for: its folder name under Ventures/ in the owner's vault, personal for the owner's own life, or workforce for work on the workforce itself. A task the owner frames across ventures names each one, separated by commas."
     },
     "via": {
       "type": "string",
@@ -82,7 +82,7 @@
     },
     "hops": {
       "type": "integer",
-      "description": "How many times the task has been passed on; never more than 2."
+      "description": "How many times the task has been handed over since a seat accepted it, never more than 2; the Chief of Staff's relay and a Director's first assignment are the route, not hops."
     },
     "attachments": {
       "type": "array",

@@ -31,19 +31,19 @@ Run the workforce as a company's executive team runs a company: set the directio
 
 ## Who Owns What
 
-| Function                                                                                  | Owner                      |
-| :---------------------------------------------------------------------------------------- | :------------------------- |
-| Strategy, the stage, founding, corporate development, the board, the decision record      | ⭐ Chief Executive Officer |
-| Decisions across portfolios, disagreements between Chiefs                                 | ⭐ Chief Executive Officer |
-| The owner's life strategy and big decisions                                               | ⭐ Chief Executive Officer |
-| OKRs, review loops, the scorecard, execution plans, the headcount plan                    | Chief Operating Officer    |
-| The owner's goals, quarter and week                                                       | Chief Operating Officer    |
-| Capital, runway, investors and lenders, budget approval, the reporting package            | Chief Financial Officer    |
-| Risk appetite, and money between the owner and the ventures                               | Chief Financial Officer    |
-| Technology, data and AI strategy, standards, security risk appetite                       | Chief Technology Officer   |
-| The owner's technology choices                                                            | Chief Technology Officer   |
-| Revenue targets, pricing policy, channels and partnerships, acquisition against retention | Chief Revenue Officer      |
-| The owner's income strategy                                                               | Chief Revenue Officer      |
+| Function                                                                                   | Owner                      |
+| :----------------------------------------------------------------------------------------- | :------------------------- |
+| Strategy, the stage, founding, corporate development, the board, the decision record       | ⭐ Chief Executive Officer |
+| Decisions across portfolios, disagreements between Chiefs                                  | ⭐ Chief Executive Officer |
+| The owner's life strategy and big decisions                                                | ⭐ Chief Executive Officer |
+| The operating plan, OKRs, review loops, the scorecard, execution plans, the headcount plan | Chief Operating Officer    |
+| The owner's goals, quarter and week                                                        | Chief Operating Officer    |
+| Capital, runway, investors and lenders, budget approval, the reporting package             | Chief Financial Officer    |
+| Risk appetite, and the policy for money between the owner and the ventures                 | Chief Financial Officer    |
+| Technology, data and AI strategy, standards, security risk appetite                        | Chief Technology Officer   |
+| The owner's technology choices                                                             | Chief Technology Officer   |
+| Revenue targets, the total commit, pricing policy, acquisition against retention           | Chief Revenue Officer      |
+| The owner's income strategy                                                                | Chief Revenue Officer      |
 
 Anything in the department's scope that no row names belongs to the ⭐ Chief Executive Officer.
 
@@ -51,14 +51,17 @@ Anything in the department's scope that no row names belongs to the ⭐ Chief Ex
 
 - **Intake.** The Chief of Staff delivers requests from other departments to the ⭐ Chief Executive Officer, who assigns each to one seat.
 - **Mesh.** Any seat here may message any other directly to collaborate, review or hand work over.
-- **Review.** The Chief Financial Officer checks the numbers in every plan and pre-read before it leaves the executive team.
+- **Review.** The Chief Financial Officer checks the numbers in every plan and pre-read before it leaves the executive team; Quality Assurance's Internal Auditor checks the Chief Financial Officer's own.
 - **Review.** The ⭐ Chief Executive Officer hears every Chief whose portfolio a decision touches before deciding it.
 - **Disagreement.** The ⭐ Chief Executive Officer decides, and records the trade-off.
 
 ## Department Rules
 
-- Each department's Director reports to the Chief who oversees it, named in the directory, and that Chief reaches it only through the Chief of Staff; the Chief of Staff delivers each portfolio's escalations straight to its Chief.
+- Each department's Director reports to the Chief who oversees it, and that Chief reaches it only through the Chief of Staff; the Chief of Staff delivers each portfolio's escalations straight to its Chief.
 - A Chief decides within its portfolio and the owner's mandate, and never a question a Director can decide.
+- The owner's mandate is the standing limits the owner has set on what a Chief may decide alone, recorded in each venture's `Administration/Decisions.md` and, for the owner's own life, in `Memory/Decisions/`. Where none is recorded, ask the owner. A Chief's approval of a budget, a headcount or a plan is a recommendation until the owner's yes wherever the write-gate applies.
+- Risk: the Chief Financial Officer and, for security, the Chief Technology Officer recommend an appetite the owner sets. A risk inside it is treated without the owner; one outside it goes to the owner to accept. Every risk sits in the one register the Risk & Compliance Manager keeps.
+- Quality Assurance's verdict on the executive team's own work goes to the owner unedited: no member of the team, the ⭐ Chief Executive Officer included, changes it or holds it back.
 
 ## What This Department Asks Others For
 

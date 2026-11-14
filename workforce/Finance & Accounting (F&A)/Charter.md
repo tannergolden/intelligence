@@ -30,21 +30,22 @@ Keep the money true, foreseen and protected: correct books, an honest forecast, 
 
 ## Who Owns What
 
-| Function                                                                                   | Owner                      |
-| :----------------------------------------------------------------------------------------- | :------------------------- |
-| Books, close, statements, cash, banking, controls, audit readiness                         | ⭐ Director of Finance     |
-| Invoicing, collections, payables, payroll runs, expenses, inventory, fixed assets          | ⭐ Director of Finance     |
-| The cap table and business insurance                                                       | ⭐ Director of Finance     |
-| Keeping the owner's and the ventures' money apart                                          | ⭐ Director of Finance     |
-| Financial model, budget, forecasts, scenarios, variance                                    | Financial Analyst          |
-| Unit economics, pricing models, business cases, raise and deal financials                  | Financial Analyst          |
-| Models for the owner's big decisions                                                       | Financial Analyst          |
-| Every tax and its calendar: income, sales and use, VAT, payroll, property                  | Tax Accountant             |
-| The owner's returns, estimated payments, notices, household employment tax                 | Tax Accountant             |
-| Founder pay, benefit plans, founder liquidity                                              | Personal Financial Planner |
-| The owner's budget, bills, accounts, debt, emergency fund                                  | Personal Financial Planner |
-| The owner's insurance and claims, investing, retirement, education savings, giving, estate | Personal Financial Planner |
-| Money for relatives the owner supports                                                     | Personal Financial Planner |
+| Function                                                                                                                     | Owner                      |
+| :--------------------------------------------------------------------------------------------------------------------------- | :------------------------- |
+| Books, close, statements, cash, banking, controls, audit readiness                                                           | ⭐ Director of Finance     |
+| Invoicing, collections, payables, payroll runs, expenses, the travel policy, inventory valuation, fixed assets               | ⭐ Director of Finance     |
+| Refunds and chargebacks paid, a till's daily cash-up                                                                         | ⭐ Director of Finance     |
+| The cap table and business insurance                                                                                         | ⭐ Director of Finance     |
+| Recording each transfer between the owner and a venture                                                                      | ⭐ Director of Finance     |
+| Financial model, budget, financial forecasts, scenarios, variance                                                            | Financial Analyst          |
+| Unit economics, pricing models, business cases, raise and deal financials                                                    | Financial Analyst          |
+| Models for the owner's big decisions                                                                                         | Financial Analyst          |
+| Every tax and its calendar: income, sales and use, VAT, payroll, property                                                    | Tax Accountant             |
+| The owner's returns, estimated payments, notices, household employment tax                                                   | Tax Accountant             |
+| The founder's own pay, benefit elections and liquidity                                                                       | Personal Financial Planner |
+| The owner's budget, bills, accounts, debt, borrowing and credit, emergency fund                                              | Personal Financial Planner |
+| The owner's insurance and every insurance claim, investing, retirement, education savings, giving, estate, household payroll | Personal Financial Planner |
+| Money for relatives the owner supports                                                                                       | Personal Financial Planner |
 
 Anything in the department's scope that no row names belongs to the ⭐ Director of Finance.
 
@@ -65,7 +66,7 @@ Anything in the department's scope that no row names belongs to the ⭐ Director
 Always through the Chief of Staff, never directly:
 
 - Legal & Compliance, for a round's documents, entity questions and estate documents.
-- Human Resources, for payroll inputs and benefit plans.
+- Human Resources, for payroll inputs, hours worked and the benefit plans it chooses.
 - Quality Assurance's Internal Auditor, before any plan or filing is acted on.
 
 ## Where The Work Lands

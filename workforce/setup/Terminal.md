@@ -51,7 +51,7 @@ Chief of Staff: these are your steps where you can run commands. Run each from t
    ```
 
 3. **Install.** Run it without `--dry-run`. It writes only files that carry the workforce's mark or do not exist yet, and reports any it refused: leave those as they are and list them for the owner.
-4. **Initialize**, as steps 4 and 5 of "Initializing The Workforce" in your definition say.
+4. **Initialize.** Send each Director its charter and the current context, and have it confirm its roster; have the Knowledge Vault Manager confirm it can read the vault and report its state. Then prove the topology with three dry runs: a message inside a department, a request across departments through you, and a record the Knowledge Vault Manager validates without writing.
 5. **Schedule the weekly check**: a scheduled task where the app runs one, and otherwise your first session after a week has passed.
 6. **Report**, as the prompt's last part asks. Tell the owner to start the workforce with you as the session's main agent, with the vault reachable.
 

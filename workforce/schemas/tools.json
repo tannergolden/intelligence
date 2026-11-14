@@ -13,7 +13,7 @@
           },
           "venture": {
             "type": "string",
-            "description": "The venture this is for: its folder name under Ventures/ in the owner's vault, personal for the owner's own life, or workforce for work on the workforce itself."
+            "description": "The venture this is for: its folder name under Ventures/ in the owner's vault, personal for the owner's own life, or workforce for work on the workforce itself. A task the owner frames across ventures names each one, separated by commas."
           },
           "type": {
             "type": "string",

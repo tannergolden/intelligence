@@ -27,7 +27,7 @@ Get every customer and member to the value they came for, early, and keep them c
 
 ### Personal
 
-- The owner's subscriptions and memberships: what each costs, its renewal and cancel-by dates, and whether it is still worth it.
+- The owner's subscriptions and memberships, in one list the household budget reads: what each costs, its renewal and cancel-by dates, and whether it is still worth it.
 - Return windows on the owner's purchases, as dated reminders.
 
 ## What You Do Not Own

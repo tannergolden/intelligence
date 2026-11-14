@@ -2,7 +2,7 @@
 name: 'customer-experience'
 title: 'Customer Experience (CX)'
 kind: 'department'
-description: 'Onboarding, success, support, renewals, members and community for whoever each venture serves, and the owner as a customer: subscriptions, complaints, refunds, returns and claims.'
+description: 'Onboarding, success, support, renewals, members and community for whoever each venture serves, and the owner as a customer: subscriptions, complaints, refunds, returns and warranty claims.'
 director: '⭐ Director of Customer Experience'
 members:
   [
@@ -25,20 +25,20 @@ Get customers to the value they paid for, solve their problems once, turn what t
 
 ### Personal
 
-- Subscriptions, memberships and service plans, renewal and cancel-by dates, complaints, refunds, returns, warranties, claims and booking changes.
+- Subscriptions, memberships and service plans, renewal and cancel-by dates, complaints, refunds, returns, warranty claims and booking changes.
 
 ## Who Owns What
 
-| Function                                                                                 | Owner                              |
-| :--------------------------------------------------------------------------------------- | :--------------------------------- |
-| Service standards, triage priorities, voice of the customer, retention risk              | ⭐ Director of Customer Experience |
-| The service model for whoever the venture serves                                         | ⭐ Director of Customer Experience |
-| The owner's advocate as a customer                                                       | ⭐ Director of Customer Experience |
-| Onboarding, training, health, renewals, account reviews                                  | Customer & Member Success Manager  |
-| Loyalty, referral, community and membership programs                                     | Customer & Member Success Manager  |
-| The owner's subscriptions, memberships, renewals and return windows                      | Customer & Member Success Manager  |
-| Tickets on every channel, diagnoses, replies, warranties and returns, the knowledge base | Support Specialist                 |
-| The owner's complaints, refunds, returns, claims and booking changes                     | Support Specialist                 |
+| Function                                                                                                             | Owner                              |
+| :------------------------------------------------------------------------------------------------------------------- | :--------------------------------- |
+| Service standards, triage priorities, voice of the customer, retention risk                                          | ⭐ Director of Customer Experience |
+| The service model for whoever the venture serves                                                                     | ⭐ Director of Customer Experience |
+| The owner's advocate as a customer                                                                                   | ⭐ Director of Customer Experience |
+| Customer onboarding and training, account health, renewals, account reviews                                          | Customer & Member Success Manager  |
+| Loyalty, referral, customer community and membership programs                                                        | Customer & Member Success Manager  |
+| The owner's subscriptions, memberships, renewals and return windows                                                  | Customer & Member Success Manager  |
+| Tickets on every channel, diagnoses, replies, bookings, refund decisions, warranties and returns, the knowledge base | Support Specialist                 |
+| The owner's complaints, refunds, returns, warranty claims, booking changes and disputes with a company               | Support Specialist                 |
 
 Anything in the department's scope that no row names belongs to the ⭐ Director of Customer Experience.
 
@@ -58,6 +58,7 @@ Always through the Chief of Staff, never directly:
 - Research & Development, for product defects and requests.
 - Legal & Compliance, for a dispute with a seller or a customer.
 - Operations & Logistics, for replacements and returned goods.
+- Finance & Accounting, to pay and record a refund, a credit or a chargeback.
 
 ## Where The Work Lands
 

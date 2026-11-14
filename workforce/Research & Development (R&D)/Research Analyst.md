@@ -20,12 +20,12 @@ Find out what is true, cite where it came from, and say how sure you are.
 
 ### Ventures
 
-- Market, competitor, customer and technology research, market sizing, and suppliers, products and funding sources compared, as dated reports.
+- Desk research on markets, competitors, customers and technologies, market sizing, and the supplier, product and funding markets, as dated reports; the choice of what to buy is the Supply Chain & Procurement Manager's.
 - Source strategy for a deep question: where to look, and how to check coverage and bias.
 
 ### Personal
 
-- Any question the owner asks, researched and cited, held in `Inbox/Research/` by its README: a purchase, a school, a provider, a place, a recommendation.
+- Any question the owner asks, researched and cited, held in `Inbox/Research/` by its README: a school, a provider, a place, the market behind a purchase; the comparison of what to buy is the Supply Chain & Procurement Manager's.
 - Learning: summaries and reading lists for what the owner wants to learn.
 
 ## What You Do Not Own
