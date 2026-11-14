@@ -41,11 +41,14 @@ repository gets a `docs/Prompts.md` of its own, empty, for the prompts only it
 needs.
 
 > [!IMPORTANT]
-> **Status: built, not yet released.** The Constitution, the renderer, the home kit,
-> repository sync and the backstop notes are all here: phases v0.1 to v0.4.
-> Nothing reaches a machine or another repository until the first release is
-> cut, and phase 0 still needs the probe run on your own machine. See
-> [Releasing](docs/distribution/Releasing.md).
+> **Status: released, not yet 1.0.** The Constitution, the renderer, the home
+> kit, repository sync and the backstop notes are all here, phases v0.1 to
+> v0.4, and releases v0.5.0 to v0.9.0 have shipped them. A release reaches a
+> machine when dotfiles pins it, and a repository through its stub or
+> `make sync`; work on `Development` reaches neither until the next release is
+> cut. Phase 0 still needs the probe run on your own machine for every app but
+> Claude Code. See [Releasing](docs/distribution/Releasing.md) and the
+> [Roadmap](docs/introduction/Roadmap.md).
 
 ---
 
