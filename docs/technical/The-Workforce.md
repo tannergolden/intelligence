@@ -855,19 +855,27 @@ beside them, such as `.DS_Store`, never fails it. The rules:
 - **The layout**: the venture template's folders, `schemas/` and `setup/`, each
   holding exactly its files.
 - **The teams**: one starred Director and at most four more agents in each
-  department; every Chief in Administration, overseeing at least one
-  department; and every reporting line in place.
-- **The names**: at least two words, NFC, with no variation selector,
-  underscore or long dash, and each id its title as a slug.
-- **The files**: frontmatter with exactly its fields, the sections each role
-  needs, and no title retired in `setup/retired.json` named anywhere.
+  department; every other member of Administration a Chief, overseeing at least
+  one department; and every reporting line in place.
+- **The names**: at least two words, starting with a letter, NFC, with no
+  variation selector, underscore or long dash, and each id its title as a slug.
+- **The files**: frontmatter with exactly its fields, each of its type, and a
+  version as `MAJOR.MINOR.PATCH`; the sections each role needs, where a heading
+  inside a code block does not count; no control or invisible character; and
+  no title retired in `setup/retired.json` named anywhere.
+- **The tools**: every agent can read and message, and only the Chief of Staff
+  and the Directors delegate.
 - **The charters**: each lists exactly its department's agents, and gives every
   one of them a function.
 - **The setup prompts**: each in the hub's prompt shape, naming the file whose
   steps it follows, with every placeholder in its **Fill in** line.
-- **The schemas**: tools in the subset every API accepts.
+- **The schemas**: tools in the subset every API accepts, a message tool that
+  offers exactly the values the envelope accepts, and an approval tool that
+  lists the acts that wait on you.
 - **The composed prompts**: each under the cap, with no braces or triple
   quotes.
+
+A file the check cannot read is a problem it lists, never a crash.
 
 ### Changing A Seat
 

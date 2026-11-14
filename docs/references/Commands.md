@@ -163,7 +163,7 @@ target is for and how the Chief of Staff installs it.
 | `--no-grants`                    | `install`: grant nothing, and forget the grants of the last install                                                                                                                                               |
 | `--flavor F`                     | `render --target bundle`: wrap each tool for `neutral`, `responses`, `chat`, `anthropic` or `mcp`; `neutral` by default                                                                                           |
 | `--model M`                      | `render --target ollama`: the local model each Modelfile builds on; required                                                                                                                                      |
-| `--ref REF`                      | `render --target grok-bot`: the tag, branch or commit each Bot reads its files at; the checkout's commit by default                                                                                               |
+| `--ref REF`                      | `render --target grok-bot`: the tag, branch or commit each Bot reads its files at; the checkout's commit by default, and required outside a git checkout                                                          |
 | `--vault OWNER/NAME`             | `render --target grok-bot`: the private repository that holds the owner's vault, written into the prompt and each first message; a placeholder when left out                                                      |
 
 Every command but `uninstall` checks the source first and exits 1, writing

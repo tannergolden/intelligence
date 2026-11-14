@@ -26,6 +26,7 @@ import json
 import pathlib
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -60,7 +61,12 @@ class Copy:
     def __enter__(self) -> pathlib.Path:
         self.tmp = tempfile.TemporaryDirectory()
         self.root = pathlib.Path(self.tmp.name)
-        shutil.copytree(REAL, self.root / wf.SOURCE)
+        # Only the files git would commit: the copy has no git, so an ignored file such as an
+        # editor's swap file would otherwise turn up in it as part of the source.
+        for path in wf.source_files(REAL):
+            target = self.root / wf.SOURCE / path.relative_to(REAL)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(path, target)
         return self.root
 
     def __exit__(self, *exc) -> None:
@@ -103,7 +109,7 @@ def retire(root: pathlib.Path, old: str, new: str) -> None:
 def set_raw(path: pathlib.Path, key: str, raw: str) -> None:
     """Replace one frontmatter line with raw text, quoting and all."""
     text = path.read_text(encoding='utf-8')
-    new, count = re.subn(rf'^{key}: .*$', f'{key}: {raw}', text, count=1, flags=re.M)
+    new, count = re.subn(rf'^{key}: .*$', lambda _: f'{key}: {raw}', text, count=1, flags=re.M)
     assert count == 1, f'{key} not in {path}'
     path.write_text(new, encoding='utf-8')
 
@@ -172,13 +178,49 @@ class TheRealWorkforce(unittest.TestCase):
         roots = sorted(a.name for a in self.workforce.agents if not a.department)
         self.assertEqual(roots, ['Chief of Staff', 'Knowledge Vault Manager'])
 
-    def test_every_composed_prompt_fits_and_ends_with_the_directory(self) -> None:
+    def test_every_composed_prompt_holds_its_parts_in_order_and_fits(self) -> None:
         for agent in self.workforce.agents:
             prompt = wf.compose(self.workforce, agent)
             self.assertLessEqual(len(prompt), wf.MAX_PROMPT, agent.name)
-            self.assertTrue(prompt.startswith(f'# {agent.name}\n'), agent.name)
-            self.assertIn('# Workforce Protocol', prompt)
-            self.assertIn('You may message directly:', prompt)
+            # The agent first, then its department, the protocol, the standards where it changes
+            # files, and the directory last: a model weighs the start and the end of a prompt most.
+            titles = [line[2:] for line, fenced in wf.scan(prompt) if not fenced and line.startswith('# ')]
+            expected = ([agent.name] + ([agent.department] if agent.department else []) + ['Workforce Protocol']
+                        + (['Repository Standards'] if 'edit' in agent.fields['tools'] else []) + ['The Workforce'])
+            self.assertEqual(titles, expected, agent.name)
+            self.assertTrue(prompt.startswith(f'# {agent.name}\n\n{agent.body.strip()}\n\n# '), agent.name)
+            protocol = self.workforce.protocol.body.strip()
+            self.assertIn(f'\n\n# Workforce Protocol\n\n{protocol}\n\n# ', prompt, agent.name)
+            if agent.department:
+                charter = self.workforce.charters[agent.department].body.strip()
+                self.assertIn(f'\n\n# {agent.department}\n\n{charter}\n\n# Workforce Protocol\n', prompt, agent.name)
+            last = prompt.rstrip('\n').rsplit('\n', 1)[1]
+            self.assertTrue(last.startswith('You may message directly: '), agent.name)
+            self.assertTrue(prompt.endswith('\n') and not prompt.endswith('\n\n'), agent.name)
+
+    def test_the_directory_names_whom_each_agent_may_message(self) -> None:
+        for agent in self.workforce.agents:
+            last = wf.directory(self.workforce, agent).rstrip('\n').rsplit('\n', 1)[1]
+            if agent.role == 'orchestrator':
+                self.assertIn('every agent', last)
+                continue
+            named = last[len('You may message directly: '):].split('. Everyone else')[0].split(', ')
+            self.assertEqual(named, [peer.name for peer in wf.peers(self.workforce, agent)], agent.name)
+            self.assertTrue(last.endswith('Everyone else, through the Chief of Staff.'), agent.name)
+
+    def test_the_directory_shows_who_oversees_each_department(self) -> None:
+        text = wf.directory(self.workforce, self.workforce.agent('managing-editor'))
+        rows = {cells[0]: cells for cells in ([cell.strip() for cell in line.strip('|').split('|')]
+                                              for line in text.split('\n') if line.startswith('| '))}
+        self.assertEqual(rows['Finance & Accounting (F&A)'][1:3], ['\u2b50 Director of Finance', 'Chief Financial Officer'])
+        self.assertEqual(rows['Administration'][1:3], ['\u2b50 Chief Executive Officer', 'the owner'])
+        self.assertEqual(set(rows) - {'Department', ':---'}, set(wf.DEPARTMENTS))
+        # Every agent but the Chief of Staff gets each department's summary; it gets the full tables.
+        self.assertEqual(rows['Department'], ['Department', 'Director', 'Overseen by', 'Covers'])
+        hub = wf.directory(self.workforce, self.workforce.agent('chief-of-staff'))
+        self.assertIn('| Department | Director | Overseen by |\n', hub)
+        self.assertIn('## Who Owns What, Department By Department', hub)
+        self.assertNotIn('## Who Owns What, Department By Department', text)
 
     def test_only_the_vault_manager_writes_the_vault_and_only_the_hub_asks_the_owner(self) -> None:
         for agent in self.workforce.agents:
@@ -303,6 +345,28 @@ class EachCheckFails(unittest.TestCase):
                 (root / wf.SOURCE / name).write_text('', encoding='utf-8')
                 (root / wf.SOURCE / 'Administration' / name).write_text('', encoding='utf-8')
             self.assertEqual(problems(root), [])
+
+    def test_the_check_reads_what_git_would_commit(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp) / 'workforce'
+            (root / 'Team').mkdir(parents=True)
+            for name in ('Kept.md', 'Team/Kept Too.md', 'notes.swp', 'Team/.DS_Store', '.gitignore'):
+                (root / name).write_text('*.swp\n' if name == '.gitignore' else 'x', encoding='utf-8')
+
+            def names() -> list:
+                return [path.relative_to(root).as_posix() for path in wf.source_files(root)]
+
+            if wf.commit_of(root):
+                self.skipTest('the temporary folder is inside a git checkout')
+            # Outside a checkout: every file but those an operating system drops.
+            self.assertEqual(names(), ['.gitignore', 'Kept.md', 'Team/Kept Too.md', 'notes.swp'])
+            try:
+                made = subprocess.run(['git', 'init', '--quiet', str(root.parent)], capture_output=True, check=False)
+            except OSError:
+                self.skipTest('git is not installed')
+            self.assertEqual(made.returncode, 0, made.stderr)
+            # Inside one: what git tracks or would add, so never a file `.gitignore` names.
+            self.assertEqual(names(), ['.gitignore', 'Kept.md', 'Team/Kept Too.md'])
 
     def test_a_windows_device_name(self) -> None:
         with Copy() as root:
@@ -457,6 +521,269 @@ class EachCheckFails(unittest.TestCase):
             self.assertProblem(root, 'holds \\{ \\}')
 
 
+PR = 'Public Relations (PR)'
+EDITOR = f'{PR}/Managing Editor.md'
+CHARTER = f'{PR}/Charter.md'
+TOOLS = 'schemas/tools.json'
+ENVELOPE = 'schemas/message.schema.json'
+
+
+def at(root: pathlib.Path, rel: str) -> pathlib.Path:
+    return root / wf.SOURCE / rel
+
+
+def field(rel: str, key: str, value):
+    return lambda root: set_field(at(root, rel), key, value)
+
+
+def raw(rel: str, key: str, text: str):
+    return lambda root: set_raw(at(root, rel), key, text)
+
+
+def swap(rel: str, old: str, new: str):
+    return lambda root: edit(at(root, rel), old, new)
+
+
+def write(rel: str, text: str = ''):
+    def change(root: pathlib.Path) -> None:
+        at(root, rel).parent.mkdir(parents=True, exist_ok=True)
+        at(root, rel).write_text(text, encoding='utf-8')
+    return change
+
+
+def garble(rel: str):
+    """Leave a file that is not text: bytes no UTF-8 reader accepts."""
+    return lambda root: at(root, rel).write_bytes(b'---\nname: \xff\xfe\n---\n')
+
+
+def remove(rel: str):
+    def change(root: pathlib.Path) -> None:
+        path = at(root, rel)
+        shutil.rmtree(path) if path.is_dir() else path.unlink()
+    return change
+
+
+def copy(source: str, target: str, **fields):
+    def change(root: pathlib.Path) -> None:
+        at(root, target).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(at(root, source), at(root, target))
+        for key, value in fields.items():
+            set_field(at(root, target), key, value)
+    return change
+
+
+def data(rel: str, change):
+    """Change a JSON file in place through its parsed form; what the change returns is dropped."""
+    def apply(root: pathlib.Path) -> None:
+        loaded = json.loads(at(root, rel).read_text(encoding='utf-8'))
+        change(loaded)
+        at(root, rel).write_text(json.dumps(loaded), encoding='utf-8')
+    return apply
+
+
+def first_tool(change):
+    return data(TOOLS, lambda loaded: change(loaded['tools'][0]))
+
+
+def approval_tool(change):
+    return data(TOOLS, lambda loaded: [change(tool) for tool in loaded['tools'] if tool['name'] == 'request_owner_approval'])
+
+
+def members_reordered(root: pathlib.Path) -> None:
+    members = wf.parse(at(root, CHARTER).read_text(encoding='utf-8'))[0]['members']
+    set_field(at(root, CHARTER), 'members', members[1:] + members[:1])
+
+
+def without_the_table(root: pathlib.Path) -> None:
+    path = at(root, CHARTER)
+    path.write_text('\n'.join(line for line in path.read_text(encoding='utf-8').split('\n')
+                              if not line.startswith('|')), encoding='utf-8')
+
+
+def editor_owns_nothing(root: pathlib.Path) -> None:
+    path = at(root, CHARTER)
+    path.write_text(re.sub(r'\| Managing Editor +\|', '| Content Producer |', path.read_text(encoding='utf-8')),
+                    encoding='utf-8')
+
+
+# Each rule of the check, broken once: what to change in a copy of the real workforce, and the
+# problem the check must then report. A rule with no line here is a rule nothing holds.
+BROKEN = [
+    # An agent's frontmatter.
+    ('a field the format does not have', field(EDITOR, 'nickname', 'Ed'), r'Managing Editor\.md: frontmatter must hold exactly'),
+    ('a kind that is not agent', field(EDITOR, 'kind', 'module'), 'kind must be "agent"'),
+    ('a title that is not the file name', field(EDITOR, 'title', 'Copy Chief'), 'title "Copy Chief" must equal the file name'),
+    ('a title a name cannot hold', field(EDITOR, 'title', 'Managing  Editor'), 'title must be words, digits, single spaces'),
+    ('a title that starts with a digit', copy(EDITOR, f'{PR}/2 Editors.md', title='2 Editors', name='2-editors'),
+     r'2 Editors\.md: a title starts with a letter'),
+    ('a role that is not one', field(EDITOR, 'role', 'editor'), 'role must be one of'),
+    ('a root role inside a department', field(EDITOR, 'role', 'vault-manager'),
+     'a department agent is a director, an executive or a specialist'),
+    ('a file that is not text', garble(EDITOR), r'Managing Editor\.md: cannot be read'),
+    ('an agent with no tools field', field(EDITOR, 'tools', None), 'tools must be a list of capabilities'),
+    ('a department that is not its folder', field(EDITOR, 'department', 'Quality Assurance (QA)'),
+     'department must be "Public Relations \\(PR\\)", its folder'),
+    ('a star on a specialist', copy(EDITOR, f'{PR}/\u2b50 Managing Editor.md', title='\u2b50 Managing Editor'),
+     'only its Director, takes the star'),
+    ('a third agent at the root', copy(EDITOR, 'Managing Editor.md'), 'the root holds only Chief of Staff and Knowledge Vault Manager'),
+    ('a root agent in a department role', field('Knowledge Vault Manager.md', 'role', 'specialist'),
+     'the root holds only'),
+    ('no orchestrator', remove('Chief of Staff.md'), 'the workforce needs exactly one orchestrator'),
+    ('two agents under one name', copy(EDITOR, 'Quality Assurance (QA)/Managing Editor.md', department='Quality Assurance (QA)'),
+     '"managing-editor" names two agents'),
+    ('a department with no Director', field(f'{PR}/\u2b50 Director of Public Relations.md', 'role', 'specialist'),
+     'needs exactly one Director, has 0'),
+    ('a specialist that reports past its Director', field(EDITOR, 'reports_to', 'chief-of-staff'),
+     'reports_to must be "director-of-public-relations"'),
+    ('a vault manager that reports to the owner', field('Knowledge Vault Manager.md', 'reports_to', 'owner'),
+     'reports_to must be "chief-of-staff"'),
+    ('a specialist in the executive team', field('Administration/Chief Revenue Officer.md', 'role', 'specialist'),
+     'every member of Administration but its Director is an executive'),
+    ('tools that are one string', raw(EDITOR, 'tools', "'read'"), 'frontmatter key tools must hold a \\[list\\]'),
+    ('a title that is a list', raw(EDITOR, 'title', "['Managing', 'Editor']"), 'frontmatter key title must hold one quoted string'),
+    ('a capability named twice', field(EDITOR, 'tools', ['read', 'read', 'message']), 'tools lists a capability twice'),
+    ('an agent that cannot message', field(EDITOR, 'tools', ['read', 'search']), 'every agent needs the message capability'),
+    ('an agent with no tool an app knows', field(EDITOR, 'tools', ['message', 'tasks']), 'every agent needs the read capability'),
+    ('a version that is not one', field(EDITOR, 'version', '1.0'), r'Managing Editor\.md: version must be MAJOR'),
+    ('a version with a line after it', field(EDITOR, 'version', '1.0.0\n'), r'Managing Editor\.md: version must be MAJOR'),
+    ('a version in other digits', field(EDITOR, 'version', '\u0661.\u0660.\u0660'), r'Managing Editor\.md: version must be MAJOR'),
+    ('no description', field(EDITOR, 'description', ' '), 'needs a description'),
+    ('a description with an angle bracket', field(EDITOR, 'description', 'Edits <everything>.'), 'must be one line of at most'),
+    ('a description that is too long', field(EDITOR, 'description', 'Edits. ' * 200), 'must be one line of at most'),
+    ('a description that splits a table', field(CHARTER, 'description', 'Press | and voice.'), 'without angle brackets or a vertical bar'),
+    # Text no file may hold.
+    ('a variation selector in a body', swap(EDITOR, '## Mission\n\n', '## Mission\n\n\u2b50\ufe0f '), 'U\\+FE0F; write the star'),
+    ('a control character in a body', swap('Protocol.md', '## 1. Who You Serve\n', '## 1. Who You Serve\n\n\x1b[31mred\n'),
+     r'Protocol\.md: holds U\+001B'),
+    ('a delete character in a description', field(EDITOR, 'description', 'Edits\x7f everything.'), 'holds U\\+007F'),
+    ('a character no one can see', swap(EDITOR, '## Mission\n\n', '## Mission\n\nEdits\u200beverything. '), 'holds U\\+200B'),
+    ('a no-break space', swap(EDITOR, '## Mission\n\n', '## Mission\n\nEdits\u00a0everything. '), 'holds U\\+00A0'),
+    ('half a surrogate pair', raw(EDITOR, 'description', '"Edits \\ud83d everything."'), 'holds U\\+D83D'),
+    # Headings and sections.
+    ('a top-level heading behind one space', swap(EDITOR, '## Mission', ' # Editor\n\n## Mission'), 'holds a top-level heading'),
+    ('a top-level heading with a tab', swap(EDITOR, '## Mission', '#\tEditor\n\n## Mission'), 'holds a top-level heading'),
+    ('a top-level heading underlined', swap(EDITOR, '## Mission', 'Editor\n======\n\n## Mission'), 'holds a top-level heading'),
+    ('a section that is only in a code block', swap(EDITOR, '## Done When', '```text\n## Done When\n```'), 'missing sections Done When'),
+    ('a vault manager that stops syncing context', swap('Knowledge Vault Manager.md', '## Keeping Context In Sync', '## Sync'),
+     'missing sections Keeping Context In Sync'),
+    ('a chief with nothing to oversee in its file', swap('Administration/Chief Revenue Officer.md', '## Overseeing Your Departments', '## Oversight'),
+     'missing sections Overseeing Your Departments'),
+    ('a director that does not lead', swap(f'{PR}/\u2b50 Director of Public Relations.md', '## Leading The Department', '## Leading'),
+     'missing sections Leading The Department'),
+    ('a prompt past the cap', swap(EDITOR, '## Mission\n\n', '## Mission\n\n' + 'Edit everything. ' * 2000), 'over the cap of 30000'),
+    # A charter.
+    ('a charter field the format lacks', field(CHARTER, 'owner', 'Nobody'), r'Charter\.md: frontmatter must hold exactly'),
+    ('a charter of another kind', field(CHARTER, 'kind', 'agent'), 'kind must be "department"'),
+    ('a charter titled for another folder', field(CHARTER, 'title', 'Press Office'), 'title must be "Public Relations \\(PR\\)", its folder'),
+    ('a charter under another id', field(CHARTER, 'name', 'press'), 'name must be "public-relations"'),
+    ('a charter naming the wrong Director', field(CHARTER, 'director', 'Managing Editor'), 'director must be'),
+    ('a charter that lists its Director last', members_reordered, 'members must list the Director first'),
+    ('a charter with a bad version', field(CHARTER, 'version', 'one'), r'Charter\.md: version must be MAJOR'),
+    ('a charter with a title heading', swap(CHARTER, '## Mission', '# Public Relations\n\n## Mission'), r'Charter\.md: the body holds a top-level heading'),
+    ('a charter without a section', swap(CHARTER, '## Scope', '## Range'), 'missing sections Scope'),
+    ('a charter with no table', without_the_table, 'Who Owns What needs a table'),
+    ('a member that owns nothing', editor_owns_nothing, 'Who Owns What gives nothing to Managing Editor'),
+    ('a row with no function', swap(CHARTER, '## Inside The Department', '|  | Managing Editor |\n\n## Inside The Department'),
+     'names an owner and no function'),
+    # The shared modules.
+    ('a module field the format lacks', field('Protocol.md', 'role', 'rules'), r'Protocol\.md: frontmatter must hold exactly'),
+    ('a module under another id', field('Protocol.md', 'name', 'protocol'), 'name must be "workforce-protocol"'),
+    ('a module with a bad version', field('Protocol.md', 'version', 'banana'), r'Protocol\.md: version must be MAJOR'),
+    ('a module with a title heading', swap('Repository Standards.md', '## Where The Standards Are', '# Standards\n\n## Where The Standards Are'),
+     r'Repository Standards\.md: the body holds a top-level heading'),
+    ('a setup file with a bad version', field('setup/Grok Bot.md', 'version', '1'), r'Grok Bot\.md: version must be MAJOR'),
+    ('a setup file under another id', field('setup/Terminal.md', 'name', 'cli'), 'name "terminal", its title as a slug'),
+    ('a setup file of another kind', field('setup/Terminal.md', 'kind', 'module'), 'with kind "setup"'),
+    ('a setup file with a title heading', swap('setup/Terminal.md', '## The Prompt', '# Terminal\n\n## The Prompt'),
+     r'Terminal\.md: the body holds a top-level heading'),
+    ('a setup file missing its steps', swap('setup/Terminal.md', '## The Steps', '## Steps'), 'missing sections The Steps'),
+    ('a setup file with two prompts', swap('setup/Terminal.md', '## The Steps', '```text\nanother\n```\n\n## The Steps'),
+     'must hold exactly one text block'),
+    ('a setup prompt that never asks for what is unfilled', swap('setup/Terminal.md', 'still in double braces', 'left unfilled'),
+     'must ask for any placeholder still in double braces'),
+    ('a setup prompt with a stray brace', swap('setup/Terminal.md', '<task>\n', '<task>\n{target} '), 'holds a brace outside a placeholder'),
+    ('a setup prompt that does not say when to use it', swap('setup/Terminal.md', '**Use when**', 'Use it when'), 'must say when to use it'),
+    ('a list of retired titles that is not one', write('setup/retired.json', '{"retired": ["Editor"]}'), 'must hold "retired", an object'),
+    ('a list of retired titles that is not JSON', write('setup/retired.json', '{'), r'retired\.json: is not valid JSON'),
+    # The layout.
+    ('a file at the root that is not Markdown', write('notes.txt', 'mine'), 'only Markdown sits at the root'),
+    ('a folder inside a department', write(f'{PR}/drafts/Idea.md', 'x'), 'a department folder holds only Markdown files'),
+    ('a file in a department that is not Markdown', write(f'{PR}/roster.csv', 'x'), 'a department folder holds only Markdown files'),
+    ('no README at the root', remove('README.md'), r'workforce/README\.md: is missing'),
+    ('a department that is gone', remove(PR), r'Public Relations \(PR\)/: the department folder is missing'),
+    ('a department without its charter', remove(CHARTER), r'Charter\.md: is missing'),
+    ('a department without its README', remove(f'{PR}/README.md'), r'Public Relations \(PR\)/README\.md: is missing'),
+    ('a catch-all without its README', remove('Miscellaneous/README.md'), r'Miscellaneous/README\.md: is missing'),
+    ('a stray file among the schemas', write('schemas/extra.json', '{}'), 'schemas/: must hold exactly'),
+    # The tools and the envelope.
+    ('tools that are not a list', write(TOOLS, '[]'), r'tools\.json: must hold "tools", a list of tools'),
+    ('tools set to nothing', write(TOOLS, '{"tools": null}'), r'tools\.json: must hold "tools", a list of tools'),
+    ('no tools at all', write(TOOLS, '{"tools": []}'), r'tools\.json: must hold "tools", a list of tools'),
+    ('tools that are not JSON', write(TOOLS, '{'), r'tools\.json: is not valid JSON'),
+    ('a tool named with a number', first_tool(lambda tool: tool.update(name=7)), 'tool name "7" must be lowercase letters'),
+    ('a tool named in capitals', first_tool(lambda tool: tool.update(name='SendMessage')), 'must be lowercase letters'),
+    ('a tool with a field of its own', first_tool(lambda tool: tool.update(strict=True)), 'must hold exactly name, description and parameters'),
+    ('a tool whose parameters are a list', first_tool(lambda tool: tool.update(parameters=[])), 'parameters must be an object schema'),
+    ('a tool whose properties are a list', first_tool(lambda tool: tool['parameters'].update(properties=[])), 'parameters must be an object schema'),
+    ('a tool that allows other parameters', first_tool(lambda tool: tool['parameters'].update(additionalProperties=True)),
+     'additionalProperties false'),
+    ('a tool that requires nothing', first_tool(lambda tool: tool['parameters'].update(required=None)), 'must require every parameter'),
+    ('a parameter with no description', first_tool(lambda tool: tool['parameters']['properties']['to'].pop('description')),
+     r'\.to needs a description'),
+    ('a parameter that is a string, not a schema', first_tool(lambda tool: tool['parameters']['properties'].update(to='text')),
+     r'\.to needs a description'),
+    ('a parameter of a type no API shares', first_tool(lambda tool: tool['parameters']['properties']['to'].update(type='object')),
+     'must be a string, integer, number, boolean or array'),
+    ('an array of something but strings', first_tool(lambda tool: tool['parameters']['properties']['to'].update(type='array', items={'type': 'integer'})),
+     'may only be an array of strings'),
+    ('an enum of numbers', first_tool(lambda tool: tool['parameters']['properties']['to'].update(enum=[1, 2])), 'enum must hold strings only'),
+    ('a tool the capabilities grant, gone', data(TOOLS, lambda loaded: loaded['tools'].pop()), 'must define exactly the tools the capabilities grant'),
+    ('an envelope that is a string', write(ENVELOPE, '"a message"'), r'message\.schema\.json: must hold a JSON Schema object'),
+    ('an empty envelope', write(ENVELOPE, '{}'), r'message\.schema\.json: must hold a JSON Schema object'),
+    ('an envelope without properties', data(ENVELOPE, lambda loaded: loaded.pop('properties')), 'must be a JSON Schema object with properties'),
+    ('an envelope property that is a string', data(ENVELOPE, lambda loaded: loaded['properties'].update(state='any')),
+     r'message\.schema\.json: state must list the values it takes'),
+    ('an envelope that takes any state', data(ENVELOPE, lambda loaded: loaded['properties']['state'].pop('enum')),
+     r'message\.schema\.json: state must list the values it takes'),
+    ('a tool that offers a type the envelope refuses', data(ENVELOPE, lambda loaded: loaded['properties']['type']['enum'].pop()),
+     "send_message type must offer exactly the envelope's values"),
+    ('an approval tool with no gates', approval_tool(lambda tool: tool['parameters']['properties']['category'].pop('enum')),
+     'request_owner_approval category must list the acts'),
+]
+
+
+class EveryRuleHolds(unittest.TestCase):
+    """Break each rule once, and the check must name it. Nothing here may crash the check either:
+    a file it cannot make sense of is a problem to list, never a traceback."""
+
+    def test_each_rule_fails_when_it_is_broken(self) -> None:
+        self.assertEqual(len({label for label, _, _ in BROKEN}), len(BROKEN), 'two cases share a label')
+        for label, change, pattern in BROKEN:
+            with self.subTest(label), Copy() as root:
+                self.assertEqual(problems(root), [], 'the copy must start clean')
+                change(root)
+                found = problems(root)
+                self.assertTrue(any(re.search(pattern, problem) for problem in found),
+                                f'{label}: no problem matched {pattern!r}: {found}')
+
+    def test_names_no_system_keeps_intact(self) -> None:
+        self.assertEqual(wf.name_problems(['workforce/Sales & Marketing (S&M)/Managing Editor.md']), [])
+        for path, pattern in (('workforce/Sales: Marketing.md', 'a character Windows refuses'),
+                              ('workforce/Trailing Dot./A.md', r'Trailing Dot\.: .* ends in a space or a dot'),
+                              ('workforce/Co\u2013Lead.md', 'an en or em dash'),
+                              ('workforce/Co\u2014Lead.md', 'an en or em dash'),
+                              ('workforce/' + 'x' * 256 + '.md', 'the name over 255 bytes'),
+                              ('workforce/Caf\udce9.md', 'name is not valid UTF-8')):
+            with self.subTest(path[:40]):
+                found = wf.name_problems([path])
+                self.assertTrue(any(re.search(pattern, problem) for problem in found), found)
+
+    def test_a_comment_in_a_tilde_fence_is_not_a_heading(self) -> None:
+        body = 'Text.\n\n~~~bash\n# a comment\n## not a section\n~~~\n\n````text\n```\n# still code\n````\n\n## Real\n'
+        self.assertFalse(wf.has_title_heading(body))
+        self.assertEqual(wf.sections(body), ['Real'])
+
+
 class Parsing(unittest.TestCase):
     def test_slugs(self) -> None:
         self.assertEqual(wf.slug('\u2b50 Director of Research & Development'), 'director-of-research-and-development')
@@ -505,6 +832,41 @@ class Rendering(unittest.TestCase):
                 self.assertTrue(name.endswith(suffix), target)
                 self.assertIn(wf.MARK, text, target)
 
+    def frontmatter(self, text: str) -> tuple:
+        """An app file as (its frontmatter's lines, its body)."""
+        self.assertTrue(text.startswith('---\n'), text[:40])
+        head, body = text[4:].split('\n---\n\n', 1)
+        return head.split('\n'), body
+
+    def test_each_app_file_is_its_frontmatter_then_the_composed_prompt(self) -> None:
+        for target in ('claude', 'grok-build', 'copilot', 'antigravity'):
+            files = self.render(target, grant=['read=connector_read'])
+            for agent in self.workforce.agents:
+                name = f'{agent.id}.agent.md' if target == 'copilot' else f'{agent.id}.md'
+                lines, body = self.frontmatter(files[name])
+                where = f'{target} {agent.name}'
+                self.assertEqual(body, wf.compose(self.workforce, agent), where)
+                self.assertEqual(lines[0], f'name: {agent.id}', where)
+                key, _, value = lines[1].partition(': ')
+                self.assertEqual((key, json.loads(value)), ('description', agent.fields['description']), where)
+                # The mark closes the frontmatter as a comment, where the installer looks for it.
+                self.assertEqual(lines[-1], f'# {wf.MARK}', where)
+                keys = [line.split(':', 1)[0] for line in lines[2:-1]]
+                expected = [] if target == 'grok-build' else ['tools']
+                if target == 'antigravity' and agent.role == 'orchestrator':
+                    expected.append('mainAgent')
+                self.assertEqual(keys, expected, where)
+
+    def test_copilot_tools_are_a_list_of_its_aliases(self) -> None:
+        files = self.render('copilot', grant=['mail=mail/search'])
+        lines, _ = self.frontmatter(files['full-stack-engineer.agent.md'])
+        self.assertEqual(json.loads(lines[2].partition(': ')[2]), ['read', 'search', 'web', 'edit', 'execute'])
+        lines, _ = self.frontmatter(files['chief-of-staff.agent.md'])
+        tools = json.loads(lines[2].partition(': ')[2])
+        self.assertIn('agent', tools)
+        self.assertIn('mail/search', tools)
+        self.assertNotIn('edit', tools)
+
     def test_claude_tools_follow_the_capabilities(self) -> None:
         files = self.render('claude')
         self.assertIn('tools: Read, Grep, Glob, WebFetch, WebSearch, Edit, Write, Bash\n',
@@ -527,10 +889,69 @@ class Rendering(unittest.TestCase):
         except ImportError:
             self.skipTest('tomllib arrived in Python 3.11')
         files = self.render('codex')
-        data = tomllib.loads(files['tax-accountant.toml'])
-        self.assertEqual(data['name'], 'tax-accountant')
-        self.assertEqual(data['developer_instructions'],
-                         wf.compose(self.workforce, self.workforce.agent('tax-accountant')))
+        for agent in self.workforce.agents:
+            text = files[f'{agent.id}.toml']
+            self.assertEqual(text.split('\n')[0], f'# {wf.MARK}', agent.name)
+            self.assertEqual(tomllib.loads(text), {
+                'name': agent.id, 'description': agent.fields['description'],
+                'developer_instructions': wf.compose(self.workforce, agent)}, agent.name)
+
+    def test_a_toml_block_holds_any_text_exactly(self) -> None:
+        try:
+            import tomllib
+        except ImportError:
+            self.skipTest('tomllib arrived in Python 3.11')
+        for value in ('plain\n', 'a \\ backslash and \\n that is not a line break\n', 'three """ quotes\n',
+                      'ends in a quote"', 'ends in two""', '""""""', 'C:\\Users\\name\n', "single ''' quotes\n",
+                      '\u2b50 Director of Finance, \u00e9 and \u00fc\n', '\nstarts with a line break\n'):
+            self.assertEqual(tomllib.loads(f'x = {wf.toml_block(value)}\n')['x'], value, repr(value))
+
+    def test_the_bundle_gives_each_agent_its_prompt_its_routes_and_its_tools(self) -> None:
+        bundle = json.loads(self.render('bundle')['workforce.json'])
+        self.assertEqual(bundle['format'], wf.FORMAT)
+        self.assertEqual(bundle['flavor'], 'neutral')
+        self.assertEqual(bundle['source'], {'repository': wf.REPOSITORY, 'path': wf.SOURCE,
+                                            'commit': wf.commit_of(self.workforce.root)})
+        self.assertEqual([entry['name'] for entry in bundle['agents']], [agent.id for agent in self.workforce.agents])
+        for entry, agent in zip(bundle['agents'], self.workforce.agents):
+            self.assertEqual(entry, {
+                'name': agent.id, 'title': agent.name, 'role': agent.role,
+                'department': wf.department_id(agent.department) if agent.department else None,
+                'reports_to': agent.fields['reports_to'], 'description': agent.fields['description'],
+                'capabilities': agent.fields['tools'],
+                'may_message': [peer.id for peer in wf.peers(self.workforce, agent)],
+                'tools': wf.functions_for(agent),
+                'instructions': wf.compose(self.workforce, agent)}, agent.name)
+        by_id = {entry['name']: entry for entry in bundle['agents']}
+        # A host delivers a message only where may_message allows: a specialist's department and the hub.
+        self.assertEqual(sorted(by_id['managing-editor']['may_message']),
+                         ['chief-of-staff', 'communications-specialist', 'content-producer',
+                          'director-of-public-relations'])
+        self.assertEqual(by_id['knowledge-vault-manager']['may_message'], ['chief-of-staff'])
+        self.assertEqual(by_id['full-stack-engineer']['tools'],
+                         [name for capability in self.workforce.agent('full-stack-engineer').fields['tools']
+                          for name in wf.FUNCTIONS[capability]])
+        self.assertIn('write_file', by_id['full-stack-engineer']['tools'])
+        self.assertNotIn('write_file', by_id['financial-analyst']['tools'])
+        self.assertEqual([department['title'] for department in bundle['departments']], list(wf.DEPARTMENTS))
+        for department in bundle['departments']:
+            team = [agent.id for agent in self.workforce.team(department['title'])]
+            self.assertEqual((department['members'], department['director']), (team, team[0]), department['title'])
+            self.assertEqual(department['name'], wf.department_id(department['title']))
+            self.assertEqual(department['description'],
+                             self.workforce.charters[department['title']].fields['description'])
+        self.assertEqual(bundle['tools'], self.workforce.tools)
+
+    def test_the_bundle_carries_the_gates_and_an_envelope_a_validator_accepts(self) -> None:
+        bundle = json.loads(self.render('bundle')['workforce.json'])
+        approval = next(tool for tool in self.workforce.tools if tool['name'] == 'request_owner_approval')
+        self.assertEqual(bundle['gates'], approval['parameters']['properties']['category']['enum'])
+        self.assertGreaterEqual(len(bundle['gates']), 7)
+        # `//` is the source's note, and no JSON Schema keyword: a strict validator refuses it.
+        self.assertNotIn('//', bundle['envelope'])
+        self.assertEqual(bundle['envelope']['$comment'], self.workforce.envelope['//'])
+        self.assertEqual({key: value for key, value in bundle['envelope'].items() if key != '$comment'},
+                         {key: value for key, value in self.workforce.envelope.items() if key != '//'})
 
     def test_the_bundle_holds_every_agent_tool_and_route(self) -> None:
         bundle = json.loads(self.render('bundle')['workforce.json'])
@@ -547,26 +968,67 @@ class Rendering(unittest.TestCase):
         self.assertIn('properties', bundle['envelope'])
 
     def test_each_flavor_wraps_tools_its_own_way(self) -> None:
-        responses = json.loads(self.render('bundle', flavor='responses')['workforce.json'])['tools'][0]
-        self.assertEqual(responses['type'], 'function')
-        self.assertIn('parameters', responses)
-        chat = json.loads(self.render('bundle', flavor='chat')['workforce.json'])['tools'][0]
-        self.assertIn('parameters', chat['function'])
-        anthropic = json.loads(self.render('bundle', flavor='anthropic')['workforce.json'])['tools'][0]
-        self.assertIn('input_schema', anthropic)
-        mcp = json.loads(self.render('bundle', flavor='mcp')['workforce.json'])['tools'][0]
-        self.assertIn('inputSchema', mcp)
+        # Each API refuses a tool with a key it does not know, so each shape is held exactly.
+        for flavor, shape in (
+                ('neutral', lambda tool: tool),
+                ('responses', lambda tool: {'type': 'function', 'name': tool['name'],
+                                            'description': tool['description'], 'parameters': tool['parameters']}),
+                ('chat', lambda tool: {'type': 'function', 'function': tool}),
+                ('anthropic', lambda tool: {'name': tool['name'], 'description': tool['description'],
+                                            'input_schema': tool['parameters']}),
+                ('mcp', lambda tool: {'name': tool['name'], 'description': tool['description'],
+                                      'inputSchema': tool['parameters']})):
+            bundle = json.loads(self.render('bundle', flavor=flavor)['workforce.json'])
+            self.assertEqual(bundle['flavor'], flavor)
+            self.assertEqual(bundle['tools'], [shape(tool) for tool in self.workforce.tools], flavor)
+        self.assertEqual(sorted(wf.FLAVORS), ['anthropic', 'chat', 'mcp', 'neutral', 'responses'])
 
     def test_ollama_needs_a_model(self) -> None:
         with self.assertRaises(SystemExit):
             self.render('ollama')
         files = self.render('ollama', model='local-model')
-        self.assertTrue(files['financial-analyst.Modelfile'].split('\n')[1] == 'FROM local-model')
+        self.assertEqual(sorted(files), sorted(f'{agent.id}.Modelfile' for agent in self.workforce.agents))
+        for agent in self.workforce.agents:
+            self.assertEqual(files[f'{agent.id}.Modelfile'],
+                             f'# {wf.MARK}\nFROM local-model\nSYSTEM """\n{wf.compose(self.workforce, agent)}"""\n')
 
     def test_text_mirrors_the_source_names(self) -> None:
         files = self.render('text')
         self.assertIn('Operations & Logistics (O&L)/\u2b50 Director of Operations.txt', files)
         self.assertIn('Chief of Staff.txt', files)
+        self.assertEqual(len(files), len(self.workforce.agents))
+        for agent in self.workforce.agents:
+            folder = f'{agent.department}/' if agent.department else ''
+            self.assertEqual(files[f'{folder}{agent.name}.txt'], wf.compose(self.workforce, agent), agent.name)
+
+    def test_render_writes_each_file_into_the_folder_it_is_given(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            out = pathlib.Path(tmp) / 'made' / 'here'
+            self.assertEqual(quiet(wf.main, ['render', '--target', 'text', '--out', str(out)]), 0)
+            written = sorted(path.relative_to(out).as_posix() for path in out.rglob('*') if path.is_file())
+            self.assertEqual(written, sorted(self.render('text')))
+            text = (out / 'Public Relations (PR)' / 'Managing Editor.txt').read_text(encoding='utf-8')
+            self.assertEqual(text, wf.compose(self.workforce, self.workforce.agent('managing-editor')))
+
+    def test_an_unknown_target_or_grant_is_refused(self) -> None:
+        with self.assertRaises(SystemExit):
+            self.render('notepad')
+        for grant in ('fly=Jetpack', 'mail=', 'mail'):
+            with self.assertRaises(SystemExit, msg=grant):
+                self.render('claude', grant=[grant])
+        self.assertEqual(wf.parse_grants(['mail=a, b', 'mail=c', 'read=d']), {'mail': ['a', 'b', 'c'], 'read': ['d']})
+
+    def test_grok_bot_needs_a_version_outside_a_checkout(self) -> None:
+        with Copy() as root:
+            if wf.commit_of(root / wf.SOURCE):
+                self.skipTest('the temporary folder is inside a git checkout')
+            workforce = wf.problems_in(root / wf.SOURCE)[0]
+            args = wf.argparse.Namespace(flavor='neutral', model=None, ref=None, grant=None, vault=None)
+            with self.assertRaises(SystemExit) as refused:
+                wf.render(workforce, 'grok-bot', args)
+            self.assertIn('--ref', str(refused.exception))
+            args.ref = 'v0'
+            self.assertIn('/blob/v0/workforce/', wf.render(workforce, 'grok-bot', args)['Grok Bot Setup.md'])
 
     def test_antigravity_agents_get_tools_only_through_a_grant(self) -> None:
         plain = self.render('antigravity')

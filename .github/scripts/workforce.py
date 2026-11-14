@@ -115,6 +115,7 @@ OVERSIGHT_SECTIONS = ('Overseeing Your Departments',)
 # The Chief of Staff installs the workforce, and checks its source every week
 # to keep every copy current.
 ORCHESTRATOR_SECTIONS = ('Initializing The Workforce', 'Keeping The Workforce Current')
+VAULT_SECTIONS = ('Keeping Context In Sync',)
 SETUP_SECTIONS = ('The Prompt', 'The Steps', 'Keeping It Current')
 # The parts of a prompt, in the order the hub writes every prompt.
 PROMPT_PARTS = ('context', 'task', 'constraints', 'done_when')
@@ -140,9 +141,18 @@ PORTABLE_KEYWORDS = {'type', 'description', 'enum', 'items'}
 FIELD = re.compile(r'^([a-z][a-z_]*):(?: (.*))?$')
 NAME = re.compile(r'^(?:\u2b50 )?[A-Za-z0-9](?:[A-Za-z0-9&() -]*[A-Za-z0-9)])?$')
 ID = re.compile(r'^[a-z0-9]+(?:-[a-z0-9]+)*$')
-SEMVER = re.compile(r'^\d+\.\d+\.\d+$')
+SEMVER = re.compile(r'[0-9]+\.[0-9]+\.[0-9]+')
 FUNCTION = re.compile(r'^[a-z][a-z0-9_]{0,63}$')
 TABLE_ROW = re.compile(r'^\|(.+)\|(.+)\|\s*$')
+# A code fence opens with three or more backticks or tildes, indented at most three spaces.
+FENCE = re.compile(r'^ {0,3}(`{3,}|~{3,})')
+# What no source file holds: control characters, which break the YAML, TOML and JSON a prompt is
+# written into; characters no one can see, which a model reads and a person does not; and half
+# a surrogate pair, which cannot be written to a file at all.
+UNSAFE = re.compile('[\x00-\x08\x0b-\x1f\x7f-\x9f\u00a0\u00ad\u200b-\u200f\u2028-\u202f\u2060-\u2064\ufeff'
+                    '\ud800-\udfff]')
+# The frontmatter keys that hold a list of strings; every other key holds one string.
+LIST_KEYS = ('tools', 'members')
 PLACEHOLDER = re.compile(r'\{\{([A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*)\}\}')
 TEXT_BLOCK = re.compile(r'^```text\n(.*?)\n```$', re.M | re.S)
 REPOSITORY_NAME = re.compile(r'^[A-Za-z0-9][A-Za-z0-9-]*/[A-Za-z0-9._-]+$')
@@ -389,6 +399,11 @@ def read_doc(path: pathlib.Path, root: pathlib.Path, problems: List[str]) -> Opt
     except ValueError as error:
         problems.append(f'{where}: {error}')
         return None
+    for key, value in fields.items():
+        if isinstance(value, list) != (key in LIST_KEYS):
+            problems.append(f'{where}: frontmatter key {key} must hold '
+                            + ('a [list] of quoted strings' if key in LIST_KEYS else 'one quoted string'))
+            return None
     return Doc(path, fields, body)
 
 
@@ -446,7 +461,12 @@ def load(root: pathlib.Path, files: Optional[List[pathlib.Path]] = None) -> Tupl
             except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
                 problems.append(f'{SOURCE}/{SCHEMAS}/{name}: is not valid JSON: {error}')
                 continue
-            setattr(workforce, attribute, data.get('tools', []) if name == 'tools.json' else data)
+            held = data.get('tools') if name == 'tools.json' and isinstance(data, dict) else data
+            if not isinstance(held, list if name == 'tools.json' else dict) or not held:
+                problems.append(f'{SOURCE}/{SCHEMAS}/{name}: must hold '
+                                + ('"tools", a list of tools' if name == 'tools.json' else 'a JSON Schema object'))
+                continue
+            setattr(workforce, attribute, held)
     for name, file in SETUPS.items():
         if root / SETUP / file in present:
             doc = read_doc(root / SETUP / file, root, problems)
@@ -484,6 +504,9 @@ def name_problems(paths: List[str]) -> List[str]:
     entries = sorted({'/'.join(path.split('/')[:depth]) for path in paths for depth in range(1, path.count('/') + 2)})
     for where in entries:
         name = where.rsplit('/', 1)[-1]
+        if re.search('[\ud800-\udfff]', where):
+            problems.append(f'{where.encode("utf-8", "replace").decode("utf-8")}: name is not valid UTF-8')
+            continue
         folded = unicodedata.normalize('NFC', where).casefold()
         if folded in seen:
             problems.append(f'{where}: differs from {seen[folded]} only in case, which macOS and Windows treat as one')
@@ -546,21 +569,46 @@ def check_layout(root: pathlib.Path, files: List[pathlib.Path], problems: List[s
             problems.append(f'{SOURCE}/{folder}/: must hold exactly {", ".join(expected)}')
 
 
+def scan(body: str) -> List[Tuple[str, bool]]:
+    """Each line of a body, and whether it is code: inside a fence, or the fence itself."""
+    lines: List[Tuple[str, bool]] = []
+    fence = ''
+    for line in body.split('\n'):
+        match = FENCE.match(line)
+        if fence:
+            closes = bool(match) and match.group(1)[0] == fence[0] and len(match.group(1)) >= len(fence) \
+                and not line.strip().strip(fence[0])
+            fence = '' if closes else fence
+            lines.append((line, True))
+        elif match:
+            fence = match.group(1)
+            lines.append((line, True))
+        else:
+            lines.append((line, False))
+    return lines
+
+
+def prose(body: str) -> List[str]:
+    """A body's lines outside its code fences."""
+    return [line for line, code in scan(body) if not code]
+
+
 def sections(body: str) -> List[str]:
-    return [line[3:].strip() for line in body.split('\n') if line.startswith('## ')]
+    return [line[3:].strip() for line in prose(body) if line.startswith('## ')]
 
 
 def has_title_heading(body: str) -> bool:
-    """Whether a body holds a `# ` heading outside a code block.
+    """Whether a body holds a top-level heading outside a code block, written either way Markdown
+    allows: a line that opens with one `#`, or a line underlined with `=`.
 
     The frontmatter's title is each file's title, as markdownlint and GitHub read it, so the
     body starts below it, and composing a prompt puts the title on top as its heading.
     """
-    fenced = False
-    for line in body.split('\n'):
-        if line.startswith('```'):
-            fenced = not fenced
-        elif not fenced and line.startswith('# '):
+    lines = prose(body)
+    for number, line in enumerate(lines):
+        if re.match(r' {0,3}#(?:[ \t]|$)', line):
+            return True
+        if number and lines[number - 1].strip() and re.fullmatch(r' {0,3}=+[ \t]*', line):
             return True
     return False
 
@@ -571,15 +619,25 @@ def check_text(doc: Doc, where: str, problems: List[str]) -> None:
         problems.append(f'{where}: holds an en or em dash; use a comma, a colon, brackets or a hyphen')
     if VARIATION_SELECTOR in text:
         problems.append(f'{where}: holds the variation selector U+FE0F; write the star as U+2B50 alone')
+    values = [item for value in doc.fields.values() for item in (value if isinstance(value, list) else [value])]
+    found = sorted({f'U+{ord(char):04X}' for part in [text] + values for char in UNSAFE.findall(part)})
+    if found:
+        problems.append(f'{where}: holds {", ".join(found)}: a control character, or one no one can see')
+
+
+def check_version(doc: Doc, where: str, problems: List[str]) -> None:
+    if not SEMVER.fullmatch(doc.fields.get('version', '')):
+        problems.append(f'{where}: version must be MAJOR.MINOR.PATCH')
 
 
 def check_description(doc: Doc, where: str, problems: List[str]) -> None:
     description = doc.fields.get('description')
     if not isinstance(description, str) or not description.strip():
         problems.append(f'{where}: needs a description, which is what routing reads')
-    elif len(description) > MAX_DESCRIPTION or '\n' in description or re.search('[<>]', description):
+    elif len(description) > MAX_DESCRIPTION or '\n' in description or re.search('[<>|]', description):
+        # A vertical bar would split the table of departments every prompt ends with.
         problems.append(f'{where}: the description must be one line of at most {MAX_DESCRIPTION} '
-                        'characters, without angle brackets')
+                        'characters, without angle brackets or a vertical bar')
 
 
 def check_agent(doc: Doc, root: pathlib.Path, problems: List[str]) -> None:
@@ -601,6 +659,9 @@ def check_agent(doc: Doc, root: pathlib.Path, problems: List[str]) -> None:
     # A seat is known by its title alone, in every chat and every list, so one word is never enough.
     if sum(1 for word in name.split() if re.search('[A-Za-z0-9]', word)) < 2:
         problems.append(f'{where}: a title takes at least two words')
+    # An id that opens with a digit can read as a number or a date where an app expects a name.
+    if not re.match('[a-z]', slug(name)):
+        problems.append(f'{where}: a title starts with a letter')
     if fields.get('name') != slug(name):
         problems.append(f'{where}: name must be "{slug(name)}", its title as a slug')
     role = fields.get('role')
@@ -613,6 +674,8 @@ def check_agent(doc: Doc, root: pathlib.Path, problems: List[str]) -> None:
             problems.append(f'{where}: executives sit in {EXECUTIVE_TEAM}, the executive team')
         if role == 'executive' and not name.startswith('Chief '):
             problems.append(f'{where}: an executive\'s title starts with Chief')
+        if role == 'specialist' and doc.path.parent.name == EXECUTIVE_TEAM:
+            problems.append(f'{where}: every member of {EXECUTIVE_TEAM} but its Director is an executive')
         if fields.get('department') != doc.path.parent.name:
             problems.append(f'{where}: department must be "{doc.path.parent.name}", its folder')
         if (role == 'director') != name.startswith(STAR + ' '):
@@ -620,8 +683,6 @@ def check_agent(doc: Doc, root: pathlib.Path, problems: List[str]) -> None:
     else:
         if ROOT_AGENTS.get(role) != name:
             problems.append(f'{where}: the root holds only {" and ".join(ROOT_AGENTS.values())}')
-    if role != 'director' and STAR in name:
-        problems.append(f'{where}: only a Director\'s title carries the star')
     tools = fields.get('tools')
     if not isinstance(tools, list) or not all(isinstance(t, str) for t in tools):
         problems.append(f'{where}: tools must be a list of capabilities')
@@ -633,17 +694,21 @@ def check_agent(doc: Doc, root: pathlib.Path, problems: List[str]) -> None:
             problems.append(f'{where}: tools lists a capability twice')
         if 'message' not in tools:
             problems.append(f'{where}: every agent needs the message capability')
+        # An agent file with no tools line is read by Claude Code and Copilot as every tool, so each
+        # agent holds a capability that maps to one in every app: reading its own files.
+        if 'read' not in tools:
+            problems.append(f'{where}: every agent needs the read capability')
         if 'delegate' in tools and role not in ('orchestrator', 'director'):
             problems.append(f'{where}: only the Chief of Staff and the Directors delegate')
-    if not isinstance(fields.get('version'), str) or not SEMVER.match(fields.get('version', '')):
-        problems.append(f'{where}: version must be MAJOR.MINOR.PATCH')
+    check_version(doc, where, problems)
     check_description(doc, where, problems)
     check_text(doc, where, problems)
     if has_title_heading(doc.body):
         problems.append(f'{where}: the body holds a top-level heading; the frontmatter title is the title')
     oversees = role == 'executive' or (role == 'director' and fields.get('department') == EXECUTIVE_TEAM)
     needed = (AGENT_SECTIONS + (DIRECTOR_SECTIONS if role == 'director' else ())
-              + (OVERSIGHT_SECTIONS if oversees else ()) + (ORCHESTRATOR_SECTIONS if role == 'orchestrator' else ()))
+              + (OVERSIGHT_SECTIONS if oversees else ()) + (ORCHESTRATOR_SECTIONS if role == 'orchestrator' else ())
+              + (VAULT_SECTIONS if role == 'vault-manager' else ()))
     missing = [s for s in needed if s not in sections(doc.body)]
     if missing:
         problems.append(f'{where}: missing sections {", ".join(missing)}')
@@ -726,8 +791,7 @@ def check_charters(workforce: Workforce, problems: List[str]) -> None:
             problems.append(f'{where}: director must be "{director.name}"')
         if director and isinstance(members, list) and members[:1] != [director.name]:
             problems.append(f'{where}: members must list the Director first')
-        if not isinstance(fields.get('version'), str) or not SEMVER.match(fields.get('version', '')):
-            problems.append(f'{where}: version must be MAJOR.MINOR.PATCH')
+        check_version(charter, where, problems)
         check_description(charter, where, problems)
         check_text(charter, where, problems)
         if has_title_heading(charter.body):
@@ -738,6 +802,8 @@ def check_charters(workforce: Workforce, problems: List[str]) -> None:
         owners = coverage_owners(charter.body)
         if not owners:
             problems.append(f'{where}: Who Owns What needs a table of functions and owners')
+        if any(not function for function, _ in coverage_rows(charter.body)):
+            problems.append(f'{where}: a row of Who Owns What names an owner and no function')
         strangers = sorted(set(owners) - set(names))
         if strangers:
             problems.append(f'{where}: Who Owns What names agents outside the department: {", ".join(strangers)}')
@@ -756,6 +822,7 @@ def check_modules(workforce: Workforce, problems: List[str]) -> None:
             problems.append(f'{where}: frontmatter must hold exactly {", ".join(MODULE_KEYS)}, with kind "module"')
         if module.id != name or module.id != slug(module.name):
             problems.append(f'{where}: name must be "{name}", its title as a slug')
+        check_version(module, where, problems)
         check_description(module, where, problems)
         check_text(module, where, problems)
         if has_title_heading(module.body):
@@ -766,8 +833,8 @@ def section(body: str, heading: str) -> str:
     """The text under one `## ` heading of a body."""
     lines: List[str] = []
     inside = False
-    for line in body.split('\n'):
-        if line.startswith('## '):
+    for line, code in scan(body):
+        if not code and line.startswith('## '):
             inside = line[3:].strip() == heading
         elif inside:
             lines.append(line)
@@ -791,6 +858,7 @@ def check_setups(workforce: Workforce, problems: List[str]) -> None:
             problems.append(f'{where}: frontmatter must hold exactly {", ".join(MODULE_KEYS)}, with kind "setup"')
         if doc.id != name or doc.id != slug(doc.name) or doc.name != doc.path.stem:
             problems.append(f'{where}: title must be the file\'s name, and name "{name}", its title as a slug')
+        check_version(doc, where, problems)
         check_description(doc, where, problems)
         check_text(doc, where, problems)
         if has_title_heading(doc.body):
@@ -857,28 +925,47 @@ def check_retired(workforce: Workforce, problems: List[str]) -> None:
                             f'{", ".join(named)}, retired in {where}; name the seat that has the work now')
 
 
+def tool(workforce: Workforce, name: str) -> dict:
+    """One tool's definition, or nothing where the file does not define it."""
+    return next((t for t in workforce.tools if isinstance(t, dict) and t.get('name') == name), {})
+
+
+def values_of(schema: object, key: str) -> List[str]:
+    """The strings a property of a schema's `properties` may take; nothing where it sets no enum."""
+    properties = schema.get('properties') if isinstance(schema, dict) else None
+    spec = properties.get(key) if isinstance(properties, dict) else None
+    enum = spec.get('enum') if isinstance(spec, dict) else None
+    return list(enum) if isinstance(enum, list) and all(isinstance(v, str) for v in enum) else []
+
+
+def gates(workforce: Workforce) -> List[str]:
+    """The kinds of act that wait on the owner: the categories the approval tool offers."""
+    return values_of(tool(workforce, 'request_owner_approval').get('parameters'), 'category')
+
+
 def check_schemas(workforce: Workforce, problems: List[str]) -> None:
     where = f'{SOURCE}/{SCHEMAS}/tools.json'
     names = []
-    for tool in workforce.tools:
-        name = tool.get('name', '') if isinstance(tool, dict) else ''
-        names.append(name)
-        if not FUNCTION.match(name):
+    for entry in workforce.tools:
+        name = entry.get('name') if isinstance(entry, dict) else None
+        if not isinstance(name, str) or not FUNCTION.match(name):
             problems.append(f'{where}: tool name "{name}" must be lowercase letters, digits and underscores, '
                             'at most 64, starting with a letter')
             continue
-        if sorted(tool) != ['description', 'name', 'parameters']:
+        names.append(name)
+        if sorted(entry) != ['description', 'name', 'parameters']:
             problems.append(f'{where}: {name} must hold exactly name, description and parameters')
-        parameters = tool.get('parameters', {})
-        if not isinstance(parameters, dict) or parameters.get('type') != 'object':
-            problems.append(f'{where}: {name} parameters must be an object schema')
+        parameters = entry.get('parameters')
+        properties = parameters.get('properties') if isinstance(parameters, dict) else None
+        if not isinstance(parameters, dict) or parameters.get('type') != 'object' or not isinstance(properties, dict):
+            problems.append(f'{where}: {name} parameters must be an object schema with properties')
             continue
-        properties = parameters.get('properties', {})
         if sorted(parameters) != ['additionalProperties', 'properties', 'required', 'type'] \
                 or parameters.get('additionalProperties') is not False:
             problems.append(f'{where}: {name} parameters hold exactly type, properties, required and '
                             'additionalProperties false')
-        if sorted(parameters.get('required', [])) != sorted(properties):
+        required = parameters.get('required')
+        if not isinstance(required, list) or sorted(map(str, required)) != sorted(properties):
             problems.append(f'{where}: {name} must require every parameter; an optional one takes an empty string')
         for key, spec in properties.items():
             if not isinstance(spec, dict) or not spec.get('description'):
@@ -891,20 +978,27 @@ def check_schemas(workforce: Workforce, problems: List[str]) -> None:
                 problems.append(f'{where}: {name}.{key} must be a string, integer, number, boolean or array')
             if spec.get('type') == 'array' and spec.get('items') != {'type': 'string'}:
                 problems.append(f'{where}: {name}.{key} may only be an array of strings')
-            if 'enum' in spec and not all(isinstance(v, str) for v in spec['enum']):
+            if 'enum' in spec and not (isinstance(spec['enum'], list) and spec['enum']
+                                       and all(isinstance(v, str) for v in spec['enum'])):
                 problems.append(f'{where}: {name}.{key} enum must hold strings only')
     wanted = sorted({f for fs in FUNCTIONS.values() for f in fs} | {f for fs in ROLE_FUNCTIONS.values() for f in fs})
-    if workforce.tools and sorted(names) != wanted:
+    if sorted(names) != wanted:
         problems.append(f'{where}: must define exactly the tools the capabilities grant: {", ".join(wanted)}')
-    envelope = workforce.envelope.get('properties') if workforce.envelope else None
-    if workforce.envelope and not isinstance(envelope, dict):
-        problems.append(f'{SOURCE}/{SCHEMAS}/message.schema.json: must be a JSON Schema object with properties')
-    elif envelope:
-        sender = next((t for t in workforce.tools if isinstance(t, dict) and t.get('name') == 'send_message'), None)
-        fields = sender.get('parameters', {}).get('properties', {}) if sender else {}
-        for key in ('type', 'gate', 'state'):
-            if fields.get(key, {}).get('enum') != envelope.get(key, {}).get('enum'):
-                problems.append(f'{where}: send_message {key} must offer exactly the envelope\'s values')
+    schema = f'{SOURCE}/{SCHEMAS}/message.schema.json'
+    if not isinstance(workforce.envelope.get('properties'), dict):
+        problems.append(f'{schema}: must be a JSON Schema object with properties')
+        return
+    # A message is one thing, whether an agent sends it or a host validates it: what the tool
+    # offers and what the envelope accepts must be the same values.
+    sender = tool(workforce, 'send_message').get('parameters')
+    for key in ('type', 'gate', 'state'):
+        offered, accepted = values_of(sender, key), values_of(workforce.envelope, key)
+        if not accepted:
+            problems.append(f'{schema}: {key} must list the values it takes')
+        elif offered != accepted:
+            problems.append(f'{where}: send_message {key} must offer exactly the envelope\'s values')
+    if not gates(workforce):
+        problems.append(f'{where}: request_owner_approval category must list the acts that wait on the owner')
 
 
 def problems_in(root: pathlib.Path) -> Tuple[Workforce, List[str]]:
@@ -1001,7 +1095,7 @@ def directory(workforce: Workforce, agent: Doc) -> str:
 def coverage_rows(body: str) -> List[Tuple[str, str]]:
     rows: List[Tuple[str, str]] = []
     inside = False
-    for line in body.split('\n'):
+    for line in prose(body):
         if line.startswith('## '):
             inside = line[3:].strip() == 'Who Owns What'
             continue
@@ -1146,11 +1240,12 @@ def render_bundle(workforce: Workforce, flavor: str, commit: Optional[str]) -> D
         'format': FORMAT,
         'source': {'repository': REPOSITORY, 'path': SOURCE, 'commit': commit},
         'flavor': flavor,
-        'gates': ['money', 'contract', 'external', 'delete', 'equity', 'live-system', 'profile'],
+        'gates': gates(workforce),
         'departments': [],
         'agents': [],
         'tools': [wrap(tool) for tool in workforce.tools],
-        'envelope': workforce.envelope,
+        # The source's `//` note is not a JSON Schema keyword, and a strict validator refuses it.
+        'envelope': {('$comment' if key == '//' else key): value for key, value in workforce.envelope.items()},
     }
     for folder in DEPARTMENTS:
         charter = workforce.charters.get(folder)
@@ -1318,7 +1413,10 @@ def render(workforce: Workforce, target: str, args: argparse.Namespace) -> Dict[
         vault = getattr(args, 'vault', None)
         if vault and not REPOSITORY_NAME.match(vault):
             raise SystemExit(f'--vault {vault}: write the vault\'s repository as owner/name')
-        ref = getattr(args, 'ref', None) or commit_of(workforce.root) or 'Development'
+        ref = getattr(args, 'ref', None) or commit_of(workforce.root)
+        if not ref:
+            raise SystemExit('the grok-bot target needs --ref outside a git checkout: the version every Bot reads '
+                             'its files at, such as v0')
         return render_grok_bot(workforce, ref, vault)
     raise SystemExit(f'unknown target {target}; use one of {", ".join(TARGETS)}')
 
