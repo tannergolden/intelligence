@@ -396,7 +396,7 @@ class TestCommandLine(HubTestCase):
         self.assertIn(f'kit_sha256={render.digest(kit_text)}', out)
         code, out = self.hub.run('--check')
         self.assertEqual(code, 0, out)
-        self.assertIn('kit: 0 skills, 0 subagents', out)
+        self.assertIn('kit: the guard, format 3', out)
 
     def test_a_hub_without_the_modules_pins_no_kit(self) -> None:
         self.hub.run('--write')

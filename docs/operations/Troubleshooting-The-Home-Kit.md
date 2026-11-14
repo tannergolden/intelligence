@@ -45,10 +45,10 @@ shows where each app's copy lands, and `CODEX_HOME` moves Codex's.
 | :-------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `current` | The file matches the release                                                                                                                                                                                                            | Nothing                                                                                                                                                 |
 | `missing` | The file, its block, Claude Code's `instructionFiles` setting or one of its ask rules, a guard registration, or the compaction reminder is not there                                                                                    | `make agents`                                                                                                                                           |
-| `edited`  | A copy's block no longer matches its marker, a file the kit owns was changed, or a skill folder holds files the kit did not put there                                                                                                   | `make agents`, which writes it again. Keep your own notes outside the markers, and out of the files the kit owns whole                                  |
-| `stale`   | A copy's block is from another release, a guard registration differs from the one this release writes, or a retired knowledge block is still there                                                                                      | `make agents`, with the pin you mean to run                                                                                                             |
+| `edited`  | A copy's block no longer matches its marker, or a file the kit owns was changed                                                                                                                                                         | `make agents`, which writes it again. Keep your own notes outside the markers, and out of the files the kit owns whole                                  |
+| `stale`   | A copy's block is from another release, a guard registration differs from the one this release writes, or a retired knowledge block, skill or subagent is still there                                                                   | `make agents`, with the pin you mean to run                                                                                                             |
 | `broken`  | A file holds more than one `INTELLIGENCE` block, a hook or settings file is not valid JSON, Claude Code's `permissions` or its `ask` list is in a shape the installer cannot add to, or a guard registration runs a Python that is gone | Delete the extra block, or fix the JSON, by hand. For a Python that is gone, `make agents` registers the guard again with the one that runs the install |
-| `foreign` | A file or folder sits where the kit writes one, without the kit's mark                                                                                                                                                                  | The installer never replaces it. Move it aside, then `make agents`                                                                                      |
+| `foreign` | A file sits where the kit writes one, without the kit's mark                                                                                                                                                                            | The installer never replaces it. Move it aside, then `make agents`                                                                                      |
 | `warning` | A shadow: a file that would hide a copy, or load the rules a second time                                                                                                                                                                | Below                                                                                                                                                   |
 | `manual`  | Cursor keeps its User Rules in its own settings, where no installer reaches                                                                                                                                                             | Paste the home file into Settings, Rules, User Rules, and again after a release changes the block                                                       |
 
@@ -68,8 +68,9 @@ either way: a warning never fails them.
 ## 📥 What install Says
 
 Each line is `wrote`, `current` or `refused`, or `would write` under
-`--dry-run`. A `retired` line means it took out the knowledge facts an older
-release wrote, which is expected once. A refusal names its file and why:
+`--dry-run`. A `retired` line means it took out the knowledge facts, a skill
+or a subagent an older release wrote, which is expected once. A refusal names
+its file and why:
 
 | After the file name                                                               | What to do                                                                                                                                                                                                                  |
 | :-------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -82,12 +83,12 @@ release wrote, which is expected once. A refusal names its file and why:
 Some problems stop the install before it writes anything, because the files it
 was given are not a release's:
 
-| The installer says                                                                                                                                    | What to do                                                                           |
-| :---------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------- |
-| `... is not a home file: it must be exactly one INTELLIGENCE block`                                                                                   | Pass the release's `intelligence.md`, as downloaded                                  |
-| `... was edited: its content does not match the hash in its marker`                                                                                   | Download it again, and check it against its pin                                      |
-| `... is a kit in format N; this installer reads format 2`                                                                                             | The kit and the installer come from different releases: take both from one           |
-| `cannot read the kit`, `carries a guard without the kit's mark`, `names a skill file outside its folder`, `names a subagent that is not a plain name` | The kit is not one the hub rendered: download it again, and check it against its pin |
+| The installer says                                                  | What to do                                                                           |
+| :------------------------------------------------------------------ | :----------------------------------------------------------------------------------- |
+| `... is not a home file: it must be exactly one INTELLIGENCE block` | Pass the release's `intelligence.md`, as downloaded                                  |
+| `... was edited: its content does not match the hash in its marker` | Download it again, and check it against its pin                                      |
+| `... is a kit in format N; this installer reads format 3`           | The kit and the installer come from different releases: take both from one           |
+| `cannot read the kit`, `carries a guard without the kit's mark`     | The kit is not one the hub rendered: download it again, and check it against its pin |
 
 ---
 
@@ -121,7 +122,7 @@ runs on each repository's own `AGENTS.md`, which carries the same rules.
 | `could not make a scratch folder`                                                               | The container could not create a temporary folder: check its temporary directory                                                     |
 | `could not download the home file for vX.Y.Z`, or `the installer`                               | Check the version is a real tag, and that the environment can reach `raw.githubusercontent.com`                                      |
 | `the home file for vX.Y.Z does not match its pin, so nothing was installed`, or `the installer` | The pins are from another release, or were changed. Print the script again with `make cloud-setup VERSION=vX.Y.Z` and paste it whole |
-| `could not download the kit for vX.Y.Z, so only the rules were installed`                       | The rules are in, and the guard, the skills and the subagents are not. Check the network, as for the home file                       |
+| `could not download the kit for vX.Y.Z, so only the rules were installed`                       | The rules are in, and the guard is not. Check the network, as for the home file                                                      |
 | `the kit for vX.Y.Z does not match its pin, so only the rules were installed`                   | Print the script again and paste it whole                                                                                            |
 | `the installer reported a problem; see above`                                                   | Read the installer's `refused` lines above it, as in [What install Says](#-what-install-says)                                        |
 

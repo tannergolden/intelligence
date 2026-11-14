@@ -1,6 +1,6 @@
 <!--
 title: '✍️ PROMPT ENGINEERING BEST PRACTICES'
-description: 'How to write anything an AI agent reads, from a one-off request to a reusable prompt, a rule or a skill description, and how to prove it works. Read it before you write or change one.'
+description: 'How to write anything an AI agent reads, from a one-off request to a reusable prompt or a rule, and how to prove it works. Read it before you write or change one.'
 type: guide
 -->
 
@@ -22,14 +22,13 @@ _Say it plainly. Prove it with a run._
 
 Every practice the hub follows when it writes for an agent, in one place, with what to do and why. The evidence behind each one is in the research record [Prompt Engineering](../technical/research/Prompt-Engineering.md), dated and sourced, and this guide cites its [findings](../technical/research/Prompt-Engineering.md#-findings) as F1 to F18. If the two ever disagree, this guide is out of date: correct it from the record, which is checked again as models change (F17).
 
-An agent reads four kinds of text here, and each costs something different:
+An agent reads three kinds of text here, and each costs something different:
 
-| What      | When it is read                       | Where it lives                                                                                                   | How it is written                                        |
-| :-------- | :------------------------------------ | :--------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------- |
-| A request | Once, when you type it                | Your agent's chat                                                                                                | These practices, shortened                               |
-| A prompt  | Once, when someone pastes it          | The hub's [`docs/Prompts.md`](../Prompts.md) for the universal ones, and each repository's own `docs/Prompts.md` | The five-part shape below                                |
-| A rule    | On every turn of every session        | [`CONSTITUTION.md`](../../CONSTITUTION.md), delivered into each `AGENTS.md` and each app's home folder           | One sentence under an ID, with its reason in the source  |
-| A skill   | When its description matches the task | [`kit/skills/`](../../kit/skills/README.md)                                                                      | A description that says when to use it, then a procedure |
+| What      | When it is read                | Where it lives                                                                                                   | How it is written                                       |
+| :-------- | :----------------------------- | :--------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------ |
+| A request | Once, when you type it         | Your agent's chat                                                                                                | These practices, shortened                              |
+| A prompt  | Once, when someone pastes it   | The hub's [`docs/Prompts.md`](../Prompts.md) for the universal ones, and each repository's own `docs/Prompts.md` | The five-part shape below                               |
+| A rule    | On every turn of every session | [`CONSTITUTION.md`](../../CONSTITUTION.md), delivered into each `AGENTS.md` and each app's home folder           | One sentence under an ID, with its reason in the source |
 
 A rule is paid for everywhere, all the time, so it has to earn its place. A prompt is paid for once, so it can carry the detail one task needs.
 
@@ -125,7 +124,7 @@ A prompt that only asks for an answer, such as a review, an explanation or a pla
 
 ---
 
-## 🤖 Rules, Skills And Long Work
+## 🤖 Rules And Long Work
 
 **Rules** are read on every turn of every session, so each sentence costs attention everywhere. The Constitution caps its block at 5,000 characters and aims for 4,500 ([Article V](../../CONSTITUTION.md#-article-v-the-block)).
 
@@ -133,8 +132,6 @@ A prompt that only asks for an answer, such as a review, an explanation or a pla
 - Name what enforces it, such as a hook, a check or a ruleset. A rule nothing enforces is a wish.
 - Measure it with the block and without it, as [Evals](../technical/Evals.md) does. Instruction files cut both ways: one study found them lowering success and raising cost, another found faster runs at the same success (F18).
 - Confirm each app loads the file. Claude Code skips a root `AGENTS.md` beside a `CLAUDE.md` unless its settings say otherwise, and instructions nothing loads look finished while doing nothing. [The Loader Probe](../technical/The-Loader-Probe.md) proves what each app reads.
-
-**Skills** load only when their description matches the task, so the description decides everything. Say when to use the skill, with "Use when", in at most 1,024 characters, keep the body under 500 lines, and give each skill a trigger test in `evals/skills/` ([Skills & Subagents](../technical/Skills-&-Subagents.md)).
 
 **Long work** goes better in short sessions. Start a new session for each task. If the agent goes wrong twice, start again with a better prompt rather than correcting it a third time. For work that spans sessions, end each one with a handoff note the next can start from: the universal prompt **Write A Handoff Note** writes one.
 
@@ -201,7 +198,6 @@ Each was read directly for the research record:
 - [Prompts](../technical/Prompts.md): the universal prompts every repository gets, and how they arrive and stay current
 - [`docs/Prompts.md`](../Prompts.md): the universal prompts themselves, and the short guide to how a good one is written
 - [Evals](../technical/Evals.md): how a rule or a prompt is measured
-- [Skills & Subagents](../technical/Skills-&-Subagents.md): the rules every skill here follows
 - [Constitution](../../CONSTITUTION.md): the rules every agent reads, and the form each one takes
 
 ---

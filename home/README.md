@@ -26,12 +26,12 @@ installer's source. **Never edit anything here by hand:** `make render`
 rewrites it, and `make check` fails CI when it has drifted. How a machine gets
 these files and checks them: [The Home Kit](../docs/technical/The-Home-Kit.md).
 
-| File              | What it is                                                                       |
-| :---------------- | :------------------------------------------------------------------------------- |
-| `intelligence.md` | The home file: the universal block between its `INTELLIGENCE` markers            |
-| `kit.json`        | The kit: the guard, the skills and the subagents, from `kit/`                    |
-| `install.py`      | The installer, copied from `.github/scripts/install.py`, where its tests run     |
-| `SHA256SUMS`      | The SHA-256 of the home file, the kit and the installer, for a reader            |
+| File              | What it is                                                                   |
+| :---------------- | :--------------------------------------------------------------------------- |
+| `intelligence.md` | The home file: the universal block between its `INTELLIGENCE` markers        |
+| `kit.json`        | The kit: the guard hook, from `kit/`                                         |
+| `install.py`      | The installer, copied from `.github/scripts/install.py`, where its tests run |
+| `SHA256SUMS`      | The SHA-256 of the home file, the kit and the installer, for a reader        |
 
 Each is the renderer's, so the file log below leaves them out and this table
 describes them instead.

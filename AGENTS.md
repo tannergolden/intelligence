@@ -54,14 +54,13 @@ serves to this repository from its `.github` repository.
 - A change to `CONSTITUTION.md`, anything in `kit/` or `.github/scripts/install.py` is followed by `make render`, and the rendered files are committed with it.
 - A new rule gets a scenario in `evals/scenarios/`, and a new universal prompt a scenario in `evals/prompts/`, with a `proof` its checks pass and doing nothing fails.
 - A change to the universal prompts in `docs/Prompts.md`, or to the empty page in `setup/Prompts.md`, stays as Prettier writes it, with the standards' configuration, and passes `prompts.py --check`; a reworded prompt brings its scenario in `evals/prompts/` along, and a new one gets a link in the "Find A Prompt" index.
-- Every new script has tests beside it, and every folder's `README.md` logs its files, except inside a skill's folder.
+- Every new script has tests beside it, and every folder's `README.md` logs its files.
 - A change to how something works updates its document in `docs/` in the same commit, in the folder for its kind: `docs/technical/` for how a part works, `docs/distribution/` for how a release ships, `docs/operations/` for the controls and risks.
 
 ## Conventions
 
 - Python uses the standard library only, with `from __future__ import annotations` and single quotes. Tests use `unittest`, are named `test_*.py`, and load the script they test with `importlib`.
 - `install.py`, `loader-probe.py` and `kit/guard.py` run on the Python 3.9 that macOS ships, so none of them uses `match` or a runtime `X | Y`.
-- Skill and subagent files open with the `---` frontmatter their loaders need, with no Document Styling header or footer.
 - A rule is one ASCII sentence, quoted under its ID in `CONSTITUTION.md`, whose Article VI sets the format. IDs are `DOMAIN-NNN` and are never reused: its appendix lists the retired ones.
 - Every explanation lives in `docs/`. A folder's `README.md` says what the folder holds in a sentence or two, links the document that explains it, and logs its files.
 
@@ -70,7 +69,7 @@ serves to this repository from its `.github` repository.
 | Path                                 | What                                                                                                                                                          |
 | :----------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | [`CONSTITUTION.md`](CONSTITUTION.md) | The source of every rule, and the order and budget of the block                                                                                               |
-| `kit/`                               | The kit's sources: the guard, and every skill and its team (twelve, one for each department)                                                                  |
+| `kit/`                               | The kit's source: the guard hook every app's pre-tool hook runs                                                                                               |
 | `home/`                              | Everything a machine downloads, rendered: the home file, the kit, the installer and their hashes, which every release tag serves                              |
 | `evals/`                             | Scenarios for every rule and every universal prompt                                                                                                           |
 | `setup/`                             | The Claude cloud setup script, the stub a repository carries, and the empty prompts page every repository gets                                                |
@@ -88,7 +87,6 @@ serves to this repository from its `.github` repository.
 ## Gotchas
 
 - Never edit inside `home/`. It is rendered, and `make check` fails on a hand edit.
-- Every skill in `kit/skills/` is universal: never name one repository's folders or scripts in it; a skill reads where to keep its work from the repository itself, its agent instructions or else its README files. Every skill is laid out alike: `kit.py` holds every skill, agent and team to the validator in `research-and-development/scripts/`, refuses a team over five agents, its lead included, and refuses a skill whose `metadata.team` names no roster in its own `agents/`, that ships no `assets/trigger-evals.json`, or whose metadata holds other keys than `team`, `version`, `author` and `status`. Build a new skill from `research-and-development`'s `templates/t-SKILL.md`.
 - The guard hook denies a commit git would author as an AI. In a cloud session, pass `--author` and `--trailer 'Signed-off-by: ...'` with your user's identity, never `-s`.
 - Changing `CONSTITUTION.md` changes nothing elsewhere until a release: other repositories receive the rules only through one, which their stub or `make sync` delivers.
 - `sync.py`, `render.py`, `kit.py` and `prompts.py`, and `setup/Prompts.md`, also run or are read inside every repository that carries the stub, at the hub's latest release, from the archive GitHub serves. Cut Release refuses a tag without them, `.gitattributes` keeps `.github/scripts/` in that archive, and `test_stub.py` holds both.
@@ -98,7 +96,7 @@ serves to this repository from its `.github` repository.
 ## Ask first
 
 - Cutting a release, running `make sync` or `make merge` against real repositories, or running a repository's 🔁 Intelligence Sync.
-- Adding a universal skill, or an agent to any team: the hub writes every skill the kit carries, and every team keeps at most its five most critical agents. A skill one repository needs lives in that repository.
+- Adding any skill or subagent to the kit, which carries the guard alone ([ADR-0041](docs/adrs/ADR-0041-The-Kit-Carries-No-Skills.md)). A skill one repository needs lives in that repository.
 - Changing a rule's wording, its kind or its ID.
 - Adding, removing or rewording a universal prompt, which everyone copies from the hub, or changing the empty page in `setup/Prompts.md`, which every repository without one gets at the next release.
 

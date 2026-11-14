@@ -28,22 +28,17 @@ sessions and in Grok's sandbox. A file the kit owns outright holds nothing
 else. In a file that also holds your own notes, the rules sit in a marked
 block and your text stays.
 
-THE KIT. Given a release's `kit.json` as well, it installs the modules around
-the rules, each only where that app reads it:
+THE KIT. Given a release's `kit.json` as well, it installs the guard hook,
+`~/.agents/hooks/intelligence-guard.py`, and registers it as a pre-tool hook
+in Claude Code's settings (which Grok Build and Cursor also read), in Codex's
+`hooks.json`, in a file of its own for Copilot, and in Antigravity's
+`hooks.json`; outside a cloud session, Claude Code also runs it after each
+compaction, to bring the Invariants back into the conversation.
 
-- the guard hook, `~/.agents/hooks/intelligence-guard.py`, registered as a
-  pre-tool hook in Claude Code's settings (which Grok Build and Cursor also
-  read), in Codex's `hooks.json`, in a file of its own for Copilot, and in
-  Antigravity's `hooks.json`; outside a cloud session, Claude Code also runs
-  it after each compaction, to bring the Invariants back into the
-  conversation
-- the skills, copied into `~/.agents/skills/`, `~/.claude/skills/` and
-  Antigravity's own skills folder
-- the subagents, for Claude Code, Copilot and Codex, when a release ships any
-
-A skill or a subagent an earlier release wrote and this one no longer ships,
-because it was dropped or renamed, is taken out: only a folder or a file that
-carries the kit's mark, so nothing of your own goes, whatever its name.
+Earlier releases also installed skills and subagents, which the kit no
+longer ships (ADR-0041). Every install takes out each one they wrote, with a
+kit or without: only a folder or a file that carries the kit's mark, so
+nothing of your own goes, whatever its name.
 
 SAFETY. Before changing a file, it records the setting's prior value, the
 ask rules it added, and whether it created the file. `uninstall` uses that
@@ -81,8 +76,9 @@ from collections.abc import Callable, Mapping
 # the rules. The kit carries no facts now (ADR-0023); the marker stays so an
 # install can find an old block and take it out.
 MARKERS = {'rules': 'INTELLIGENCE', 'knowledge': 'INTELLIGENCE:KNOWLEDGE'}
-# The kit format this installer reads: 2 dropped the knowledge facts.
-KIT_FORMAT = 2
+# The kit format this installer reads: 2 dropped the knowledge facts, and 3
+# the skills and the subagents.
+KIT_FORMAT = 3
 
 
 def pattern(name: str) -> re.Pattern:
@@ -188,6 +184,7 @@ ASK_RULES = (
 OWNED = "Part of tannergolden/intelligence's home kit, which replaces this file on every install."
 GUARD = '.agents/hooks/intelligence-guard.py'
 GUARD_NAME = 'intelligence-guard'
+# The file that marked a skill folder as the kit's, in the releases that installed skills.
 SKILL_MARK = '.intelligence-kit'
 HOOK_TIMEOUT = 30
 # The tools each app's guard registration covers. Claude and Codex filter by
@@ -242,7 +239,10 @@ RETIRED = (
            COPILOT_PREFIX, piece='knowledge'),
 )
 
-# Where each app reads skills; Claude Code reads nothing under .agents/.
+# Where earlier releases installed skills, one folder per app that reads
+# them; Claude Code reads nothing under .agents/. The kit ships none now
+# (ADR-0041), so an install takes out what one of those releases left, and
+# so does an uninstall.
 SKILL_ROOTS = (
     ('the shared skills folder', '.agents/skills', 'local'),
     ('Claude Code', '.claude/skills', 'both'),
@@ -313,11 +313,9 @@ def read_home_file(path: pathlib.Path) -> tuple[str, str]:
 
 @dataclasses.dataclass(frozen=True)
 class Kit:
-    """A release's kit.json: the guard, the skills and the subagents."""
+    """A release's kit.json: the guard."""
 
     guard: str
-    skills: dict[str, dict[str, str]]
-    subagents: dict[str, dict[str, str]]
 
 
 def read_kit(path: pathlib.Path) -> Kit:
@@ -326,20 +324,12 @@ def read_kit(path: pathlib.Path) -> Kit:
         if data.get('format') != KIT_FORMAT:
             raise SystemExit(f'{path} is a kit in format {data.get("format")}; '
                              f'this installer reads format {KIT_FORMAT}')
-        guard, skills, subagents = data['guard'], data['skills'], data['subagents']
+        guard = data['guard']
     except (OSError, UnicodeDecodeError, ValueError, KeyError, TypeError, AttributeError) as error:
         raise SystemExit(f'cannot read the kit {path}: {error}') from error
     if OWNED not in guard:
         raise SystemExit(f'{path} carries a guard without the kit\'s mark')
-    for name, files in skills.items():
-        for rel in files:
-            if rel.startswith('/') or '..' in pathlib.PurePosixPath(rel).parts or not re.match(
-                    r'^[a-z0-9]+(-[a-z0-9]+)*$', name):
-                raise SystemExit(f'{path} names a skill file outside its folder: {name}/{rel}')
-    for name in subagents:
-        if not re.match(r'^[a-z0-9]+(-[a-z0-9]+)*$', name):
-            raise SystemExit(f'{path} names a subagent that is not a plain name: {name}')
-    return Kit(guard, skills, subagents)
+    return Kit(guard)
 
 
 def codex_home(home: pathlib.Path, env: Mapping[str, str]) -> pathlib.Path:
@@ -549,6 +539,7 @@ def install(home: pathlib.Path, home_file: pathlib.Path, cloud: bool, env: Mappi
             make_dirs(path)
             write(path, text)
     failures += retire(home, cloud, env, state, spath, dry_run)
+    retire_skills_and_subagents(home, cloud, env, state, spath, dry_run)
     if not cloud:
         failures += install_setting(home, state, spath, dry_run)
     if kit is not None:
@@ -733,17 +724,9 @@ def entry(command: str, **extra: object) -> dict:
     return {'type': 'command', 'command': command, 'timeout': HOOK_TIMEOUT, **extra}
 
 
-def kit_owned(home: pathlib.Path, kit: Kit, cloud: bool, env: Mapping[str, str]) -> list[Owned]:
+def kit_owned(home: pathlib.Path, kit: Kit, cloud: bool) -> list[Owned]:
     """Every file the kit writes whole, for this machine."""
     owned = [Owned('guard hook', home / GUARD, kit.guard, mode=0o755)]
-    for name, forms in sorted(kit.subagents.items()):
-        owned.append(Owned(f'Claude Code subagent {name}', home / '.claude' / 'agents' / f'{name}.md',
-                           forms['claude']))
-        if not cloud:
-            owned.append(Owned(f'Copilot agent {name}', home / '.copilot' / 'agents' / f'{name}.agent.md',
-                               forms['copilot']))
-            owned.append(Owned(f'Codex agent {name}', codex_home(home, env) / 'agents' / f'{name}.toml',
-                               forms['codex']))
     if not cloud:
         copilot = {'version': 1, 'hooks': {'PreToolUse': [
             {'hooks': [entry(guard_command(home, 'copilot'))]}]}}
@@ -804,7 +787,7 @@ def is_kits(path: pathlib.Path, mark: str) -> bool:
 def install_kit(home: pathlib.Path, kit: Kit, cloud: bool, env: Mapping[str, str], state: dict,
                 spath: pathlib.Path, dry_run: bool) -> int:
     failures = 0
-    for item in kit_owned(home, kit, cloud, env):
+    for item in kit_owned(home, kit, cloud):
         label = f'{item.label}: {item.path}'
         current = read(item.path) if item.path.exists() else None
         if current is not None and item.mark not in current:
@@ -823,15 +806,11 @@ def install_kit(home: pathlib.Path, kit: Kit, cloud: bool, env: Mapping[str, str
         write(item.path, item.text, item.mode)
     for registration in kit_registrations(home, cloud, env):
         failures += install_registration(registration, state, spath, dry_run)
-    for name, files in sorted(kit.skills.items()):
-        for app, root in skill_folders(home, cloud):
-            failures += install_skill(f'{app} skill {name}', root / name, files, state, spath, dry_run)
-    retire_dropped(home, kit, cloud, env, state, spath, dry_run)
     return failures
 
 
 def agent_folders(home: pathlib.Path, cloud: bool, env: Mapping[str, str]) -> list[tuple[str, pathlib.Path, str]]:
-    """Where each app reads the kit's subagents, and the suffix each file there takes."""
+    """Where earlier releases wrote each app's subagents, and the suffix each file there took."""
     folders = [('Claude Code subagent', home / '.claude' / 'agents', '.md')]
     if not cloud:
         folders += [('Copilot agent', home / '.copilot' / 'agents', '.agent.md'),
@@ -839,43 +818,53 @@ def agent_folders(home: pathlib.Path, cloud: bool, env: Mapping[str, str]) -> li
     return folders
 
 
-def retire_dropped(home: pathlib.Path, kit: Kit, cloud: bool, env: Mapping[str, str], state: dict,
-                   spath: pathlib.Path, dry_run: bool) -> None:
-    """Take out each skill and subagent an earlier release wrote that this one no longer ships.
-
-    A release that drops or renames one would otherwise leave the old copy loaded beside the
-    new ones. Only what carries the kit's mark goes: a subagent file with the mark, a skill
-    folder with its mark file. Whatever is yours stays, whatever its name.
-    """
-    def forget(group: str, path: pathlib.Path) -> None:
-        if not dry_run and str(path) in state[group]:
-            del state[group][str(path)]
-            save_state(spath, state)
-
+def leftovers(home: pathlib.Path, cloud: bool, env: Mapping[str, str]) -> list[tuple[str, pathlib.Path]]:
+    """Each skill folder and subagent file an earlier release wrote that is still here, known by the kit's mark."""
+    found = []
     for label, folder, suffix in agent_folders(home, cloud, env):
-        found = {pathlib.Path(p) for p in state['owned'] if pathlib.Path(p).parent == folder}
         if folder.is_dir():
-            found |= {p for p in folder.iterdir() if p.is_file()}
-        for path in sorted(found):
-            if not path.name.endswith(suffix) or path.name[:-len(suffix)] in kit.subagents:
-                continue
-            if path.is_file() and is_kits(path, OWNED):
-                report('would retire' if dry_run else 'retired', f'{label} {path.name[:-len(suffix)]}: {path}')
-                if not dry_run:
-                    path.unlink()
-            forget('owned', path)
+            found += [(f'{label} {path.name[:-len(suffix)]}', path) for path in sorted(folder.iterdir())
+                      if path.is_file() and path.name.endswith(suffix) and is_kits(path, OWNED)]
     for app, root in skill_folders(home, cloud):
-        found = {pathlib.Path(p) for p in state['folders'] if pathlib.Path(p).parent == root}
         if root.is_dir():
-            found |= {p for p in root.iterdir() if p.is_dir()}
-        for folder in sorted(found):
-            if folder.name in kit.skills:
-                continue
-            if (folder / SKILL_MARK).is_file():
-                report('would retire' if dry_run else 'retired', f'{app} skill {folder.name}: {folder}')
-                if not dry_run:
-                    shutil.rmtree(folder)
-            forget('folders', folder)
+            found += [(f'{app} skill {folder.name}', folder) for folder in sorted(root.iterdir())
+                      if folder.is_dir() and (folder / SKILL_MARK).is_file()]
+    return found
+
+
+def retire_skills_and_subagents(home: pathlib.Path, cloud: bool, env: Mapping[str, str], state: dict,
+                                spath: pathlib.Path, dry_run: bool) -> None:
+    """Take out each skill and subagent an earlier release wrote, and the record of them (ADR-0041).
+
+    The kit ships neither now, so whatever of them a machine still loads is
+    text no release maintains. Only what carries the kit's mark goes: a
+    subagent file with the mark, a skill folder with its mark file. Whatever
+    is yours stays, whatever its name. A folder the kit made for them goes
+    too, once nothing is left in it.
+    """
+    for label, path in leftovers(home, cloud, env):
+        report('would retire' if dry_run else 'retired', f'{label}: {path}')
+        if not dry_run:
+            if path.is_dir():
+                shutil.rmtree(path)
+            else:
+                path.unlink()
+    if dry_run:
+        return
+    places = {root for _, root in skill_folders(home, cloud)}
+    places |= {folder for _, folder, _ in agent_folders(home, cloud, env)}
+    made: set[pathlib.Path] = set()
+    forgotten = False
+    for group in ('folders', 'owned'):
+        for key in [key for key in state[group] if pathlib.Path(key).parent in places]:
+            made |= {pathlib.Path(folder) for folder in state[group].pop(key).get('dirs', [])}
+            forgotten = True
+    if forgotten:
+        save_state(spath, state)
+    # Deepest first: a folder made for the first skill may only empty out once its own is gone.
+    for folder in sorted(made, key=lambda path: len(path.parts), reverse=True):
+        if folder.is_dir() and not any(folder.iterdir()):
+            folder.rmdir()
 
 
 def install_registration(registration: Registration, state: dict, spath: pathlib.Path,
@@ -899,34 +888,6 @@ def install_registration(registration: Registration, state: dict, spath: pathlib
     save_state(spath, state)
     make_dirs(path)
     write(path, json.dumps(updated, indent=2) + '\n')
-    return 0
-
-
-def install_skill(label: str, folder: pathlib.Path, files: dict[str, str], state: dict,
-                  spath: pathlib.Path, dry_run: bool) -> int:
-    label = f'{label}: {folder}'
-    if folder.exists() and not (folder / SKILL_MARK).exists():
-        report('refused', f"{label} exists and is not the kit's; it is never overwritten")
-        return 1
-    wanted = {**files, SKILL_MARK: OWNED + '\n'}
-    present = {path.relative_to(folder).as_posix() for path in folder.rglob('*') if path.is_file()} \
-        if folder.exists() else set()
-    changed = present != set(wanted) or any(read(folder / rel) != text for rel, text in wanted.items())
-    report('current' if not changed else 'would write' if dry_run else 'wrote', label)
-    if dry_run or not changed:
-        return 0
-    state['folders'].setdefault(str(folder), {
-        'created': not folder.exists(), 'dirs': [str(path) for path in missing_dirs(folder)]})
-    save_state(spath, state)
-    for rel in sorted(present - set(wanted)):
-        (folder / rel).unlink()
-    for rel, text in sorted(wanted.items()):
-        path = folder / rel
-        make_dirs(path)
-        write(path, text)
-    for path in sorted(folder.rglob('*'), key=lambda p: len(p.parts), reverse=True):
-        if path.is_dir() and not any(path.iterdir()):
-            path.rmdir()
     return 0
 
 
@@ -964,6 +925,9 @@ def check(home: pathlib.Path, home_file: pathlib.Path, cloud: bool, env: Mapping
         if left:
             failures += 1
             print(f'  {"stale":<8} {target.app} knowledge: {path}, retired; an install takes it out')
+    for label, path in leftovers(home, cloud, env):
+        failures += 1
+        print(f'  {"stale":<8} {label}: {path}, retired; an install takes it out')
     if not cloud:
         # Each setting on its own: permissions the kit cannot read say nothing about instructionFiles.
         path = home / SETTINGS
@@ -991,7 +955,7 @@ def check(home: pathlib.Path, home_file: pathlib.Path, cloud: bool, env: Mapping
 
 def check_kit(home: pathlib.Path, kit: Kit, cloud: bool, env: Mapping[str, str]) -> int:
     failures = 0
-    for item in kit_owned(home, kit, cloud, env):
+    for item in kit_owned(home, kit, cloud):
         current = read(item.path) if item.path.exists() else None
         status = ('missing' if current is None else 'foreign' if item.mark not in current
                   else 'edited' if current != item.text else 'current')
@@ -1012,20 +976,6 @@ def check_kit(home: pathlib.Path, kit: Kit, cloud: bool, env: Mapping[str, str])
             status = 'broken'
         failures += status != 'current'
         print(f'  {status:<8} {registration.label}: {registration.path}')
-    for name, files in sorted(kit.skills.items()):
-        for app, root in skill_folders(home, cloud):
-            folder = root / name
-            if not folder.exists():
-                status = 'missing'
-            elif not (folder / SKILL_MARK).exists():
-                status = 'foreign'
-            else:
-                present = {p.relative_to(folder).as_posix() for p in folder.rglob('*') if p.is_file()}
-                wanted = {**files, SKILL_MARK: OWNED + '\n'}
-                status = 'current' if present == set(wanted) and all(
-                    read(folder / rel) == text for rel, text in wanted.items()) else 'edited'
-            failures += status != 'current'
-            print(f'  {status:<8} {app} skill {name}: {folder}')
     return failures
 
 

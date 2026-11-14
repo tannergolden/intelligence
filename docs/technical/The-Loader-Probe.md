@@ -130,9 +130,9 @@ The Claude Code run, as the probe printed it:
 | Claude Code beside a CLAUDE.local.md, reading both | read       | read       | not read     | pass   |
 
 The hand-over, from the 2026-10-26 run, after the same five loader checks. The
-hand-over check was retired on 2026-11-07, because vaults no longer hold
-skills: every skill lives in the hub's `kit/skills/` ([ADR-0037](../adrs/ADR-0037-The-Hub-Writes-Every-Skill.md)). These rows
-stay as the record:
+hand-over check was retired on 2026-11-07, because vaults no longer held
+skills of their own ([ADR-0037](../adrs/ADR-0037-The-Hub-Writes-Every-Skill.md)). These rows stay as the
+record:
 
 | Check                 | PROBE_HANDOVER_HOME | PROBE_HANDOVER_VAULT | Result |
 | :-------------------- | :------------------ | :------------------- | :----- |

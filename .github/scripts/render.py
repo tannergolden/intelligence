@@ -10,8 +10,8 @@ written by hand:
 - the home file, `home/intelligence.md`, which the home kit copies into
   each app's folder, and which every repository's stub delivers between the
   markers of its root `AGENTS.md`;
-- the kit, `home/kit.json`, which carries the guard hook, the skill and the
-  subagents, rendered by `kit.py` from `kit/`;
+- the kit, `home/kit.json`, which carries the guard hook, rendered by
+  `kit.py` from `kit/`;
 - the installer, `home/install.py`, a copy of `install.py` beside this
   file, so a machine downloads everything it installs from `home/`;
 - `home/SHA256SUMS`, the hashes a consumer pins.
@@ -587,10 +587,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f'{len(constitution.rules)} rules; block {length} of {constitution.cap} characters{note}; '
               f'sha256 {digest(block)[:12]}')
         if has_kit(root):
-            bundle, _ = kit.bundle(root)
-            counts = (len(bundle['skills']), len(bundle['subagents']))
-            print('kit: ' + ', '.join(f'{n} {word}{"" if n == 1 else "s"}'
-                                      for n, word in zip(counts, ('skill', 'subagent'))))
+            print(f'kit: the guard, format {kit.FORMAT}')
         return 1 if drift else 0
 
     print(block, end='')

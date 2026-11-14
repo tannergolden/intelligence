@@ -2,7 +2,7 @@
 title: '📄 ADR-0037: THE HUB WRITES EVERY SKILL'
 description: 'Every skill and agent the owner uses lives in the hub, written here and universal: the knowledge template keeps none, the five faculties stop being pinned copies, board and identify move in, the Agent Resources workforce becomes board''s team with at most six agents a department, and a vault supplies its layout through its AGENTS.md.'
 type: record
-status: 'Proposed'
+status: 'Superseded'
 date: '2026-11-07'
 evidence: 'N/A'
 -->
@@ -21,6 +21,11 @@ _No vault keeps instructions of its own; a vault says where things go._
 </div>
 
 > [!IMPORTANT]
+> **Superseded by [ADR-0041](ADR-0041-The-Kit-Carries-No-Skills.md).** The hub
+> writes no skill now: the kit carries the guard alone, and an install takes out
+> the skills earlier releases wrote.
+
+> [!NOTE]
 > **Amended by [ADR-0038](ADR-0038-Each-Department-Is-A-Skill.md).** The
 > departments left `board` to become skills of their own, three were removed,
 > and every skill is now laid out alike.

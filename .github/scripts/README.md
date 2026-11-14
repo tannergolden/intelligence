@@ -52,7 +52,6 @@ request is not the first place you hear about them.
 | [`requirements.txt`](requirements.txt)                         | The Python packages the scripts beside this file need, and nothing else.                                       |
 | [`sync.py`](sync.py)                                           | Deliver the universal rules to every repository the owner owns, and keep them there.                           |
 | [`test_cloud_setup.py`](test_cloud_setup.py)                   | Tests for the Claude cloud setup script.                                                                       |
-| [`test_develop.py`](test_develop.py)                           | Tests for the research-and-development skill's validator and packager, which build every skill.                |
 | [`test_evals.py`](test_evals.py)                               | Tests for the eval runner.                                                                                     |
 | [`test_gitignore.py`](test_gitignore.py)                       | Tests for this repository's .gitignore.                                                                        |
 | [`test_guard.py`](test_guard.py)                               | Tests for the guard hook.                                                                                      |

@@ -1,6 +1,6 @@
 <!--
 title: '🗃️ FILES & FORMATS'
-description: 'The exact shape of what the hub hands to something else: the markers and their hash, the pin lines, the kit and a subagent source, what a repository carries, and what the tools leave on a machine. Read it before writing a tool that reads one, or before changing the kit.'
+description: 'The exact shape of what the hub hands to something else: the markers and their hash, the pin lines, the kit, what a repository carries, and what the tools leave on a machine. Read it before writing a tool that reads one, or before changing the kit.'
 type: reference
 -->
 
@@ -94,52 +94,21 @@ empty or a placeholder installs the rules alone.
 `home/kit.json` is one JSON object, which `kit.py` renders and the installer
 refuses in any format but its own:
 
-| Key         | Holds                                                                                                |
-| :---------- | :--------------------------------------------------------------------------------------------------- |
-| `//`        | A note that the file is rendered and never edited by hand                                            |
-| `format`    | `2`, the one format the installer reads                                                              |
-| `guard`     | The text of `kit/guard.py`                                                                           |
-| `skills`    | Each skill's name, mapped to every file in its folder, by its path inside the folder, as text        |
-| `subagents` | Each subagent's name, mapped to `claude`, `copilot` and `codex`: the text of the file each app reads |
+| Key      | Holds                                                     |
+| :------- | :-------------------------------------------------------- |
+| `//`     | A note that the file is rendered and never edited by hand |
+| `format` | `3`, the one format the installer reads                   |
+| `guard`  | The text of `kit/guard.py`                                |
 
-`make render` and `make check` refuse to go on while any part of the bundle
-names a tannergolden repository that is not on `kit.py`'s list of the ones a
-public file may name, or holds an en or em dash, or while a skill breaks the
-rules in
-[Skills & Subagents](../technical/Skills-&-Subagents.md#-what-every-skill-here-follows)
-or a subagent's source is out of shape. `kit.py --check` lists each problem.
+`make render` and `make check` refuse to go on while the guard lacks the
+kit's mark, names a tannergolden repository that is not on `kit.py`'s list of
+the ones a public file may name, or holds an en or em dash. `kit.py --check`
+lists each problem.
 
-**A subagent's source**, should the kit carry one again (it ships none since
-ADR-0040), is `kit/subagents/<name>.md`: a `---` frontmatter fence holding
-these keys and no others, then the prompt it runs with:
-
-```markdown
----
-name: worker
-description: What it does, and when a session should hand it work.
-tools: read, search, edit, execute
----
-
-The prompt the subagent runs with.
-```
-
-`name` is the file's name, in lowercase words joined by hyphens, and the
-`description` is required, since it is what delegation reads. `tools` lists
-abstract tools, each from the table below, which each app gets in its own
-words:
-
-| Tool      | Claude Code                     | Copilot   |
-| :-------- | :------------------------------ | :-------- |
-| `read`    | `Read`                          | `read`    |
-| `search`  | `Grep`, `Glob`                  | `search`  |
-| `edit`    | `Edit`, `Write`, `NotebookEdit` | `edit`    |
-| `execute` | `Bash`                          | `execute` |
-| `web`     | `WebFetch`, `WebSearch`         | `web`     |
-| `agent`   | `Agent`                         | `agent`   |
-
-Codex's TOML carries no tool list: the body becomes its
-`developer_instructions`. Every rendered file carries the kit's mark as a
-comment at its top, so the installer can tell it is the kit's.
+Format 2 also held `skills` and `subagents`, which the kit stopped carrying
+with format 3 ([ADR-0041](../adrs/ADR-0041-The-Kit-Carries-No-Skills.md)). The
+installer reads its own format and no other, so a kit and an installer from
+different releases stop the install before it writes anything.
 
 ---
 

@@ -2,7 +2,7 @@
 title: '📄 ADR-0039: TWELVE DEPARTMENTS, TWELVE SKILLS'
 description: 'The workforce is twelve departments that cover every area of a company and of the owner''s own life, each one skill named for the department with a team of at most five; the general-purpose skills fold into the departments, eighteen agents merge into others, and the Chief of Staff''s Grok Bot setup starts by asking for GitHub and the owner''s vault.'
 type: record
-status: 'Proposed'
+status: 'Superseded'
 date: '2026-11-07'
 evidence: 'N/A'
 -->
@@ -21,6 +21,11 @@ _Fewer seats, each doing more, none duplicated._
 </div>
 
 > [!IMPORTANT]
+> **Superseded by [ADR-0041](ADR-0041-The-Kit-Carries-No-Skills.md).** The
+> twelve department skills and their teams are gone: the kit carries the guard
+> alone, and an install takes out what earlier releases wrote.
+
+> [!NOTE]
 > **Amended by [ADR-0040](ADR-0040-Every-Agent-Belongs-To-A-Department.md).**
 > Public Relations drops its Writer, whose drafting its lead now does, and the
 > kit drops the Worker and Reviewer subagents: fifty agents remain, every one

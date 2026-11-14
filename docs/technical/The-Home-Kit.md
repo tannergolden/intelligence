@@ -42,27 +42,28 @@ what was there before. In a Claude cloud session, [the setup
 script](Cloud-Setup.md) does the same from a pinned release, and can never
 stop the session from starting. A cloud session gets no `instructionFiles`
 setting, ask rules or compaction reminder: only `CLAUDE.md`, and the kit's
-guard, skills and subagents.
+guard.
 
 ---
 
 ## 🧩 The Kit
 
 The kit rides beside the rules in the same release, as one pinned file,
-`home/kit.json`, and the installer puts each piece where its app reads it:
+`home/kit.json`. It carries one module, and the installer puts it where each
+app reads it:
 
-| Module                                                | What it is                                                                                                                                                       | Where it lands                                                                                                                                                                                  |
-| :---------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Guard hook, below                                     | Denies force-pushes, merges, `--no-verify`, AI sign-offs, irreversible commands, credential reads and unread downloads before they run                           | `~/.agents/hooks/`, registered in Claude Code's settings (read by Grok and Cursor), Codex's and Antigravity's `hooks.json`, and Copilot's `hooks/`; Claude Code also runs it after a compaction |
-| [The twelve department skills](Skills-&-Subagents.md) | One for each department, each with its own team, covering a company and the user's own life; `research-and-development` also builds and checks every other skill | `~/.agents/skills/`, `~/.claude/skills/` and Antigravity's skills folder                                                                                                                        |
+| Module            | What it is                                                                                                                             | Where it lands                                                                                                                                                                                  |
+| :---------------- | :------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Guard hook, below | Denies force-pushes, merges, `--no-verify`, AI sign-offs, irreversible commands, credential reads and unread downloads before they run | `~/.agents/hooks/`, registered in Claude Code's settings (read by Grok and Cursor), Codex's and Antigravity's `hooks.json`, and Copilot's `hooks/`; Claude Code also runs it after a compaction |
 
 Everything the kit writes carries its mark, so it replaces only its own files
-and `make agents-uninstall` takes back exactly what it added. An install also
-takes out a skill or a subagent an earlier release wrote and this one no
-longer ships, such as a renamed skill or the retired Worker and Reviewer, and
-only those that carry the mark. A file that is a
-symlink, as dotfiles often make `~/.claude/settings.json`, is written through,
-so it stays a link to the file the dotfiles keep.
+and `make agents-uninstall` takes back exactly what it added. Earlier releases
+also installed skills and subagents, which the kit no longer ships
+([ADR-0041](../adrs/ADR-0041-The-Kit-Carries-No-Skills.md)): every install
+takes out each one they wrote, and only those that carry the mark, and
+`make agents-check` calls any left behind stale. A file that is a symlink, as
+dotfiles often make `~/.claude/settings.json`, is written through, so it stays
+a link to the file the dotfiles keep.
 
 ---
 
@@ -204,7 +205,7 @@ hand: `make render` rewrites it, and `make check` fails CI when it has drifted.
 | File              | What it is                                                                                                       |
 | :---------------- | :--------------------------------------------------------------------------------------------------------------- |
 | `intelligence.md` | The home file: the universal block between its `INTELLIGENCE` markers                                            |
-| `kit.json`        | The kit: the guard, the skills and the subagents                                                                 |
+| `kit.json`        | The kit: the guard hook                                                                                          |
 | `install.py`      | The installer, copied from [`.github/scripts/install.py`](../../.github/scripts/install.py), where its tests run |
 | `SHA256SUMS`      | The SHA-256 of the home file, the kit and the installer, for a reader                                            |
 
@@ -234,6 +235,7 @@ reader.
 - [ADR-0012](../adrs/ADR-0012-One-Pinned-Kit-For-Every-Module.md): every module ships in one pinned kit beside the rules
 - [ADR-0013](../adrs/ADR-0013-The-Guard-Denies-Never-Allows.md): one guard behind every app's hook, which only ever denies
 - [ADR-0024](../adrs/ADR-0024-The-Hub-Keeps-Its-Template-Layout.md): the scripts in `.github/scripts/`, the kit's sources in `kit/`, and everything a machine downloads in `home/`
+- [ADR-0041](../adrs/ADR-0041-The-Kit-Carries-No-Skills.md): the kit carries the guard alone, and an install takes out the skills and subagents earlier releases wrote
 - [Troubleshooting The Home Kit](../operations/Troubleshooting-The-Home-Kit.md): what each status of the installer, its check and the guard means
 
 ---

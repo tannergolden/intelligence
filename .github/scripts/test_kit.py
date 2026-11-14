@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """Tests for the kit renderer.
 
-WHY THIS EXISTS. `kit.py` is the last check a skill or a subagent passes
-before every machine installs it. A skill whose name breaks one app's rule
-loads nowhere and says nothing, a subagent written wrong for one app
-silently goes missing there, and a file that names a private repository
-publishes it. These tests hold each source to those rules, and the rendered
-forms to what each app parses.
+WHY THIS EXISTS. `kit.py` is the last check the guard passes before every
+machine installs it. A guard without the kit's mark is one the installer
+can never replace, and a kit that names a private repository publishes it.
+These tests hold the source to those rules, and the bundle to the one shape
+the installer reads.
 
 Run it:
 
@@ -23,18 +22,12 @@ import sys
 import tempfile
 import unittest
 
-try:
-    import tomllib
-except ImportError:  # Python before 3.11, where only the TOML test is skipped
-    tomllib = None
-
 HERE = pathlib.Path(__file__).resolve().parent
 
 
 def load(name: str, file: str):
     spec = importlib.util.spec_from_file_location(name, HERE / file)
     module = importlib.util.module_from_spec(spec)
-    # Dataclasses look their own module up by name while the class is built.
     sys.modules[name] = module
     spec.loader.exec_module(module)
     return module
@@ -42,46 +35,18 @@ def load(name: str, file: str):
 
 kit = load('kit', 'kit.py')
 
-SKILL = ('---\nname: processing-invoices\ndescription: Extracts line items from invoices. '
-         'Use when the user has invoices to read.\nlicense: MIT\n'
-         'metadata: { team: Invoicing, version: "1.0.0", author: Tester, status: active }\n---\n\n'
-         '# Processing invoices\n\n## Boundaries\n\nInvoices only.\n')
-CHANGELOG = '# processing-invoices Changelog\n\n## Current Version\n\n**`1.0.0`**\n'
-ROSTER = ('---\ntitle: "{team}"\ndescription: "Dispatch this team to run {team}."\nmembers: [{members}]\n'
-          'lead: "\u2605 {team} Lead"\n---\n\n# {team}\n')
-SPEC = ('---\ntitle: "{title}"\ndescription: "Dispatch this agent to do {title} work."\n'
-        'tools: Read, Grep, Glob\n---\n\n# {title}\n\n## Identity\n\n- **Persona:** x\n'
-        '- **Voice:** x\n\n' + ''.join(f'## {section}\n\nx\n\n' for section in (
-            'Role & Objective', 'Inputs', 'Method', 'Output contract', 'Examples', 'Boundaries', 'Recovery',
-            'Non-negotiables')))
-TRIGGERS = json.dumps({'skill': 'x', 'should_trigger': ['a'] * 5, 'near_miss': ['b'] * 5})
-AGENT = ('---\nname: reviewer\ndescription: Reviews a change. Use after a change.\ntools: read, search, execute\n'
-         '---\n\nYou review. Quote "this" and a \\ backslash.\n')
+GUARD = f'#!/usr/bin/env python3\n# {kit.OWNED}\nprint("guard")\n'
 
 
 class Hub(unittest.TestCase):
-    """A throwaway hub holding one skill, one subagent and a guard."""
+    """A throwaway hub holding a guard."""
 
     def setUp(self) -> None:
         self.root = pathlib.Path(tempfile.mkdtemp(prefix='kit-test-'))
-        self.write('kit/guard.py', f'# {kit.OWNED}\nprint("guard")\n')
-        self.write('kit/skills/processing-invoices/SKILL.md', SKILL)
-        self.write('kit/skills/processing-invoices/references/forms.md', 'Forms.\n')
-        self.write('kit/skills/processing-invoices/License.txt', 'MIT\n')
-        self.write('kit/skills/processing-invoices/Changelog.md', CHANGELOG)
-        self.staff('processing-invoices', 'Invoicing')
-        self.write('kit/subagents/reviewer.md', AGENT)
-        self.write('kit/subagents/README.md', 'The folder log, which is not an agent.\n')
+        self.write('kit/guard.py', GUARD)
 
     def tearDown(self) -> None:
         shutil.rmtree(self.root, ignore_errors=True)
-
-    def staff(self, skill: str, team: str) -> None:
-        """Give a skill its own one-lead team and the trigger test every skill ships."""
-        lead = f'\u2605 {team} Lead'
-        self.write(f'kit/skills/{skill}/agents/{lead}.md', SPEC.format(title=lead))
-        self.write(f'kit/skills/{skill}/agents/{team}.md', ROSTER.format(team=team, members=f'"{lead}"'))
-        self.write(f'kit/skills/{skill}/assets/trigger-evals.json', TRIGGERS)
 
     def write(self, rel: str, text: str) -> pathlib.Path:
         path = self.root / rel
@@ -105,203 +70,41 @@ class TestSound(Hub):
         first = kit.render_kit(self.root)
         self.assertEqual(first, kit.render_kit(self.root))
         data = json.loads(first)
-        self.assertEqual(sorted(data), ['//', 'format', 'guard', 'skills', 'subagents'])
-        self.assertEqual(data['format'], 2, 'the format without the knowledge facts')
-        self.assertEqual(sorted(data['skills']['processing-invoices']),
-                         ['Changelog.md', 'License.txt', 'SKILL.md', 'agents/Invoicing.md',
-                          'agents/\u2605 Invoicing Lead.md', 'assets/trigger-evals.json', 'references/forms.md'])
-        self.assertEqual(list(data['subagents']), ['reviewer'], 'the README is not an agent')
+        self.assertEqual(sorted(data), ['//', 'format', 'guard'])
+        self.assertEqual(data['format'], kit.FORMAT)
+        self.assertEqual(data['guard'], GUARD)
 
 
-class TestSkills(Hub):
-    """Each skill meets the strictest rule any app enforces."""
-
-    def test_the_folder_name(self) -> None:
-        for bad in ('Processing-Invoices', 'processing--invoices', '-invoices', 'claude-helper', 'synced'):
-            with self.subTest(name=bad):
-                self.write(f'kit/skills/{bad}/SKILL.md', SKILL.replace('processing-invoices', bad))
-                self.assertTrue(any(f'kit/skills/{bad}' in line for line in self.problems()))
-                shutil.rmtree(self.root / 'kit' / 'skills' / bad)
-
-    def test_the_name_matches_the_folder(self) -> None:
-        self.write('kit/skills/processing-invoices/SKILL.md', SKILL.replace('name: processing-invoices', 'name: other'))
-        self.assertProblem('name must equal the folder name')
-
-    def test_frontmatter_opens_the_file_and_holds_only_portable_keys(self) -> None:
-        self.write('kit/skills/processing-invoices/SKILL.md', '# Title\n' + SKILL)
-        self.assertProblem('must open with ---')
-        self.write('kit/skills/processing-invoices/SKILL.md', SKILL.replace('---\n\n#', 'argument-hint: x\n---\n\n#'))
-        self.assertProblem('not argument-hint')
-
-    def test_the_description_triggers(self) -> None:
-        cases = {
-            SKILL.replace(' Use when the user has invoices to read.', ''): 'with "Use when"',
-            SKILL.replace('Extracts', 'Extracts <xml>'): 'angle brackets',
-            SKILL.replace('Extracts line items from invoices.', 'x' * 1100): 'limit 1024',
-            SKILL.replace('description: Extracts line items from invoices. Use when the user has invoices '
-                          'to read.\n', ''): 'needs a description',
-        }
-        for text, fragment in cases.items():
-            with self.subTest(fragment=fragment):
-                self.write('kit/skills/processing-invoices/SKILL.md', text)
-                self.assertProblem(fragment)
-
-    def test_the_body_and_its_references_stay_small_and_shallow(self) -> None:
-        self.write('kit/skills/processing-invoices/SKILL.md', SKILL + 'line\n' * 501)
-        self.assertProblem('over 500 lines')
-        self.write('kit/skills/processing-invoices/SKILL.md', SKILL)
-        self.write('kit/skills/processing-invoices/references/deep/nested.md', 'Too deep.\n')
-        self.assertProblem('one level below SKILL.md')
-
-    def test_a_folder_without_skill_md(self) -> None:
-        self.write('kit/skills/empty-skill/notes.md', 'No skill here.\n')
-        self.assertProblem('has no SKILL.md')
-
-
-class TestTeams(Hub):
-    """Every skill, agent and team passes the skill validator, and no team tops five agents."""
-
-    def department(self, size: int, home: str = kit.WORKFORCE_DIR) -> None:
-        team = 'Sales'
-        titles = [f'\u2605 {team} Lead'] + [f'{team} Seat {n}' for n in range(1, size)]
-        for title in titles:
-            self.write(f'{home}/{title}.md', SPEC.format(title=title))
-        members = ', '.join(f'"{title}"' for title in titles)
-        self.write(f'{home}/{team}.md', ROSTER.format(team=team, members=members))
-        skill = home.split('/')[2]
-        self.write(f'kit/skills/{skill}/SKILL.md',
-                   SKILL.replace('processing-invoices', skill).replace('team: Invoicing', f'team: {team}'))
-        self.write(f'kit/skills/{skill}/License.txt', 'MIT\n')
-        self.write(f'kit/skills/{skill}/Changelog.md', CHANGELOG)
-        self.write(f'kit/skills/{skill}/assets/trigger-evals.json', TRIGGERS)
-
-    def test_a_department_of_five_is_sound(self) -> None:
-        self.department(5)
-        self.assertEqual(self.problems(), [])
-
-    def test_a_department_of_six_is_refused(self) -> None:
-        self.department(6)
-        self.assertProblem('6 agents; a team keeps at most its 5 most critical')
-
-    def test_a_skills_own_team_of_six_is_refused(self) -> None:
-        self.department(6, 'kit/skills/processing-invoices/agents')
-        self.assertProblem('processing-invoices/agents/Sales.md: 6 agents')
-
-    def test_an_agent_left_off_its_roster_still_counts(self) -> None:
-        # A Grok Bot group holds six: a skill's five agents and the Chief of Staff, roster or not.
-        # The skill already has its own lead; four more make five, and one on no roster a sixth.
-        home = 'kit/skills/processing-invoices/agents'
-        self.department(4, home)
-        self.assertEqual(self.problems(), [])
-        self.write(f'{home}/Sales Seat 9.md', SPEC.format(title='Sales Seat 9'))
-        self.assertProblem('processing-invoices/agents: 6 agents; a skill keeps at most 5')
-
-    def test_an_agent_breaking_develops_standard_is_refused(self) -> None:
-        self.department(2)
-        self.write(f'{kit.WORKFORCE_DIR}/Sales Seat 1.md', SPEC.format(title='Sales Seat 1')
-                   .replace('## Recovery', '## Elsewhere'))
-        self.assertProblem('is missing its Recovery section')
-
-    def test_a_skill_breaking_develops_standard_is_refused(self) -> None:
-        (self.root / 'kit/skills/processing-invoices/Changelog.md').unlink()
-        self.assertProblem('needs Changelog.md')
-
-
-class TestLayout(Hub):
-    """Every skill is laid out alike: its own team, its trigger test, the same metadata keys."""
-
-    def test_a_skill_borrowing_its_whole_team_is_refused(self) -> None:
-        self.write('kit/skills/lonely/SKILL.md', SKILL.replace('processing-invoices', 'lonely'))
-        self.write('kit/skills/lonely/License.txt', 'MIT\n')
-        self.write('kit/skills/lonely/Changelog.md', CHANGELOG)
-        self.write('kit/skills/lonely/assets/trigger-evals.json', TRIGGERS)
-        self.assertProblem('kit/skills/lonely: dispatches no team of its own')
-
-    def test_a_skill_without_a_trigger_test_is_refused(self) -> None:
-        (self.root / 'kit/skills/processing-invoices/assets/trigger-evals.json').unlink()
-        self.assertProblem('ships no assets/trigger-evals.json')
-
-    def test_every_skill_carries_the_same_metadata_keys(self) -> None:
-        self.write('kit/skills/processing-invoices/SKILL.md', SKILL.replace('author: Tester, ', ''))
-        self.assertProblem('metadata holds team, version, status; every skill carries exactly')
-        self.write('kit/skills/processing-invoices/SKILL.md', SKILL.replace('status: active', 'status: active, id: x'))
-        self.assertProblem('metadata holds team, version, author, status, id')
-
-
-class TestSubagents(Hub):
-    """Each subagent renders for every app that reads one."""
-
-    def forms(self) -> dict[str, str]:
-        return json.loads(kit.render_kit(self.root))['subagents']['reviewer']
-
-    def test_claude_code_gets_its_own_tool_names(self) -> None:
-        claude = self.forms()['claude']
-        fields, body = kit.frontmatter(claude)
-        self.assertEqual(fields['name'], 'reviewer')
-        self.assertEqual(fields['tools'], 'Read, Grep, Glob, Bash')
-        self.assertIn(kit.OWNED, claude)
-        self.assertTrue(body.startswith('You review.'))
-
-    def test_copilot_gets_its_aliases(self) -> None:
-        fields, _ = kit.frontmatter(self.forms()['copilot'])
-        self.assertEqual(json.loads(fields['tools']), ['read', 'search', 'execute'])
-
-    @unittest.skipIf(tomllib is None, 'tomllib arrived in Python 3.11')
-    def test_codex_gets_toml_with_the_prompt_intact(self) -> None:
-        data = tomllib.loads(self.forms()['codex'])
-        self.assertEqual(sorted(data), ['description', 'developer_instructions', 'name'])
-        self.assertEqual(data['developer_instructions'], 'You review. Quote "this" and a \\ backslash.\n')
-
-    def test_a_subagent_breaking_the_format_is_refused(self) -> None:
-        cases = {
-            AGENT.replace('name: reviewer', 'name: Reviewer'): 'name must equal the file name',
-            AGENT.replace('tools: read, search, execute', 'tools: read, teleport'): 'unknown tools teleport',
-            AGENT.replace('tools:', 'model: opus\ntools:'): 'not model',
-            AGENT.replace('description: Reviews a change. Use after a change.\n', ''): 'needs a description',
-        }
-        for text, fragment in cases.items():
-            with self.subTest(fragment=fragment):
-                self.write('kit/subagents/reviewer.md', text)
-                self.assertProblem(fragment)
-
-
-class TestEveryFile(Hub):
-    """What holds for every file the kit carries, whatever its source."""
-
-    def test_a_private_repository_is_never_named(self) -> None:
-        forms = 'kit/skills/processing-invoices/references/forms.md'
-        self.write(forms, 'The secrets live in tannergolden/vault.\n')
-        self.assertProblem('tannergolden/vault')
-        self.write(forms, 'The rules live in tannergolden/intelligence.\n')
-        self.assertEqual(self.problems(), [])
-
-    def test_no_dash_the_standards_ban_reaches_any_file(self) -> None:
-        self.write('kit/skills/processing-invoices/references/forms.md', 'Forms \u2014 all of them.\n')
-        self.assertProblem('en or em dash')
+class TestTheGuard(Hub):
+    """What holds for the guard, the one file the kit carries."""
 
     def test_a_guard_without_the_kits_mark_is_refused(self) -> None:
         self.write('kit/guard.py', 'print("guard")\n')
         self.assertProblem('must carry the line')
 
+    def test_a_private_repository_is_never_named(self) -> None:
+        self.write('kit/guard.py', GUARD + '# The secrets live in tannergolden/vault.\n')
+        self.assertProblem('tannergolden/vault')
+        self.write('kit/guard.py', GUARD + '# The rules live in tannergolden/intelligence.\n')
+        self.assertEqual(self.problems(), [])
+
+    def test_no_dash_the_standards_ban_reaches_it(self) -> None:
+        self.write('kit/guard.py', GUARD + '# Every call — all of them.\n')
+        self.assertProblem('en or em dash')
+
 
 class TestTheRealKit(unittest.TestCase):
-    """The modules in this repository."""
+    """The kit in this repository."""
 
     root = HERE.parents[1]
 
-    def test_they_break_no_rule(self) -> None:
+    def test_it_breaks_no_rule(self) -> None:
         self.assertEqual(kit.problems(self.root), [])
 
-    def test_the_hub_writes_every_skill(self) -> None:
-        # The hub writes every skill the kit carries (ADR-0037): twelve, one for each department (ADR-0039).
+    def test_it_carries_the_guard_alone(self) -> None:
+        # The kit ships no skill and no subagent (ADR-0041).
         bundle, _ = kit.bundle(self.root)
-        departments = ['administration', 'business-intelligence', 'customer-experience', 'finance-and-accounting',
-                       'human-resources', 'information-technology', 'legal-and-compliance',
-                       'operations-and-logistics', 'public-relations', 'quality-assurance',
-                       'research-and-development', 'sales-and-marketing']
-        self.assertEqual(sorted(bundle['skills']), departments)
-        # Every agent belongs to a department's team, so the kit ships no standalone subagent (ADR-0040).
-        self.assertEqual(bundle['subagents'], {})
+        self.assertEqual(sorted(bundle), ['//', 'format', 'guard'])
 
 
 if __name__ == '__main__':

@@ -34,8 +34,7 @@ its pin, and installs Claude Code's share:
   docs say a cloud session does not read; whether that covers a file written
   inside the container is untested, as
   [Backstops & Residual Risk](../operations/Backstops-&-Residual-Risk.md)
-  records;
-- the skills in `~/.claude/skills/` and the subagents in `~/.claude/agents/`.
+  records.
 
 A kit that cannot be downloaded or misses its pin is left out, and the rules
 still install; an empty kit pin, from a release before the kit, installs the

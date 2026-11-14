@@ -204,23 +204,6 @@ python3 kit/guard.py --remind
 
 ---
 
-## 🧰 The Skill Builder's Scripts
-
-`research-and-development` carries the validator and packager every skill
-is built with, which work from any repository; their docstrings give every option.
-
-```bash
-python3 kit/skills/research-and-development/scripts/validate.py skill kit/skills/research-and-development
-python3 kit/skills/research-and-development/scripts/package.py kit/skills/research-and-development --dry-run
-```
-
-`validate.py` checks a `skill`, an `agent`, a `team` or a `library`, and exits
-1 on an error and 2 on bad usage. `package.py` builds `<name>.skill` in the
-folder `--out` names, the current one by default, and exits 1 when the skill
-fails validation or its team cannot be found.
-
----
-
 ## 🌿 Environment Variables
 
 | Variable            | Read by                             | What it changes                                                                                                                                       |

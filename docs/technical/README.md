@@ -1,6 +1,6 @@
 <!--
 title: '🛠️ TECHNICAL'
-description: 'How every part of the hub works, one document each: the home kit, repository sync, the prompts, cloud setup, skills and subagents, the loader probe and evals.'
+description: 'How every part of the hub works, one document each: the home kit, repository sync, the prompts, cloud setup, the loader probe and evals.'
 type: index
 -->
 
@@ -32,17 +32,16 @@ fit, and follow its links.
 
 <!-- AUTO-INDEX:BEGIN dir=. style=log -->
 
-| Entry                                            | Purpose                                                                                                                                                                                                                               |
-| :----------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`research/`](research/README.md)                | Filed research reports, one per question, each dated, sourced claim by claim, and linked to the decision it fed.                                                                                                                      |
-| [`Cloud-Setup.md`](Cloud-Setup.md)               | The setup script that installs the universal rules and the kit into every Claude Code cloud session, pinned to one release and unable to fail the session.                                                                            |
-| [`Evals.md`](Evals.md)                           | How each universal rule and prompt is measured: scenarios run against real apps, with the block and without it or with the prompt and the hurried request it replaces, and checked by code.                                           |
-| [`Prompts.md`](Prompts.md)                       | The universal prompts the hub keeps in its own docs/Prompts.md for anyone to copy, most ready to run as they are, and the empty docs/Prompts.md each repository gets for prompts of its own: how each works, and how to change it.    |
-| [`README.md`](README.md)                         | This file.                                                                                                                                                                                                                            |
-| [`Repository-Sync.md`](Repository-Sync.md)       | How each release reaches every repository: the stub a repository carries, make sync from the hub, what a first sync does, and how make merge lands the result.                                                                        |
-| [`Skills-&-Subagents.md`](Skills-&-Subagents.md) | The skills the home kit installs, twelve, one for each department, each written here, universal and laid out alike, how each department's agents run as subagents, the rules every skill here follows, and where each app reads them. |
-| [`The-Home-Kit.md`](The-Home-Kit.md)             | What make agents installs into each AI app's home folder, the kit that rides beside the rules, the guard hook, and how a machine gets them from a release.                                                                            |
-| [`The-Loader-Probe.md`](The-Loader-Probe.md)     | How the hub proves, on the machine that runs it, which instruction files each AI coding app actually loads, what it touches, and the results so far.                                                                                  |
+| Entry                                        | Purpose                                                                                                                                                                                                                            |
+| :------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`research/`](research/README.md)            | Filed research reports, one per question, each dated, sourced claim by claim, and linked to the decision it fed.                                                                                                                   |
+| [`Cloud-Setup.md`](Cloud-Setup.md)           | The setup script that installs the universal rules and the kit into every Claude Code cloud session, pinned to one release and unable to fail the session.                                                                         |
+| [`Evals.md`](Evals.md)                       | How each universal rule and prompt is measured: scenarios run against real apps, with the block and without it or with the prompt and the hurried request it replaces, and checked by code.                                        |
+| [`Prompts.md`](Prompts.md)                   | The universal prompts the hub keeps in its own docs/Prompts.md for anyone to copy, most ready to run as they are, and the empty docs/Prompts.md each repository gets for prompts of its own: how each works, and how to change it. |
+| [`README.md`](README.md)                     | This file.                                                                                                                                                                                                                         |
+| [`Repository-Sync.md`](Repository-Sync.md)   | How each release reaches every repository: the stub a repository carries, make sync from the hub, what a first sync does, and how make merge lands the result.                                                                     |
+| [`The-Home-Kit.md`](The-Home-Kit.md)         | What make agents installs into each AI app's home folder, the kit that rides beside the rules, the guard hook, and how a machine gets them from a release.                                                                         |
+| [`The-Loader-Probe.md`](The-Loader-Probe.md) | How the hub proves, on the machine that runs it, which instruction files each AI coding app actually loads, what it touches, and the results so far.                                                                               |
 
 <!-- AUTO-INDEX:END -->
 

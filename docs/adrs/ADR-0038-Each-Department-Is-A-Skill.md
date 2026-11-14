@@ -2,7 +2,7 @@
 title: '📄 ADR-0038: EACH DEPARTMENT IS A SKILL'
 description: 'The company''s departments leave board and become nine skills of their own, laid out like every other skill; the three that duplicated a skill are removed, Information Security joins IT, identify gets its own team, and kit.py holds every skill to the same layout.'
 type: record
-status: 'Proposed'
+status: 'Superseded'
 date: '2026-11-07'
 evidence: 'N/A'
 -->
@@ -21,6 +21,10 @@ _board convenes the company; each department does its own work._
 </div>
 
 > [!IMPORTANT]
+> **Superseded by [ADR-0041](ADR-0041-The-Kit-Carries-No-Skills.md).** The
+> department skills are gone with every other: the kit carries the guard alone.
+
+> [!NOTE]
 > **Amended by [ADR-0039](ADR-0039-Twelve-Departments-Twelve-Skills.md).** The
 > workforce is now twelve departments, each one skill named for it, with the
 > general-purpose skills folded in and duplicated seats merged.

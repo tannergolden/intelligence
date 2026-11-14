@@ -111,13 +111,12 @@ one.
 
 ## 🧩 What Rides Beside The Rules
 
-The rules travel with a kit, one pinned file in the same release, and each
-module has its own document:
+The rules travel with a kit, one pinned file in the same release, which
+carries one module:
 
-| Module                                           | What it is                                                                              | Read more                                                |
-| :----------------------------------------------- | :-------------------------------------------------------------------------------------- | :------------------------------------------------------- |
-| The guard hook                                   | Denies the few tool calls the Invariants forbid outright, before they run, in every app | [The Home Kit](../technical/The-Home-Kit.md)             |
-| The twelve department skills, each with its team | A department's procedure and its agents, loaded when the task calls for it              | [Skills & Subagents](../technical/Skills-&-Subagents.md) |
+| Module         | What it is                                                                              | Read more                                    |
+| :------------- | :-------------------------------------------------------------------------------------- | :------------------------------------------- |
+| The guard hook | Denies the few tool calls the Invariants forbid outright, before they run, in every app | [The Home Kit](../technical/The-Home-Kit.md) |
 
 The universal [prompts](../technical/Prompts.md) stay in the hub, in
 [`docs/Prompts.md`](../Prompts.md), for anyone to copy. Every repository gets

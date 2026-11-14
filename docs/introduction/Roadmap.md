@@ -36,17 +36,15 @@ _Built is not proven. A release and a probe run prove it._
 The modules the plan held back until after 1.0 are built, each with its own
 passing tests and a record in [`docs/adrs/`](../adrs/README.md):
 
-| Module                    | Delivers                                                                                                                                                                   | Status                                                                  |
-| :------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------- |
-| **Guard hooks**           | The [guard](../technical/The-Home-Kit.md), registered for every app by the installer                                                                                       | Built; first loads with the release that carries the kit                |
-| **Skills**                | The [twelve department skills](../technical/Skills-&-Subagents.md)                                                                                                         | Built                                                                   |
-| **Departments**           | [Twelve departments](../technical/Skills-&-Subagents.md#the-departments-teams), each a skill with its own team of at most five, covering a company and the user's own life | Built; [ADR-0039](../adrs/ADR-0039-Twelve-Departments-Twelve-Skills.md) |
-| **The hierarchy**         | Every agent in a department's team, and no standalone subagent                                                                                                             | Retired by ADR-0040                                                     |
-| **Knowledge**             | Public facts beside every home copy of the rules                                                                                                                           | Removed by [ADR-0023](../adrs/ADR-0023-The-Kit-Carries-No-Facts.md)     |
-| **Evals**                 | [Scenarios for every rule](../technical/Evals.md), run with the block and without it                                                                                       | Built; real runs are yours, `make evals`                                |
-| **Unattended sync**       | A [stub](../technical/Repository-Sync.md) in each repository, on its own token                                                                                             | Built; copy the stub in after the first release                         |
-| **Prompts**               | Universal [prompts](../technical/Prompts.md) in the hub, and an empty page in every repository                                                                             | Built; the page reaches a repository with the next release              |
-| **Machined-region check** | The standards' check that a block's hash matches its text, in every repository's CI                                                                                        | Built in tannergolden/standards                                         |
+| Module                    | Delivers                                                                                       | Status                                                               |
+| :------------------------ | :--------------------------------------------------------------------------------------------- | :------------------------------------------------------------------- |
+| **Guard hooks**           | The [guard](../technical/The-Home-Kit.md), registered for every app by the installer           | Built; first loads with the release that carries the kit             |
+| **Skills & subagents**    | The department skills, each with its team, and the standalone subagents before them            | Removed by [ADR-0041](../adrs/ADR-0041-The-Kit-Carries-No-Skills.md) |
+| **Knowledge**             | Public facts beside every home copy of the rules                                               | Removed by [ADR-0023](../adrs/ADR-0023-The-Kit-Carries-No-Facts.md)  |
+| **Evals**                 | [Scenarios for every rule](../technical/Evals.md), run with the block and without it           | Built; real runs are yours, `make evals`                             |
+| **Unattended sync**       | A [stub](../technical/Repository-Sync.md) in each repository, on its own token                 | Built; copy the stub in after the first release                      |
+| **Prompts**               | Universal [prompts](../technical/Prompts.md) in the hub, and an empty page in every repository | Built; the page reaches a repository with the next release           |
+| **Machined-region check** | The standards' check that a block's hash matches its text, in every repository's CI            | Built in tannergolden/standards                                      |
 
 ---
 

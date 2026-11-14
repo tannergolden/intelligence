@@ -2,7 +2,7 @@
 title: '📄 ADR-0021: DEVELOP IS THE ONE SKILL'
 description: 'The hub''s one universal skill is develop, the skill and agent factory from the knowledge vault, made to work in any repository with its Development team and its validator inside its own folder; it replaces building-skills and takes in its decision table and format rules.'
 type: record
-status: 'Proposed'
+status: 'Superseded'
 date: '2026-10-19'
 evidence: 'N/A'
 -->
@@ -21,6 +21,12 @@ _A factory, not a pamphlet._
 </div>
 
 > [!IMPORTANT]
+> **Superseded by [ADR-0041](ADR-0041-The-Kit-Carries-No-Skills.md).** The hub
+> writes no skill now, neither `develop` nor `research-and-development`, which
+> took over its build mode, and an install takes out the skills earlier releases
+> wrote.
+
+> [!NOTE]
 > **Amended by [ADR-0037](ADR-0037-The-Hub-Writes-Every-Skill.md).** The hub
 > now writes every skill the kit carries, `develop` among them, each made to
 > work in any repository; [ADR-0033](ADR-0033-The-Kit-Carries-The-Faculties.md)'s

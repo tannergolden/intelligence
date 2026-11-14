@@ -447,19 +447,14 @@ def old_knowledge(block: str) -> str:
 
 
 GUARD = f'#!/usr/bin/env python3\n# {kit.OWNED}\nimport sys\nprint("blocked", file=sys.stderr)\nsys.exit(2)\n'
+# A skill and a subagent as releases before kit format 3 wrote them, each carrying the kit's mark.
 SKILL = '---\nname: building-skills\ndescription: Builds skills. Use when asked.\n---\n\n# Building skills\n'
-AGENT = kit.render_subagent('worker', 'Does one change. Use for small tasks.', ['read', 'edit'], 'Work.\n')
+AGENT = f'---\n# {kit.OWNED}\nname: worker\ndescription: Does one change. Use for small tasks.\n---\n\nWork.\n'
 
 KIT_LOCAL = [
     '.agents/hooks/intelligence-guard.py',
-    '.agents/skills/building-skills/SKILL.md',
-    '.claude/agents/worker.md',
-    '.claude/skills/building-skills/SKILL.md',
-    '.codex/agents/worker.toml',
     '.codex/hooks.json',
-    '.copilot/agents/worker.agent.md',
     '.copilot/hooks/intelligence.json',
-    '.gemini/antigravity-cli/skills/building-skills/SKILL.md',
     '.gemini/config/hooks.json',
 ]
 
@@ -472,9 +467,7 @@ class KitHome(Home):
         self.kit_file = self.make_kit()
 
     def make_kit(self, name: str = 'kit.json', **changes: object) -> pathlib.Path:
-        data = {'format': 2, 'guard': GUARD,
-                'skills': {'building-skills': {'SKILL.md': SKILL, 'references/notes.md': 'Notes.\n'}},
-                'subagents': {'worker': AGENT}}
+        data = {'format': 3, 'guard': GUARD}
         data.update(changes)
         path = self.root / name
         path.write_text(json.dumps(data), encoding='utf-8')
@@ -504,10 +497,9 @@ class TestKitInstall(KitHome):
         guard = self.home / '.agents' / 'hooks' / 'intelligence-guard.py'
         self.assertEqual(guard.read_text(encoding='utf-8'), GUARD)
         self.assertEqual(guard.stat().st_mode & 0o777, 0o755)
-        self.assertEqual(self.text('.claude/agents/worker.md'), AGENT['claude'])
-        self.assertEqual(self.text('.codex/agents/worker.toml'), AGENT['codex'])
-        self.assertTrue((self.home / '.claude/skills/building-skills' / install.SKILL_MARK).is_file())
-        self.assertEqual(self.text('.claude/skills/building-skills/references/notes.md'), 'Notes.\n')
+        for rel in ('.agents/skills', '.claude/skills', '.claude/agents', '.codex/agents', '.copilot/agents'):
+            with self.subTest(rel=rel):
+                self.assertFalse((self.home / rel).exists(), 'the kit ships no skill and no subagent')
 
     def test_the_guard_is_registered_for_every_app(self) -> None:
         self.install_kit()
@@ -599,10 +591,10 @@ class TestKitInstall(KitHome):
 
     def test_a_new_release_replaces_what_it_changed(self) -> None:
         self.install_kit()
-        self.kit_file = self.make_kit('newer.json', skills={'building-skills': {'SKILL.md': SKILL}})
+        newer = GUARD.replace('blocked', 'still blocked')
+        self.kit_file = self.make_kit('newer.json', guard=newer)
         self.install_kit()
-        self.assertFalse((self.home / '.claude/skills/building-skills/references').exists(),
-                         'a file the release dropped goes')
+        self.assertEqual(self.text('.agents/hooks/intelligence-guard.py'), newer)
 
     def test_a_dry_run_changes_nothing(self) -> None:
         before = self.snapshot()
@@ -616,11 +608,7 @@ class TestKitInstall(KitHome):
         self.assertEqual(code, 0, out)
         self.assertEqual(self.text('.claude/CLAUDE.md'), render.region(BLOCK))
         files = sorted(rel for rel, data in self.snapshot().items() if data is not None)
-        self.assertEqual(files, ['.agents/hooks/intelligence-guard.py', '.claude/CLAUDE.md',
-                                 '.claude/agents/worker.md', '.claude/settings.json',
-                                 '.claude/skills/building-skills/.intelligence-kit',
-                                 '.claude/skills/building-skills/SKILL.md',
-                                 '.claude/skills/building-skills/references/notes.md'])
+        self.assertEqual(files, ['.agents/hooks/intelligence-guard.py', '.claude/CLAUDE.md', '.claude/settings.json'])
         settings = self.json('.claude/settings.json')
         self.assertNotIn('pluginConfigs', settings)
         self.assertNotIn('permissions', settings, 'the cloud session decides its own prompts')
@@ -630,49 +618,102 @@ class TestKitInstall(KitHome):
 
 
 class TestKitRetires(KitHome):
-    """A skill or subagent an earlier release wrote, and this one no longer ships, is taken out."""
+    """The skills and subagents earlier releases wrote come out, since the kit ships neither (ADR-0041)."""
 
-    DROPPED = ['.claude/agents/worker.md', '.codex/agents/worker.toml', '.copilot/agents/worker.agent.md',
-               '.agents/skills/building-skills', '.claude/skills/building-skills',
-               '.gemini/antigravity-cli/skills/building-skills']
+    SKILLS = ['.agents/skills/building-skills', '.claude/skills/building-skills',
+              '.gemini/antigravity-cli/skills/building-skills']
+    AGENTS = ['.claude/agents/worker.md', '.codex/agents/worker.toml', '.copilot/agents/worker.agent.md']
 
-    def later_release(self) -> None:
-        """A release that dropped the subagent and renamed the skill."""
-        self.kit_file = self.make_kit('later.json', subagents={},
-                                      skills={'making-skills': {'SKILL.md': SKILL.replace('building', 'making')}})
+    def plant(self) -> None:
+        """What an earlier release left beside an install: its skills and subagents, and its record of them."""
+        spath = install.state_path(self.home, self.env)
+        state = json.loads(spath.read_text(encoding='utf-8'))
+        for rel in self.SKILLS:
+            folder = self.home / rel
+            state['folders'][str(folder)] = {'created': True,
+                                             'dirs': [str(path) for path in install.missing_dirs(folder)]}
+            self.personal(f'{rel}/SKILL.md', SKILL.encode())
+            self.personal(f'{rel}/references/notes.md', b'Notes.\n')
+            self.personal(f'{rel}/{install.SKILL_MARK}', f'{kit.OWNED}\n'.encode())
+        for rel in self.AGENTS:
+            path = self.home / rel
+            state['owned'][str(path)] = {'created': True,
+                                         'dirs': [str(folder) for folder in install.missing_dirs(path)]}
+            self.personal(rel, AGENT.encode())
+        spath.write_text(json.dumps(state), encoding='utf-8')
 
-    def test_what_a_release_dropped_is_taken_out(self) -> None:
+    def test_an_install_takes_out_every_one_and_the_folders_made_for_them(self) -> None:
         self.install_kit()
-        self.later_release()
+        clean = self.snapshot()
+        self.plant()
         code, out = self.install_kit()
         self.assertEqual(code, 0, out)
-        for rel in self.DROPPED:
+        self.assertEqual(out.count('retired'), len(self.SKILLS) + len(self.AGENTS), out)
+        self.assertEqual(self.snapshot(), clean)
+        state = json.loads(install.state_path(self.home, self.env).read_text(encoding='utf-8'))
+        self.assertEqual(state['folders'], {})
+        self.assertFalse([path for path in state['owned'] if 'worker' in path])
+
+    def test_an_install_without_a_kit_takes_them_out_too(self) -> None:
+        self.install_kit()
+        self.plant()
+        code, out = self.run_kit('install', '--home-file', str(self.home_file))
+        self.assertEqual(code, 0, out)
+        for rel in self.SKILLS + self.AGENTS:
             with self.subTest(rel=rel):
                 self.assertFalse((self.home / rel).exists())
-        self.assertEqual(out.count('retired'), len(self.DROPPED), out)
-        self.assertTrue((self.home / '.claude/skills/making-skills/SKILL.md').is_file(), 'the new one installs')
-        state = json.loads(install.state_path(self.home, {}).read_text(encoding='utf-8'))
-        self.assertFalse([p for p in [*state['owned'], *state['folders']] if 'worker' in p or 'building' in p])
 
-    def test_your_own_skill_and_agent_stay_whatever_their_names(self) -> None:
+    def test_your_own_skills_and_agents_stay_whatever_their_names(self) -> None:
         self.install_kit()
-        mine = self.personal('.claude/agents/helper.md', b'my own agent\n')
-        mine_skill = self.personal('.claude/skills/my-skill/SKILL.md', b'my own skill\n')
-        self.later_release()
+        self.plant()
+        mine = {
+            '.claude/agents/helper.md': b'my own agent\n',
+            '.claude/skills/my-skill/SKILL.md': b'my own skill\n',
+            '.claude/skills/research-and-development/SKILL.md': b'my own copy, without the mark\n',
+        }
+        for rel, data in mine.items():
+            self.personal(rel, data)
         code, out = self.install_kit()
         self.assertEqual(code, 0, out)
-        self.assertEqual(mine.read_bytes(), b'my own agent\n')
-        self.assertEqual(mine_skill.read_bytes(), b'my own skill\n')
+        for rel, data in mine.items():
+            with self.subTest(rel=rel):
+                self.assertEqual((self.home / rel).read_bytes(), data)
 
     def test_a_dry_run_only_says_what_would_go(self) -> None:
         self.install_kit()
-        self.later_release()
+        self.plant()
+        before = self.snapshot()
         code, out = self.install_kit('--dry-run')
         self.assertEqual(code, 0, out)
-        self.assertIn('would retire', out)
-        for rel in self.DROPPED:
-            with self.subTest(rel=rel):
-                self.assertTrue((self.home / rel).exists())
+        self.assertEqual(out.count('would retire'), len(self.SKILLS) + len(self.AGENTS), out)
+        self.assertEqual(self.snapshot(), before)
+
+    def test_check_calls_what_is_left_stale_until_an_install(self) -> None:
+        self.install_kit()
+        self.plant()
+        code, out = self.check_kit()
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, r'stale +Claude Code skill building-skills')
+        self.assertRegex(out, r'stale +Codex agent worker')
+        self.install_kit()
+        code, out = self.check_kit()
+        self.assertEqual(code, 0, out)
+
+    def test_a_cloud_session_looks_only_where_claude_code_reads(self) -> None:
+        self.install_kit('--cloud')
+        self.plant()
+        code, out = self.install_kit('--cloud')
+        self.assertEqual(code, 0, out)
+        self.assertFalse((self.home / '.claude/skills/building-skills').exists())
+        self.assertFalse((self.home / '.claude/agents/worker.md').exists())
+        self.assertTrue((self.home / '.agents/skills/building-skills').exists())
+
+    def test_an_uninstall_takes_them_out_too(self) -> None:
+        self.install_kit()
+        self.plant()
+        code, out = self.run_kit('uninstall')
+        self.assertEqual(code, 0, out)
+        self.assertEqual(self.snapshot(), {})
 
 
 class TestKitRefusals(KitHome):
@@ -685,18 +726,17 @@ class TestKitRefusals(KitHome):
         jsonc = self.personal('.codex/hooks.json', b'{ // my hooks\n}')
         code, out = self.install_kit()
         self.assertEqual(code, 1, out)
-        self.assertEqual(out.count('refused'), 4, out)
+        self.assertEqual(out.count('refused'), 2, out)
         self.assertEqual(skill.read_bytes(), b'my own skill\n')
         self.assertEqual(agent.read_bytes(), b'my own worker\n')
         self.assertEqual(json.loads(named.read_text(encoding='utf-8')), {'intelligence': {'Stop': []}})
         self.assertEqual(jsonc.read_bytes(), b'{ // my hooks\n}')
-        self.assertTrue((self.home / '.agents/skills/building-skills/SKILL.md').is_file(), 'the rest installs')
+        self.assertTrue((self.home / '.agents/hooks/intelligence-guard.py').is_file(), 'the rest installs')
 
-    def test_a_kit_that_reaches_outside_its_folders_is_refused(self) -> None:
-        for change in ({'skills': {'x': {'../../.bashrc': 'evil'}}},
-                       {'subagents': {'../worker': AGENT}},
-                       {'guard': 'print("no mark")\n'},
-                       {'format': 1}):
+    def test_a_kit_without_the_mark_or_in_another_format_is_refused(self) -> None:
+        for change in ({'guard': 'print("no mark")\n'},
+                       {'format': 1},
+                       {'format': 2}):
             with self.subTest(change=list(change)):
                 self.kit_file = self.make_kit('bad.json', **change)
                 with self.assertRaises(SystemExit):
@@ -726,7 +766,7 @@ class TestKitUninstall(KitHome):
         for rel, data in originals.items():
             self.personal(rel, data)
         self.install_kit()
-        self.kit_file = self.make_kit('newer.json', skills={'building-skills': {'SKILL.md': SKILL}})
+        self.kit_file = self.make_kit('newer.json', guard=GUARD.replace('blocked', 'still blocked'))
         self.install_kit()
         code, out = self.run_kit('uninstall')
         self.assertEqual(code, 0, out)
@@ -780,15 +820,14 @@ class TestKitCheck(KitHome):
 
     def test_hand_edits_and_lost_registrations_are_reported(self) -> None:
         self.install_kit()
-        skill = self.home / '.agents/skills/building-skills/SKILL.md'
-        skill.write_text(SKILL + 'extra\n', encoding='utf-8')
+        (self.home / install.GUARD).write_text(GUARD + '# extra\n', encoding='utf-8')
         (self.home / '.gemini/config/hooks.json').write_text('{}\n', encoding='utf-8')
-        (self.home / '.claude/agents/worker.md').unlink()
+        (self.home / '.copilot/hooks/intelligence.json').unlink()
         code, out = self.check_kit()
         self.assertEqual(code, 1, out)
-        self.assertRegex(out, r'edited +the shared skills folder skill building-skills')
+        self.assertRegex(out, r'edited +guard hook')
         self.assertRegex(out, r'missing +Antigravity CLI guard hook')
-        self.assertRegex(out, r'missing +Claude Code subagent worker')
+        self.assertRegex(out, r'missing +Copilot guard hook')
 
     def test_a_lost_reminder_is_reported_on_its_own(self) -> None:
         self.install_kit()

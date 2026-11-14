@@ -2,7 +2,7 @@
 title: '📄 ADR-0040: EVERY AGENT BELONGS TO A DEPARTMENT'
 description: 'The kit drops its two standalone subagents, the Worker and the Reviewer, and Public Relations drops its Writer: the Chief Communications Officer drafts, the Editor reads fresh and composes the profile interview batch, and an install takes out what a release drops.'
 type: record
-status: 'Proposed'
+status: 'Superseded'
 date: '2026-11-07'
 evidence: 'N/A'
 -->
@@ -19,6 +19,12 @@ evidence: 'N/A'
 _Every seat answers to a department._
 
 </div>
+
+> [!IMPORTANT]
+> **Superseded by [ADR-0041](ADR-0041-The-Kit-Carries-No-Skills.md).** The
+> departments, and every agent in them, are gone with the skills. An install
+> still takes out what earlier releases wrote: now every skill and subagent that
+> carries the kit's mark.
 
 ---
 

@@ -53,12 +53,6 @@ every command below.
    by hand. After that, `make merge` lands every sync whose diff is only the
    block and whose checks passed.
 
-**A changed skill** rides the next release like any other source: after
-editing one, run `make render` and `make check`, and commit it all on
-`Development` before step 1. A skill's folder cannot
-describe itself in `kit/skills/README.md`, so give each new one's row its
-purpose by hand, once.
-
 Every version stays: the stub passes `keep-versions: true`, so standards' Cut
 Release never prunes here, because a pin to a full version must keep
 resolving and `make audit` names old blocks by the release that shipped them.
