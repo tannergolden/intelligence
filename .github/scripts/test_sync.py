@@ -233,7 +233,9 @@ class TestSync(SyncTestCase):
         self.assertIn(CURRENT, agents)
         self.assertEqual(render.find(agents).marker, render.digest(CURRENT_BLOCK))
         self.assertIn('## Overrides', agents)
-        self.assertIn("work in alpha: the universal rules first, then this repository''s own", agents)
+        # It names no repository: a template's AGENTS.md is inherited by every repository built from it.
+        self.assertIn("work in this repository: the universal rules first, then its own.", agents)
+        self.assertNotIn('alpha', agents)
         own = agents.index("> **Write this repository's own rules from here down.**")
         self.assertLess(agents.index('<!-- INTELLIGENCE:END -->'), own)
         self.assertLess(own, agents.index('## Commands'))
@@ -288,25 +290,27 @@ class TestSync(SyncTestCase):
         self.assertNotIn('Folded', tree['AGENTS.md'])
 
     def test_golden_path_templates_forks_archives_opt_outs_and_the_hub_are_skipped(self) -> None:
-        self.gh.add('path', is_template=True)
+        self.gh.add('repo', is_template=True)
         self.gh.add('forked', fork=True)
         self.gh.add('old', archived=True)
         self.gh.add('quiet', topics=['no-intelligence'])
         self.gh.add('intelligence')
         code, out = self.run_sync('sync')
         self.assertEqual(code, 0, out)
-        for line in ('path: skipped, a golden path template', 'forked: skipped, a fork', 'old: skipped, archived',
+        for line in ('repo: skipped, a golden path template', 'forked: skipped, a fork', 'old: skipped, archived',
                      'quiet: skipped, opted out', 'intelligence: skipped, the hub'):
             self.assertIn(line, out)
         self.assertEqual(self.gh.writes, [])
 
     def test_a_template_of_its_own_takes_part(self) -> None:
-        """Only the golden path templates sit out: what any other template generates inherits its AGENTS.md."""
+        """Only `repo` sits out: what any other template generates inherits its AGENTS.md, `path`'s too."""
         self.gh.add('vault', {'CLAUDE.md': 'Some notes.\n'}, is_template=True)
+        self.gh.add('path', is_template=True)
         code, out = self.run_sync('sync', '--dry-run')
         self.assertEqual(code, 0, out)
-        self.assertIn('vault: would adopt', out)
-        self.assertNotIn('vault: skipped', out)
+        for name in ('vault', 'path'):
+            self.assertIn(f'{name}: would adopt', out)
+            self.assertNotIn(f'{name}: skipped', out)
 
     def test_a_dry_run_changes_nothing(self) -> None:
         self.gh.add('alpha', {'CLAUDE.md': 'Some notes.\n'})
@@ -770,10 +774,10 @@ class TestApply(unittest.TestCase):
         _code, out = self.run_apply(repo='tannergolden/intelligence')
         self.assertIn('intelligence: skipped, the hub', out)
         (self.checkout / 'CONSTITUTION.md').unlink()
-        self.gh.settings['tannergolden/path'] = {'name': 'path', 'is_template': True}
-        code, out = self.run_apply(repo='tannergolden/path')
+        self.gh.settings['tannergolden/repo'] = {'name': 'repo', 'is_template': True}
+        code, out = self.run_apply(repo='tannergolden/repo')
         self.assertEqual(code, 0, out)
-        self.assertIn('path: skipped, a golden path template', out)
+        self.assertIn('repo: skipped, a golden path template', out)
         for flags, expected in (({'fork': True}, 'a fork'),
                                 ({'archived': True}, 'archived'), ({'topics': ['no-intelligence']}, 'opted out')):
             with self.subTest(expected=expected):

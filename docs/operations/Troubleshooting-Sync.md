@@ -36,8 +36,8 @@ _Find the line. Read the row. Make the fix._
 > `git fetch --tags` in the hub before anything else on this page.
 
 Before its own lines, each command prints `<name>: skipped, <reason>` for every
-repository that takes no part: an archived one, a fork, a golden path template,
-one with the `no-intelligence` topic, and the hub itself. Nothing is wrong with
+repository that takes no part: an archived one, a fork, the `repo` golden path
+template, one with the `no-intelligence` topic, and the hub itself. Nothing is wrong with
 those.
 
 ---

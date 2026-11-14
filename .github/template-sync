@@ -178,10 +178,11 @@
 # .devcontainer lines above are switched off.
 # keep mine: /.github/workflows/checks.yml
 # keep mine: /.github/workflows/release.yml
-# The hub's technical/ and operations/ folders keep READMEs that describe
-# the hub's own pages, so the template's, written for any project, never
-# replace them.
+# The hub's technical/, technical/research/ and operations/ folders keep
+# READMEs that describe the hub's own pages, so the template's, written for
+# any project, never replace them.
 !/docs/technical/README.md
+!/docs/technical/research/README.md
 !/docs/operations/README.md
 # Two of the hub's own files, where the template ships one of the same
 # name: the universal prompts page, which every repository's own prompts

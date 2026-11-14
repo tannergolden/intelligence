@@ -44,11 +44,13 @@ in the hub. A release reaches it by either of two routes, through
   sync repairs both. A repository whose docs live in a hidden `.docs/` folder
   keeps its page at `.docs/Prompts.md`.
 
-Every repository you own takes part, except the two golden path templates,
-`repo` and `path`, forks and archived ones, and the hub, which holds the
-Constitution and carries no copy of it. A template of any other kind, such
-as the vault template, takes part like the rest, since every repository
-generated from it inherits its `AGENTS.md`. A `no-intelligence` topic opts
+Every repository you own takes part, except the `repo` golden path template,
+forks and archived ones, and the hub, which holds the Constitution and
+carries no copy of it. A template of any other kind takes part like the
+rest, since every repository generated from it inherits its `AGENTS.md`:
+the vault template, and the `path` golden path template, whose `AGENTS.md`
+also holds the research section 🔄 Template Sync keeps current in every
+repository built from it ([ADR-0043](../adrs/ADR-0043-The-Path-Template-Takes-The-Sync.md)). A `no-intelligence` topic opts
 one out, and a `no-intelligence-prompts` topic keeps only the prompts page out.
 Both routes deliver a release, never unreleased work.
 
