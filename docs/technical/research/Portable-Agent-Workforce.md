@@ -24,7 +24,7 @@ _Every claim sourced. Every report dated._
 ## 🎯 Bottom Line
 
 > [!IMPORTANT]
-> **Write each agent once, as Markdown with flat frontmatter, and render a copy for each environment.** No single agent file format is read everywhere, but Markdown with a `---` frontmatter block is what most agent apps read, and Claude Code's folder alone is read by Claude Code, Copilot CLI, VS Code and Cursor. Grok is reachable three ways, Grok Bot, the xAI API and Grok Build, each with a documented format. Keep the persona's name, with its spaces and star, in the source, and give every copy an ASCII id. Route messages between departments through one hub that relays answers word for word. Confidence is medium to high on the formats, which rest on official documentation, and medium on Grok Bot, a beta whose multi-group rules are undocumented.
+> **Write each agent once, as Markdown with flat frontmatter, and render a copy for each environment.** No single agent file format is read everywhere, but Markdown with a `---` frontmatter block is what most agent apps read, and a project's `.claude/agents/` is read by Claude Code, Copilot CLI, VS Code and Cursor, the user folder by all of them but Copilot CLI. Grok is reachable three ways, Grok Bot, the xAI API and Grok Build, each with a documented format. Keep the persona's name, with its spaces and star, in the source, and give every copy an ASCII id. Route messages between departments through one hub that relays answers word for word. Confidence is medium to high on the formats, which rest on official documentation, and medium on Grok Bot, a beta whose multi-group membership the owner confirmed in the app and xAI does not document.
 
 ---
 
@@ -212,6 +212,15 @@ Keep each agent as one Markdown file with flat, quoted frontmatter: `name` as th
 - **Overall confidence**: Medium
 - **What would change this conclusion**: Grok Bot gaining an instruction field or an API, documenting multi-group membership, or changing its limits; Claude Code dropping Copilot's and Cursor's reading of `.claude/agents/`; Copilot changing its 30,000-character body limit.
 - **Known gaps**: no agent app was run against the rendered files; Windows and macOS were not tested; Grok Build's tool names and its reading of `.claude/agents/`; whether Grok Bot group chats count toward its Bot limit.
+
+---
+
+## 📅 Log Entry: 2026-11-14 - Reverification
+
+- **Re-checked**: claims 3 and 11, against the format notes behind them and the owner's own use of Grok Bot.
+- **Held**: every other claim, unchanged.
+- **Drifted**: claim 3 was too broad for an install in the home folder. Copilot CLI reads `.claude/agents/` only inside a project, and at user level reads `~/.copilot/agents/` alone; VS Code reads `~/.claude/agents/` and `~/.copilot/agents/`, and Cursor `~/.claude/agents/` and `~/.codex/agents/`, so one user-level Claude Code copy serves Claude Code, VS Code and Cursor. Claim 11's open question is answered: the owner confirmed in the Grok Bot app that one Bot can sit in several group chats. xAI still does not document it, so it rests on the owner's test alone.
+- **Outcome**: verified date unchanged, 2026-11-14; [The Workforce](../The-Workforce.md) corrected to match.
 
 ---
 

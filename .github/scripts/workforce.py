@@ -5,7 +5,7 @@ WHY THIS EXISTS. The workforce is one Chief of Staff, one Knowledge Vault
 Manager and twelve departments of at most five agents, each a Markdown file
 with flat frontmatter, laid out like the venture template in
 tannergolden/knowledge. Every app reads agents differently: Claude Code,
-Grok Build, Copilot and Codex each want their own file in their own folder,
+Grok Build, Copilot, Codex and Antigravity each want their own file in their own folder,
 an API orchestrator wants one JSON bundle, a local runner wants a Modelfile,
 and a Grok Bot takes its job as its first message. Writing those copies by
 hand would let them drift from the source. So the source stays readable in
@@ -122,6 +122,9 @@ TABLE_ROW = re.compile(r'^\|(.+)\|(.+)\|\s*$')
 WINDOWS_REFUSES = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
 WINDOWS_DEVICES = {'CON', 'PRN', 'AUX', 'NUL'} | {f'{d}{n}' for d in ('COM', 'LPT') for n in range(1, 10)}
 MAX_PATH = 200
+# Files an operating system or an editor drops beside a user's own. They are
+# never part of the workforce, and never fail its check.
+IGNORED_FILES = {'.DS_Store', 'Thumbs.db', 'desktop.ini'}
 
 # The line every rendered copy carries. It is not the home kit's mark, so the
 # kit's sweep of its own retired subagents never takes a workforce file out.
@@ -276,11 +279,15 @@ def parse(text: str) -> Tuple[dict, str]:
 def value_of(key: str, raw: str):
     """One frontmatter value: a quoted string, or a bracketed list of them."""
     if raw.startswith('[') and raw.endswith(']'):
-        items, current, quote = [], '', ''
+        items, current, quote, escaped = [], '', '', False
         for char in raw[1:-1]:
             if quote:
                 current += char
-                if char == quote:
+                if escaped:
+                    escaped = False
+                elif char == '\\' and quote == '"':
+                    escaped = True
+                elif char == quote:
                     quote = ''
             elif char in '"\'':
                 current += char
@@ -325,37 +332,55 @@ def read_doc(path: pathlib.Path, root: pathlib.Path, problems: List[str]) -> Opt
     return Doc(path, fields, body)
 
 
-def load(root: pathlib.Path) -> Tuple[Workforce, List[str]]:
+def source_files(root: pathlib.Path) -> List[pathlib.Path]:
+    """Every file in the workforce that git would commit, or every file on disk outside a checkout.
+
+    Never what an operating system or an editor drops beside them, such as a
+    `.DS_Store`, which would otherwise fail the check on the machine that made it.
+    """
+    try:
+        done = subprocess.run(['git', '-C', str(root), 'ls-files', '-z', '--cached', '--others',
+                               '--exclude-standard', '--', '.'], capture_output=True, check=False)
+    except OSError:
+        done = None
+    if done is not None and done.returncode == 0:
+        found = [root / name for name in done.stdout.decode('utf-8', 'surrogateescape').split('\0') if name]
+    else:
+        found = [path for path in root.rglob('*') if path.is_file()]
+    return sorted(path for path in found if path.is_file() and path.name not in IGNORED_FILES)
+
+
+def load(root: pathlib.Path, files: Optional[List[pathlib.Path]] = None) -> Tuple[Workforce, List[str]]:
     """Read every source file, collecting what cannot be read rather than stopping at it."""
     problems: List[str] = []
     workforce = Workforce(root)
     if not root.is_dir():
         return workforce, [f'{root}: no workforce folder here']
-    protocol = root / 'Protocol.md'
-    if protocol.is_file():
-        workforce.protocol = read_doc(protocol, root, problems)
-    for path in sorted(root.glob('*.md')):
-        if path.name not in ('README.md', 'Protocol.md'):
+    files = source_files(root) if files is None else files
+    present = set(files)
+
+    def markdown(folder: pathlib.Path, skip: Tuple[str, ...]) -> List[pathlib.Path]:
+        return sorted(p for p in files if p.parent == folder and p.suffix == '.md' and p.name not in skip)
+
+    if root / 'Protocol.md' in present:
+        workforce.protocol = read_doc(root / 'Protocol.md', root, problems)
+    for path in markdown(root, ('README.md', 'Protocol.md')):
+        doc = read_doc(path, root, problems)
+        if doc:
+            workforce.agents.append(doc)
+    for folder in DEPARTMENTS:
+        base = root / folder
+        if base / 'Charter.md' in present:
+            doc = read_doc(base / 'Charter.md', root, problems)
+            if doc:
+                workforce.charters[folder] = doc
+        for path in markdown(base, ('README.md', 'Charter.md')):
             doc = read_doc(path, root, problems)
             if doc:
                 workforce.agents.append(doc)
-    for folder in DEPARTMENTS:
-        base = root / folder
-        if not base.is_dir():
-            continue
-        charter = base / 'Charter.md'
-        if charter.is_file():
-            doc = read_doc(charter, root, problems)
-            if doc:
-                workforce.charters[folder] = doc
-        for path in sorted(base.glob('*.md')):
-            if path.name not in ('README.md', 'Charter.md'):
-                doc = read_doc(path, root, problems)
-                if doc:
-                    workforce.agents.append(doc)
     for name, attribute in (('tools.json', 'tools'), ('message.schema.json', 'envelope')):
         path = root / SCHEMAS / name
-        if path.is_file():
+        if path in present:
             try:
                 data = json.loads(path.read_text(encoding='utf-8'))
             except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
@@ -368,17 +393,19 @@ def load(root: pathlib.Path) -> Tuple[Workforce, List[str]]:
 # ---------------------------------------------------------------- checking
 
 
-def check_names(root: pathlib.Path, problems: List[str]) -> None:
-    """Every file and folder name, held to what git, Windows, macOS and GitHub all keep intact.
+def name_problems(paths: List[str]) -> List[str]:
+    """Every file and folder name along these POSIX paths, held to what git, Windows, macOS and GitHub keep intact.
 
     NFC, no variation selector, no underscore and no dash but the hyphen; none of the characters
     or device names Windows refuses, no trailing space or dot, no two names that differ only in
-    case, and paths short enough for a Windows checkout without long paths turned on.
+    case, and paths short enough for a Windows checkout without long paths turned on. It reads
+    names only, never the disk, so a case-insensitive filesystem cannot hide a collision.
     """
+    problems: List[str] = []
     seen: Dict[str, str] = {}
-    for path in sorted(root.rglob('*')):
-        name = path.name
-        where = path.relative_to(root.parent).as_posix()
+    entries = sorted({'/'.join(path.split('/')[:depth]) for path in paths for depth in range(1, path.count('/') + 2)})
+    for where in entries:
+        name = where.rsplit('/', 1)[-1]
         folded = unicodedata.normalize('NFC', where).casefold()
         if folded in seen:
             problems.append(f'{where}: differs from {seen[folded]} only in case, which macOS and Windows treat as one')
@@ -397,38 +424,46 @@ def check_names(root: pathlib.Path, problems: List[str]) -> None:
             problems.append(f'{where}: name holds an underscore; names use spaces or hyphens')
         if DASHES.search(name):
             problems.append(f'{where}: name holds an en or em dash; use a hyphen')
+    return problems
 
 
-def check_layout(root: pathlib.Path, problems: List[str]) -> None:
+def check_names(root: pathlib.Path, files: List[pathlib.Path], problems: List[str]) -> None:
+    problems.extend(name_problems([path.relative_to(root.parent).as_posix() for path in files]))
+
+
+def check_layout(root: pathlib.Path, files: List[pathlib.Path], problems: List[str]) -> None:
+    rels = [path.relative_to(root).as_posix() for path in files]
+    present = set(rels)
     allowed_dirs = set(DEPARTMENTS) | {CATCH_ALL, SCHEMAS}
-    for path in sorted(root.iterdir()):
-        if path.is_dir() and path.name not in allowed_dirs:
-            problems.append(f'{SOURCE}/{path.name}: is not a folder of the venture template; '
-                            f'the departments are {", ".join(DEPARTMENTS)}')
-        elif path.is_file() and path.suffix != '.md':
-            problems.append(f'{SOURCE}/{path.name}: only Markdown sits at the root of the workforce')
+    strangers = set()
+    for rel in rels:
+        parts = rel.split('/')
+        if len(parts) == 1 and not rel.endswith('.md'):
+            problems.append(f'{SOURCE}/{rel}: only Markdown sits at the root of the workforce')
+        elif len(parts) > 1 and parts[0] not in allowed_dirs:
+            strangers.add(parts[0])
+        elif parts[0] in DEPARTMENTS and (len(parts) > 2 or not rel.endswith('.md')):
+            problems.append(f'{SOURCE}/{rel}: a department folder holds only Markdown files')
+    for folder in sorted(strangers):
+        problems.append(f'{SOURCE}/{folder}: is not a folder of the venture template; '
+                        f'the departments are {", ".join(DEPARTMENTS)}')
     for name in ('README.md', 'Protocol.md'):
-        if not (root / name).is_file():
+        if name not in present:
             problems.append(f'{SOURCE}/{name}: is missing')
     for folder in DEPARTMENTS:
-        base = root / folder
-        if not base.is_dir():
+        if not any(rel.startswith(folder + '/') for rel in rels):
             problems.append(f'{SOURCE}/{folder}/: the department folder is missing')
             continue
         for name in ('README.md', 'Charter.md'):
-            if not (base / name).is_file():
+            if f'{folder}/{name}' not in present:
                 problems.append(f'{SOURCE}/{folder}/{name}: is missing')
-        for path in sorted(base.iterdir()):
-            if path.is_dir() or path.suffix != '.md':
-                problems.append(f'{SOURCE}/{folder}/{path.name}: a department folder holds only Markdown files')
-    catch_all = root / CATCH_ALL
-    if not (catch_all / 'README.md').is_file():
+    catch_all = sorted(rel for rel in rels if rel.startswith(CATCH_ALL + '/'))
+    if f'{CATCH_ALL}/README.md' not in present:
         problems.append(f'{SOURCE}/{CATCH_ALL}/README.md: is missing')
-    elif sorted(p.name for p in catch_all.iterdir()) != ['README.md']:
+    elif catch_all != [f'{CATCH_ALL}/README.md']:
         problems.append(f'{SOURCE}/{CATCH_ALL}/: holds its README alone; it has no team')
-    schemas = root / SCHEMAS
-    found = sorted(p.name for p in schemas.iterdir()) if schemas.is_dir() else []
-    if found != sorted(SCHEMA_FILES):
+    schemas = sorted(rel.split('/', 1)[1] for rel in rels if rel.startswith(SCHEMAS + '/'))
+    if schemas != sorted(SCHEMA_FILES):
         problems.append(f'{SOURCE}/{SCHEMAS}/: must hold exactly {", ".join(SCHEMA_FILES)}')
 
 
@@ -565,18 +600,7 @@ def check_teams(workforce: Workforce, problems: List[str]) -> None:
 
 
 def coverage_owners(body: str) -> List[str]:
-    owners: List[str] = []
-    inside = False
-    for line in body.split('\n'):
-        if line.startswith('## '):
-            inside = line[3:].strip() == 'Who Owns What'
-            continue
-        match = TABLE_ROW.match(line) if inside else None
-        if match:
-            owner = match.group(2).strip()
-            if owner not in ('Owner',) and not set(owner) <= set(':- '):
-                owners.append(owner)
-    return owners
+    return [owner for _, owner in coverage_rows(body)]
 
 
 def check_charters(workforce: Workforce, problems: List[str]) -> None:
@@ -687,11 +711,12 @@ def check_schemas(workforce: Workforce, problems: List[str]) -> None:
 
 
 def problems_in(root: pathlib.Path) -> Tuple[Workforce, List[str]]:
-    workforce, problems = load(root)
     if not root.is_dir():
-        return workforce, problems
-    check_names(root, problems)
-    check_layout(root, problems)
+        return Workforce(root), [f'{root}: no workforce folder here']
+    files = source_files(root)
+    workforce, problems = load(root, files)
+    check_names(root, files, problems)
+    check_layout(root, files, problems)
     for agent in workforce.agents:
         check_agent(agent, root, problems)
     check_reporting(workforce, problems)
@@ -815,13 +840,18 @@ def toml_block(value: str) -> str:
     return f'"""\n{escaped}"""'
 
 
-def claude_tools(agent: Doc, grants: Mapping[str, List[str]]) -> List[str]:
+def tool_names(agent: Doc, table: Mapping[str, Tuple[str, ...]], grants: Mapping[str, List[str]]) -> List[str]:
+    """An app's names for an agent's capabilities, and any tools granted for them, each once."""
     names: List[str] = []
     for capability in agent.fields.get('tools', []):
-        for name in list(CLAUDE_TOOLS.get(capability, ())) + list(grants.get(capability, [])):
+        for name in list(table.get(capability, ())) + list(grants.get(capability, [])):
             if name not in names:
                 names.append(name)
     return names
+
+
+def claude_tools(agent: Doc, grants: Mapping[str, List[str]]) -> List[str]:
+    return tool_names(agent, CLAUDE_TOOLS, grants)
 
 
 def render_markdown_agent(workforce: Workforce, agent: Doc, tools: Optional[List[str]],
@@ -845,14 +875,23 @@ def render_grok_build(workforce: Workforce, grants: Mapping[str, List[str]]) -> 
 
 
 def render_copilot(workforce: Workforce, grants: Mapping[str, List[str]]) -> Dict[str, str]:
+    return {f'{a.id}.agent.md': render_markdown_agent(workforce, a, tool_names(a, COPILOT_TOOLS, grants), 'list')
+            for a in workforce.agents}
+
+
+def render_antigravity(workforce: Workforce, grants: Mapping[str, List[str]]) -> Dict[str, str]:
+    """Antigravity agents. Its tool names are not documented, and a name it does not know can hang
+    an agent, so an agent gets tools only through --grant, with names checked in the app."""
     files = {}
     for agent in workforce.agents:
-        tools = []
-        for capability in agent.fields.get('tools', []):
-            for name in list(COPILOT_TOOLS.get(capability, ())) + list(grants.get(capability, [])):
-                if name not in tools:
-                    tools.append(name)
-        files[f'{agent.id}.agent.md'] = render_markdown_agent(workforce, agent, tools, 'list')
+        lines = ['---', f'name: {agent.id}', f'description: {yaml_string(agent.fields["description"])}']
+        tools = tool_names(agent, {}, grants)
+        if tools:
+            lines.append('tools: ' + json.dumps(tools))
+        if agent.role == 'orchestrator':
+            lines.append('mainAgent: true')
+        lines += [f'# {MARK}', '---', '', compose(workforce, agent)]
+        files[f'{agent.id}.md'] = '\n'.join(lines)
     return files
 
 
@@ -982,13 +1021,14 @@ def render_grok_bot(workforce: Workforce, ref: str) -> Dict[str, str]:
     return {'Grok Bot Setup.md': '\n'.join(lines)}
 
 
-TARGETS = ('claude', 'grok-build', 'copilot', 'codex', 'bundle', 'ollama', 'text', 'grok-bot')
+TARGETS = ('claude', 'grok-build', 'copilot', 'codex', 'antigravity', 'bundle', 'ollama', 'text', 'grok-bot')
 INSTALLABLE = {
     'claude': ('.md', lambda home, env: home / '.claude' / 'agents'),
     'grok-build': ('.md', lambda home, env: home / '.grok' / 'agents'),
     'copilot': ('.agent.md', lambda home, env: home / '.copilot' / 'agents'),
     'codex': ('.toml', lambda home, env: (pathlib.Path(env['CODEX_HOME']) if env.get('CODEX_HOME')
                                           else home / '.codex') / 'agents'),
+    'antigravity': ('.md', lambda home, env: home / '.gemini' / 'config' / 'agents'),
 }
 
 
@@ -1002,6 +1042,8 @@ def render(workforce: Workforce, target: str, args: argparse.Namespace) -> Dict[
         return render_copilot(workforce, grants)
     if target == 'codex':
         return render_codex(workforce, grants)
+    if target == 'antigravity':
+        return render_antigravity(workforce, grants)
     if target == 'bundle':
         return render_bundle(workforce, getattr(args, 'flavor', 'neutral'), commit_of(workforce.root))
     if target == 'ollama':
@@ -1011,7 +1053,7 @@ def render(workforce: Workforce, target: str, args: argparse.Namespace) -> Dict[
     if target == 'text':
         return render_text(workforce)
     if target == 'grok-bot':
-        return render_grok_bot(workforce, getattr(args, 'ref', None) or 'Development')
+        return render_grok_bot(workforce, getattr(args, 'ref', None) or commit_of(workforce.root) or 'Development')
     raise SystemExit(f'unknown target {target}; use one of {", ".join(TARGETS)}')
 
 
@@ -1106,7 +1148,7 @@ def main(argv: Optional[List[str]] = None, root: Optional[pathlib.Path] = None,
     rendering.add_argument('--model', help='ollama only: the local model each Modelfile builds on')
     rendering.add_argument('--ref', help='grok-bot only: the tag or branch the Bots read their files at')
     rendering.add_argument('--grant', action='append', metavar='CAPABILITY=TOOL[,TOOL]',
-                           help='claude and copilot: grant a capability through named connector tools')
+                           help='claude, copilot and antigravity: grant a capability through named tools')
     for name, text in (('install', 'install the workforce into an app\'s agents folder'),
                        ('uninstall', 'take out every workforce file from an app\'s agents folder')):
         command = commands.add_parser(name, help=text)

@@ -71,7 +71,7 @@ _Beside the kit, never inside it._
 - **One Markdown file per agent**, its file named for the role with spaces, a Director's led by the star U+2B50. Its frontmatter's `name` is the ASCII id every app calls it by, and `title` the persona's name. Its prompt is composed of the agent, its department's charter and `Protocol.md`, so no rule is written twice.
 - **Forty-five agents**: the two at the root and forty-three in the departments, a seat added beside the Director only for independence, expertise with a high cost of error, or a cadence of its own. Only Finance & Accounting fills five seats.
 - **Hub and spoke between departments, a mesh inside each**: the Chief of Staff carries every message between departments, word for word on the way back, and is the only way to the Knowledge Vault Manager, the vault's one writer. Money, contracts, outside messages, deletions, equity, live systems and the owner's profile wait on the owner's yes for the exact act.
-- **`.github/scripts/workforce.py` checks and renders it** for Claude Code (whose folder Copilot CLI, VS Code and Cursor also read), Grok Build, Copilot, Codex, an API bundle for OpenAI, xAI, Anthropic and local servers, Ollama, plain text, and Grok Bot's first messages. `make lint` runs its check. Every copy carries a mark of its own, not the kit's, so the kit's sweep never touches it, and `install` never overwrites a file it did not write.
+- **`.github/scripts/workforce.py` checks and renders it** for Claude Code (whose folder VS Code and Cursor also read), Grok Build, Copilot, Codex, Antigravity, an API bundle for OpenAI, xAI, Anthropic and local servers, Ollama, plain text, and Grok Bot's first messages. `make lint` runs its check. Every copy carries a mark of its own, not the kit's, so the kit's sweep never touches it, and `install` never overwrites a file it did not write.
 - **The Chief of Staff installs it**, from a bootstrap prompt for a terminal and one for Grok Bot, in [The Workforce](../technical/The-Workforce.md).
 
 Option 1 brings back what ADR-0041 removed: every agent in every app on every machine, whether or not the owner works with the workforce there. Option 3 contradicts the request, and puts agent instruction files in the vault, which [ADR-0037](ADR-0037-The-Hub-Writes-Every-Skill.md) ruled out.
@@ -97,7 +97,7 @@ Option 1 brings back what ADR-0041 removed: every agent in every app on every ma
 
 ### Option 2: Beside The Kit
 
-- ✅ The workforce installs where it is wanted, in any of eight forms, and the kit stays the guard alone
+- ✅ The workforce installs where it is wanted, in any of nine forms, and the kit stays the guard alone
 - ❌ One more command to run, or one more prompt to give the Chief of Staff
 
 ### Option 3: Outside The Hub

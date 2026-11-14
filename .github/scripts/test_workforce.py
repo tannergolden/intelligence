@@ -227,10 +227,17 @@ class EachCheckFails(unittest.TestCase):
             self.assertProblem(root, 'name must be "editor"')
 
     def test_names_that_differ_only_in_case(self) -> None:
+        # Names only, never the disk: a case-insensitive filesystem would hold one file, not two.
+        found = wf.name_problems(['workforce/Public Relations (PR)/Editor.md',
+                                  'workforce/Public Relations (PR)/EDITOR.md'])
+        self.assertTrue(any('only in case' in problem for problem in found), found)
+
+    def test_files_the_system_drops_never_fail_the_check(self) -> None:
         with Copy() as root:
-            folder = root / wf.SOURCE / 'Public Relations (PR)'
-            (folder / 'EDITOR.md').write_text((folder / 'Editor.md').read_text(encoding='utf-8'), encoding='utf-8')
-            self.assertProblem(root, 'only in case')
+            for name in ('.DS_Store', 'Thumbs.db', 'desktop.ini'):
+                (root / wf.SOURCE / name).write_text('', encoding='utf-8')
+                (root / wf.SOURCE / 'Administration' / name).write_text('', encoding='utf-8')
+            self.assertEqual(problems(root), [])
 
     def test_a_windows_device_name(self) -> None:
         with Copy() as root:
@@ -298,6 +305,7 @@ class EachCheckFails(unittest.TestCase):
     def test_a_folder_the_template_does_not_have(self) -> None:
         with Copy() as root:
             (root / wf.SOURCE / 'Agent Resources').mkdir()
+            (root / wf.SOURCE / 'Agent Resources' / 'README.md').write_text('# Agent Resources\n', encoding='utf-8')
             self.assertProblem(root, 'not a folder of the venture template')
 
     def test_a_prompt_with_braces(self) -> None:
@@ -322,6 +330,10 @@ class Parsing(unittest.TestCase):
         fields, _ = wf.parse(text)
         self.assertEqual(fields, {'name': 'a', 'title': "Owner's Agent", 'tools': ['read', 'web']})
 
+    def test_a_list_item_may_hold_an_escaped_quote(self) -> None:
+        fields, _ = wf.parse('---\nmembers: ["A \\"B\\" C", \'D, E\']\n---\n')
+        self.assertEqual(fields['members'], ['A "B" C', 'D, E'])
+
     def test_frontmatter_refuses_what_it_cannot_read(self) -> None:
         for text in ('name: "A"\n', '---\nname: "A"\n', '---\nname: "A"\nname: "B"\n---\n', '---\nname A\n---\n',
                      '---\nname: A\n---\n', '---\nname: &anchor "A"\n---\n', "---\nname: 'it's'\n---\n"):
@@ -340,7 +352,8 @@ class Rendering(unittest.TestCase):
         return wf.render(self.workforce, target, args)
 
     def test_app_files_are_named_by_id_and_carry_the_mark(self) -> None:
-        for target, suffix in (('claude', '.md'), ('grok-build', '.md'), ('copilot', '.agent.md'), ('codex', '.toml')):
+        for target, suffix in (('claude', '.md'), ('grok-build', '.md'), ('copilot', '.agent.md'), ('codex', '.toml'),
+                               ('antigravity', '.md')):
             files = self.render(target)
             self.assertEqual(len(files), len(self.workforce.agents), target)
             for name, text in files.items():
@@ -409,6 +422,21 @@ class Rendering(unittest.TestCase):
         files = self.render('text')
         self.assertIn('Operations & Logistics (O&L)/\u2b50 Director of Operations.txt', files)
         self.assertIn('Chief of Staff.txt', files)
+
+    def test_antigravity_agents_get_tools_only_through_a_grant(self) -> None:
+        plain = self.render('antigravity')
+        self.assertTrue(all('\ntools:' not in text.split('\n---\n')[0] for text in plain.values()))
+        self.assertIn('mainAgent: true', plain['chief-of-staff.md'].split('\n---\n')[0])
+        self.assertNotIn('mainAgent', plain['controller.md'].split('\n---\n')[0])
+        granted = self.render('antigravity', grant=['read=read_file'])
+        self.assertIn('tools: ["read_file"]', granted['controller.md'])
+
+    def test_grok_bot_pins_the_checkout_commit_by_default(self) -> None:
+        commit = wf.commit_of(wf.ROOT)
+        if not commit:
+            self.skipTest('the source is not in a git checkout')
+        page = self.render('grok-bot')['Grok Bot Setup.md']
+        self.assertIn(f'/blob/{commit}/workforce/', page)
 
     def test_grok_bot_bindings_are_short_and_link_the_source(self) -> None:
         page = self.render('grok-bot', ref='v1.0.0')['Grok Bot Setup.md']
@@ -479,6 +507,10 @@ class Installing(unittest.TestCase):
         mine.write_text('mine\n', encoding='utf-8')
         self.assertEqual(self.run_main('uninstall', '--target', 'claude'), 0)
         self.assertEqual([p.name for p in self.agents.iterdir()], ['my-helper.md'])
+
+    def test_antigravity_installs_into_its_global_agents_folder(self) -> None:
+        self.assertEqual(self.run_main('install', '--target', 'antigravity'), 0)
+        self.assertTrue((self.home / '.gemini' / 'config' / 'agents' / 'chief-of-staff.md').is_file())
 
     def test_codex_follows_codex_home(self) -> None:
         elsewhere = self.home / 'codex-home'
