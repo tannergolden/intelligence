@@ -15,9 +15,10 @@ WHAT IT BLOCKS, and the rule behind each:
 - OPS-001: pushing to a default or protected branch, force-pushing without
   `--force-with-lease`, deleting or pruning remote refs, pushing tags, and
   merging a pull request, through `git`, `gh` or a GitHub MCP tool; its
-  owner lifts it for a Claude Code session by typing `override OPS-001` in
-  a repository tannergolden owns, which the guard reads from the session's
-  transcript
+  owner lifts it for a Claude Code session by typing `override OPS-001`,
+  which the guard reads from the session's transcript and counts only
+  for a call that acts on a repository tannergolden owns: the one a
+  command names, or else the one it runs in
 - OPS-003: what git cannot undo, when there is something to lose: `git
   reset --hard` or a whole-tree checkout over uncommitted work, `git clean
   -f`, dropped stashes, `git branch -D`, history rewrites, a recursive
@@ -293,11 +294,17 @@ OVERRIDE = re.compile(r'^\s*[-*]\s+`?(?P<id>[A-Z]{2,5}-\d{3})`?\s*:?\s*(?P<reaso
 # OPS-001's one exception: the owner lifts it for the session they are in by
 # typing these words, in a repository tannergolden owns. Only what the user
 # typed counts, read from the session's transcript, so no file, tool output,
-# summary or line an app adds itself can lift it.
+# summary, subagent's prompt or line an app adds itself can lift it.
 LIFT = re.compile(r'\boverride\s+OPS-001\b', re.I)
 LIFT_WAY = 'in a repository they own, your user can lift OPS-001 for this session by typing `override OPS-001`'
-# The rules lifted while one call is decided again: OPS-001 alone, and only inside main.
-LIFTED: set[str] = set()
+# Where OPS-001 is lifted while one call is decided again, each as a verdict's
+# place: the rule, the folder its command runs in and the owner it names. Only
+# main fills it, and empties it before it returns.
+LIFTED: set[tuple[str, str, str]] = set()
+# A push that names its remote by URL: a scheme, or the `user@host:path` form ssh takes.
+REMOTE_URL = re.compile(r'[a-z][a-z0-9+.-]*://|[^/@\s]+@[^:/\s]+:', re.I)
+# The owner an API path names; a `{owner}` placeholder is filled from the folder, so it names none.
+API_OWNER = re.compile(r'(?:^|/)repos/([^/{}\s]+)/')
 
 # The ask rules the installer adds to Claude Code's settings (OPS-005), which
 # an edit must not drop (OPS-004). They match install.py's ASK_RULES, which a
@@ -381,19 +388,27 @@ CLAUDE_COPIES = ('.claude/rules/intelligence.md', '.claude/CLAUDE.md')
 
 @dataclasses.dataclass(frozen=True)
 class Verdict:
-    """Why a call is denied: the rule, what is wrong, and what to do instead."""
+    """Why a call is denied: the rule, what is wrong, and what to do instead. An OPS-001 verdict also says where
+    its call acts, which decides whether the owner's override reaches it: the folder a command runs in, and the
+    owner of the repository it names instead, when it names one."""
 
     rule: str
     reason: str
     instead: str
+    folder: str = ''
+    owner: str = ''
 
     def line(self) -> str:
         way = f'; {LIFT_WAY}' if self.rule == 'OPS-001' else ''
         return f'intelligence guard blocked this ({self.rule}): {self.reason}. {self.instead}{way}'
 
+    def place(self) -> tuple[str, str, str]:
+        return self.rule, self.folder, self.owner.lower()
+
     def __bool__(self) -> bool:
-        # A lifted rule's verdict is false, so every `if verdict` and `or` passes over it to the checks after it.
-        return self.rule not in LIFTED
+        # A verdict lifted where it acts is false, so every `if verdict` and `or` passes over it to the checks
+        # after it, while the same rule still denies a command that acts anywhere else.
+        return self.place() not in LIFTED
 
 
 @dataclasses.dataclass(frozen=True)
@@ -781,7 +796,31 @@ def check_git(command: Simple, home: pathlib.Path) -> Verdict | None:
     if verdict:
         return verdict
     handler = GIT_CHECKS.get(git.sub)
-    return handler(git) if handler else None
+    return placed(handler(git), git.cwd, url_owner(git)) if handler else None
+
+
+def placed(verdict: Verdict | None, folder: pathlib.Path, owner: str = '') -> Verdict | None:
+    """An OPS-001 verdict with where its command acts, which its owner's override is judged by."""
+    if verdict is None or verdict.rule != 'OPS-001':
+        return verdict
+    return dataclasses.replace(verdict, folder=str(folder), owner=owner)
+
+
+def url_owner(git: Git) -> str:
+    """The owner a push names by URL in place of a remote: tannergolden for a GitHub URL of theirs, `?` for any
+    other, and nothing for a remote's name, whose repository is the folder's."""
+    if git.sub != 'push':
+        return ''
+    target = next(iter(git.positionals(PUSH_VALUED)), '')
+    if not REMOTE_URL.match(target):
+        return ''
+    return 'tannergolden' if OWNER_REMOTE.match(target) else '?'
+
+
+def named_owner(repository: str) -> str:
+    """The owner in `[HOST/]OWNER/NAME`, as `gh --repo` takes one; nothing when it names none."""
+    parts = [part for part in re.sub(r'\.git$', '', repository).split('/') if part]
+    return parts[-2] if len(parts) > 1 else ''
 
 
 # Short flags of `git commit` that take a value, so `-ms` is a message, not a sign-off.
@@ -806,6 +845,10 @@ def check_signoff(git: Git) -> Verdict | None:
     return None
 
 
+# Flags of `git push` that take a value, so the word after one is never the remote.
+PUSH_VALUED = ('-o', '--push-option', '--repo', '--receive-pack', '--exec')
+
+
 def check_push(git: Git) -> Verdict | None:
     if git.short('n') or git.has('--dry-run'):
         return None
@@ -822,7 +865,7 @@ def check_push(git: Git) -> Verdict | None:
     if git.has('--all') or git.has('--branches'):
         return Verdict('OPS-001', 'the push sends every branch, protected ones included',
                        'Push the one branch you are working on')
-    positionals = git.positionals(('-o', '--push-option', '--repo', '--receive-pack', '--exec'))
+    positionals = git.positionals(PUSH_VALUED)
     remote = positionals[0] if positionals else ''
     refspecs = positionals[1:]
     protected = PROTECTED | default_branches(git, remote)
@@ -1011,12 +1054,15 @@ def bare(words: list[str], valued: set[str]) -> list[str]:
 def check_gh(command: Simple, home: pathlib.Path) -> Verdict | None:
     words = command.words[1:]
     group, action = [*bare(words, GH_VALUED), '', ''][:2]
+    named = named_owner((values(words, '--repo') + values(words, '-R') or [''])[-1])
     if group == 'pr' and action == 'merge':
-        return Verdict('OPS-001', '`gh pr merge` merges a pull request, which stays your user\'s call',
-                       'Tell your user the pull request is ready to merge')
+        return placed(Verdict('OPS-001', '`gh pr merge` merges a pull request, which stays your user\'s call',
+                              'Tell your user the pull request is ready to merge'), command.cwd, named)
     if group == 'repo' and action == 'sync' and ('--force' in words or '-f' in words):
-        return Verdict('OPS-001', '`gh repo sync --force` overwrites the branch',
-                       'Ask your user')
+        # `gh repo sync OWNER/NAME` names the repository it overwrites as its own argument.
+        target = [*bare(words, GH_VALUED | {'-b', '--branch', '-s', '--source'}), '', '', ''][2]
+        return placed(Verdict('OPS-001', '`gh repo sync --force` overwrites the branch',
+                              'Ask your user'), command.cwd, named_owner(target) or named)
     settings = {('repo', 'delete'), ('repo', 'archive'), ('repo', 'rename'), ('repo', 'edit'),
                 ('secret', 'set'), ('secret', 'delete'), ('secret', 'remove'), ('variable', 'set'),
                 ('variable', 'delete'), ('release', 'delete'), ('release', 'delete-asset'),
@@ -1025,7 +1071,9 @@ def check_gh(command: Simple, home: pathlib.Path) -> Verdict | None:
     if (group, action) in settings:
         return lost(f'`gh {group} {action}` changes repository settings or deletes what cannot come back')
     if group == 'api':
-        return check_gh_api(words[words.index('api') + 1:])
+        call = words[words.index('api') + 1:]
+        found = API_OWNER.search(next(iter(bare(call, GH_API_VALUED)), ''))
+        return placed(check_gh_api(call), command.cwd, found.group(1) if found else named)
     return None
 
 
@@ -1051,10 +1099,10 @@ def check_gh_api(args: list[str]) -> Verdict | None:
 
 
 def check_api_merge(text: str) -> Verdict | None:
-    if re.search(r'api\.github\.com/repos/[^\s/]+/[^\s/]+/pulls/\d+/merge', text) and re.search(
-            r'(-X|--request)\s*PUT', text):
+    found = re.search(r'api\.github\.com/repos/([^\s/]+)/[^\s/]+/pulls/\d+/merge', text)
+    if found and re.search(r'(-X|--request)\s*PUT', text):
         return Verdict('OPS-001', 'the request merges a pull request, which stays your user\'s call',
-                       'Tell your user the pull request is ready to merge')
+                       'Tell your user the pull request is ready to merge', owner=found.group(1))
     return None
 
 
@@ -2329,13 +2377,23 @@ def remind(home: pathlib.Path, stdin: str | None) -> int:
     return 0
 
 
-def lifted(transcript: object, call: Call) -> bool:
-    """Whether OPS-001 is lifted for this call: the user typed `override OPS-001` into the session the transcript
-    records, and the repository is tannergolden's. A GitHub tool names its repository; a command acts on the one
-    it runs in."""
-    owner = call.args.get('owner')
-    mine = owner.lower() == 'tannergolden' if isinstance(owner, str) and owner else owner_repository(str(call.cwd))
-    if not mine or not isinstance(transcript, str) or not transcript:
+def lifted(transcript: object, call: Call, verdict: Verdict) -> bool:
+    """Whether OPS-001 is lifted for this verdict: the repository its call acts on is tannergolden's, and the user
+    typed `override OPS-001` into the session the transcript records. A GitHub tool, `gh --repo`, an API path or
+    a push to a URL names its repository; any other command acts on the one it runs in, wherever the session
+    itself sits."""
+    owner = verdict.owner or call.args.get('owner')
+    if isinstance(owner, str) and owner:
+        mine = owner.lower() == 'tannergolden'
+    else:
+        mine = owner_repository(verdict.folder or str(call.cwd))
+    return mine and isinstance(transcript, str) and said(transcript)
+
+
+@functools.lru_cache(maxsize=None)
+def said(transcript: str) -> bool:
+    """Whether the user typed `override OPS-001` in the session this transcript records. Cached for one call."""
+    if not transcript:
         return False
     try:
         with open(transcript, encoding='utf-8', errors='replace') as lines:
@@ -2344,18 +2402,40 @@ def lifted(transcript: object, call: Call) -> bool:
         return False
 
 
+def human(origin: object) -> bool:
+    """Whether Claude Code names a person as the sender of a line: its `origin` is `{"kind": "human"}`, where a
+    subagent's hand-back, another session's message and a finished task each carry a kind of their own."""
+    return isinstance(origin, dict) and origin.get('kind') == 'human'
+
+
 def typed(line: str) -> str:
-    """What the user typed, from one line of a Claude Code transcript; nothing for a tool's result, a summary or a
-    line the app adds itself."""
+    """What the user typed, from one line of a Claude Code transcript: a turn of their own, or a message they
+    sent while the agent was working, which Claude Code records as a queued prompt. Nothing for a tool's result,
+    a summary, a subagent's prompt, which an agent writes, a message from another session or a line the app adds
+    itself."""
     try:
         entry = json.loads(line)
     except ValueError:
         return ''
-    if (not isinstance(entry, dict) or entry.get('type') != 'user' or entry.get('isMeta')
-            or entry.get('isCompactSummary') or 'toolUseResult' in entry):
+    if not isinstance(entry, dict) or entry.get('isSidechain'):
         return ''
-    message = entry.get('message')
-    content = message.get('content') if isinstance(message, dict) else None
+    if entry.get('type') == 'user':
+        # A version of Claude Code that names no sender leaves `origin` out; one that names any but a person
+        # did not record what the user typed.
+        if (entry.get('isMeta') or entry.get('isCompactSummary') or 'toolUseResult' in entry
+                or not (entry.get('origin') is None or human(entry.get('origin')))):
+            return ''
+        message = entry.get('message')
+        content = message.get('content') if isinstance(message, dict) else None
+    elif entry.get('type') == 'attachment':
+        queued = entry.get('attachment')
+        if not (isinstance(queued, dict) and queued.get('type') == 'queued_command'
+                and queued.get('commandMode') == 'prompt' and not queued.get('isMeta')
+                and human(queued.get('origin'))):
+            return ''
+        content = queued.get('prompt')
+    else:
+        return ''
     if isinstance(content, str):
         return content
     if isinstance(content, list) and all(isinstance(part, dict) and part.get('type') in ('text', 'image')
@@ -2389,14 +2469,19 @@ def main(argv: list[str] | None = None, stdin: str | None = None) -> int:
         call = normalize(payload)
         transcript = payload.get('transcript_path')
     try:
+        said.cache_clear()
         verdict = decide(call, home)
-        if verdict is not None and verdict.rule == 'OPS-001' and lifted(transcript, call):
-            # Its owner lifted it for this session: decide again without it, since the call may break another rule.
-            LIFTED.add('OPS-001')
-            try:
+        try:
+            # Its owner lifted OPS-001 for this session: decide again without it where the call acts on a
+            # repository of theirs, since the call may break another rule, or act on someone else's as well.
+            # One pass for each place a line acts on, and no honest line names this many.
+            for _ in range(32):
+                if verdict is None or verdict.rule != 'OPS-001' or not lifted(transcript, call, verdict):
+                    break
+                LIFTED.add(verdict.place())
                 verdict = decide(call, home) or None
-            finally:
-                LIFTED.clear()
+        finally:
+            LIFTED.clear()
     except Exception as error:  # a bug here must never stop every tool call
         print(f'intelligence guard: internal error, call allowed: {error!r}', file=sys.stderr)
         return 0

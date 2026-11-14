@@ -153,9 +153,14 @@ inside a block the hub renders. The sentence after it says what to do instead.
   command you type in your own terminal never reaches it, so when it stops
   something you do want, such as a merge, run it yourself.
 - **An OPS-001 denial** lifts for the rest of a Claude Code session when the
-  owner types `override OPS-001` in it, in a repository tannergolden owns. The
-  guard reads only what the user typed, and still denies a command that breaks
-  another rule. In other apps it never lifts, so run the push or merge yourself.
+  owner types `override OPS-001` in it, as a message of their own or while the
+  agent is working. The guard reads only what the user typed, and still denies
+  a command that breaks another rule. It lifts the rule for a call that acts on
+  a repository tannergolden owns, wherever the session sits: the repository a
+  command names, with `gh --repo`, an API path or a push to a URL, or else the
+  one it runs in. A denial that still comes after the words were typed means
+  the call acts on a repository that is not theirs, or on one with a remote
+  that is not. In other apps it never lifts, so run the push or merge yourself.
 - **A block edit it denies** is one the next sync would overwrite anyway.
   Change the rule in `CONSTITUTION.md` and release it; a repository's own text
   goes outside the markers, and its `docs/Prompts.md` is all its own.
