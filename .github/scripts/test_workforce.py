@@ -642,7 +642,7 @@ class TheDocuments(unittest.TestCase):
         self.guide = (wf.ROOT / 'docs' / 'technical' / 'The-Workforce.md').read_text(encoding='utf-8')
 
     def row(self, first: str) -> list:
-        """The cells of the guide's table row that opens with this cell, and holds at least `width` cells."""
+        """The cells of each of the guide's table rows that opens with this cell."""
         rows = [line for line in self.guide.split('\n') if line.startswith(f'| {first} ')]
         self.assertTrue(rows, first)
         return [[cell.strip() for cell in line.strip('|').split('|')] for line in rows]
@@ -656,11 +656,12 @@ class TheDocuments(unittest.TestCase):
 
     def test_the_first_message_template_keeps_every_fixed_line_of_the_binding(self) -> None:
         steps = self.workforce.setups['grok-bot'].body
-        message = wf.binding(self.workforce, self.workforce.agent('financial-analyst'), 'v1.0.0')
+        # The template names the vault as the steps do, so its line is held to the binding's too.
+        message = wf.binding(self.workforce, self.workforce.agent('financial-analyst'), 'v1.0.0', '<owner/name>')
         fixed = [line.lstrip('- ').strip() for line in message.split('\n')
                  if line.strip() and 'Financial Analyst' not in line and 'workforce/' not in line
-                 and 'Finance' not in line and '{{' not in line]
-        self.assertGreaterEqual(len(fixed), 5)
+                 and 'Finance' not in line]
+        self.assertGreaterEqual(len(fixed), 6)
         for line in fixed:
             self.assertIn(line, steps)
 

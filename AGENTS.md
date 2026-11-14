@@ -93,6 +93,7 @@ serves to this repository from its `.github` repository.
 - Changing `CONSTITUTION.md` changes nothing elsewhere until a release: other repositories receive the rules only through one, which their stub or `make sync` delivers.
 - `sync.py`, `render.py`, `kit.py` and `prompts.py`, and `setup/Prompts.md`, also run or are read inside every repository that carries the stub, at the hub's latest release, from the archive GitHub serves. Cut Release refuses a tag without them, `.gitattributes` keeps `.github/scripts/` in that archive, and `test_stub.py` holds both.
 - The universal prompts live in `docs/Prompts.md` and reach no other repository. `setup/Prompts.md` is the empty page a repository gets once; after that sync never changes a repository's page.
+- Renaming or retiring a workforce seat is more than moving its file: add the old title to `workforce/setup/retired.json`, and follow "Changing A Seat" in [The Workforce](docs/technical/The-Workforce.md#changing-a-seat). `make check` then names every file that still uses it.
 - Never put the `INTELLIGENCE` block in this file, and never add a `CLAUDE.md`. The hub holds the source of the rules, so a copy beside it would be a second source, and a `CLAUDE.md` would make Claude Code skip this file.
 
 ## Ask first
