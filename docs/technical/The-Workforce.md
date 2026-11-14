@@ -504,11 +504,18 @@ daily brief and the weekly review.
 | `text`        | Each composed prompt as plain text, under its source name                                 | Any app with a system prompt or instructions field                                                                                 |
 | `grok-bot`    | `Grok Bot Setup.md`: the Chief of Staff's prompt, filled in, and each Bot's first message | Grok Bot                                                                                                                           |
 
-Every rendered copy carries a mark of its own. `install` writes only files that
-carry it or do not exist yet, refuses any other file, and takes out a marked
-file the workforce no longer ships; `uninstall` takes out every marked file and
-nothing else. The mark is not the home kit's, so `make agents`, which takes out
-the kit's own retired subagents, never touches the workforce.
+Every rendered copy carries a mark of its own, on a line at its head. `install`
+writes only files that carry it there or do not exist yet, and refuses any
+other file, a link included: it never writes through one. Each file is written
+whole or not at all. Beside them it keeps a record, `.workforce.json`: the files
+it wrote for each target and the tools you granted. The next install takes out
+only the recorded files the workforce no longer ships, so a copy you made of
+one stays, and keeps your grants unless you pass `--grant` again or
+`--no-grants`. `uninstall` takes out the recorded files and nothing else, and
+runs even when the source fails its check. `render` into an app's agents folder
+refuses, in the same way, to write over an agent that is not the workforce's.
+The mark is not the home kit's, so `make agents`, which takes out the kit's own
+retired subagents, never touches the workforce.
 
 Some apps read more than one of these folders, so install only one of the
 targets they share: VS Code reads both `~/.claude/agents/` and

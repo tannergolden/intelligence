@@ -155,19 +155,24 @@ target is for and how the Chief of Staff installs it.
 | `install --target T`          | Write `claude`, `grok-build`, `copilot`, `codex` or `antigravity` into that app's agents folder, refusing any file it did not write                |
 | `uninstall --target T`        | Take out every file the workforce wrote in that app's agents folder, and nothing else                                                              |
 
-| Option                           | What it does                                                                                                                                                 |
-| :------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--dest DIR`                     | `install` and `uninstall`: the agents folder to use, in place of the app's own in your home folder                                                           |
-| `--dry-run`                      | `install` and `uninstall`: say what would change, and change nothing                                                                                         |
-| `--grant CAPABILITY=TOOL[,TOOL]` | `render` and `install`, for `claude`, `copilot` and `antigravity`: grant a capability, such as `calendar`, through named tools; repeat it for more           |
-| `--flavor F`                     | `render --target bundle`: wrap each tool for `neutral`, `responses`, `chat`, `anthropic` or `mcp`; `neutral` by default                                      |
-| `--model M`                      | `render --target ollama`: the local model each Modelfile builds on; required                                                                                 |
-| `--ref REF`                      | `render --target grok-bot`: the tag, branch or commit each Bot reads its files at; the checkout's commit by default                                          |
-| `--vault OWNER/NAME`             | `render --target grok-bot`: the private repository that holds the owner's vault, written into the prompt and each first message; a placeholder when left out |
+| Option                           | What it does                                                                                                                                                                                                      |
+| :------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--dest DIR`                     | `install` and `uninstall`: the agents folder to use, in place of the app's own in your home folder                                                                                                                |
+| `--dry-run`                      | `install` and `uninstall`: say what would change, and change nothing                                                                                                                                              |
+| `--grant CAPABILITY=TOOL[,TOOL]` | `render` and `install`, for `claude`, `copilot` and `antigravity`: grant a capability, such as `calendar`, through named tools; repeat it for more. `install` keeps the last install's grants when it is left out |
+| `--no-grants`                    | `install`: grant nothing, and forget the grants of the last install                                                                                                                                               |
+| `--flavor F`                     | `render --target bundle`: wrap each tool for `neutral`, `responses`, `chat`, `anthropic` or `mcp`; `neutral` by default                                                                                           |
+| `--model M`                      | `render --target ollama`: the local model each Modelfile builds on; required                                                                                                                                      |
+| `--ref REF`                      | `render --target grok-bot`: the tag, branch or commit each Bot reads its files at; the checkout's commit by default                                                                                               |
+| `--vault OWNER/NAME`             | `render --target grok-bot`: the private repository that holds the owner's vault, written into the prompt and each first message; a placeholder when left out                                                      |
 
-Every command checks the source first and exits 1, writing nothing, when it
-fails. `install` also exits 1 when it refused a file, after writing the rest.
-`codex` follows `CODEX_HOME` when it is set.
+Every command but `uninstall` checks the source first and exits 1, writing
+nothing, when it fails; `uninstall` reads nothing from the source, so it always
+runs. `install` also exits 1 when it refused a file, after writing the rest,
+and leaves `.workforce.json` in the folder: the files it wrote and the tools it
+granted, which the next install and `uninstall` go by. `render` exits 1,
+writing nothing, when its `--out` folder holds an agent of the same name that
+is not the workforce's. `codex` follows `CODEX_HOME` when it is set.
 
 ---
 

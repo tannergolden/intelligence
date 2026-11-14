@@ -719,6 +719,142 @@ class Installing(unittest.TestCase):
         self.assertEqual(self.run_main('install', '--target', 'claude', '--dry-run'), 0)
         self.assertFalse(self.agents.exists())
 
+    def snapshot(self) -> dict:
+        return {path.name: path.read_bytes() for path in sorted(self.agents.iterdir())}
+
+    def test_a_dry_run_over_an_install_changes_nothing(self) -> None:
+        self.run_main('install', '--target', 'claude', '--grant', 'mail=mcp__mail__draft')
+        retired = self.agents / 'retired-seat.md'
+        retired.write_text(f'---\n# {wf.MARK}\n---\n', encoding='utf-8')
+        (self.agents / 'financial-analyst.md').write_text(f'---\n# {wf.MARK}\n---\nstale\n', encoding='utf-8')
+        before = self.snapshot()
+        self.assertEqual(self.run_main('install', '--target', 'claude', '--dry-run', '--no-grants'), 0)
+        self.assertEqual(self.run_main('uninstall', '--target', 'claude', '--dry-run'), 0)
+        self.assertEqual(self.snapshot(), before)
+
+    def test_install_honours_dest(self) -> None:
+        elsewhere = self.home / 'elsewhere'
+        self.assertEqual(self.run_main('install', '--target', 'claude', '--dest', str(elsewhere)), 0)
+        self.assertTrue((elsewhere / 'chief-of-staff.md').is_file())
+        self.assertFalse(self.agents.exists())
+        self.assertEqual(self.run_main('uninstall', '--target', 'claude', '--dest', str(elsewhere)), 0)
+        self.assertEqual(list(elsewhere.iterdir()), [])
+
+    def test_each_target_installs_into_its_own_folder(self) -> None:
+        for target, folder, name in (('claude', '.claude/agents', 'chief-of-staff.md'),
+                                     ('grok-build', '.grok/agents', 'chief-of-staff.md'),
+                                     ('copilot', '.copilot/agents', 'chief-of-staff.agent.md'),
+                                     ('codex', '.codex/agents', 'chief-of-staff.toml')):
+            self.assertEqual(self.run_main('install', '--target', target), 0, target)
+            self.assertTrue((self.home / folder / name).is_file(), target)
+
+    def test_install_never_writes_through_a_link(self) -> None:
+        self.agents.mkdir(parents=True)
+        outside = self.home / 'elsewhere'
+        outside.mkdir()
+        # One link to nothing, which looks like a free name, and one to a file of the owner's.
+        (self.agents / 'financial-analyst.md').symlink_to(outside / 'not-there.md')
+        mine = outside / 'notes.md'
+        mine.write_text('mine\n', encoding='utf-8')
+        (self.agents / 'tax-accountant.md').symlink_to(mine)
+        self.assertEqual(self.run_main('install', '--target', 'claude'), 1)
+        self.assertEqual(sorted(path.name for path in outside.iterdir()), ['notes.md'])
+        self.assertEqual(mine.read_text(encoding='utf-8'), 'mine\n')
+        self.assertTrue((self.agents / 'financial-analyst.md').is_symlink())
+        # A link to one of the workforce's own files is still the owner's link: never swept, never removed.
+        (self.agents / 'old-seat.md').symlink_to(self.agents / 'chief-of-staff.md')
+        self.run_main('install', '--target', 'claude')
+        self.run_main('uninstall', '--target', 'claude')
+        self.assertTrue((self.agents / 'old-seat.md').is_symlink())
+
+    def test_the_mark_counts_only_where_the_renderer_writes_it(self) -> None:
+        self.agents.mkdir(parents=True)
+        notes = self.agents / 'workforce-notes.md'
+        notes.write_text('# My notes\n\n' + 'A line.\n' * 12 + f'The files say: {wf.MARK}\n# {wf.MARK}\n',
+                         encoding='utf-8')
+        self.assertFalse(wf.is_ours(notes))
+        self.assertEqual(self.run_main('install', '--target', 'claude'), 0)
+        self.assertEqual(self.run_main('uninstall', '--target', 'claude'), 0)
+        self.assertTrue(notes.exists())
+        for target in ('claude', 'copilot', 'codex', 'antigravity', 'grok-build'):
+            suffix, locate = wf.INSTALLABLE[target]
+            self.run_main('install', '--target', target)
+            written = [path for path in sorted(locate(self.home, {}).glob(f'*{suffix}')) if path != notes]
+            self.assertTrue(written and all(wf.is_ours(path) for path in written), target)
+
+    def test_a_copy_the_owner_made_is_left_alone_once_installs_are_recorded(self) -> None:
+        self.run_main('install', '--target', 'claude')
+        copy = self.agents / 'my-analyst.md'
+        copy.write_text((self.agents / 'financial-analyst.md').read_text(encoding='utf-8'), encoding='utf-8')
+        self.assertEqual(self.run_main('install', '--target', 'claude'), 0)
+        self.assertEqual(self.run_main('uninstall', '--target', 'claude'), 0)
+        self.assertEqual([path.name for path in self.agents.iterdir()], ['my-analyst.md'])
+
+    def test_a_recorded_file_the_workforce_dropped_is_removed(self) -> None:
+        self.run_main('install', '--target', 'claude')
+        record = json.loads((self.agents / wf.RECORD).read_text(encoding='utf-8'))
+        record['targets']['claude']['files'] += ['retired-seat.md', 'someone-elses.md', '../outside.md']
+        (self.agents / wf.RECORD).write_text(json.dumps(record), encoding='utf-8')
+        (self.agents / 'retired-seat.md').write_text(f'---\n# {wf.MARK}\n---\n', encoding='utf-8')
+        (self.agents / 'someone-elses.md').write_text('mine\n', encoding='utf-8')
+        (self.home / '.claude' / 'outside.md').write_text(f'---\n# {wf.MARK}\n---\n', encoding='utf-8')
+        self.assertEqual(self.run_main('install', '--target', 'claude'), 0)
+        self.assertFalse((self.agents / 'retired-seat.md').exists())
+        self.assertTrue((self.agents / 'someone-elses.md').exists())
+        self.assertTrue((self.home / '.claude' / 'outside.md').exists())
+
+    def test_grants_survive_a_plain_install_and_go_only_when_told(self) -> None:
+        tools = lambda: (self.agents / 'account-executive.md').read_text(encoding='utf-8').split('---')[1]
+        self.run_main('install', '--target', 'claude', '--grant', 'mail=mcp__mail__search,mcp__mail__draft')
+        self.assertIn('mcp__mail__search, mcp__mail__draft', tools())
+        self.assertEqual(self.run_main('install', '--target', 'claude'), 0)
+        self.assertIn('mcp__mail__search, mcp__mail__draft', tools())
+        self.run_main('install', '--target', 'claude', '--grant', 'mail=mcp__mail__read')
+        self.assertIn('mcp__mail__read', tools())
+        self.assertNotIn('mcp__mail__draft', tools())
+        self.run_main('install', '--target', 'claude', '--no-grants')
+        self.assertNotIn('mcp__mail', tools())
+        self.run_main('install', '--target', 'claude')
+        self.assertNotIn('mcp__mail', tools())
+
+    def test_two_targets_in_one_folder_keep_to_their_own_files(self) -> None:
+        shared = self.home / 'shared'
+        self.run_main('install', '--target', 'copilot', '--dest', str(shared))
+        self.run_main('install', '--target', 'claude', '--dest', str(shared))
+        count = len(wf.problems_in(REAL)[0].agents)
+        self.assertEqual(len(list(shared.glob('*.agent.md'))), count)
+        self.run_main('uninstall', '--target', 'claude', '--dest', str(shared))
+        self.assertEqual(len(list(shared.glob('*.agent.md'))), count)
+        self.assertEqual([p.name for p in shared.glob('*.md') if not p.name.endswith('.agent.md')], [])
+        # Before any record existed, a plain .md target still never took Copilot's files for its own.
+        (shared / wf.RECORD).unlink()
+        self.run_main('uninstall', '--target', 'claude', '--dest', str(shared))
+        self.assertEqual(len(list(shared.glob('*.agent.md'))), count)
+
+    def test_uninstall_runs_on_a_source_that_fails_the_check(self) -> None:
+        self.run_main('install', '--target', 'claude')
+        with Copy() as root:
+            set_field(root / wf.SOURCE / 'Public Relations (PR)' / 'Managing Editor.md', 'role', 'editor')
+            self.assertEqual(quiet(wf.main, ['uninstall', '--target', 'claude'], root=root, home=self.home, env={}), 0)
+        self.assertEqual(list(self.agents.iterdir()), [])
+
+    def test_a_write_cut_short_leaves_the_old_file_whole(self) -> None:
+        self.run_main('install', '--target', 'claude')
+        target = self.agents / 'financial-analyst.md'
+        before = target.read_text(encoding='utf-8')
+        with self.assertRaises(UnicodeEncodeError):
+            wf.write_atomic(target, 'half a file \ud83d')
+        self.assertEqual(target.read_text(encoding='utf-8'), before)
+        self.assertEqual([path.name for path in self.agents.iterdir() if path.name.endswith('.tmp')], [])
+
+    def test_render_never_writes_over_an_agent_that_is_not_its_own(self) -> None:
+        self.agents.mkdir(parents=True)
+        mine = self.agents / 'security-engineer.md'
+        mine.write_text('my own agent\n', encoding='utf-8')
+        self.assertEqual(self.run_main('render', '--target', 'claude', '--out', str(self.agents)), 1)
+        self.assertEqual(mine.read_text(encoding='utf-8'), 'my own agent\n')
+        self.assertEqual([path.name for path in self.agents.iterdir()], ['security-engineer.md'])
+
     def test_install_never_overwrites_a_file_that_is_not_its_own(self) -> None:
         self.agents.mkdir(parents=True)
         mine = self.agents / 'financial-analyst.md'

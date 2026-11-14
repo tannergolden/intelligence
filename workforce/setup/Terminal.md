@@ -61,6 +61,6 @@ The weekly check, and any time the owner asks:
 
 1. Find the newest release of tannergolden/intelligence, or the newest commit of the branch the owner follows, and compare it with the commit you installed. If nothing in `workforce/` changed, record the date and stop.
 2. Get the new version as a fresh copy, never by changing a checkout the owner works in, and run `workforce.py check` on it. If it fails, change nothing and report the failure.
-3. Run the install again from the new copy, for each target installed, after a dry run. It replaces what changed, adds what is new, removes the files it wrote that the workforce no longer ships, and refuses every other file.
+3. Run the install again from the new copy, for each target installed, after a dry run. It replaces what changed, adds what is new, removes the files it wrote that the workforce no longer ships, keeps the tools the last install granted, and refuses every other file.
 4. Render a bundle again if an orchestrator runs one, and tell the owner its host must load the new copy. If a cloud environment's setup script names the old release, give the owner the new one to put in it.
 5. Report the version you moved from and to, what changed, every file written or removed, and what failed.

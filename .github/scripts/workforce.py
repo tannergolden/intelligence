@@ -43,12 +43,14 @@ Run it:
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
 import os
 import pathlib
 import re
 import subprocess
 import sys
+import tempfile
 import unicodedata
 from dataclasses import dataclass, field
 from typing import Callable, Dict, List, Mapping, Optional, Tuple
@@ -159,6 +161,15 @@ IGNORED_FILES = {'.DS_Store', 'Thumbs.db', 'desktop.ini'}
 # kit's sweep of its own retired subagents never takes a workforce file out.
 MARK = ('Rendered from the agent workforce in tannergolden/intelligence by workforce.py, which '
         'replaces or removes this file. Change the source in workforce/, not this copy.')
+
+# The mark sits within this many lines of a rendered file's head: after the frontmatter's
+# other fields in an agent file, first in a TOML file or a Modelfile.
+MARK_WITHIN = 8
+# What an install leaves beside the files it wrote: which ones, and the tools granted, so that the
+# next install keeps the grants and removes only what an earlier one wrote.
+RECORD = '.workforce.json'
+RECORD_NOTE = ('What workforce.py installed in this folder, from the agent workforce in tannergolden/intelligence. '
+               'It rewrites or removes this file.')
 
 # Each capability as Claude Code names its tools. The rest (message, tasks,
 # calendar, mail) are app connectors there, granted with --grant.
@@ -1326,29 +1337,107 @@ def parse_grants(values: List[str]) -> Dict[str, List[str]]:
 # ---------------------------------------------------------------- writing
 
 
+def write_atomic(path: pathlib.Path, text: str) -> None:
+    """Write a whole file or none of it: a write cut short must never leave a file the installer
+    would then refuse as someone else's."""
+    handle, temporary = tempfile.mkstemp(dir=str(path.parent), prefix='.workforce-', suffix='.tmp')
+    try:
+        with os.fdopen(handle, 'w', encoding='utf-8') as file:
+            file.write(text)
+        os.replace(temporary, path)
+    except BaseException:
+        with contextlib.suppress(OSError):
+            os.unlink(temporary)
+        raise
+
+
+def is_ours(path: pathlib.Path) -> bool:
+    """Whether the workforce wrote this file: a plain file, never a link, with the mark on a line of
+    its own at its head, where every renderer puts it. The sentence quoted further down does not count."""
+    if path.is_symlink() or not path.is_file():
+        return False
+    try:
+        with path.open(encoding='utf-8') as file:
+            head = [next(file, '').rstrip('\n') for _ in range(MARK_WITHIN)]
+    except (OSError, UnicodeDecodeError):
+        return False
+    return f'# {MARK}' in head
+
+
+def conflicts(files: Mapping[str, str], dest: pathlib.Path) -> List[pathlib.Path]:
+    """The paths these files would land on that hold something the workforce did not write."""
+    found = []
+    for name in sorted(files):
+        path = dest / name
+        if path.is_symlink() or (path.exists() and not is_ours(path)):
+            found.append(path)
+    return found
+
+
 def write_files(files: Mapping[str, str], out: pathlib.Path) -> None:
     for name, text in files.items():
         path = out / name
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(text, encoding='utf-8')
+        write_atomic(path, text)
         print(f'wrote {path}')
 
 
-def is_ours(path: pathlib.Path) -> bool:
+def read_record(dest: pathlib.Path) -> dict:
+    """What earlier installs left in this folder, by target; empty when there is no record to trust."""
+    path = dest / RECORD
+    if path.is_symlink() or not path.is_file():
+        return {}
     try:
-        return MARK in path.read_text(encoding='utf-8')
-    except (OSError, UnicodeDecodeError):
-        return False
+        data = json.loads(path.read_text(encoding='utf-8'))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return {}
+    targets = data.get('targets') if isinstance(data, dict) and data.get('//') == RECORD_NOTE else None
+    return targets if isinstance(targets, dict) else {}
 
 
-def install(files: Mapping[str, str], dest: pathlib.Path, suffix: str, dry_run: bool) -> int:
+def write_record(dest: pathlib.Path, targets: dict) -> None:
+    path = dest / RECORD
+    if path.is_symlink() or (path.exists() and not read_record(dest) and path.stat().st_size):
+        print(f'refused   {path}: exists and is not the workforce\'s record; grants and file lists were not saved')
+        return
+    if targets:
+        write_atomic(path, json.dumps({'//': RECORD_NOTE, 'format': FORMAT, 'targets': targets},
+                                      ensure_ascii=False, indent=2) + '\n')
+    elif path.exists():
+        path.unlink()
+
+
+def listed(record: dict, target: str, key: str) -> List[str]:
+    values = record.get(target, {}).get(key) if isinstance(record.get(target), dict) else None
+    return [v for v in values if isinstance(v, str)] if isinstance(values, list) else []
+
+
+def swept(dest: pathlib.Path, suffix: str, keep: Mapping[str, str], recorded: Optional[List[str]]) -> List[pathlib.Path]:
+    """The files in this folder the workforce wrote and no longer ships. With a record of the last
+    install, only the names in it; without one, every marked file of this target's kind."""
+    if not dest.is_dir():
+        return []
+    if recorded is not None:
+        names = [name for name in recorded if name not in keep and '/' not in name and '\\' not in name]
+    else:
+        # Copilot's files end in .agent.md, which a target writing plain .md must not take for its own.
+        names = [path.name for path in dest.iterdir()
+                 if path.name.endswith(suffix) and path.name not in keep
+                 and not (suffix == '.md' and path.name.endswith('.agent.md'))]
+    return [dest / name for name in sorted(names) if is_ours(dest / name)]
+
+
+def install(files: Mapping[str, str], dest: pathlib.Path, suffix: str, dry_run: bool,
+            target: Optional[str] = None, grants: Optional[List[str]] = None) -> int:
     """Write each file the workforce owns; refuse anyone else's; take out the ones it no longer ships."""
     refused = 0
+    record = read_record(dest)
     if not dry_run:
         dest.mkdir(parents=True, exist_ok=True)
+    blocked = set(conflicts(files, dest))
     for name, text in sorted(files.items()):
         path = dest / name
-        if path.exists() and not is_ours(path):
+        if path in blocked:
             print(f'refused   {path}: exists and is not the workforce\'s; it is never overwritten')
             refused += 1
             continue
@@ -1357,25 +1446,30 @@ def install(files: Mapping[str, str], dest: pathlib.Path, suffix: str, dry_run: 
             continue
         print(f'{"would write" if dry_run else "wrote"}     {path}')
         if not dry_run:
-            path.write_text(text, encoding='utf-8')
-    if dest.is_dir():
-        for path in sorted(dest.iterdir()):
-            if path.is_file() and path.name.endswith(suffix) and path.name not in files and is_ours(path):
-                print(f'{"would remove" if dry_run else "removed"}   {path}: the workforce no longer ships it')
-                if not dry_run:
-                    path.unlink()
+            write_atomic(path, text)
+    for path in swept(dest, suffix, files, listed(record, target, 'files') if target in record else None):
+        print(f'{"would remove" if dry_run else "removed"}   {path}: the workforce no longer ships it')
+        if not dry_run:
+            path.unlink()
+    if target and not dry_run:
+        record[target] = {'files': sorted(name for name in files if dest / name not in blocked),
+                          'grants': list(grants or [])}
+        write_record(dest, record)
     return refused
 
 
-def uninstall(dest: pathlib.Path, suffix: str, dry_run: bool) -> None:
+def uninstall(dest: pathlib.Path, suffix: str, dry_run: bool, target: Optional[str] = None) -> None:
     if not dest.is_dir():
         print(f'nothing to remove: {dest} does not exist')
         return
-    for path in sorted(dest.iterdir()):
-        if path.is_file() and path.name.endswith(suffix) and is_ours(path):
-            print(f'{"would remove" if dry_run else "removed"} {path}')
-            if not dry_run:
-                path.unlink()
+    record = read_record(dest)
+    for path in swept(dest, suffix, {}, listed(record, target, 'files') if target in record else None):
+        print(f'{"would remove" if dry_run else "removed"} {path}')
+        if not dry_run:
+            path.unlink()
+    if target in record and not dry_run:
+        del record[target]
+        write_record(dest, record)
 
 
 # ---------------------------------------------------------------- command line
@@ -1415,8 +1509,19 @@ def main(argv: Optional[List[str]] = None, root: Optional[pathlib.Path] = None,
         command.add_argument('--dry-run', action='store_true', help='say what would change, change nothing')
         if name == 'install':
             command.add_argument('--grant', action='append', metavar='CAPABILITY=TOOL[,TOOL]',
-                                 help='grant a capability through named connector tools')
+                                 help='grant a capability through named connector tools; the last install\'s '
+                                      'grants are kept when this is left out')
+            command.add_argument('--no-grants', action='store_true',
+                                 help='grant nothing, and forget the grants of the last install')
     args = parser.parse_args(argv)
+
+    if args.command in ('install', 'uninstall'):
+        suffix, locate = INSTALLABLE[args.target]
+        dest = args.dest or locate(home or pathlib.Path.home(), env if env is not None else os.environ)
+    if args.command == 'uninstall':
+        # Taking the workforce out reads nothing from the source, so a broken source never blocks it.
+        uninstall(dest, suffix, args.dry_run, args.target)
+        return 0
 
     source = (root or ROOT) / SOURCE
     workforce, problems = problems_in(source)
@@ -1430,15 +1535,26 @@ def main(argv: Optional[List[str]] = None, root: Optional[pathlib.Path] = None,
         print('workforce: every check passes')
         return 0
     if args.command == 'render':
-        write_files(render(workforce, args.target, args), args.out)
+        files = render(workforce, args.target, args)
+        # An app's agents folder holds other people's agents under the same kind of name, so files
+        # for an app are never written over one the workforce did not write.
+        blocked = conflicts(files, args.out) if args.target in INSTALLABLE else []
+        for path in blocked:
+            print(f'refused   {path}: exists and is not the workforce\'s; choose another folder', file=sys.stderr)
+        if blocked:
+            return 1
+        write_files(files, args.out)
         return 0
-    suffix, locate = INSTALLABLE[args.target]
-    dest = args.dest or locate(home or pathlib.Path.home(), env if env is not None else os.environ)
-    if args.command == 'install':
-        refused = install(render(workforce, args.target, args), dest, suffix, args.dry_run)
-        return 1 if refused else 0
-    uninstall(dest, suffix, args.dry_run)
-    return 0
+    if args.no_grants:
+        args.grant = []
+    elif not args.grant:
+        # Grants live on the command line alone, so a plain install after one with grants would
+        # quietly take every granted tool away: the folder's record keeps them instead.
+        args.grant = listed(read_record(dest), args.target, 'grants')
+        if args.grant:
+            print(f'granting  {" ".join(args.grant)}: kept from the last install here; --no-grants drops them')
+    refused = install(render(workforce, args.target, args), dest, suffix, args.dry_run, args.target, args.grant)
+    return 1 if refused else 0
 
 
 if __name__ == '__main__':
