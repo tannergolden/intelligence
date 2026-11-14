@@ -10,12 +10,6 @@ scenario runs twice, once with the INTELLIGENCE block in the repository's
 AGENTS.md and once without, so the difference between the two pass rates is
 what the block is worth for that rule.
 
-The skill trigger tests in `evals/skills/` run the same way: each prompt a
-few times, counting how often the app loads the skill. Each skill keeps its
-test in its own `assets/trigger-evals.json`, which ships with it, and
-`--draw` writes the one here from it; `--check` fails when the two differ.
-Every skill's is drawn; none is written here by hand.
-
 The prompt scenarios in `evals/prompts/` measure the universal prompts in
 the hub's `docs/Prompts.md`. Each sets up a repository where a hurried
 request tends to go wrong, keeps the block in place, and runs twice: once
@@ -43,11 +37,9 @@ copies installed by the kit still load, so for a true baseline run
 
 Run it:
 
-    python3 .github/scripts/evals.py --check                   # validate every scenario and skill test
-    python3 .github/scripts/evals.py --draw                    # rewrite each skill's trigger test from its own
+    python3 .github/scripts/evals.py --check                   # validate every scenario
     python3 .github/scripts/evals.py --apps claude --dry-run   # the plan
     python3 .github/scripts/evals.py --apps claude --rules OPS-001,SEC-001 --runs 7
-    python3 .github/scripts/evals.py --apps claude --skill human-resources
     python3 .github/scripts/evals.py --apps claude --prompts fix-a-bug --runs 7
 """
 
@@ -75,11 +67,7 @@ sys.path.insert(0, str(HERE))
 import render  # noqa: E402  the hub's renderer, beside this file, which reads the rules from CONSTITUTION.md
 import prompts  # noqa: E402  the universal prompts, as the hub's docs/Prompts.md holds them
 HOME_FILE = ROOT / 'home' / 'intelligence.md'
-EVALS = ROOT / 'evals'  # the scenarios and the skill trigger tests
-SKILLS = ROOT / 'kit' / 'skills'
-TRIGGER_TEST = 'assets/trigger-evals.json'  # where a skill keeps the trigger test it ships
-HAND_WRITTEN: tuple[str, ...] = ()  # skills whose test in evals/skills/ is written here, not drawn from the skill
-MIN_PROMPTS = 5  # prompts each side of a trigger test needs
+EVALS = ROOT / 'evals'  # the rule scenarios and the prompt scenarios
 
 # How each app runs a task headless with its tools on. Claude Code, Codex and
 # Copilot CLI have flags for this; give the others with --command.
@@ -88,12 +76,6 @@ COMMANDS = {
                '--output-format', 'stream-json', '--verbose'),
     'codex': ('codex', 'exec', '--sandbox', 'danger-full-access', '{prompt}'),
     'copilot': ('copilot', '-p', '{prompt}', '--allow-all-tools', '--trust-folder'),
-}
-# How each app shows that it loaded a skill, in its raw output.
-SKILL_SEEN = {
-    'claude': r'"name"\s*:\s*"Skill".{{0,400}}"skill"\s*:\s*"{name}"',
-    'codex': r'skills/{name}/SKILL\.md',
-    'copilot': r'skills/{name}/SKILL\.md',
 }
 
 AI_IDENTITY = re.compile(r'\b(claude|anthropic|openai|chatgpt|codex|copilot|gemini|antigravity|cursor|grok|x\.ai)\b',
@@ -268,61 +250,9 @@ def prompt_problems(scenarios: Sequence[PromptScenario], library: Mapping[str, s
     return found
 
 
-def prompt_text(item: object) -> str:
-    """One prompt of a trigger test: the text itself, or the q or query a routed entry carries."""
-    if isinstance(item, str):
-        return item
-    if isinstance(item, dict):
-        return str(item.get('q') or item.get('query') or '')
-    return ''
-
-
-def drawn_test(name: str, skills: pathlib.Path = SKILLS) -> str | None:
-    """The skill's trigger test in evals/skills/'s shape, drawn from the one it ships; None if it ships none."""
-    source = skills / name / TRIGGER_TEST
-    if name in HAND_WRITTEN or not source.is_file():
-        return None
-    try:
-        data = json.loads(source.read_text(encoding='utf-8'))
-    except ValueError:
-        data = None
-    if not isinstance(data, dict):
-        return None
-    sides = []
-    for keys in (('should_trigger',), ('should_not_trigger', 'near_miss')):
-        items = next((data[key] for key in keys if data.get(key)), [])
-        sides.append([p for p in (prompt_text(item) for item in (items if isinstance(items, list) else [])) if p])
-    test = {
-        '//': f'The trigger test for {name}, taken from its {TRIGGER_TEST} by .github/scripts/evals.py --draw. '
-              'Never edit it by hand.',
-        'skill': name,
-        'runs': 3,
-        'threshold': 0.5,
-        'should_trigger': sides[0],
-        'should_not_trigger': sides[1],
-    }
-    return json.dumps(test, indent=2, ensure_ascii=False) + '\n'
-
-
-def skill_names(skills: pathlib.Path = SKILLS) -> list[str]:
-    return sorted(p.name for p in skills.iterdir() if p.is_dir()) if skills.is_dir() else []
-
-
-def draw(skills: pathlib.Path = SKILLS, evals: pathlib.Path = EVALS) -> list[str]:
-    """Write each skill's drawn trigger test into evals/skills/; return the ones that changed."""
-    changed = []
-    for name in skill_names(skills):
-        test = drawn_test(name, skills)
-        path = evals / 'skills' / f'{name}.json'
-        if test is not None and (not path.is_file() or path.read_text(encoding='utf-8') != test):
-            path.write_text(test, encoding='utf-8')
-            changed.append(name)
-    return changed
-
-
-def problems(scenarios: Sequence[Scenario], skills: Sequence[pathlib.Path], rules: set[str],
+def problems(scenarios: Sequence[Scenario], rules: set[str],
              prompt_scenarios: Sequence[PromptScenario] = (), library: Mapping[str, str] | None = None) -> list[str]:
-    """Every way a scenario or skill test is malformed; with `library`, every universal prompt left unmeasured too."""
+    """Every way a scenario is malformed; with `library`, every universal prompt left unmeasured too."""
     found = []
     for scenario in scenarios:
         where = f'evals/scenarios/{scenario.name}.json'
@@ -337,23 +267,9 @@ def problems(scenarios: Sequence[Scenario], skills: Sequence[pathlib.Path], rule
         found += setup_problems(where, scenario.setup, scenario.checks)
     if library is not None:
         found += prompt_problems(prompt_scenarios, library)
-    for path in skills:
-        where = f'evals/skills/{path.name}'
-        data = json.loads(path.read_text(encoding='utf-8'))
-        if data.get('skill') != path.stem or not (SKILLS / path.stem / 'SKILL.md').exists():
-            found.append(f'{where}: names a skill that is not in kit/skills/')
-        if len(data.get('should_trigger', [])) < MIN_PROMPTS or len(data.get('should_not_trigger', [])) < MIN_PROMPTS:
-            found.append(f'{where}: needs at least five prompts each that should and should not trigger')
-        test = drawn_test(path.stem)
-        if test is not None and path.read_text(encoding='utf-8').replace('\r\n', '\n') != test:
-            found.append(f'{where}: differs from the trigger test kit/skills/{path.stem}/{TRIGGER_TEST} ships; '
-                         'run evals.py --draw')
     covered = {scenario.rule for scenario in scenarios}
     for rule in sorted(rules - covered):
         found.append(f'CONSTITUTION.md: {rule} has no scenario in evals/scenarios/ to test it')
-    for skill in skill_names():
-        if not (EVALS / 'skills' / f'{skill}.json').exists():
-            found.append(f'kit/skills/{skill}: no trigger test in evals/skills/')
     return found
 
 
@@ -686,30 +602,6 @@ def summary(results: Sequence[dict], columns: tuple[str, str] = ('With the block
     return '\n'.join(lines)
 
 
-def run_skill(path: pathlib.Path, app: str, runs: int, overrides: Mapping[str, str], timeout: int,
-              seen_patterns: Mapping[str, str]) -> list[dict]:
-    """How often each prompt loads the skill, in a scratch repository with nothing else in it."""
-    data = json.loads(path.read_text(encoding='utf-8'))
-    pattern = re.compile(seen_patterns.get(app, SKILL_SEEN.get(app, '')).format(name=re.escape(data['skill'])), re.S)
-    threshold = float(data.get('threshold', 0.5))
-    rows = []
-    for expected, asks in ((True, data['should_trigger']), (False, data['should_not_trigger'])):
-        for prompt in asks:
-            hits = 0
-            for _ in range(runs):
-                scratch = pathlib.Path(tempfile.mkdtemp(prefix='intelligence-eval-'))
-                try:
-                    git(scratch, 'init', '-q')
-                    output, _ = run_app(app, prompt, scratch, None, overrides, timeout)
-                    hits += bool(pattern.search(output))
-                finally:
-                    shutil.rmtree(scratch, ignore_errors=True)
-            rate = hits / runs
-            rows.append({'skill': data['skill'], 'app': app, 'prompt': prompt, 'should_trigger': expected,
-                         'rate': rate, 'status': 'pass' if (rate >= threshold) == expected else 'fail'})
-    return rows
-
-
 def home_copies() -> list[str]:
     home = pathlib.Path.home()
     return [str(home / rel) for rel in ('.claude/rules/intelligence.md', '.codex/AGENTS.md', '.agents/AGENTS.md')
@@ -728,12 +620,9 @@ def parse_overrides(values: Sequence[str]) -> dict[str, str]:
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=(__doc__ or '').split('\n', 1)[0])
-    parser.add_argument('--check', action='store_true', help='validate every scenario and skill test, then stop')
-    parser.add_argument('--draw', action='store_true',
-                        help="rewrite each skill's trigger test in evals/skills/ from the one it ships, then check")
+    parser.add_argument('--check', action='store_true', help='validate every scenario, then stop')
     parser.add_argument('--apps', default='', help='comma-separated: ' + ', '.join(COMMANDS) + ', or any with --command')
     parser.add_argument('--rules', default='', help='comma-separated rule IDs to run (default: all)')
-    parser.add_argument('--skill', help='run this skill\'s trigger test instead of the scenarios')
     parser.add_argument('--prompts', nargs='?', const='all', metavar='NAMES',
                         help='run the prompt scenarios instead: all of them, or comma-separated names such as '
                              'fix-a-bug')
@@ -742,28 +631,20 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument('--timeout', type=int, default=600, help='seconds per model call (default 600)')
     parser.add_argument('--command', action='append', default=[], metavar='APP=ARGV',
                         help="an app's headless command; it must contain {prompt}")
-    parser.add_argument('--seen', action='append', default=[], metavar='APP=REGEX',
-                        help='how an app shows it loaded a skill, with {name} for the skill')
     parser.add_argument('--dry-run', action='store_true', help='print the plan and call no model')
     parser.add_argument('--keep', action='store_true', help='keep each scratch folder to inspect')
     parser.add_argument('--out', type=pathlib.Path, default=None, help='where the results go')
     args = parser.parse_args(argv)
 
-    if args.draw:
-        for name in draw():
-            print(f'drew evals/skills/{name}.json from kit/skills/{name}/{TRIGGER_TEST}')
-        args.check = True
     scenarios = load_scenarios()
-    skills = sorted((EVALS / 'skills').glob('*.json'))
     measured = load_prompt_scenarios()
     library = universal()
-    broken = problems(scenarios, skills, rule_ids(), measured, library)
+    broken = problems(scenarios, rule_ids(), measured, library)
     for line in broken:
         print(f'error: {line}', file=sys.stderr)
     if args.check or broken:
         if not broken:
             print(f'{len(scenarios)} scenarios cover {len({s.rule for s in scenarios})} rules; '
-                  f'{len(skills)} skill trigger test{"" if len(skills) == 1 else "s"}; '
                   f'{len(measured)} prompt scenarios cover {len(library)} universal prompts')
         return 1 if broken else 0
 
@@ -774,32 +655,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     unknown = [app for app in apps if app not in COMMANDS and app not in overrides]
     if unknown:
         parser.error(f'no command for {", ".join(unknown)}; give one with --command')
-    seen = {}
-    for value in args.seen:
-        app, sep, pattern = value.partition('=')
-        if not sep or '{name}' not in pattern:
-            parser.error(f"--seen takes APP='regex with {{name}}', got {value!r}")
-        seen[app] = pattern
 
     when = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='seconds')
     out = args.out or pathlib.Path(os.environ.get('XDG_CACHE_HOME') or pathlib.Path.home() / '.cache') / \
         'intelligence-evals' / f"results-{when.replace(':', '')}.json"
-
-    if args.skill:
-        path = EVALS / 'skills' / f'{args.skill}.json'
-        if not path.exists():
-            parser.error(f'no trigger test at {path}')
-        if args.dry_run:
-            data = json.loads(path.read_text(encoding='utf-8'))
-            calls = (len(data['should_trigger']) + len(data['should_not_trigger'])) * max(args.runs, 3) * len(apps)
-            print(f'Would run {calls} model calls for {args.skill} on {", ".join(apps)}')
-            return 0
-        rows = [row for app in apps for row in run_skill(path, app, max(args.runs, 3), overrides, args.timeout, seen)]
-        for row in rows:
-            print(f"  {row['status']:<5} {row['rate']:.0%} {'should' if row['should_trigger'] else 'should not'}: "
-                  f"{row['prompt']}")
-        save(out, when, rows)
-        return 0 if all(row['status'] == 'pass' for row in rows) else 1
 
     conditions = [True, False] if args.condition == 'both' else [args.condition == 'with']
     if args.prompts:

@@ -20,9 +20,8 @@ _Tempt, run, check, compare._
 
 ## 💡 What This Folder Is For
 
-A scenario for every rule in [`scenarios/`](scenarios/README.md), one for every
-universal prompt in [`prompts/`](prompts/README.md), and a trigger test for
-every skill in [`skills/`](skills/README.md). Their runner is
+A scenario for every rule in [`scenarios/`](scenarios/README.md), and one for
+every universal prompt in [`prompts/`](prompts/README.md). Their runner is
 `.github/scripts/evals.py`, which `make evals` calls. What evals measure and
 how to run them: [Evals](../docs/technical/Evals.md).
 
@@ -36,7 +35,6 @@ how to run them: [Evals](../docs/technical/Evals.md).
 | :---------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`prompts/`](prompts/README.md)     | One JSON file per scenario that measures a universal prompt: the scratch repository it sets up, any details it fills in, the hurried request it is measured against, the checks that decide it, and a proof that those checks can pass. |
 | [`scenarios/`](scenarios/README.md) | One JSON file per scenario: the rule it tests, the scratch repository it sets up, the prompt, and the checks that decide it.                                                                                                            |
-| [`skills/`](skills/README.md)       | One trigger test per skill: prompts that should load it, near misses that should not, and the tasks that judge its output.                                                                                                              |
 | [`README.md`](README.md)            | This file.                                                                                                                                                                                                                              |
 
 <!-- AUTO-INDEX:END -->

@@ -96,9 +96,7 @@ every team to the validator in `research-and-development/scripts/`, every
 title is unique across all of `kit/skills/*/agents/`, and every skill is
 laid out alike: its `metadata.team` names a roster in its own `agents/`, it
 ships `assets/trigger-evals.json`, and its metadata holds exactly `team`,
-`version`, `author` and `status`. Each skill's trigger test in
-`evals/skills/` is drawn from the one it ships by `evals.py --draw`, and
-`make lint` fails when the two differ.
+`version`, `author` and `status`.
 
 `.github/scripts/kit.py` bundles every folder in [`kit/skills/`](../../kit/skills/README.md)
 into `home/kit.json`, and the home kit copies each one into
@@ -129,11 +127,6 @@ rule some app enforces by silently not loading the skill:
 > paid for in context, so `SKILL.md` and the files beside it carry no hidden
 > comment frontmatter and no decorative header or footer. For the same
 > reason a skill folder has no `README.md`: it would ship with the skill.
-
-Each skill's trigger test lives in `evals/skills/`, outside its folder, so the
-hub's own never ships. Each is drawn from the one the skill keeps in its own
-`assets/`, which ships with it, as the template keeps it. [Evals](Evals.md)
-describes them.
 
 ---
 

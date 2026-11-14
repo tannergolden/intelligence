@@ -43,7 +43,6 @@ serves to this repository from its `.github` repository.
 - `make check`: everything CI checks, which are the repository validator, `render.py --check`, `prompts.py --check`, `evals.py --check` and every test.
 - `make test`: the tests alone, every `test_*.py` in `.github/scripts/`.
 - `make render`: rewrite `home/` from `CONSTITUTION.md`, the kit's sources in `kit/` and the installer.
-- `python3 .github/scripts/evals.py --draw`: redraw each skill's trigger test in `evals/skills/` from the `assets/trigger-evals.json` it ships. Run it after changing one.
 - `make probe`: prove which instruction files each installed app loads. It makes one model call per check.
 - `make evals`: measure each rule with the block and without it, and each universal prompt against the hurried request it replaces. Real runs make model calls; `ARGS=--dry-run` makes none.
 - `python3 kit/guard.py --command '<command>'`: see what the guard hook would say about one command.
@@ -53,7 +52,7 @@ serves to this repository from its `.github` repository.
 
 - `make check` passes, and its output is in your report.
 - A change to `CONSTITUTION.md`, anything in `kit/` or `.github/scripts/install.py` is followed by `make render`, and the rendered files are committed with it.
-- A new rule gets a scenario in `evals/scenarios/`, a new skill a trigger test in `evals/skills/`, and a new universal prompt a scenario in `evals/prompts/`, with a `proof` its checks pass and doing nothing fails.
+- A new rule gets a scenario in `evals/scenarios/`, and a new universal prompt a scenario in `evals/prompts/`, with a `proof` its checks pass and doing nothing fails.
 - A change to the universal prompts in `docs/Prompts.md`, or to the empty page in `setup/Prompts.md`, stays as Prettier writes it, with the standards' configuration, and passes `prompts.py --check`; a reworded prompt brings its scenario in `evals/prompts/` along, and a new one gets a link in the "Find A Prompt" index.
 - Every new script has tests beside it, and every folder's `README.md` logs its files, except inside a skill's folder.
 - A change to how something works updates its document in `docs/` in the same commit, in the folder for its kind: `docs/technical/` for how a part works, `docs/distribution/` for how a release ships, `docs/operations/` for the controls and risks.
@@ -73,7 +72,7 @@ serves to this repository from its `.github` repository.
 | [`CONSTITUTION.md`](CONSTITUTION.md) | The source of every rule, and the order and budget of the block                                                                                               |
 | `kit/`                               | The kit's sources: the guard, and every skill and its team (twelve, one for each department)                                                                  |
 | `home/`                              | Everything a machine downloads, rendered: the home file, the kit, the installer and their hashes, which every release tag serves                              |
-| `evals/`                             | Scenarios for every rule and every universal prompt, and the skill trigger tests                                                                              |
+| `evals/`                             | Scenarios for every rule and every universal prompt                                                                                                           |
 | `setup/`                             | The Claude cloud setup script, the stub a repository carries, and the empty prompts page every repository gets                                                |
 | `docs/Prompts.md`                    | The universal prompts, which stay in the hub: anyone copies one from here into any agent                                                                      |
 | `.github/scripts/`                   | Every script, with its test beside it: `render.py`, `kit.py`, `install.py`, `sync.py`, `prompts.py`, `evals.py`, `loader-probe.py`, and the template's checks |
@@ -90,7 +89,6 @@ serves to this repository from its `.github` repository.
 
 - Never edit inside `home/`. It is rendered, and `make check` fails on a hand edit.
 - Every skill in `kit/skills/` is universal: never name one repository's folders or scripts in it; a skill reads where to keep its work from the repository itself, its agent instructions or else its README files. Every skill is laid out alike: `kit.py` holds every skill, agent and team to the validator in `research-and-development/scripts/`, refuses a team over five agents, its lead included, and refuses a skill whose `metadata.team` names no roster in its own `agents/`, that ships no `assets/trigger-evals.json`, or whose metadata holds other keys than `team`, `version`, `author` and `status`. Build a new skill from `research-and-development`'s `templates/t-SKILL.md`.
-- Never edit a trigger test in `evals/skills/` by hand: change the skill's `assets/trigger-evals.json` and run `evals.py --draw`.
 - The guard hook denies a commit git would author as an AI. In a cloud session, pass `--author` and `--trailer 'Signed-off-by: ...'` with your user's identity, never `-s`.
 - Changing `CONSTITUTION.md` changes nothing elsewhere until a release: other repositories receive the rules only through one, which their stub or `make sync` delivers.
 - `sync.py`, `render.py`, `kit.py` and `prompts.py`, and `setup/Prompts.md`, also run or are read inside every repository that carries the stub, at the hub's latest release, from the archive GitHub serves. Cut Release refuses a tag without them, `.gitattributes` keeps `.github/scripts/` in that archive, and `test_stub.py` holds both.

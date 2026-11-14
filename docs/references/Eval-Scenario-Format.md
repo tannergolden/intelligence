@@ -1,6 +1,6 @@
 <!--
 title: '🧾 EVAL SCENARIO FORMAT'
-description: 'Every key an eval scenario, a prompt scenario and a skill trigger test can hold, what the runner does with each one, and how to add a scenario for a rule or a universal prompt. Read it before writing or changing a file in evals/.'
+description: 'Every key an eval scenario and a prompt scenario can hold, what the runner does with each one, and how to add a scenario for a rule or a universal prompt. Read it before writing or changing a file in evals/.'
 type: reference
 -->
 
@@ -182,29 +182,6 @@ placeholder or names one the prompt no longer holds, or a scenario has no
 `proof`. `make test` plays every scenario against a stand-in app, side by side:
 once running its `proof`, which must pass every check, and once doing nothing,
 which must fail one, so no scenario passes an agent that did no work.
-
----
-
-## 🎯 A Skill Trigger Test
-
-Each file in [`evals/skills/`](../../evals/skills/README.md) is named for its
-skill and holds:
-
-| Key                  | What it holds                                                                                                           |
-| :------------------- | :---------------------------------------------------------------------------------------------------------------------- |
-| `//`                 | One line on what it tests                                                                                               |
-| `skill`              | The skill's name, which must match the file name and a folder in `kit/skills/`                                          |
-| `should_trigger`     | At least five prompts that should load the skill                                                                        |
-| `should_not_trigger` | At least five near misses that should not                                                                               |
-| `threshold`          | The share of runs a prompt must load the skill in; 0.5 when left out                                                    |
-| `runs`, `quality`    | For a reader: the runner takes the number of runs from `--runs`, and at least three, and does not run `quality`'s tasks |
-
-Each prompt runs in an empty scratch git repository. A prompt that should
-trigger passes when the skill loads in at least `threshold` of its runs, and a
-near miss passes when it loads in fewer. The runner tells that the skill loaded
-from the app's output: in Claude Code, a `Skill` tool call that names it; in
-Codex and Copilot CLI, the path `skills/<name>/SKILL.md`; for any other app,
-the pattern given with `--seen`.
 
 ---
 

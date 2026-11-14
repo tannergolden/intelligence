@@ -54,9 +54,8 @@ every command below.
    block and whose checks passed.
 
 **A changed skill** rides the next release like any other source: after
-editing one, run `python3 .github/scripts/evals.py --draw` if its
-`assets/trigger-evals.json` changed, then `make render` and `make check`, and
-commit it all on `Development` before step 1. A skill's folder cannot
+editing one, run `make render` and `make check`, and commit it all on
+`Development` before step 1. A skill's folder cannot
 describe itself in `kit/skills/README.md`, so give each new one's row its
 purpose by hand, once.
 

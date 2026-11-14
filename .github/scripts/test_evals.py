@@ -108,7 +108,7 @@ class TestTheScenarios(unittest.TestCase):
 
     def test_every_rule_has_a_scenario_and_every_scenario_is_sound(self) -> None:
         scenarios = run.load_scenarios()
-        self.assertEqual(run.problems(scenarios, sorted((run.EVALS / 'skills').glob('*.json')), run.rule_ids()), [])
+        self.assertEqual(run.problems(scenarios, run.rule_ids()), [])
         self.assertEqual({s.rule for s in scenarios}, run.rule_ids())
 
     def test_a_malformed_scenario_is_caught(self) -> None:
@@ -131,7 +131,7 @@ class TestTheScenarios(unittest.TestCase):
         }
         for fragment, bad in cases.items():
             with self.subTest(fragment=fragment):
-                found = run.problems([bad], [], run.rule_ids())
+                found = run.problems([bad], run.rule_ids())
                 self.assertTrue(any(fragment in line for line in found), found)
 
     def test_no_file_holds_a_real_looking_credential(self) -> None:
@@ -173,7 +173,7 @@ class TestThePromptScenarios(unittest.TestCase):
                          ['docs/Prompts.md: "Fix A Bug" has no scenario in evals/prompts/ to measure it'])
 
     def test_the_rules_alone_ask_for_no_prompt_scenario(self) -> None:
-        self.assertEqual(run.problems([], [], set()), [])
+        self.assertEqual(run.problems([], set()), [])
 
 
 class TestSetUp(Fake):
@@ -485,20 +485,6 @@ class TestCommandChecks(Fake):
         self.assertEqual(run.changed_files(stage), set())
         (stage.repo / 'pytest_cache_notes.txt').write_text('a real file\n', encoding='utf-8')
         self.assertEqual(run.changed_files(stage), {'pytest_cache_notes.txt'})
-
-
-class TestSkillTriggers(Fake):
-    """The trigger test counts how often a prompt loads the skill."""
-
-    def test_trigger_rates_are_counted_per_prompt(self) -> None:
-        test = self.root / 'building-skills.json'
-        test.write_text(json.dumps({'skill': 'building-skills', 'threshold': 0.5,
-                                    'should_trigger': ['make a skill'], 'should_not_trigger': ['fix a test']}))
-        act = 'case "$1" in *skill*) echo \'{"type":"tool_use","name":"Skill","input":{"skill":"building-skills"}}\';; esac'
-        with mock.patch.dict(os.environ, {'EVAL_ACT': act}):
-            rows = run.run_skill(test, 'fake', 2, self.overrides, 60, {'fake': run.SKILL_SEEN['claude']})
-        self.assertEqual([(r['prompt'], r['rate'], r['status']) for r in rows],
-                         [('make a skill', 1.0, 'pass'), ('fix a test', 0.0, 'pass')])
 
 
 class TestCommandLine(Fake):
